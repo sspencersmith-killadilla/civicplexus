@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedProvisioningRouteImport } from './routes/_authenticated/provisioning'
 import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenticated/preboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -47,6 +48,11 @@ const AuthenticatedWorkerTypesRoute =
 const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProvisioningRoute =
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
+  '/reports': typeof AuthenticatedReportsRoute
   '/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
+  '/reports': typeof AuthenticatedReportsRoute
   '/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/preboarding': typeof AuthenticatedPreboardingRoute
   '/_authenticated/provisioning': typeof AuthenticatedProvisioningRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/preboarding'
     | '/provisioning'
+    | '/reports'
     | '/templates'
     | '/worker-types'
     | '/forms/$key'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/preboarding'
     | '/provisioning'
+    | '/reports'
     | '/templates'
     | '/worker-types'
     | '/forms/$key'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/preboarding'
     | '/_authenticated/provisioning'
+    | '/_authenticated/reports'
     | '/_authenticated/templates'
     | '/_authenticated/worker-types'
     | '/_authenticated/forms/$key'
@@ -236,6 +248,13 @@ declare module '@tanstack/react-router' {
       path: '/templates'
       fullPath: '/templates'
       preLoaderRoute: typeof AuthenticatedTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/provisioning': {
@@ -337,6 +356,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPreboardingRoute: typeof AuthenticatedPreboardingRoute
   AuthenticatedProvisioningRoute: typeof AuthenticatedProvisioningRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRouteWithChildren
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
 }
@@ -349,6 +369,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPreboardingRoute: AuthenticatedPreboardingRoute,
   AuthenticatedProvisioningRoute: AuthenticatedProvisioningRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRouteWithChildren,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
 }
