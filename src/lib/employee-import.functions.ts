@@ -62,7 +62,7 @@ export const importEmployees = createServerFn({ method: "POST" })
 
         const { data: existing } = await supabaseAdmin.from("employees").select("id").eq("personal_email", r.personal_email).maybeSingle();
         if (existing) {
-          const { error } = await supabaseAdmin.from("employees").update(patch).eq("id", existing.id);
+          const { error } = await supabaseAdmin.from("employees").update(patch as never).eq("id", existing.id);
           if (error) throw new Error(error.message);
           result.updated++;
         } else {
@@ -109,7 +109,7 @@ export const importDependents = createServerFn({ method: "POST" })
         if (r.ssn_last4) patch.ssn_last4 = r.ssn_last4;
         const { data: existing } = await supabaseAdmin.from("dependents").select("id").eq("employee_id", employee_id).eq("first_name", r.first_name).eq("last_name", r.last_name).maybeSingle();
         if (existing) {
-          const { error } = await supabaseAdmin.from("dependents").update(patch).eq("id", existing.id);
+          const { error } = await supabaseAdmin.from("dependents").update(patch as never).eq("id", existing.id);
           if (error) throw new Error(error.message);
           result.updated++;
         } else {
@@ -155,7 +155,7 @@ export const importCertifications = createServerFn({ method: "POST" })
         if (r.notes) patch.notes = r.notes;
         const { data: existing } = await supabaseAdmin.from("employee_certifications").select("id").eq("employee_id", employee_id).eq("certification_id", certification_id).maybeSingle();
         if (existing) {
-          const { error } = await supabaseAdmin.from("employee_certifications").update(patch).eq("id", existing.id);
+          const { error } = await supabaseAdmin.from("employee_certifications").update(patch as never).eq("id", existing.id);
           if (error) throw new Error(error.message); result.updated++;
         } else {
           const { error } = await supabaseAdmin.from("employee_certifications").insert(patch as never);
@@ -198,7 +198,7 @@ export const importTraining = createServerFn({ method: "POST" })
         if (typeof r.score === "number") patch.score = r.score;
         const { data: existing } = await supabaseAdmin.from("employee_training").select("id").eq("employee_id", employee_id).eq("course_id", course_id).maybeSingle();
         if (existing) {
-          const { error } = await supabaseAdmin.from("employee_training").update(patch).eq("id", existing.id);
+          const { error } = await supabaseAdmin.from("employee_training").update(patch as never).eq("id", existing.id);
           if (error) throw new Error(error.message); result.updated++;
         } else {
           const { error } = await supabaseAdmin.from("employee_training").insert(patch as never);
