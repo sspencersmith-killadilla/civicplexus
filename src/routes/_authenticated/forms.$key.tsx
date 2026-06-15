@@ -33,7 +33,11 @@ function FormDetail() {
       if (!form) throw new Error("Form not loaded");
       if (!emp) throw new Error("No employee record linked to your account — ask HR to link you.");
       const { data: sub, error } = await supabase.from("form_submissions").insert({
-        form_definition_id: form.id, employee_id: emp.id, data, status: "submitted", submitted_at: new Date().toISOString(),
+        form_definition_id: form.id,
+        employee_id: emp.id,
+        data: data as never,
+        status: "submitted",
+        submitted_at: new Date().toISOString(),
       }).select().single();
       if (error) throw error;
       if (sig) {
