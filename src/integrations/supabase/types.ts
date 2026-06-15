@@ -1389,6 +1389,7 @@ export type Database = {
       worker_types: {
         Row: {
           created_at: string
+          default_provisioning: Json
           description: string | null
           icon: string | null
           id: string
@@ -1400,6 +1401,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_provisioning?: Json
           description?: string | null
           icon?: string | null
           id?: string
@@ -1411,6 +1413,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_provisioning?: Json
           description?: string | null
           icon?: string | null
           id?: string
@@ -1427,20 +1430,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_hire_request: {
-        Args: {
-          _department: string
-          _email: string
-          _first_name: string
-          _job_title: string
-          _last_name: string
-          _notes: string
-          _reason: string
-          _start_date: string
-          _worker_type_id: string
-        }
-        Returns: string
-      }
+      create_hire_request:
+        | {
+            Args: {
+              _department: string
+              _email: string
+              _first_name: string
+              _job_title: string
+              _last_name: string
+              _notes: string
+              _reason: string
+              _start_date: string
+              _worker_type_id: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              _department: string
+              _email: string
+              _first_name: string
+              _job_title: string
+              _last_name: string
+              _notes: string
+              _provisioning_kinds?: string[]
+              _reason: string
+              _start_date: string
+              _worker_type_id: string
+            }
+            Returns: string
+          }
       decide_hire_request: {
         Args: { _action: string; _hr_notes: string; _request_id: string }
         Returns: undefined
