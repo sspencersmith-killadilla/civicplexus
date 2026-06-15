@@ -23,6 +23,7 @@ import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedFormsRouteImport } from './routes/_authenticated/forms'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
@@ -35,6 +36,7 @@ import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
+import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -110,6 +112,11 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFormsRoute = AuthenticatedFormsRouteImport.update({
   id: '/forms',
   path: '/forms',
@@ -172,6 +179,11 @@ const ApiPublicHooksBenefitsCallbackRoute =
     path: '/api/public/hooks/benefits-callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicDocsFileRoute = ApiPublicDocsFileRouteImport.update({
+  id: '/api/public/docs/$file',
+  path: '/api/public/docs/$file',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -183,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/employees': typeof AuthenticatedEmployeesRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/forms': typeof AuthenticatedFormsRouteWithChildren
+  '/help': typeof AuthenticatedHelpRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -197,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -210,6 +224,7 @@ export interface FileRoutesByTo {
   '/employees': typeof AuthenticatedEmployeesRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/forms': typeof AuthenticatedFormsRouteWithChildren
+  '/help': typeof AuthenticatedHelpRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -224,6 +239,7 @@ export interface FileRoutesByTo {
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -239,6 +255,7 @@ export interface FileRoutesById {
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
   '/_authenticated/forms': typeof AuthenticatedFormsRouteWithChildren
+  '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -253,6 +270,7 @@ export interface FileRoutesById {
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -268,6 +286,7 @@ export interface FileRouteTypes {
     | '/employees'
     | '/equipment'
     | '/forms'
+    | '/help'
     | '/notifications'
     | '/offboarding'
     | '/policies'
@@ -282,6 +301,7 @@ export interface FileRouteTypes {
     | '/forms/$key'
     | '/policies/$id'
     | '/templates/$id'
+    | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
   fileRoutesByTo: FileRoutesByTo
@@ -295,6 +315,7 @@ export interface FileRouteTypes {
     | '/employees'
     | '/equipment'
     | '/forms'
+    | '/help'
     | '/notifications'
     | '/offboarding'
     | '/policies'
@@ -309,6 +330,7 @@ export interface FileRouteTypes {
     | '/forms/$key'
     | '/policies/$id'
     | '/templates/$id'
+    | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
   id:
@@ -323,6 +345,7 @@ export interface FileRouteTypes {
     | '/_authenticated/employees'
     | '/_authenticated/equipment'
     | '/_authenticated/forms'
+    | '/_authenticated/help'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
     | '/_authenticated/policies'
@@ -337,6 +360,7 @@ export interface FileRouteTypes {
     | '/_authenticated/forms/$key'
     | '/_authenticated/policies/$id'
     | '/_authenticated/templates/$id'
+    | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
   fileRoutesById: FileRoutesById
@@ -345,6 +369,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
 }
@@ -449,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/help': {
+      id: '/_authenticated/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof AuthenticatedHelpRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/forms': {
       id: '/_authenticated/forms'
       path: '/forms'
@@ -533,6 +565,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksBenefitsCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/docs/$file': {
+      id: '/api/public/docs/$file'
+      path: '/api/public/docs/$file'
+      fullPath: '/api/public/docs/$file'
+      preLoaderRoute: typeof ApiPublicDocsFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -582,6 +621,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRoute
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
   AuthenticatedFormsRoute: typeof AuthenticatedFormsRouteWithChildren
+  AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
@@ -603,6 +643,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEmployeesRoute: AuthenticatedEmployeesRoute,
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
   AuthenticatedFormsRoute: AuthenticatedFormsRouteWithChildren,
+  AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,
@@ -623,6 +664,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
 }
