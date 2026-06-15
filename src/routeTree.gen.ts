@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
+import { Route as AuthenticatedScreeningsRouteImport } from './routes/_authenticated/screenings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedProvisioningRouteImport } from './routes/_authenticated/provisioning'
 import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenticated/preboarding'
@@ -55,6 +56,11 @@ const AuthenticatedTrainingRoute = AuthenticatedTrainingRouteImport.update({
 const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedScreeningsRoute = AuthenticatedScreeningsRouteImport.update({
+  id: '/screenings',
+  path: '/screenings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/screenings': typeof AuthenticatedScreeningsRoute
   '/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/screenings': typeof AuthenticatedScreeningsRoute
   '/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/_authenticated/preboarding': typeof AuthenticatedPreboardingRoute
   '/_authenticated/provisioning': typeof AuthenticatedProvisioningRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/screenings': typeof AuthenticatedScreeningsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/preboarding'
     | '/provisioning'
     | '/reports'
+    | '/screenings'
     | '/templates'
     | '/training'
     | '/worker-types'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/preboarding'
     | '/provisioning'
     | '/reports'
+    | '/screenings'
     | '/templates'
     | '/training'
     | '/worker-types'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/preboarding'
     | '/_authenticated/provisioning'
     | '/_authenticated/reports'
+    | '/_authenticated/screenings'
     | '/_authenticated/templates'
     | '/_authenticated/training'
     | '/_authenticated/worker-types'
@@ -279,6 +291,13 @@ declare module '@tanstack/react-router' {
       path: '/templates'
       fullPath: '/templates'
       preLoaderRoute: typeof AuthenticatedTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/screenings': {
+      id: '/_authenticated/screenings'
+      path: '/screenings'
+      fullPath: '/screenings'
+      preLoaderRoute: typeof AuthenticatedScreeningsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reports': {
@@ -396,6 +415,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPreboardingRoute: typeof AuthenticatedPreboardingRoute
   AuthenticatedProvisioningRoute: typeof AuthenticatedProvisioningRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedScreeningsRoute: typeof AuthenticatedScreeningsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRouteWithChildren
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
@@ -411,6 +431,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPreboardingRoute: AuthenticatedPreboardingRoute,
   AuthenticatedProvisioningRoute: AuthenticatedProvisioningRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedScreeningsRoute: AuthenticatedScreeningsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRouteWithChildren,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
