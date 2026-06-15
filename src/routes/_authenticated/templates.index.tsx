@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Plus, ListChecks } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/templates")({
+export const Route = createFileRoute("/_authenticated/templates/")({
   component: TemplatesPage,
 });
 
