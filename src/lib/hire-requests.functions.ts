@@ -12,6 +12,7 @@ const submitSchema = z.object({
   start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional().or(z.literal("")),
   reason: z.string().trim().max(1000).optional().or(z.literal("")),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
+  provisioning_kinds: z.array(z.string().min(1).max(40).regex(/^[a-z0-9_]+$/)).max(20).optional(),
 });
 
 export const submitHireRequest = createServerFn({ method: "POST" })
@@ -28,6 +29,7 @@ export const submitHireRequest = createServerFn({ method: "POST" })
       _start_date: (data.start_date || null) as never,
       _reason: (data.reason || null) as never,
       _notes: (data.notes || null) as never,
+      _provisioning_kinds: (data.provisioning_kinds && data.provisioning_kinds.length ? data.provisioning_kinds : null) as never,
     });
     if (error) throw new Error(error.message);
     return { request_id: rid as string };
