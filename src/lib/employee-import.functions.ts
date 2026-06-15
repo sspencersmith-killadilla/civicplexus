@@ -212,10 +212,11 @@ export const importTraining = createServerFn({ method: "POST" })
 const equipRow = z.object({
   employee_email: z.string().trim().email().max(255),
   item_name: z.string().trim().min(1).max(200),
-  asset_tag: z.string().trim().min(1).max(100),
-  serial_number: z.string().trim().max(100).optional().or(z.literal("")),
-  issued_on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  size: z.string().trim().max(40).optional().or(z.literal("")),
+  status: z.string().trim().max(40).optional().or(z.literal("")),
+  issued_at: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
   condition: z.string().trim().max(40).optional().or(z.literal("")),
+  notes: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
 export const importEquipment = createServerFn({ method: "POST" })
@@ -234,13 +235,15 @@ export const importEquipment = createServerFn({ method: "POST" })
         if (!employee_id) { result.errors.push({ row: rowNum, column: "employee_email", message: `No employee with email ${r.employee_email}` }); result.skipped++; continue; }
         const equipment_id = catMap.get(r.item_name.toLowerCase());
         if (!equipment_id) { result.errors.push({ row: rowNum, column: "item_name", message: `Unknown item: ${r.item_name}` }); result.skipped++; continue; }
-        const patch: Record<string, unknown> = { employee_id, equipment_id, asset_tag: r.asset_tag };
-        if (r.serial_number) patch.serial_number = r.serial_number;
-        if (r.issued_on) patch.issued_on = r.issued_on;
+        const patch: Record<string, unknown> = { employee_id, item_id: equipment_id };
+        if (r.size) patch.size = r.size;
+        if (r.status) patch.status = r.status;
+        if (r.issued_at) patch.issued_at = r.issued_at;
         if (r.condition) patch.condition = r.condition;
-        const { data: existing } = await supabaseAdmin.from("equipment_issuance").select("id").eq("employee_id", employee_id).eq("asset_tag", r.asset_tag).maybeSingle();
+        if (r.notes) patch.notes = r.notes;
+        const { data: existing } = await supabaseAdmin.from("equipment_issuance").select("id").eq("employee_id", employee_id).eq("item_id", equipment_id).maybeSingle();
         if (existing) {
-          const { error } = await supabaseAdmin.from("equipment_issuance").update(patch).eq("id", existing.id);
+          const { error } = await supabaseAdmin.from("equipment_issuance").update(patch as never).eq("id", existing.id);
           if (error) throw new Error(error.message); result.updated++;
         } else {
           const { error } = await supabaseAdmin.from("equipment_issuance").insert(patch as never);
