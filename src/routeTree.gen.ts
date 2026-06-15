@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
+import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedProvisioningRouteImport } from './routes/_authenticated/provisioning'
@@ -46,6 +47,11 @@ const AuthenticatedWorkerTypesRoute =
     path: '/worker-types',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTrainingRoute = AuthenticatedTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/provisioning': typeof AuthenticatedProvisioningRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/templates': typeof AuthenticatedTemplatesRouteWithChildren
+  '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/provisioning': typeof AuthenticatedProvisioningRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/templates': typeof AuthenticatedTemplatesRouteWithChildren
+  '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/_authenticated/provisioning': typeof AuthenticatedProvisioningRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRouteWithChildren
+  '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/provisioning'
     | '/reports'
     | '/templates'
+    | '/training'
     | '/worker-types'
     | '/forms/$key'
     | '/templates/$id'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/provisioning'
     | '/reports'
     | '/templates'
+    | '/training'
     | '/worker-types'
     | '/forms/$key'
     | '/templates/$id'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/_authenticated/provisioning'
     | '/_authenticated/reports'
     | '/_authenticated/templates'
+    | '/_authenticated/training'
     | '/_authenticated/worker-types'
     | '/_authenticated/forms/$key'
     | '/_authenticated/templates/$id'
@@ -253,6 +265,13 @@ declare module '@tanstack/react-router' {
       path: '/worker-types'
       fullPath: '/worker-types'
       preLoaderRoute: typeof AuthenticatedWorkerTypesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/training': {
+      id: '/_authenticated/training'
+      path: '/training'
+      fullPath: '/training'
+      preLoaderRoute: typeof AuthenticatedTrainingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/templates': {
@@ -378,6 +397,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProvisioningRoute: typeof AuthenticatedProvisioningRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRouteWithChildren
+  AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
 }
 
@@ -392,6 +412,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProvisioningRoute: AuthenticatedProvisioningRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRouteWithChildren,
+  AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
 }
 
