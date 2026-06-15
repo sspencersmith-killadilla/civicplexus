@@ -93,9 +93,13 @@ function Index() {
       </section>
 
       <footer className="border-t">
-        <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground flex flex-wrap justify-between gap-2">
+        <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground flex flex-wrap justify-between items-center gap-4">
           <p>© {new Date().getFullYear()} Kyberna. Built for public service.</p>
-          <p>Forms · E-Sign · Provisioning · Vault</p>
+          <div className="flex items-center gap-4">
+            <a href="/api/public/docs/user-guide" className="hover:text-foreground transition-colors">User Guide</a>
+            <a href="/api/public/docs/self-hosting" className="hover:text-foreground transition-colors">Self-Hosting Guide</a>
+            <Link to="/auth" className="hover:text-foreground transition-colors">Sign in</Link>
+          </div>
         </div>
       </footer>
     </div>
