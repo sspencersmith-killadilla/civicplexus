@@ -22,6 +22,7 @@ import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authenticated/hire-requests'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedFormsRouteImport } from './routes/_authenticated/forms'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
@@ -106,6 +107,12 @@ const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHireRequestsRoute =
+  AuthenticatedHireRequestsRouteImport.update({
+    id: '/hire-requests',
+    path: '/hire-requests',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
@@ -204,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/forms': typeof AuthenticatedFormsRouteWithChildren
   '/help': typeof AuthenticatedHelpRoute
+  '/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -234,6 +242,7 @@ export interface FileRoutesByTo {
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/forms': typeof AuthenticatedFormsRouteWithChildren
   '/help': typeof AuthenticatedHelpRoute
+  '/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -266,6 +275,7 @@ export interface FileRoutesById {
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
   '/_authenticated/forms': typeof AuthenticatedFormsRouteWithChildren
   '/_authenticated/help': typeof AuthenticatedHelpRoute
+  '/_authenticated/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/equipment'
     | '/forms'
     | '/help'
+    | '/hire-requests'
     | '/notifications'
     | '/offboarding'
     | '/policies'
@@ -328,6 +339,7 @@ export interface FileRouteTypes {
     | '/equipment'
     | '/forms'
     | '/help'
+    | '/hire-requests'
     | '/notifications'
     | '/offboarding'
     | '/policies'
@@ -359,6 +371,7 @@ export interface FileRouteTypes {
     | '/_authenticated/equipment'
     | '/_authenticated/forms'
     | '/_authenticated/help'
+    | '/_authenticated/hire-requests'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
     | '/_authenticated/policies'
@@ -479,6 +492,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hire-requests': {
+      id: '/_authenticated/hire-requests'
+      path: '/hire-requests'
+      fullPath: '/hire-requests'
+      preLoaderRoute: typeof AuthenticatedHireRequestsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/help': {
@@ -643,6 +663,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
   AuthenticatedFormsRoute: typeof AuthenticatedFormsRouteWithChildren
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
+  AuthenticatedHireRequestsRoute: typeof AuthenticatedHireRequestsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
@@ -666,6 +687,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
   AuthenticatedFormsRoute: AuthenticatedFormsRouteWithChildren,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
+  AuthenticatedHireRequestsRoute: AuthenticatedHireRequestsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,
