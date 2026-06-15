@@ -12,13 +12,13 @@ export const Route = createFileRoute("/_authenticated/reports")({ component: Rep
 function ReportsPage() {
   const { data: emps } = useQuery({ queryKey: ["rep-emps"], queryFn: async () => (await supabase.from("employees").select("id,status,start_date,worker_type_id,created_at")).data ?? [] });
   const { data: tasks } = useQuery({ queryKey: ["rep-tasks"], queryFn: async () => (await supabase.from("task_instances").select("id,status,due_date")).data ?? [] });
-  const { data: docs } = useQuery({ queryKey: ["rep-docs"], queryFn: async () => (await supabase.from("documents").select("id,category")).data ?? [] });
+  const { data: docs } = useQuery({ queryKey: ["rep-docs"], queryFn: async () => (await supabase.from("documents").select("id,kind")).data ?? [] });
 
   const total = emps?.length ?? 0;
   const active = emps?.filter((e) => e.status === "active").length ?? 0;
   const preboarding = emps?.filter((e) => e.status === "preboarding").length ?? 0;
   const overdue = tasks?.filter((t) => t.status !== "complete" && t.due_date && new Date(t.due_date) < new Date()).length ?? 0;
-  const i9 = docs?.filter((d) => d.category === "i9").length ?? 0;
+  const i9 = docs?.filter((d) => d.kind === "i9").length ?? 0;
   const i9Pct = total ? Math.round((i9 / total) * 100) : 0;
 
   // weekly onboardings
