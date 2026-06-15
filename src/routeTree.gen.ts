@@ -33,6 +33,7 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
+import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -159,6 +160,11 @@ const AuthenticatedFormsKeyRoute = AuthenticatedFormsKeyRouteImport.update({
   path: '/$key',
   getParentRoute: () => AuthenticatedFormsRoute,
 } as any)
+const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
+  id: '/api/public/hooks/reminders',
+  path: '/api/public/hooks/reminders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/forms/$key'
     | '/policies/$id'
     | '/templates/$id'
+    | '/api/public/hooks/reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -288,6 +298,7 @@ export interface FileRouteTypes {
     | '/forms/$key'
     | '/policies/$id'
     | '/templates/$id'
+    | '/api/public/hooks/reminders'
   id:
     | '__root__'
     | '/'
@@ -314,12 +325,14 @@ export interface FileRouteTypes {
     | '/_authenticated/forms/$key'
     | '/_authenticated/policies/$id'
     | '/_authenticated/templates/$id'
+    | '/api/public/hooks/reminders'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -492,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFormsKeyRouteImport
       parentRoute: typeof AuthenticatedFormsRoute
     }
+    '/api/public/hooks/reminders': {
+      id: '/api/public/hooks/reminders'
+      path: '/api/public/hooks/reminders'
+      fullPath: '/api/public/hooks/reminders'
+      preLoaderRoute: typeof ApiPublicHooksRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -582,6 +602,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
