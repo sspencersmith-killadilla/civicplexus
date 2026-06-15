@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      documents: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          is_sensitive: boolean
+          kind: string
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+          task_instance_id: string | null
+          title: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          is_sensitive?: boolean
+          kind?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          task_instance_id?: string | null
+          title: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          is_sensitive?: boolean
+          kind?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          task_instance_id?: string | null
+          title?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_task_instance_id_fkey"
+            columns: ["task_instance_id"]
+            isOneToOne: false
+            referencedRelation: "task_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           created_at: string
@@ -78,6 +135,112 @@ export type Database = {
             columns: ["worker_type_id"]
             isOneToOne: false
             referencedRelation: "worker_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_definitions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          jurisdiction: string | null
+          key: string
+          requires_signature: boolean
+          schema: Json
+          title: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          jurisdiction?: string | null
+          key: string
+          requires_signature?: boolean
+          schema?: Json
+          title: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          jurisdiction?: string | null
+          key?: string
+          requires_signature?: boolean
+          schema?: Json
+          title?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      form_submissions: {
+        Row: {
+          created_at: string
+          data: Json
+          employee_id: string
+          form_definition_id: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string | null
+          task_instance_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          employee_id: string
+          form_definition_id: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          task_instance_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          employee_id?: string
+          form_definition_id?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          task_instance_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_submissions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_submissions_form_definition_id_fkey"
+            columns: ["form_definition_id"]
+            isOneToOne: false
+            referencedRelation: "form_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_submissions_task_instance_id_fkey"
+            columns: ["task_instance_id"]
+            isOneToOne: false
+            referencedRelation: "task_instances"
             referencedColumns: ["id"]
           },
         ]
@@ -192,6 +355,110 @@ export type Database = {
         }
         Relationships: []
       }
+      provisioning_requests: {
+        Row: {
+          assignee_user_id: string | null
+          completed_at: string | null
+          created_at: string
+          details: Json
+          employee_id: string
+          id: string
+          kind: string
+          notes: string | null
+          status: string
+          task_instance_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          assignee_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          details?: Json
+          employee_id: string
+          id?: string
+          kind: string
+          notes?: string | null
+          status?: string
+          task_instance_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assignee_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          details?: Json
+          employee_id?: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          status?: string
+          task_instance_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provisioning_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provisioning_requests_task_instance_id_fkey"
+            columns: ["task_instance_id"]
+            isOneToOne: false
+            referencedRelation: "task_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signatures: {
+        Row: {
+          form_submission_id: string
+          id: string
+          ip_address: string | null
+          signature_data: string
+          signature_type: string
+          signed_at: string
+          signer_name: string
+          signer_role: string | null
+          signer_user_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          form_submission_id: string
+          id?: string
+          ip_address?: string | null
+          signature_data: string
+          signature_type?: string
+          signed_at?: string
+          signer_name: string
+          signer_role?: string | null
+          signer_user_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          form_submission_id?: string
+          id?: string
+          ip_address?: string | null
+          signature_data?: string
+          signature_type?: string
+          signed_at?: string
+          signer_name?: string
+          signer_role?: string | null
+          signer_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signatures_form_submission_id_fkey"
+            columns: ["form_submission_id"]
+            isOneToOne: false
+            referencedRelation: "form_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_instances: {
         Row: {
           assignee: Database["public"]["Enums"]["task_assignee"]
@@ -201,9 +468,12 @@ export type Database = {
           created_at: string
           description: string | null
           due_date: string | null
+          form_definition_key: string | null
+          form_submission_id: string | null
           id: string
           is_required: boolean
           onboarding_instance_id: string
+          provisioning_request_id: string | null
           sort_order: number
           status: Database["public"]["Enums"]["task_status"]
           template_task_id: string | null
@@ -218,9 +488,12 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          form_definition_key?: string | null
+          form_submission_id?: string | null
           id?: string
           is_required?: boolean
           onboarding_instance_id: string
+          provisioning_request_id?: string | null
           sort_order?: number
           status?: Database["public"]["Enums"]["task_status"]
           template_task_id?: string | null
@@ -235,9 +508,12 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          form_definition_key?: string | null
+          form_submission_id?: string | null
           id?: string
           is_required?: boolean
           onboarding_instance_id?: string
+          provisioning_request_id?: string | null
           sort_order?: number
           status?: Database["public"]["Enums"]["task_status"]
           template_task_id?: string | null
@@ -246,10 +522,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "task_instances_form_submission_id_fkey"
+            columns: ["form_submission_id"]
+            isOneToOne: false
+            referencedRelation: "form_submissions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "task_instances_onboarding_instance_id_fkey"
             columns: ["onboarding_instance_id"]
             isOneToOne: false
             referencedRelation: "onboarding_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_instances_provisioning_request_id_fkey"
+            columns: ["provisioning_request_id"]
+            isOneToOne: false
+            referencedRelation: "provisioning_requests"
             referencedColumns: ["id"]
           },
           {

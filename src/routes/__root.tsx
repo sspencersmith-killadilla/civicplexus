@@ -79,10 +79,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Civitas — Municipal Onboarding Suite" },
+      { title: "Kyberna — Municipal Onboarding Suite" },
       { name: "description", content: "Modern, flexible onboarding for every kind of municipal worker — office, field, public safety, temporary, and more." },
-      { property: "og:title", content: "Civitas — Municipal Onboarding Suite" },
-      { property: "og:description", content: "Worker-type templates, mobile-first field flows, and compliance built in." },
+      { property: "og:title", content: "Kyberna — Municipal Onboarding Suite" },
+      { property: "og:description", content: "Worker-type templates, mobile-first field flows, forms, e-sign, and compliance built in." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },

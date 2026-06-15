@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { Building2, Users, HardHat, Shield, Clock, FileBadge, HeartHandshake, Landmark, ArrowRight, Check } from "lucide-react";
+import { Users, HardHat, Shield, Clock, FileBadge, HeartHandshake, Landmark, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logoAsset from "@/assets/kyberna-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Civitas — Onboarding for Every Municipal Worker" },
-      { name: "description", content: "From sworn officers to seasonal park crews, Civitas gives every municipal hire the right pre-boarding, forms, training, and provisioning — on day zero." },
-      { property: "og:title", content: "Civitas — Onboarding for Every Municipal Worker" },
+      { title: "Kyberna — Onboarding for Every Municipal Worker" },
+      { name: "description", content: "From sworn officers to seasonal park crews, Kyberna gives every municipal hire the right pre-boarding, forms, training, and provisioning — on day zero." },
+      { property: "og:title", content: "Kyberna — Onboarding for Every Municipal Worker" },
       { property: "og:description", content: "Worker-type templates, mobile field flows, compliance built in." },
     ],
   }),
@@ -31,8 +32,8 @@ function Index() {
       <header className="border-b">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" />
-            <span className="font-serif text-xl tracking-tight">Civitas</span>
+            <img src={logoAsset.url} alt="Kyberna" className="h-9 w-9" />
+            <span className="font-serif text-xl tracking-tight">Kyberna</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/auth"><Button variant="ghost">Sign in</Button></Link>
@@ -93,8 +94,8 @@ function Index() {
 
       <footer className="border-t">
         <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground flex flex-wrap justify-between gap-2">
-          <p>© {new Date().getFullYear()} Civitas. Built for public service.</p>
-          <p>MVP foundation · P0–P4</p>
+          <p>© {new Date().getFullYear()} Kyberna. Built for public service.</p>
+          <p>Forms · E-Sign · Provisioning · Vault</p>
         </div>
       </footer>
     </div>

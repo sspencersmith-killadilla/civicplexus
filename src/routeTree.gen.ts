@@ -14,10 +14,14 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
+import { Route as AuthenticatedProvisioningRouteImport } from './routes/_authenticated/provisioning'
 import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenticated/preboarding'
+import { Route as AuthenticatedFormsRouteImport } from './routes/_authenticated/forms'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
+import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
+import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -44,15 +48,31 @@ const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
   path: '/templates',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProvisioningRoute =
+  AuthenticatedProvisioningRouteImport.update({
+    id: '/provisioning',
+    path: '/provisioning',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPreboardingRoute =
   AuthenticatedPreboardingRouteImport.update({
     id: '/preboarding',
     path: '/preboarding',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFormsRoute = AuthenticatedFormsRouteImport.update({
+  id: '/forms',
+  path: '/forms',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedEmployeesRoute = AuthenticatedEmployeesRouteImport.update({
   id: '/employees',
   path: '/employees',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -66,25 +86,38 @@ const AuthenticatedTemplatesIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedTemplatesRoute,
   } as any)
+const AuthenticatedFormsKeyRoute = AuthenticatedFormsKeyRouteImport.update({
+  id: '/$key',
+  path: '/$key',
+  getParentRoute: () => AuthenticatedFormsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/documents': typeof AuthenticatedDocumentsRoute
   '/employees': typeof AuthenticatedEmployeesRoute
+  '/forms': typeof AuthenticatedFormsRouteWithChildren
   '/preboarding': typeof AuthenticatedPreboardingRoute
+  '/provisioning': typeof AuthenticatedProvisioningRoute
   '/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/documents': typeof AuthenticatedDocumentsRoute
   '/employees': typeof AuthenticatedEmployeesRoute
+  '/forms': typeof AuthenticatedFormsRouteWithChildren
   '/preboarding': typeof AuthenticatedPreboardingRoute
+  '/provisioning': typeof AuthenticatedProvisioningRoute
   '/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
 }
 export interface FileRoutesById {
@@ -93,10 +126,14 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
+  '/_authenticated/forms': typeof AuthenticatedFormsRouteWithChildren
   '/_authenticated/preboarding': typeof AuthenticatedPreboardingRoute
+  '/_authenticated/provisioning': typeof AuthenticatedProvisioningRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
 }
 export interface FileRouteTypes {
@@ -105,20 +142,28 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/dashboard'
+    | '/documents'
     | '/employees'
+    | '/forms'
     | '/preboarding'
+    | '/provisioning'
     | '/templates'
     | '/worker-types'
+    | '/forms/$key'
     | '/templates/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/dashboard'
+    | '/documents'
     | '/employees'
+    | '/forms'
     | '/preboarding'
+    | '/provisioning'
     | '/templates'
     | '/worker-types'
+    | '/forms/$key'
     | '/templates/$id'
   id:
     | '__root__'
@@ -126,10 +171,14 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/dashboard'
+    | '/_authenticated/documents'
     | '/_authenticated/employees'
+    | '/_authenticated/forms'
     | '/_authenticated/preboarding'
+    | '/_authenticated/provisioning'
     | '/_authenticated/templates'
     | '/_authenticated/worker-types'
+    | '/_authenticated/forms/$key'
     | '/_authenticated/templates/$id'
   fileRoutesById: FileRoutesById
 }
@@ -176,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemplatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/provisioning': {
+      id: '/_authenticated/provisioning'
+      path: '/provisioning'
+      fullPath: '/provisioning'
+      preLoaderRoute: typeof AuthenticatedProvisioningRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/preboarding': {
       id: '/_authenticated/preboarding'
       path: '/preboarding'
@@ -183,11 +239,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPreboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/forms': {
+      id: '/_authenticated/forms'
+      path: '/forms'
+      fullPath: '/forms'
+      preLoaderRoute: typeof AuthenticatedFormsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/employees': {
       id: '/_authenticated/employees'
       path: '/employees'
       fullPath: '/employees'
       preLoaderRoute: typeof AuthenticatedEmployeesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/documents': {
+      id: '/_authenticated/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof AuthenticatedDocumentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -204,8 +274,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemplatesIdRouteImport
       parentRoute: typeof AuthenticatedTemplatesRoute
     }
+    '/_authenticated/forms/$key': {
+      id: '/_authenticated/forms/$key'
+      path: '/$key'
+      fullPath: '/forms/$key'
+      preLoaderRoute: typeof AuthenticatedFormsKeyRouteImport
+      parentRoute: typeof AuthenticatedFormsRoute
+    }
   }
 }
+
+interface AuthenticatedFormsRouteChildren {
+  AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
+}
+
+const AuthenticatedFormsRouteChildren: AuthenticatedFormsRouteChildren = {
+  AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
+}
+
+const AuthenticatedFormsRouteWithChildren =
+  AuthenticatedFormsRoute._addFileChildren(AuthenticatedFormsRouteChildren)
 
 interface AuthenticatedTemplatesRouteChildren {
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
@@ -223,16 +311,22 @@ const AuthenticatedTemplatesRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRoute
+  AuthenticatedFormsRoute: typeof AuthenticatedFormsRouteWithChildren
   AuthenticatedPreboardingRoute: typeof AuthenticatedPreboardingRoute
+  AuthenticatedProvisioningRoute: typeof AuthenticatedProvisioningRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRouteWithChildren
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEmployeesRoute: AuthenticatedEmployeesRoute,
+  AuthenticatedFormsRoute: AuthenticatedFormsRouteWithChildren,
   AuthenticatedPreboardingRoute: AuthenticatedPreboardingRoute,
+  AuthenticatedProvisioningRoute: AuthenticatedProvisioningRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRouteWithChildren,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
 }

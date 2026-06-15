@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, FileText } from "lucide-react";
+import { CheckCircle2, Circle, FileText, FileSignature } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { toast } from "sonner";
 
@@ -96,6 +97,11 @@ function PreboardingPage() {
                     {!t.is_required && <span className="text-xs px-2 py-0.5 rounded border">optional</span>}
                   </div>
                   {t.description && <p className="text-sm text-muted-foreground mt-1">{t.description}</p>}
+                  {t.category === "forms" && t.form_definition_key && (
+                    <Link to="/forms/$key" params={{ key: t.form_definition_key }} className="inline-block mt-2">
+                      <Button size="sm" variant="outline"><FileSignature className="h-3 w-3 mr-1" /> Open form</Button>
+                    </Link>
+                  )}
                 </div>
               </button>
             );

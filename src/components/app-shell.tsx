@@ -1,17 +1,21 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, Building2 } from "lucide-react";
+import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/kyberna-logo.png.asset.json";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
   { to: "/employees", label: "Employees", icon: Users, roles: ["hr_admin", "hiring_manager"] },
   { to: "/worker-types", label: "Worker Types", icon: Briefcase, roles: ["hr_admin"] },
   { to: "/templates", label: "Templates", icon: ListChecks, roles: ["hr_admin"] },
+  { to: "/forms", label: "Forms Library", icon: FileSignature, roles: ["hr_admin"] },
+  { to: "/provisioning", label: "IT Provisioning", icon: Server, roles: ["it_admin", "hr_admin"] },
+  { to: "/documents", label: "Documents", icon: FolderLock, roles: ["hr_admin", "it_admin", "hiring_manager", "employee", "candidate"] },
   { to: "/preboarding", label: "My Onboarding", icon: FileText, roles: ["candidate", "employee"] },
 ] as const;
 
@@ -35,8 +39,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground">
         <div className="px-5 py-6 border-b border-sidebar-border">
           <Link to="/" className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-sidebar-primary" />
-            <span className="font-serif text-lg tracking-tight">Civitas</span>
+            <img src={logoAsset.url} alt="Kyberna" className="h-7 w-7 rounded-sm bg-white/10 p-0.5" />
+            <span className="font-serif text-lg tracking-tight">Kyberna</span>
           </Link>
           <p className="mt-1 text-xs text-sidebar-foreground/60">Municipal Onboarding</p>
         </div>

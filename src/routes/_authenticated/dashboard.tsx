@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Briefcase, ListChecks, Clock } from "lucide-react";
+import { Users, Briefcase, ListChecks, Clock, FileSignature, FolderLock, Server } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -69,6 +71,14 @@ function Dashboard() {
           <p>3. Create your first <strong>Employee</strong> and start a pre-boarding instance.</p>
         </CardContent>
       </Card>
+
+      {isHR && (
+        <div className="mt-8 grid sm:grid-cols-3 gap-4">
+          <Link to="/forms"><Card className="p-5 hover:bg-secondary/40 transition-colors h-full"><FileSignature className="h-5 w-5 text-primary" /><h3 className="mt-3 font-medium">Forms Library</h3><p className="text-sm text-muted-foreground mt-1">I-9, W-4, direct deposit, emergency contact — versioned and signable.</p></Card></Link>
+          <Link to="/documents"><Card className="p-5 hover:bg-secondary/40 transition-colors h-full"><FolderLock className="h-5 w-5 text-primary" /><h3 className="mt-3 font-medium">Document Vault</h3><p className="text-sm text-muted-foreground mt-1">Encrypted private storage with signed-URL access for IDs and certs.</p></Card></Link>
+          <Link to="/provisioning"><Card className="p-5 hover:bg-secondary/40 transition-colors h-full"><Server className="h-5 w-5 text-primary" /><h3 className="mt-3 font-medium">IT Provisioning</h3><p className="text-sm text-muted-foreground mt-1">Kanban for accounts, badges, equipment — ready to wire to Entra/Okta.</p></Card></Link>
+        </div>
+      )}
     </AppShell>
   );
 }
