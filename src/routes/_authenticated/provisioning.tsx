@@ -9,22 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Server, Mail, KeyRound, Smartphone, IdCard, Laptop, CheckCircle2 } from "lucide-react";
+import { Plus, Server, CheckCircle2 } from "lucide-react";
+import { PROVISIONING_KINDS as KINDS } from "@/lib/provisioning-kinds";
 import { toast } from "sonner";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/provisioning")({
   component: ProvisioningPage,
 });
-
-const KINDS = [
-  { key: "email", label: "Email account", icon: Mail },
-  { key: "ad_account", label: "AD / SSO account", icon: KeyRound },
-  { key: "phone", label: "Phone / extension", icon: Smartphone },
-  { key: "badge", label: "Access badge", icon: IdCard },
-  { key: "equipment", label: "Equipment (laptop/radio)", icon: Laptop },
-  { key: "vpn", label: "VPN access", icon: Server },
-];
 
 const STATUSES = ["pending", "in_progress", "blocked", "complete"] as const;
 
