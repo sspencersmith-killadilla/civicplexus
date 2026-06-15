@@ -24,7 +24,6 @@ import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authenticated/hire-requests'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
-import { Route as AuthenticatedFormsRouteImport } from './routes/_authenticated/forms'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
@@ -32,6 +31,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
+import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
@@ -120,11 +120,6 @@ const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
   path: '/help',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedFormsRoute = AuthenticatedFormsRouteImport.update({
-  id: '/forms',
-  path: '/forms',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedEquipmentRoute = AuthenticatedEquipmentRouteImport.update({
   id: '/equipment',
   path: '/equipment',
@@ -161,6 +156,11 @@ const AuthenticatedTemplatesIndexRoute =
     path: '/templates/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFormsIndexRoute = AuthenticatedFormsIndexRouteImport.update({
+  id: '/forms/',
+  path: '/forms/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTemplatesIdRoute =
   AuthenticatedTemplatesIdRouteImport.update({
     id: '/templates/$id',
@@ -173,9 +173,9 @@ const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   getParentRoute: () => AuthenticatedPoliciesRoute,
 } as any)
 const AuthenticatedFormsKeyRoute = AuthenticatedFormsKeyRouteImport.update({
-  id: '/$key',
-  path: '/$key',
-  getParentRoute: () => AuthenticatedFormsRoute,
+  id: '/forms/$key',
+  path: '/forms/$key',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedEmployeesImportRoute =
   AuthenticatedEmployeesImportRouteImport.update({
@@ -209,7 +209,6 @@ export interface FileRoutesByFullPath {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/equipment': typeof AuthenticatedEquipmentRoute
-  '/forms': typeof AuthenticatedFormsRouteWithChildren
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -226,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/forms/': typeof AuthenticatedFormsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -240,7 +240,6 @@ export interface FileRoutesByTo {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/equipment': typeof AuthenticatedEquipmentRoute
-  '/forms': typeof AuthenticatedFormsRouteWithChildren
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -257,6 +256,7 @@ export interface FileRoutesByTo {
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/forms': typeof AuthenticatedFormsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -273,7 +273,6 @@ export interface FileRoutesById {
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
-  '/_authenticated/forms': typeof AuthenticatedFormsRouteWithChildren
   '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -290,6 +289,7 @@ export interface FileRoutesById {
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -306,7 +306,6 @@ export interface FileRouteTypes {
     | '/documents'
     | '/employees'
     | '/equipment'
-    | '/forms'
     | '/help'
     | '/hire-requests'
     | '/notifications'
@@ -323,6 +322,7 @@ export interface FileRouteTypes {
     | '/forms/$key'
     | '/policies/$id'
     | '/templates/$id'
+    | '/forms/'
     | '/templates/'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -337,7 +337,6 @@ export interface FileRouteTypes {
     | '/documents'
     | '/employees'
     | '/equipment'
-    | '/forms'
     | '/help'
     | '/hire-requests'
     | '/notifications'
@@ -354,6 +353,7 @@ export interface FileRouteTypes {
     | '/forms/$key'
     | '/policies/$id'
     | '/templates/$id'
+    | '/forms'
     | '/templates'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -369,7 +369,6 @@ export interface FileRouteTypes {
     | '/_authenticated/documents'
     | '/_authenticated/employees'
     | '/_authenticated/equipment'
-    | '/_authenticated/forms'
     | '/_authenticated/help'
     | '/_authenticated/hire-requests'
     | '/_authenticated/notifications'
@@ -386,6 +385,7 @@ export interface FileRouteTypes {
     | '/_authenticated/forms/$key'
     | '/_authenticated/policies/$id'
     | '/_authenticated/templates/$id'
+    | '/_authenticated/forms/'
     | '/_authenticated/templates/'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -508,13 +508,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHelpRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/forms': {
-      id: '/_authenticated/forms'
-      path: '/forms'
-      fullPath: '/forms'
-      preLoaderRoute: typeof AuthenticatedFormsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/equipment': {
       id: '/_authenticated/equipment'
       path: '/equipment'
@@ -564,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemplatesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/forms/': {
+      id: '/_authenticated/forms/'
+      path: '/forms'
+      fullPath: '/forms/'
+      preLoaderRoute: typeof AuthenticatedFormsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/templates/$id': {
       id: '/_authenticated/templates/$id'
       path: '/templates/$id'
@@ -580,10 +580,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/forms/$key': {
       id: '/_authenticated/forms/$key'
-      path: '/$key'
+      path: '/forms/$key'
       fullPath: '/forms/$key'
       preLoaderRoute: typeof AuthenticatedFormsKeyRouteImport
-      parentRoute: typeof AuthenticatedFormsRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/employees/import': {
       id: '/_authenticated/employees/import'
@@ -630,17 +630,6 @@ const AuthenticatedEmployeesRouteWithChildren =
     AuthenticatedEmployeesRouteChildren,
   )
 
-interface AuthenticatedFormsRouteChildren {
-  AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
-}
-
-const AuthenticatedFormsRouteChildren: AuthenticatedFormsRouteChildren = {
-  AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
-}
-
-const AuthenticatedFormsRouteWithChildren =
-  AuthenticatedFormsRoute._addFileChildren(AuthenticatedFormsRouteChildren)
-
 interface AuthenticatedPoliciesRouteChildren {
   AuthenticatedPoliciesIdRoute: typeof AuthenticatedPoliciesIdRoute
 }
@@ -661,7 +650,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRouteWithChildren
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
-  AuthenticatedFormsRoute: typeof AuthenticatedFormsRouteWithChildren
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedHireRequestsRoute: typeof AuthenticatedHireRequestsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -674,7 +662,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
+  AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
+  AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
 }
 
@@ -685,7 +675,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEmployeesRoute: AuthenticatedEmployeesRouteWithChildren,
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
-  AuthenticatedFormsRoute: AuthenticatedFormsRouteWithChildren,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedHireRequestsRoute: AuthenticatedHireRequestsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
@@ -698,7 +687,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
+  AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
+  AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
 }
 

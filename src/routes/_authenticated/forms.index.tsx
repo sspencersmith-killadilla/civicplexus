@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { FileSignature, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_authenticated/forms")({
+export const Route = createFileRoute("/_authenticated/forms/")({
   component: FormsLibrary,
 });
 

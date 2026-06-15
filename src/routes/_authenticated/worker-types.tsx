@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
+import { PROVISIONING_KINDS } from "@/lib/provisioning-kinds";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/worker-types")({
   component: WorkerTypesPage,
@@ -26,6 +28,7 @@ type WT = {
   icon: string | null;
   is_active: boolean;
   sort_order: number;
+  default_provisioning: string[] | null;
 };
 
 function WorkerTypesPage() {
@@ -121,6 +124,9 @@ function WorkerTypeDialog({ editing, onSubmit, saving }: { editing: WT | null; o
   const [description, setDescription] = useState(editing?.description ?? "");
   const [isActive, setIsActive] = useState(editing?.is_active ?? true);
   const [sortOrder, setSortOrder] = useState(editing?.sort_order ?? 100);
+  const [provDefaults, setProvDefaults] = useState<string[]>(
+    Array.isArray(editing?.default_provisioning) ? (editing?.default_provisioning as string[]) : [],
+  );
 
   return (
     <DialogContent>
@@ -132,9 +138,26 @@ function WorkerTypeDialog({ editing, onSubmit, saving }: { editing: WT | null; o
           <div className="space-y-2"><Label>Sort order</Label><Input type="number" value={sortOrder} onChange={(e) => setSortOrder(Number(e.target.value))} /></div>
           <div className="space-y-2"><Label>Active</Label><div className="flex items-center h-9"><Switch checked={isActive} onCheckedChange={setIsActive} /></div></div>
         </div>
+        <div className="space-y-2 border-t pt-3">
+          <Label>Default IT provisioning</Label>
+          <p className="text-xs text-muted-foreground">Prefilled when HR adds a new hire of this type.</p>
+          <div className="grid grid-cols-2 gap-2">
+            {PROVISIONING_KINDS.map((k) => {
+              const Icon = k.icon;
+              const checked = provDefaults.includes(k.key);
+              return (
+                <label key={k.key} className="flex items-center gap-2 rounded border p-2 cursor-pointer hover:bg-accent">
+                  <Checkbox checked={checked} onCheckedChange={(v) => setProvDefaults((prev) => v === true ? Array.from(new Set([...prev, k.key])) : prev.filter((x) => x !== k.key))} />
+                  <Icon className="h-4 w-4 text-primary" />
+                  <span className="text-sm">{k.label}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
       </div>
       <DialogFooter>
-        <Button disabled={saving || !name} onClick={() => onSubmit({ name, description, is_active: isActive, sort_order: sortOrder })}>
+        <Button disabled={saving || !name} onClick={() => onSubmit({ name, description, is_active: isActive, sort_order: sortOrder, default_provisioning: provDefaults as never })}>
           {saving ? "Saving…" : "Save"}
         </Button>
       </DialogFooter>

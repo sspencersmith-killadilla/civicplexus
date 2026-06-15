@@ -9,8 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { Plus, Users, Upload, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { PROVISIONING_KINDS, DEFAULT_PROVISIONING_KINDS } from "@/lib/provisioning-kinds";
 
 export const Route = createFileRoute("/_authenticated/employees")({
   component: EmployeesPage,
@@ -25,7 +28,7 @@ function EmployeesPage() {
   const qc = useQueryClient();
   const { data: workerTypes } = useQuery({
     queryKey: ["wt-min"],
-    queryFn: async () => (await supabase.from("worker_types").select("id,name").order("sort_order")).data,
+    queryFn: async () => (await supabase.from("worker_types").select("id,name,default_provisioning").order("sort_order")).data,
   });
   const { data: templates } = useQuery({
     queryKey: ["templates-min"],
@@ -39,6 +42,8 @@ function EmployeesPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ first_name: "", last_name: "", personal_email: "", job_title: "", department: "", worker_type_id: "", start_date: "" });
   const [tplId, setTplId] = useState<string>("");
+  const [provKinds, setProvKinds] = useState<string[]>(DEFAULT_PROVISIONING_KINDS);
+  const [provNotes, setProvNotes] = useState("");
 
   const create = useMutation({
     mutationFn: async () => {
@@ -63,18 +68,40 @@ function EmployeesPage() {
           if (te) throw te;
         }
       }
+
+      if (provKinds.length) {
+        const { error: pe } = await supabase.from("provisioning_requests").insert(
+          provKinds.map((k) => ({ employee_id: emp.id, kind: k, status: "pending", notes: provNotes || null })),
+        );
+        if (pe) throw pe;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["employees"] });
-      toast.success("Employee created — pre-boarding started");
+      qc.invalidateQueries({ queryKey: ["provisioning"] });
+      toast.success("Employee created — pre-boarding & IT queue started");
       setOpen(false);
       setForm({ first_name: "", last_name: "", personal_email: "", job_title: "", department: "", worker_type_id: "", start_date: "" });
       setTplId("");
+      setProvKinds(DEFAULT_PROVISIONING_KINDS);
+      setProvNotes("");
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
   const filteredTpls = templates?.filter((t) => !form.worker_type_id || t.worker_type_id === form.worker_type_id) ?? [];
+
+  function pickWorkerType(v: string) {
+    setForm({ ...form, worker_type_id: v });
+    setTplId("");
+    const wt = workerTypes?.find((w) => w.id === v);
+    const defaults = (wt?.default_provisioning as unknown as string[] | null) ?? null;
+    setProvKinds(defaults && defaults.length ? defaults : DEFAULT_PROVISIONING_KINDS);
+  }
+
+  function toggleKind(key: string, on: boolean) {
+    setProvKinds((prev) => (on ? Array.from(new Set([...prev, key])) : prev.filter((k) => k !== key)));
+  }
 
   return (
     <AppShell title="Employees">
@@ -100,7 +127,7 @@ function EmployeesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Worker type</Label>
-                  <Select value={form.worker_type_id} onValueChange={(v) => { setForm({ ...form, worker_type_id: v }); setTplId(""); }}>
+                  <Select value={form.worker_type_id} onValueChange={pickWorkerType}>
                     <SelectTrigger><SelectValue placeholder="Pick…" /></SelectTrigger>
                     <SelectContent>{workerTypes?.map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent>
                   </Select>
@@ -113,6 +140,35 @@ function EmployeesPage() {
                   <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
                   <SelectContent>{filteredTpls.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <Label>IT provisioning to queue</Label>
+                  <div className="text-xs flex gap-3">
+                    <button type="button" className="text-primary hover:underline" onClick={() => setProvKinds(PROVISIONING_KINDS.map((k) => k.key))}>Select all</button>
+                    <button type="button" className="text-muted-foreground hover:underline" onClick={() => setProvKinds([])}>Clear</button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {PROVISIONING_KINDS.map((k) => {
+                    const Icon = k.icon;
+                    const checked = provKinds.includes(k.key);
+                    return (
+                      <label key={k.key} className="flex items-center gap-2 rounded border p-2 cursor-pointer hover:bg-accent">
+                        <Checkbox checked={checked} onCheckedChange={(v) => toggleKind(k.key, v === true)} />
+                        <Icon className="h-4 w-4 text-primary" />
+                        <span className="text-sm">{k.label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <Textarea
+                  value={provNotes}
+                  onChange={(e) => setProvNotes(e.target.value)}
+                  rows={2}
+                  placeholder="Notes for IT (laptop model, group memberships, building, etc.)"
+                />
+                <p className="text-xs text-muted-foreground">These land on the IT Provisioning board as pending requests.</p>
               </div>
             </div>
             <DialogFooter>

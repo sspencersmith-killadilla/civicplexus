@@ -1,114 +1,84 @@
-## Goals
+## 1. Forms library preview only changes URL
 
-1. **Bulk CSV import** for employees and four related record types — upsert behavior keyed on `personal_email`.
-2. **Supervisor-initiated hire requests** — a new `supervisor` role files a short request that auto-creates a draft employee + onboarding instance; HR reviews, edits, and activates.
+`src/routes/_authenticated/forms.tsx` and `forms.$key.tsx` are siblings by filename, but TanStack Router treats `forms.tsx` as a **layout** for `forms.$key.tsx` (the route tree shows `AuthenticatedFormsRouteWithChildren`). The layout renders `FormsLibrary` instead of `<Outlet />`, so clicking Preview navigates to `/forms/$key` but nothing mounts — the URL changes, the grid stays.
 
----
+**Fix:** rename `src/routes/_authenticated/forms.tsx` → `src/routes/_authenticated/forms.index.tsx`. They become true siblings (both leaves), `/forms` keeps rendering the library, `/forms/$key` renders the detail page with the signature runner.
 
-## Part 1 — Bulk CSV import
+No code changes — pure file move. `routeTree.gen.ts` regenerates automatically.
 
-New page: **Employees → Import (HR admin only)**, with a tab per record type. Each tab provides:
+## 2. IT provisioning baked into "New employee"
 
-- A "Download template" button that exports a CSV with the correct headers and one example row.
-- A drop zone that accepts a `.csv`, previews the first 5 rows in a table, validates headers, and shows row count.
-- An **Import** button that runs the upsert and reports `{ inserted, updated, skipped, errors[] }`.
+Today HR has to go to a separate IT Provisioning page and add each request one-by-one. Goal: pick the items once in the New Employee dialog, rows land on the IT board automatically.
 
-Record types and key columns:
+### UI changes (`src/routes/_authenticated/employees.tsx`)
 
-| Tab | Match key | Required columns | Optional |
-|---|---|---|---|
-| Employees | `personal_email` | first_name, last_name, personal_email | work_email, phone, department, job_title, worker_type (name), start_date, status |
-| Dependents | employee `personal_email` + dependent `first_name`+`last_name` | employee_email, first_name, last_name, relationship | dob, ssn_last4 |
-| Certifications held | employee_email + certification name | employee_email, certification_name | issuer, issued_at, expires_at, notes |
-| Training history | employee_email + course name | employee_email, course_name | status, due_date, completed_at, score |
-| Equipment issued | employee_email + asset_tag | employee_email, item_name, asset_tag | serial_number, issued_on, condition |
+Add an **"IT provisioning"** section to the New Employee dialog, below the onboarding-template selector:
 
-**Upsert rules**
-- Employees: match on `personal_email`; updates blank/changed fields, never overwrites with empty.
-- Children (dependents, etc.): resolve `employee_id` from `employee_email`. Match on the composite key above. New rows insert; matches update non-empty fields. Worker types, certifications, and courses are resolved by name; unknown names go to the error list rather than creating new lookup rows.
-
-**Error reporting**
-- Per-row errors collected and shown in a results dialog with row number, column, and message. Successful rows still commit. A "Download errors as CSV" button is available.
-
-### Where it lives
-- Route: `src/routes/_authenticated/employees.import.tsx` (child of existing `employees` route — add `<Outlet />` to a renamed `employees.tsx` layout file, or use a tab on the existing page).
-- Server function: `src/lib/employee-import.functions.ts` with one `createServerFn` per record type, all protected by `requireSupabaseAuth` and gated to `hr_admin` via `private.has_role` check inside the handler. Heavy lifting (lookup resolution, upsert) uses the admin client loaded inside the handler.
-- Parsing: client-side with `papaparse` (small, no native deps). Server validates again before writing.
-
----
-
-## Part 2 — Supervisor-initiated hire request
-
-### New role
-- Add `'supervisor'` to the `app_role` enum.
-- Assignment UI: HR admins can grant the role from a new "Team" tab in user management (out of scope for this plan; for now, roles are seeded via the existing `user_roles` table — HR can add a row).
-
-### New table: `hire_requests`
 ```text
-id, requested_by (uuid → auth.users), employee_id (uuid → employees, nullable until draft created),
-proposed_first_name, proposed_last_name, proposed_email, proposed_job_title, proposed_department,
-worker_type_id, proposed_start_date, reason, notes,
-status text default 'submitted'  -- submitted | drafted | active | rejected
-hr_notes, decided_by, decided_at, created_at, updated_at
+IT provisioning to kick off
+[x] Email account
+[x] AD / SSO account
+[x] VPN access
+[ ] Phone / extension
+[ ] Access badge
+[ ] Equipment (laptop/radio)
+[Notes for IT  ____________________]   (single optional textarea, applied to all rows)
 ```
 
-**RLS**
-- INSERT: `supervisor` or `hr_admin`.
-- SELECT: requester sees own; `hr_admin` sees all.
-- UPDATE: `hr_admin` only.
+- Pull the kind list from a new shared module `src/lib/provisioning-kinds.ts` so the New Employee dialog and the Provisioning page render the exact same labels/icons (no drift).
+- Default-checked: `email`, `ad_account`, `vpn`. Others unchecked.
+- A `Select all` / `Clear` link above the list.
 
-### Submission flow
-1. Supervisor opens **"Request new hire"** (new route `src/routes/_authenticated/hire-requests.tsx` with `new` dialog).
-2. They fill: name, personal email, job title, department, worker type, proposed start date, reason.
-3. On submit, a server function runs inside one transaction (RPC) and:
-   - inserts the `hire_requests` row (status `submitted`),
-   - inserts a draft `employees` row with `status = 'candidate'` and `created_by = requester`, `manager_id = requester` if requester is also the manager,
-   - if the chosen worker type has a default `onboarding_template`, creates an `onboarding_instances` row and seeds `task_instances` from `template_tasks` (same logic that exists today in `employees.tsx`),
-   - links the request to the new employee (`employee_id`), and sets request status to `drafted`,
-   - emits a `notifications` row to all users with `hr_admin` role.
-4. Supervisor sees confirmation; the request now sits in their "My requests" list.
+### Defaults driven by worker type (low-touch automation)
 
-### HR finalize flow
-- Existing **Employees** page gets a top banner: "N hire requests awaiting review" linking to `/hire-requests`.
-- `/hire-requests` lists pending requests with status filter. Clicking one opens a detail view showing the auto-drafted employee fields side-by-side with the request, editable, plus the seeded onboarding instance.
-- HR can **Activate** (sets employee `status = 'preboarding'`, request `status = 'active'`, sends supervisor a notification) or **Reject** (sets request `status = 'rejected'` with `hr_notes`; deletes draft employee + onboarding instance in the same transaction).
+Add a nullable `jsonb` column `worker_types.default_provisioning` (array of kind keys). When the user picks a worker type in the dialog, prefill the checkboxes from that list if present, otherwise fall back to the global defaults above.
 
-### Navigation
-- Add **Hire requests** to the sidebar for `hr_admin` and `supervisor` roles (existing `app-shell.tsx` already supports role-gated links).
-- Keep the existing "New employee" dialog on the Employees page for HR (direct creation path, bypassing the request flow).
+A small "Edit defaults" affordance on `src/routes/_authenticated/worker-types.tsx` (chip list with toggles) lets admins set this per worker type once, so future hires of that type auto-populate IT correctly. Out of scope: editing `default_provisioning` from anywhere else.
 
----
+### Create mutation
 
-## Technical details
+After the existing employee insert + onboarding instantiation, in the same `useMutation`:
 
-### Migration (single file)
-- `ALTER TYPE app_role ADD VALUE 'supervisor';`
-- `CREATE TABLE public.hire_requests (...)` with GRANTs (`authenticated`: SELECT/INSERT/UPDATE; `service_role`: ALL), RLS enabled, and the three policies above.
-- `CREATE OR REPLACE FUNCTION public.create_hire_request(...)` — SECURITY DEFINER, returns the new request id; performs the multi-table insert atomically.
-- `updated_at` trigger reusing `tg_set_updated_at`.
-
-### Server functions
-- `src/lib/hire-requests.functions.ts`
-  - `submitHireRequest(input)` — `requireSupabaseAuth`, role check (`supervisor` or `hr_admin`), calls the RPC.
-  - `decideHireRequest({ id, action: 'activate' | 'reject', hr_notes? })` — `hr_admin` only.
-- `src/lib/employee-import.functions.ts` — one fn per record type; each validates headers with zod, resolves lookups, and performs the upsert via `supabaseAdmin` loaded inside the handler.
-
-### Dependencies
-- `papaparse` for CSV parsing in the browser and inside server functions.
-- No other new packages.
-
-### Files added/changed
-```text
-supabase/migrations/<ts>_hire_requests_and_supervisor_role.sql
-src/lib/hire-requests.functions.ts
-src/lib/employee-import.functions.ts
-src/routes/_authenticated/hire-requests.tsx
-src/routes/_authenticated/employees.import.tsx
-src/components/app-shell.tsx        (add nav items)
-src/routes/_authenticated/employees.tsx  (add "Import" + "Pending requests" banner)
+```ts
+const checked = KINDS.filter(k => selected[k.key]);
+if (checked.length) {
+  await supabase.from("provisioning_requests").insert(
+    checked.map(k => ({ employee_id: emp.id, kind: k.key, notes: itNotes || null, status: "pending" }))
+  );
+}
 ```
 
-### Out of scope
-- Editing the new `supervisor` role membership via UI (HR seeds via SQL or the existing user-roles table).
-- Email notifications to supervisors/HR (in-app notifications only; existing `notifications` table is reused).
-- Bulk import of `documents`, `screenings`, `policy_acknowledgments`, `provisioning_requests`.
+RLS already allows `hr_admin` to write `provisioning_requests`, and the IT board reads `status='pending'` first, so the new rows show up on `/provisioning` immediately. Invalidate `["provisioning"]` on success so the board refreshes if it's open in another tab.
+
+### Hire requests flow
+
+`public.create_hire_request` (the supervisor-initiated draft path) gets the same treatment via a new optional `_provisioning_kinds text[]` parameter — when HR activates the request, the rows already exist so IT can start working without a second handoff. The supervisor form (`hire-requests.tsx`) gets the same checkbox group.
+
+## 3. Migration
+
+```sql
+ALTER TABLE public.worker_types
+  ADD COLUMN IF NOT EXISTS default_provisioning jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+CREATE OR REPLACE FUNCTION public.create_hire_request(
+  _first_name text, _last_name text, _email text, _job_title text, _department text,
+  _worker_type_id uuid, _start_date date, _reason text, _notes text,
+  _provisioning_kinds text[] DEFAULT NULL
+) RETURNS uuid ... -- existing body + INSERT into provisioning_requests for each kind
+```
+
+## Files touched
+
+- `src/routes/_authenticated/forms.tsx` → renamed to `forms.index.tsx` (no content change)
+- `src/lib/provisioning-kinds.ts` (new — shared KINDS array + icons)
+- `src/routes/_authenticated/provisioning.tsx` (import shared KINDS)
+- `src/routes/_authenticated/employees.tsx` (checkbox group + insert)
+- `src/routes/_authenticated/worker-types.tsx` (edit `default_provisioning`)
+- `src/routes/_authenticated/hire-requests.tsx` (checkbox group + pass kinds to RPC)
+- `supabase/migrations/<ts>_provisioning_defaults.sql`
+
+## Out of scope
+
+- Real Entra/Okta/Jamf API calls — still a queue HR/IT works manually, just pre-populated.
+- Per-kind details (laptop model, VPN group). Single shared notes field for now; richer per-kind fields would need a dedicated dialog and can come next.
+- Auto-creating equipment_issuance rows from the "Equipment" provisioning kind.
