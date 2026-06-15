@@ -34,7 +34,7 @@ function EquipmentPage() {
 
   const moveStage = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const patch: Record<string, unknown> = { status };
+      const patch: { status: string; issued_at?: string; returned_at?: string } = { status };
       if (status === "issued") patch.issued_at = new Date().toISOString();
       if (status === "returned") patch.returned_at = new Date().toISOString();
       const { error } = await supabase.from("equipment_issuance").update(patch).eq("id", id);
