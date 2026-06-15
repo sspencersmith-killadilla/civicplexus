@@ -1358,6 +1358,7 @@ export type Database = {
         | "it_admin"
         | "employee"
         | "candidate"
+        | "supervisor"
       employee_status: "candidate" | "preboarding" | "active" | "offboarded"
       task_assignee:
         | "employee"
@@ -1515,6 +1516,7 @@ export const Constants = {
         "it_admin",
         "employee",
         "candidate",
+        "supervisor",
       ],
       employee_status: ["candidate", "preboarding", "active", "offboarded"],
       task_assignee: [
