@@ -19,6 +19,7 @@ import { Route as AuthenticatedScreeningsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedProvisioningRouteImport } from './routes/_authenticated/provisioning'
 import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenticated/preboarding'
+import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedFormsRouteImport } from './routes/_authenticated/forms'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
@@ -81,6 +82,11 @@ const AuthenticatedPreboardingRoute =
     path: '/preboarding',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
+  id: '/policies',
+  path: '/policies',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/forms': typeof AuthenticatedFormsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/policies': typeof AuthenticatedPoliciesRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByTo {
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/forms': typeof AuthenticatedFormsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/policies': typeof AuthenticatedPoliciesRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
   '/_authenticated/forms': typeof AuthenticatedFormsRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/policies': typeof AuthenticatedPoliciesRoute
   '/_authenticated/preboarding': typeof AuthenticatedPreboardingRoute
   '/_authenticated/provisioning': typeof AuthenticatedProvisioningRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/equipment'
     | '/forms'
     | '/notifications'
+    | '/policies'
     | '/preboarding'
     | '/provisioning'
     | '/reports'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/equipment'
     | '/forms'
     | '/notifications'
+    | '/policies'
     | '/preboarding'
     | '/provisioning'
     | '/reports'
@@ -244,6 +255,7 @@ export interface FileRouteTypes {
     | '/_authenticated/equipment'
     | '/_authenticated/forms'
     | '/_authenticated/notifications'
+    | '/_authenticated/policies'
     | '/_authenticated/preboarding'
     | '/_authenticated/provisioning'
     | '/_authenticated/reports'
@@ -331,6 +343,13 @@ declare module '@tanstack/react-router' {
       path: '/preboarding'
       fullPath: '/preboarding'
       preLoaderRoute: typeof AuthenticatedPreboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/policies': {
+      id: '/_authenticated/policies'
+      path: '/policies'
+      fullPath: '/policies'
+      preLoaderRoute: typeof AuthenticatedPoliciesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notifications': {
@@ -432,6 +451,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
   AuthenticatedFormsRoute: typeof AuthenticatedFormsRouteWithChildren
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRoute
   AuthenticatedPreboardingRoute: typeof AuthenticatedPreboardingRoute
   AuthenticatedProvisioningRoute: typeof AuthenticatedProvisioningRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -449,6 +469,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
   AuthenticatedFormsRoute: AuthenticatedFormsRouteWithChildren,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedPoliciesRoute: AuthenticatedPoliciesRoute,
   AuthenticatedPreboardingRoute: AuthenticatedPreboardingRoute,
   AuthenticatedProvisioningRoute: AuthenticatedProvisioningRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
