@@ -22,6 +22,7 @@ import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authenticated/hire-requests'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedFormsRouteImport } from './routes/_authenticated/forms'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
@@ -34,6 +35,7 @@ import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
+import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
@@ -107,6 +109,12 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHireRequestsRoute =
+  AuthenticatedHireRequestsRouteImport.update({
+    id: '/hire-requests',
+    path: '/hire-requests',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
   id: '/help',
   path: '/help',
@@ -169,6 +177,12 @@ const AuthenticatedFormsKeyRoute = AuthenticatedFormsKeyRouteImport.update({
   path: '/$key',
   getParentRoute: () => AuthenticatedFormsRoute,
 } as any)
+const AuthenticatedEmployeesImportRoute =
+  AuthenticatedEmployeesImportRouteImport.update({
+    id: '/import',
+    path: '/import',
+    getParentRoute: () => AuthenticatedEmployeesRoute,
+  } as any)
 const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
   id: '/api/public/hooks/reminders',
   path: '/api/public/hooks/reminders',
@@ -193,10 +207,11 @@ export interface FileRoutesByFullPath {
   '/benefits': typeof AuthenticatedBenefitsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
-  '/employees': typeof AuthenticatedEmployeesRoute
+  '/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/forms': typeof AuthenticatedFormsRouteWithChildren
   '/help': typeof AuthenticatedHelpRoute
+  '/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -207,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -222,10 +238,11 @@ export interface FileRoutesByTo {
   '/benefits': typeof AuthenticatedBenefitsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
-  '/employees': typeof AuthenticatedEmployeesRoute
+  '/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/forms': typeof AuthenticatedFormsRouteWithChildren
   '/help': typeof AuthenticatedHelpRoute
+  '/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -236,6 +253,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -253,10 +271,11 @@ export interface FileRoutesById {
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
-  '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
+  '/_authenticated/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
   '/_authenticated/forms': typeof AuthenticatedFormsRouteWithChildren
   '/_authenticated/help': typeof AuthenticatedHelpRoute
+  '/_authenticated/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -267,6 +286,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -288,6 +308,7 @@ export interface FileRouteTypes {
     | '/equipment'
     | '/forms'
     | '/help'
+    | '/hire-requests'
     | '/notifications'
     | '/offboarding'
     | '/policies'
@@ -298,6 +319,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/employees/import'
     | '/forms/$key'
     | '/policies/$id'
     | '/templates/$id'
@@ -317,6 +339,7 @@ export interface FileRouteTypes {
     | '/equipment'
     | '/forms'
     | '/help'
+    | '/hire-requests'
     | '/notifications'
     | '/offboarding'
     | '/policies'
@@ -327,6 +350,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/employees/import'
     | '/forms/$key'
     | '/policies/$id'
     | '/templates/$id'
@@ -347,6 +371,7 @@ export interface FileRouteTypes {
     | '/_authenticated/equipment'
     | '/_authenticated/forms'
     | '/_authenticated/help'
+    | '/_authenticated/hire-requests'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
     | '/_authenticated/policies'
@@ -357,6 +382,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/training'
     | '/_authenticated/worker-types'
+    | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
     | '/_authenticated/policies/$id'
     | '/_authenticated/templates/$id'
@@ -468,6 +494,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hire-requests': {
+      id: '/_authenticated/hire-requests'
+      path: '/hire-requests'
+      fullPath: '/hire-requests'
+      preLoaderRoute: typeof AuthenticatedHireRequestsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/help': {
       id: '/_authenticated/help'
       path: '/help'
@@ -552,6 +585,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFormsKeyRouteImport
       parentRoute: typeof AuthenticatedFormsRoute
     }
+    '/_authenticated/employees/import': {
+      id: '/_authenticated/employees/import'
+      path: '/import'
+      fullPath: '/employees/import'
+      preLoaderRoute: typeof AuthenticatedEmployeesImportRouteImport
+      parentRoute: typeof AuthenticatedEmployeesRoute
+    }
     '/api/public/hooks/reminders': {
       id: '/api/public/hooks/reminders'
       path: '/api/public/hooks/reminders'
@@ -575,6 +615,20 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedEmployeesRouteChildren {
+  AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
+}
+
+const AuthenticatedEmployeesRouteChildren: AuthenticatedEmployeesRouteChildren =
+  {
+    AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
+  }
+
+const AuthenticatedEmployeesRouteWithChildren =
+  AuthenticatedEmployeesRoute._addFileChildren(
+    AuthenticatedEmployeesRouteChildren,
+  )
 
 interface AuthenticatedFormsRouteChildren {
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
@@ -605,10 +659,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
-  AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRoute
+  AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRouteWithChildren
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
   AuthenticatedFormsRoute: typeof AuthenticatedFormsRouteWithChildren
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
+  AuthenticatedHireRequestsRoute: typeof AuthenticatedHireRequestsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
@@ -628,10 +683,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
-  AuthenticatedEmployeesRoute: AuthenticatedEmployeesRoute,
+  AuthenticatedEmployeesRoute: AuthenticatedEmployeesRouteWithChildren,
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
   AuthenticatedFormsRoute: AuthenticatedFormsRouteWithChildren,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
+  AuthenticatedHireRequestsRoute: AuthenticatedHireRequestsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,

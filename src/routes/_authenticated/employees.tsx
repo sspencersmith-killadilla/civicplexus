@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, Upload, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/employees")({
@@ -80,7 +80,10 @@ function EmployeesPage() {
     <AppShell title="Employees">
       <div className="flex items-center justify-between mb-6">
         <p className="text-muted-foreground max-w-xl">Create an employee record to start pre-boarding. Picking a template will instantiate every task at once.</p>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline"><Link to="/hire-requests"><UserPlus className="h-4 w-4 mr-2" /> Hire requests</Link></Button>
+          <Button asChild variant="outline"><Link to="/employees/import"><Upload className="h-4 w-4 mr-2" /> Bulk import</Link></Button>
+          <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> New employee</Button></DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader><DialogTitle>Add employee</DialogTitle></DialogHeader>
@@ -116,7 +119,8 @@ function EmployeesPage() {
               <Button disabled={!form.first_name || !form.last_name || create.isPending} onClick={() => create.mutate()}>{create.isPending ? "Creating…" : "Create"}</Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {isLoading ? (

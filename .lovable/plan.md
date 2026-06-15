@@ -1,122 +1,114 @@
-## Goal
+## Goals
 
-Produce two production-grade guides, written for non-technical readers, and surface them inside the app:
-
-1. **`docs/USER_GUIDE.md`** — setup + daily operations for HR/admin/managers/employees.
-2. **`docs/SELF_HOSTING_GUIDE.md`** — soup-to-nuts replication on the reader's own cloud, with secure defaults.
-
-Both shipped as Markdown in the repo, plus a `/help` route in the app that renders them (and a download link for offline/printable copies).
+1. **Bulk CSV import** for employees and four related record types — upsert behavior keyed on `personal_email`.
+2. **Supervisor-initiated hire requests** — a new `supervisor` role files a short request that auto-creates a draft employee + onboarding instance; HR reviews, edits, and activates.
 
 ---
 
-## 1. `docs/USER_GUIDE.md` — outline
+## Part 1 — Bulk CSV import
 
-Plain-English, screenshot placeholders, role-tagged sections.
+New page: **Employees → Import (HR admin only)**, with a tab per record type. Each tab provides:
 
-1. **Welcome & concepts** — what Kyberna is, glossary (worker type, template, task instance, onboarding instance, screening, policy ack, offboarding).
-2. **First-time setup (Admin)**
-   - Sign in, claim the admin role, invite first HR user.
-   - Org Settings → org profile, EIN, branding colors, retention policy JSON (with copy-paste sample), SSO metadata URL.
-   - Verify default worker types & seeded templates; how to clone/edit.
-   - Configure notification preferences and email sender (link to self-hosting guide for SMTP).
-3. **Building workflows**
-   - Worker Types page.
-   - Templates page → adding/removing tasks, `due_offset_days`, assignee roles (employee/hr/manager/it), task kinds (forms/compliance/provisioning/equipment/training/screening), publishing a version.
-   - Forms catalog & form runner; uploading policies.
-4. **Daily HR operations**
-   - Adding an employee → choose worker type → onboarding instance auto-creates.
-   - Preboarding portal link for the new hire.
-   - Documents review & e-signatures.
-   - Provisioning kanban; equipment/PPE issuance; training assignments & cert expirations.
-   - Screenings queue (scheduling, results, attachments).
-   - Benefits hand-off & dependents.
-   - Policy acknowledgment campaigns and re-ack cadence.
-5. **Manager view** — assigned tasks, approvals, team onboarding dashboard.
-6. **Employee view** — preboarding checklist, forms, signing policies, viewing pay/benefits links.
-7. **Reporting & compliance** — KPI dashboard, CSV exports, audit log filters, what to look at weekly/monthly/quarterly.
-8. **Offboarding & rehire** — starting separation, exit checklist, access revocation, rehire clone.
-9. **Notifications** — in-app bell, email cadence, overdue reminders cron.
-10. **Admin housekeeping** — adding/removing users & roles, rotating API keys (point to self-hosting guide), backup verification cadence.
-11. **Troubleshooting** — common errors, "who do I contact", support escalation template.
-12. **Appendix** — keyboard shortcuts, accessibility, mobile usage, glossary.
+- A "Download template" button that exports a CSV with the correct headers and one example row.
+- A drop zone that accepts a `.csv`, previews the first 5 rows in a table, validates headers, and shows row count.
+- An **Import** button that runs the upsert and reports `{ inserted, updated, skipped, errors[] }`.
 
----
+Record types and key columns:
 
-## 2. `docs/SELF_HOSTING_GUIDE.md` — outline
+| Tab | Match key | Required columns | Optional |
+|---|---|---|---|
+| Employees | `personal_email` | first_name, last_name, personal_email | work_email, phone, department, job_title, worker_type (name), start_date, status |
+| Dependents | employee `personal_email` + dependent `first_name`+`last_name` | employee_email, first_name, last_name, relationship | dob, ssn_last4 |
+| Certifications held | employee_email + certification name | employee_email, certification_name | issuer, issued_at, expires_at, notes |
+| Training history | employee_email + course name | employee_email, course_name | status, due_date, completed_at, score |
+| Equipment issued | employee_email + asset_tag | employee_email, item_name, asset_tag | serial_number, issued_on, condition |
 
-Written for a non-developer following step-by-step. Every command copy-pasteable. Each section ends with a "Did it work?" checkbox.
+**Upsert rules**
+- Employees: match on `personal_email`; updates blank/changed fields, never overwrites with empty.
+- Children (dependents, etc.): resolve `employee_id` from `employee_email`. Match on the composite key above. New rows insert; matches update non-empty fields. Worker types, certifications, and courses are resolved by name; unknown names go to the error list rather than creating new lookup rows.
 
-1. **What you'll end up with** — architecture diagram (ASCII), what costs to expect, time required (~2 hours).
-2. **Decisions before you start**
-   - Domain name you own.
-   - Which cloud (recommended: Supabase Cloud + Cloudflare Workers, the same stack Lovable uses). Alternatives noted: self-hosted Supabase on a single VM (Hetzner/DigitalOcean/AWS Lightsail), or AWS/GCP/Azure with managed Postgres.
-   - Email provider (Resend / SendGrid / AWS SES).
-3. **Accounts to create** — GitHub, Supabase, Cloudflare, domain registrar, email provider. With links and screenshots placeholders.
-4. **Get the code**
-   - Install Git + Node + Bun (one-line installers per OS).
-   - `git clone`, `bun install`.
-5. **Provision the database (Supabase Cloud path — recommended)**
-   - Create project, copy URL + anon key + service role key + DB password to a password manager.
-   - Run migrations via Supabase CLI (`supabase link`, `supabase db push`).
-   - Enable Auth providers (Email, Google) and HIBP password check; default redirect URLs.
-   - Create storage buckets (`onboarding-documents`, `policy-documents`) — exact settings.
-6. **Provision the database (self-hosted Supabase path — optional)**
-   - One-VM Docker Compose recipe with `supabase/cli` bootstrap.
-   - TLS via Caddy reverse proxy + automatic Let's Encrypt.
-   - Daily `pg_dump` to S3-compatible storage; restore drill.
-7. **Configure secrets** — list every env var the app needs (split client `VITE_*` vs server-only), with what to paste where. Includes `BENEFITS_WEBHOOK_SECRET`, optional `REMINDERS_CRON_SECRET`.
-8. **Deploy the app**
-   - **Cloudflare Workers (recommended)**: `wrangler login`, `bun run build`, `wrangler deploy`, bind env vars, attach custom domain, enable Always Use HTTPS.
-   - **Alternative — Docker on a VM**: provided `Dockerfile` + `docker-compose.yml` snippet, Caddy in front, systemd unit.
-   - **Alternative — Vercel/Netlify**: env var checklist + build command.
-9. **Email setup** — DNS records (SPF/DKIM/DMARC) with exact values, verifying domain in Resend/SES, wiring `EMAIL_FROM`.
-10. **Cron jobs** — enable `pg_cron`, schedule daily reminders + weekly cert expiry to hit `/api/public/hooks/reminders` with the shared secret.
-11. **First admin user** — sign up, then run the supplied SQL snippet to promote yourself to `admin`.
-12. **Security hardening checklist** (every item explained):
-    - Force HTTPS, HSTS, CSP headers.
-    - Rotate Supabase service-role key after setup, store in password manager only.
-    - Enable MFA on Supabase, Cloudflare, registrar, email provider.
-    - Restrict Supabase Auth redirect URLs to your domain.
-    - Turn on Cloudflare WAF managed ruleset + rate-limit `/api/public/*`.
-    - Configure backup retention (≥ 30 days) and a tested restore.
-    - Audit log review cadence; access review every 90 days.
-    - Document retention cron is active.
-    - Run `supabase db lint` after every migration.
-13. **Compliance notes** — CJIS-eligible storage for screenings, I-9 §2 in-person verification process, retention by US state, WOTC reporting flow, where SSO/SCIM with Entra/Okta plug in later.
-14. **Updating the app** — `git pull`, `bun install`, `supabase db push`, `wrangler deploy`. Rollback procedure.
-15. **Monitoring & alerts** — Cloudflare analytics, Supabase logs, recommended free-tier Sentry setup, `/healthz` endpoint usage.
-16. **Disaster recovery** — RPO/RTO targets, restore-from-backup walkthrough, secret rotation runbook.
-17. **Troubleshooting** — table of common errors → fix.
-18. **Appendix** — full env var reference, all DNS records, all storage bucket policies, all cron jobs, port list, cost worksheet.
+**Error reporting**
+- Per-row errors collected and shown in a results dialog with row number, column, and message. Successful rows still commit. A "Download errors as CSV" button is available.
+
+### Where it lives
+- Route: `src/routes/_authenticated/employees.import.tsx` (child of existing `employees` route — add `<Outlet />` to a renamed `employees.tsx` layout file, or use a tab on the existing page).
+- Server function: `src/lib/employee-import.functions.ts` with one `createServerFn` per record type, all protected by `requireSupabaseAuth` and gated to `hr_admin` via `private.has_role` check inside the handler. Heavy lifting (lookup resolution, upsert) uses the admin client loaded inside the handler.
+- Parsing: client-side with `papaparse` (small, no native deps). Server validates again before writing.
 
 ---
 
-## 3. In-app surfacing
+## Part 2 — Supervisor-initiated hire request
 
-- New route `src/routes/_authenticated/help.tsx` with a left nav linking to: User Guide sections, Self-Hosting Guide sections, and **Download Markdown / PDF**.
-- Renders the two Markdown files via `react-markdown` + `remark-gfm` (already in tree or add as deps).
-- Sidebar entry "Help & Docs" added to `app-shell.tsx`.
-- Public mirrors at `/api/public/docs/user-guide.md` and `/api/public/docs/self-hosting.md` (static read of the repo files) so the docs are linkable from outside the app.
+### New role
+- Add `'supervisor'` to the `app_role` enum.
+- Assignment UI: HR admins can grant the role from a new "Team" tab in user management (out of scope for this plan; for now, roles are seeded via the existing `user_roles` table — HR can add a row).
+
+### New table: `hire_requests`
+```text
+id, requested_by (uuid → auth.users), employee_id (uuid → employees, nullable until draft created),
+proposed_first_name, proposed_last_name, proposed_email, proposed_job_title, proposed_department,
+worker_type_id, proposed_start_date, reason, notes,
+status text default 'submitted'  -- submitted | drafted | active | rejected
+hr_notes, decided_by, decided_at, created_at, updated_at
+```
+
+**RLS**
+- INSERT: `supervisor` or `hr_admin`.
+- SELECT: requester sees own; `hr_admin` sees all.
+- UPDATE: `hr_admin` only.
+
+### Submission flow
+1. Supervisor opens **"Request new hire"** (new route `src/routes/_authenticated/hire-requests.tsx` with `new` dialog).
+2. They fill: name, personal email, job title, department, worker type, proposed start date, reason.
+3. On submit, a server function runs inside one transaction (RPC) and:
+   - inserts the `hire_requests` row (status `submitted`),
+   - inserts a draft `employees` row with `status = 'candidate'` and `created_by = requester`, `manager_id = requester` if requester is also the manager,
+   - if the chosen worker type has a default `onboarding_template`, creates an `onboarding_instances` row and seeds `task_instances` from `template_tasks` (same logic that exists today in `employees.tsx`),
+   - links the request to the new employee (`employee_id`), and sets request status to `drafted`,
+   - emits a `notifications` row to all users with `hr_admin` role.
+4. Supervisor sees confirmation; the request now sits in their "My requests" list.
+
+### HR finalize flow
+- Existing **Employees** page gets a top banner: "N hire requests awaiting review" linking to `/hire-requests`.
+- `/hire-requests` lists pending requests with status filter. Clicking one opens a detail view showing the auto-drafted employee fields side-by-side with the request, editable, plus the seeded onboarding instance.
+- HR can **Activate** (sets employee `status = 'preboarding'`, request `status = 'active'`, sends supervisor a notification) or **Reject** (sets request `status = 'rejected'` with `hr_notes`; deletes draft employee + onboarding instance in the same transaction).
+
+### Navigation
+- Add **Hire requests** to the sidebar for `hr_admin` and `supervisor` roles (existing `app-shell.tsx` already supports role-gated links).
+- Keep the existing "New employee" dialog on the Employees page for HR (direct creation path, bypassing the request flow).
 
 ---
 
-## 4. Technical notes (for me, not the user)
+## Technical details
 
-- Files added: `docs/USER_GUIDE.md`, `docs/SELF_HOSTING_GUIDE.md`, `docs/architecture.txt` (ASCII diagram), `src/routes/_authenticated/help.tsx`, `src/routes/api/public/docs/$file.ts`.
-- Dependencies (if missing): `react-markdown`, `remark-gfm`.
-- App-shell nav update for "Help & Docs".
-- No DB migration, no schema change.
-- Screenshot placeholders are `![…](docs/img/placeholder.png)` with a TODO list at top of each guide so the user can drop real screenshots in later.
-- Length targets: User Guide ~5–7k words, Self-Hosting ~6–9k words. Both kept under 50KB each.
+### Migration (single file)
+- `ALTER TYPE app_role ADD VALUE 'supervisor';`
+- `CREATE TABLE public.hire_requests (...)` with GRANTs (`authenticated`: SELECT/INSERT/UPDATE; `service_role`: ALL), RLS enabled, and the three policies above.
+- `CREATE OR REPLACE FUNCTION public.create_hire_request(...)` — SECURITY DEFINER, returns the new request id; performs the multi-table insert atomically.
+- `updated_at` trigger reusing `tg_set_updated_at`.
 
----
+### Server functions
+- `src/lib/hire-requests.functions.ts`
+  - `submitHireRequest(input)` — `requireSupabaseAuth`, role check (`supervisor` or `hr_admin`), calls the RPC.
+  - `decideHireRequest({ id, action: 'activate' | 'reject', hr_notes? })` — `hr_admin` only.
+- `src/lib/employee-import.functions.ts` — one fn per record type; each validates headers with zod, resolves lookups, and performs the upsert via `supabaseAdmin` loaded inside the handler.
 
-## Out of scope (call out, don't build now)
+### Dependencies
+- `papaparse` for CSV parsing in the browser and inside server functions.
+- No other new packages.
 
-- Recording actual screenshots/screencasts.
-- A polished PDF export pipeline (we ship Markdown + browser print stylesheet only).
-- A real installer script (`install.sh`) — can follow in a v2 once the manual stabilizes.
+### Files added/changed
+```text
+supabase/migrations/<ts>_hire_requests_and_supervisor_role.sql
+src/lib/hire-requests.functions.ts
+src/lib/employee-import.functions.ts
+src/routes/_authenticated/hire-requests.tsx
+src/routes/_authenticated/employees.import.tsx
+src/components/app-shell.tsx        (add nav items)
+src/routes/_authenticated/employees.tsx  (add "Import" + "Pending requests" banner)
+```
 
-## Question before I build
-
-Do you want both **Cloudflare Workers (recommended)** and **Docker-on-a-VM** paths fully written out, or should I keep just the recommended path and mention the alternative briefly? Full coverage roughly doubles the self-hosting guide length.
+### Out of scope
+- Editing the new `supervisor` role membership via UI (HR seeds via SQL or the existing user-roles table).
+- Email notifications to supervisors/HR (in-app notifications only; existing `notifications` table is reused).
+- Bulk import of `documents`, `screenings`, `policy_acknowledgments`, `provisioning_requests`.

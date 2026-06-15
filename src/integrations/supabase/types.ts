@@ -652,6 +652,84 @@ export type Database = {
           },
         ]
       }
+      hire_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          employee_id: string | null
+          hr_notes: string | null
+          id: string
+          notes: string | null
+          proposed_department: string | null
+          proposed_email: string | null
+          proposed_first_name: string
+          proposed_job_title: string | null
+          proposed_last_name: string
+          proposed_start_date: string | null
+          reason: string | null
+          requested_by: string
+          status: string
+          updated_at: string
+          worker_type_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          employee_id?: string | null
+          hr_notes?: string | null
+          id?: string
+          notes?: string | null
+          proposed_department?: string | null
+          proposed_email?: string | null
+          proposed_first_name: string
+          proposed_job_title?: string | null
+          proposed_last_name: string
+          proposed_start_date?: string | null
+          reason?: string | null
+          requested_by: string
+          status?: string
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          employee_id?: string | null
+          hr_notes?: string | null
+          id?: string
+          notes?: string | null
+          proposed_department?: string | null
+          proposed_email?: string | null
+          proposed_first_name?: string
+          proposed_job_title?: string | null
+          proposed_last_name?: string
+          proposed_start_date?: string | null
+          reason?: string | null
+          requested_by?: string
+          status?: string
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hire_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hire_requests_worker_type_id_fkey"
+            columns: ["worker_type_id"]
+            isOneToOne: false
+            referencedRelation: "worker_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -1349,7 +1427,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_hire_request: {
+        Args: {
+          _department: string
+          _email: string
+          _first_name: string
+          _job_title: string
+          _last_name: string
+          _notes: string
+          _reason: string
+          _start_date: string
+          _worker_type_id: string
+        }
+        Returns: string
+      }
+      decide_hire_request: {
+        Args: { _action: string; _hr_notes: string; _request_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:
@@ -1358,6 +1453,7 @@ export type Database = {
         | "it_admin"
         | "employee"
         | "candidate"
+        | "supervisor"
       employee_status: "candidate" | "preboarding" | "active" | "offboarded"
       task_assignee:
         | "employee"
@@ -1515,6 +1611,7 @@ export const Constants = {
         "it_admin",
         "employee",
         "candidate",
+        "supervisor",
       ],
       employee_status: ["candidate", "preboarding", "active", "offboarded"],
       task_assignee: [
