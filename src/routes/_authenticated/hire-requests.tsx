@@ -16,6 +16,8 @@ import { Plus, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { submitHireRequest, decideHireRequest } from "@/lib/hire-requests.functions";
+import { PROVISIONING_KINDS, DEFAULT_PROVISIONING_KINDS } from "@/lib/provisioning-kinds";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/hire-requests")({ component: HireRequestsPage });
 
@@ -30,18 +32,19 @@ function HireRequestsPage() {
   });
   const { data: workerTypes } = useQuery({
     queryKey: ["wt-min"],
-    queryFn: async () => (await supabase.from("worker_types").select("id,name").order("sort_order")).data ?? [],
+    queryFn: async () => (await supabase.from("worker_types").select("id,name,default_provisioning").order("sort_order")).data ?? [],
   });
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ first_name: "", last_name: "", email: "", job_title: "", department: "", worker_type_id: "", start_date: "", reason: "", notes: "" });
+  const [provKinds, setProvKinds] = useState<string[]>(DEFAULT_PROVISIONING_KINDS);
 
   const submitFn = useServerFn(submitHireRequest);
   const decideFn = useServerFn(decideHireRequest);
 
   const submit = useMutation({
-    mutationFn: async () => submitFn({ data: { ...form, worker_type_id: form.worker_type_id || null } }),
-    onSuccess: () => { toast.success("Request submitted"); setOpen(false); setForm({ first_name: "", last_name: "", email: "", job_title: "", department: "", worker_type_id: "", start_date: "", reason: "", notes: "" }); qc.invalidateQueries({ queryKey: ["hire-requests"] }); },
+    mutationFn: async () => submitFn({ data: { ...form, worker_type_id: form.worker_type_id || null, provisioning_kinds: provKinds } }),
+    onSuccess: () => { toast.success("Request submitted"); setOpen(false); setForm({ first_name: "", last_name: "", email: "", job_title: "", department: "", worker_type_id: "", start_date: "", reason: "", notes: "" }); setProvKinds(DEFAULT_PROVISIONING_KINDS); qc.invalidateQueries({ queryKey: ["hire-requests"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -71,7 +74,12 @@ function HireRequestsPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>Worker type</Label>
-                  <Select value={form.worker_type_id} onValueChange={(v) => setForm({ ...form, worker_type_id: v })}>
+                  <Select value={form.worker_type_id} onValueChange={(v) => {
+                    setForm({ ...form, worker_type_id: v });
+                    const wt = workerTypes?.find((w) => w.id === v);
+                    const defaults = (wt?.default_provisioning as unknown as string[] | null) ?? null;
+                    setProvKinds(defaults && defaults.length ? defaults : DEFAULT_PROVISIONING_KINDS);
+                  }}>
                     <SelectTrigger><SelectValue placeholder="Pick…" /></SelectTrigger>
                     <SelectContent>{workerTypes?.map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent>
                   </Select>
@@ -80,6 +88,22 @@ function HireRequestsPage() {
               </div>
               <div><Label>Reason</Label><Textarea rows={2} value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} /></div>
               <div><Label>Notes for HR</Label><Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+              <div className="border-t pt-3 space-y-2">
+                <Label>IT provisioning to queue on activation</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {PROVISIONING_KINDS.map((k) => {
+                    const Icon = k.icon;
+                    const checked = provKinds.includes(k.key);
+                    return (
+                      <label key={k.key} className="flex items-center gap-2 rounded border p-2 cursor-pointer hover:bg-accent">
+                        <Checkbox checked={checked} onCheckedChange={(v) => setProvKinds((prev) => v === true ? Array.from(new Set([...prev, k.key])) : prev.filter((x) => x !== k.key))} />
+                        <Icon className="h-4 w-4 text-primary" />
+                        <span className="text-sm">{k.label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
             <DialogFooter><Button disabled={!form.first_name || !form.last_name || submit.isPending} onClick={() => submit.mutate()}>{submit.isPending ? "Submitting…" : "Submit"}</Button></DialogFooter>
           </DialogContent>
