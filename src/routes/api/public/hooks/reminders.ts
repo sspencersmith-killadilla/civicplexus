@@ -9,18 +9,20 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
         const today = new Date().toISOString().slice(0, 10);
         const { data: overdue } = await supabaseAdmin
           .from("task_instances")
-          .select("id,title,due_date,assignee_user_id,employee_id")
+          .select("id,title,due_date,assignee,onboarding_instances(employees(user_id))")
           .neq("status", "complete")
           .lt("due_date", today)
           .limit(500);
         const notifications: { user_id: string; type: string; title: string; body: string; link: string }[] = [];
-        for (const t of overdue ?? []) {
-          if (!t.assignee_user_id) continue;
+        for (const t of (overdue ?? []) as Array<{ title: string; due_date: string | null; assignee: string; onboarding_instances: { employees: { user_id: string | null } | null } | null }>) {
+          const uid = t.onboarding_instances?.employees?.user_id;
+          if (!uid) continue;
+          if (t.assignee !== "employee") continue;
           notifications.push({
-            user_id: t.assignee_user_id,
+            user_id: uid,
             type: "task_overdue",
             title: `Overdue: ${t.title}`,
-            body: `Due ${t.due_date}`,
+            body: t.due_date ? `Due ${t.due_date}` : "Past due",
             link: "/preboarding",
           });
         }
