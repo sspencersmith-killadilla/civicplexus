@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import logoAsset from "@/assets/kyberna-logo.png.asset.json";
+import markAsset from "@/assets/kyberna-mark.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Kyberna" }, { name: "description", content: "Sign in or create your Kyberna account." }] }),
@@ -67,8 +67,8 @@ function AuthPage() {
   return (
     <div className="min-h-screen grid md:grid-cols-2 bg-background">
       <div className="hidden md:flex flex-col justify-between p-10 bg-sidebar text-sidebar-foreground">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logoAsset.url} alt="Kyberna" className="h-9 w-9 rounded-sm bg-white/10 p-1" />
+        <Link to="/" className="flex items-center gap-2.5" aria-label="Kyberna home">
+          <img src={markAsset.url} alt="" aria-hidden="true" className="h-10 w-10 object-contain" />
           <span className="font-serif text-xl tracking-tight">Kyberna</span>
         </Link>
         <div>

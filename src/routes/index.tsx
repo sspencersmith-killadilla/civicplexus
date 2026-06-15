@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Users, HardHat, Shield, Clock, FileBadge, HeartHandshake, Landmark, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logoAsset from "@/assets/kyberna-logo.png.asset.json";
+import markAsset from "@/assets/kyberna-mark.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,8 +31,8 @@ function Index() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logoAsset.url} alt="Kyberna" className="h-9 w-9" />
+          <Link to="/" className="flex items-center gap-2.5" aria-label="Kyberna home">
+            <img src={markAsset.url} alt="" aria-hidden="true" className="h-10 w-10 object-contain" />
             <span className="font-serif text-xl tracking-tight">Kyberna</span>
           </Link>
           <div className="flex items-center gap-3">

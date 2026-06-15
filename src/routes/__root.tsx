@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import markAsset from "@/assets/kyberna-mark.png.asset.json";
 
 function NotFoundComponent() {
   return (
@@ -84,14 +85,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Kyberna — Municipal Onboarding Suite" },
       { property: "og:description", content: "Worker-type templates, mobile-first field flows, forms, e-sign, and compliance built in." },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: markAsset.url },
+      { property: "og:site_name", content: "Kyberna" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Kyberna — Municipal Onboarding Suite" },
+      { name: "twitter:description", content: "Worker-type templates, mobile-first field flows, forms, e-sign, and compliance built in." },
+      { name: "twitter:image", content: markAsset.url },
+      { name: "theme-color", content: "#0f172a" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "icon", type: "image/png", href: markAsset.url },
+      { rel: "apple-touch-icon", href: markAsset.url },
+      { rel: "canonical", href: "https://kyberna.lovable.app/" },
     ],
   }),
   shellComponent: RootShell,

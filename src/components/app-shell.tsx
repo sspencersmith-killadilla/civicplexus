@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import logoAsset from "@/assets/kyberna-logo.png.asset.json";
+import markAsset from "@/assets/kyberna-mark.png.asset.json";
 
 const NAV_GROUPS = [
   { label: "Overview", items: [
@@ -61,8 +61,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     <div className="flex min-h-screen bg-background">
       <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground">
         <div className="px-5 py-6 border-b border-sidebar-border">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logoAsset.url} alt="Kyberna" className="h-7 w-7 rounded-sm bg-white/10 p-0.5" />
+          <Link to="/" className="flex items-center gap-2.5" aria-label="Kyberna home">
+            <img src={markAsset.url} alt="" aria-hidden="true" className="h-8 w-8 object-contain" />
             <span className="font-serif text-lg tracking-tight">Kyberna</span>
           </Link>
           <p className="mt-1 text-xs text-sidebar-foreground/60">Municipal Onboarding</p>
