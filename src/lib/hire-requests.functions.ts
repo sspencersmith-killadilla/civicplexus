@@ -21,13 +21,13 @@ export const submitHireRequest = createServerFn({ method: "POST" })
     const { data: rid, error } = await context.supabase.rpc("create_hire_request", {
       _first_name: data.first_name,
       _last_name: data.last_name,
-      _email: data.email || null,
-      _job_title: data.job_title || null,
-      _department: data.department || null,
-      _worker_type_id: data.worker_type_id || null,
-      _start_date: data.start_date || null,
-      _reason: data.reason || null,
-      _notes: data.notes || null,
+      _email: (data.email || null) as never,
+      _job_title: (data.job_title || null) as never,
+      _department: (data.department || null) as never,
+      _worker_type_id: (data.worker_type_id || null) as never,
+      _start_date: (data.start_date || null) as never,
+      _reason: (data.reason || null) as never,
+      _notes: (data.notes || null) as never,
     });
     if (error) throw new Error(error.message);
     return { request_id: rid as string };
@@ -46,7 +46,7 @@ export const decideHireRequest = createServerFn({ method: "POST" })
     const { error } = await context.supabase.rpc("decide_hire_request", {
       _request_id: data.request_id,
       _action: data.action,
-      _hr_notes: data.hr_notes || null,
+      _hr_notes: (data.hr_notes || null) as never,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
