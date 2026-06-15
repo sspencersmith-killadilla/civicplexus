@@ -36,6 +36,7 @@ import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
+import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -178,6 +179,11 @@ const ApiPublicHooksBenefitsCallbackRoute =
     path: '/api/public/hooks/benefits-callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicDocsFileRoute = ApiPublicDocsFileRouteImport.update({
+  id: '/api/public/docs/$file',
+  path: '/api/public/docs/$file',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -232,6 +239,7 @@ export interface FileRoutesByTo {
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -262,6 +270,7 @@ export interface FileRoutesById {
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/forms/$key'
     | '/policies/$id'
     | '/templates/$id'
+    | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
   fileRoutesByTo: FileRoutesByTo
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/forms/$key'
     | '/policies/$id'
     | '/templates/$id'
+    | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
   id:
@@ -349,6 +360,7 @@ export interface FileRouteTypes {
     | '/_authenticated/forms/$key'
     | '/_authenticated/policies/$id'
     | '/_authenticated/templates/$id'
+    | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
   fileRoutesById: FileRoutesById
@@ -357,6 +369,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
 }
@@ -552,6 +565,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksBenefitsCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/docs/$file': {
+      id: '/api/public/docs/$file'
+      path: '/api/public/docs/$file'
+      fullPath: '/api/public/docs/$file'
+      preLoaderRoute: typeof ApiPublicDocsFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -644,6 +664,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
 }
