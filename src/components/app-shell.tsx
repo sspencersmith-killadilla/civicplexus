@@ -13,6 +13,7 @@ const NAV_GROUPS = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
     { to: "/notifications", label: "Notifications", icon: Bell, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
     { to: "/preboarding", label: "My Onboarding", icon: FileText, roles: ["candidate", "employee"] },
+    { to: "/help", label: "Help & Docs", icon: BookOpen, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
   ]},
   { label: "People", items: [
     { to: "/employees", label: "Employees", icon: Users, roles: ["hr_admin", "hiring_manager"] },
@@ -36,7 +37,6 @@ const NAV_GROUPS = [
   ]},
   { label: "Admin", items: [
     { to: "/settings", label: "Settings", icon: Settings, roles: ["hr_admin"] },
-    { to: "/help", label: "Help & Docs", icon: BookOpen, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
   ]},
 ] as const;
 
