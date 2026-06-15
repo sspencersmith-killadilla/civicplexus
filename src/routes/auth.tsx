@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2 } from "lucide-react";
 import { toast } from "sonner";
+import logoAsset from "@/assets/kyberna-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — Civitas" }, { name: "description", content: "Sign in or create your Civitas account." }] }),
+  head: () => ({ meta: [{ title: "Sign in — Kyberna" }, { name: "description", content: "Sign in or create your Kyberna account." }] }),
   component: AuthPage,
 });
 
@@ -68,14 +68,14 @@ function AuthPage() {
     <div className="min-h-screen grid md:grid-cols-2 bg-background">
       <div className="hidden md:flex flex-col justify-between p-10 bg-sidebar text-sidebar-foreground">
         <Link to="/" className="flex items-center gap-2">
-          <Building2 className="h-6 w-6 text-sidebar-primary" />
-          <span className="font-serif text-xl tracking-tight">Civitas</span>
+          <img src={logoAsset.url} alt="Kyberna" className="h-9 w-9 rounded-sm bg-white/10 p-1" />
+          <span className="font-serif text-xl tracking-tight">Kyberna</span>
         </Link>
         <div>
           <p className="font-serif text-3xl leading-tight max-w-md">"Every new hire ready on day zero — from City Hall to the water plant."</p>
           <p className="mt-4 text-sm text-sidebar-foreground/60">Municipal Onboarding Suite</p>
         </div>
-        <p className="text-xs text-sidebar-foreground/50">© {new Date().getFullYear()} Civitas</p>
+        <p className="text-xs text-sidebar-foreground/50">© {new Date().getFullYear()} Kyberna</p>
       </div>
 
       <div className="flex items-center justify-center p-6">
