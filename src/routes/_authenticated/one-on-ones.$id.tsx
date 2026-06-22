@@ -21,6 +21,32 @@ export const Route = createFileRoute("/_authenticated/one-on-ones/$id")({
 
 type AgendaPrompt = string;
 
+function AgendaItem({ prompt, initial, onSave, onExtract }: {
+  prompt: string;
+  initial: string;
+  onSave: (content: string) => void;
+  onExtract: () => void;
+}) {
+  const [val, setVal] = useState(initial);
+  return (
+    <div className="rounded border p-3 space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium">{prompt}</p>
+        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={onExtract}>
+          <ListChecks className="h-3 w-3 mr-1" /> Extract actions
+        </Button>
+      </div>
+      <Textarea
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={() => { if (val !== initial) onSave(val); }}
+        rows={3}
+        placeholder="Notes for this agenda item…"
+      />
+    </div>
+  );
+}
+
 function OneOnOneDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
