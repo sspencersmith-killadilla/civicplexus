@@ -88,8 +88,7 @@ function GoalsPage() {
 
   const updateProgress = useMutation({
     mutationFn: async ({ gid, progress, status }: { gid: string; progress: number; status?: string }) => {
-      const upd: Record<string, unknown> = { progress };
-      if (status) upd.status = status;
+      const upd = status ? { progress, status } : { progress };
       const { error } = await supabase.from("goals").update(upd).eq("id", gid);
       if (error) throw error;
       await supabase.from("goal_updates").insert({ goal_id: gid, author_id: uid, progress, status: status ?? null });
