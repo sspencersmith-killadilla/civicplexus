@@ -1,0 +1,174 @@
+import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
+import { generateText } from "ai";
+import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+
+const MODEL = "google/gemini-3-flash-preview";
+
+function gateway() {
+  const key = process.env.LOVABLE_API_KEY;
+  if (!key) throw new Error("Missing LOVABLE_API_KEY");
+  return createLovableAiGatewayProvider(key);
+}
+
+/** Summarize the shared notes of a 1-on-1 session. */
+export const summarizeOneOnOne = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ session_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: session, error: sErr } = await context.supabase
+      .from("one_on_ones")
+      .select("id, title, scheduled_at, summary")
+      .eq("id", data.session_id)
+      .maybeSingle();
+    if (sErr || !session) throw new Error("Session not found or no access");
+
+    const { data: notes, error: nErr } = await context.supabase
+      .from("one_on_one_notes")
+      .select("content, visibility, created_at")
+      .eq("session_id", data.session_id)
+      .order("created_at", { ascending: true });
+    if (nErr) throw nErr;
+
+    const combined = (notes ?? [])
+      .map((n) => `[${n.visibility}] ${n.content}`)
+      .join("\n\n");
+    if (!combined.trim()) throw new Error("No notes to summarize yet");
+
+    const prompt = `You are an executive coach helping a manager process a 1-on-1 meeting.
+Summarize the following shared meeting notes into:
+1. Key themes (2-4 bullets)
+2. Wins and progress
+3. Blockers / concerns
+4. Coaching focus for next session
+
+Keep it crisp, professional, and action-oriented. Use markdown bullets.
+
+Meeting: ${session.title ?? "Untitled 1-on-1"}
+Notes:
+${combined}`;
+
+    const { text } = await generateText({ model: gateway()(MODEL), prompt });
+
+    await context.supabase
+      .from("one_on_ones")
+      .update({ ai_summary: text, ai_generated_at: new Date().toISOString() })
+      .eq("id", data.session_id);
+
+    await context.supabase.from("audit_events").insert({
+      actor_id: context.userId,
+      action: "ai_summarize",
+      entity: "one_on_one",
+      entity_id: data.session_id,
+      diff: { model: MODEL },
+    });
+
+    return { summary: text };
+  });
+
+/** Extract action items from shared notes, insert them as rows. */
+export const extractOneOnOneActionItems = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ session_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: notes, error } = await context.supabase
+      .from("one_on_one_notes")
+      .select("content")
+      .eq("session_id", data.session_id)
+      .eq("visibility", "shared")
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    const combined = (notes ?? []).map((n) => n.content).join("\n\n");
+    if (!combined.trim()) throw new Error("No shared notes to scan");
+
+    const prompt = `Scan the following 1-on-1 meeting notes and extract concrete action items / commitments.
+Return ONLY a JSON array of objects with shape:
+[{ "text": "string", "due_date": "YYYY-MM-DD or null", "assignee": "manager|employee|other or null" }]
+No markdown, no prose. If none, return [].
+
+Notes:
+${combined}`;
+
+    const { text } = await generateText({ model: gateway()(MODEL), prompt });
+    let items: Array<{ text: string; due_date?: string | null; assignee?: string | null }> = [];
+    try {
+      const cleaned = text.replace(/```json|```/g, "").trim();
+      items = JSON.parse(cleaned);
+    } catch {
+      throw new Error("AI returned malformed JSON");
+    }
+    if (!Array.isArray(items) || items.length === 0) return { inserted: 0, items: [] };
+
+    const rows = items
+      .filter((i) => i?.text && typeof i.text === "string")
+      .map((i) => ({
+        session_id: data.session_id,
+        text: i.text.slice(0, 500),
+        due_date: i.due_date && /^\d{4}-\d{2}-\d{2}$/.test(i.due_date) ? i.due_date : null,
+        assignee_label: i.assignee ?? null,
+        created_by: context.userId,
+      }));
+    if (!rows.length) return { inserted: 0, items: [] };
+
+    const { error: insErr } = await context.supabase.from("one_on_one_action_items").insert(rows);
+    if (insErr) throw insErr;
+
+    await context.supabase.from("audit_events").insert({
+      actor_id: context.userId,
+      action: "ai_extract_actions",
+      entity: "one_on_one",
+      entity_id: data.session_id,
+      diff: { count: rows.length },
+    });
+
+    return { inserted: rows.length, items: rows };
+  });
+
+/** Roll up cascade responses into a themed summary. HR-only. */
+export const summarizeCascade = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ cascade_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: isHr } = await context.supabase.rpc("has_role" as never, {
+      _user_id: context.userId, _role: "hr_admin",
+    } as never);
+    if (!isHr) throw new Error("Only HR admins can summarize cascades");
+
+    const { data: responses, error } = await context.supabase
+      .from("cascade_responses")
+      .select("manager_name, department, team_feedback")
+      .eq("cascade_id", data.cascade_id);
+    if (error) throw error;
+    if (!responses?.length) throw new Error("No responses to summarize");
+
+    const combined = responses
+      .map((r) => `[Department: ${r.department ?? "Unspecified"}] ${r.manager_name ?? "Manager"}: ${r.team_feedback}`)
+      .join("\n\n");
+
+    const prompt = `You are summarizing team feedback gathered from supervisors across a municipal organization.
+Group themes by department where possible. Output markdown with:
+- Top recurring themes
+- Department-specific concerns
+- Suggested follow-up actions for leadership
+
+Feedback:
+${combined}`;
+
+    const { text } = await generateText({ model: gateway()(MODEL), prompt });
+
+    await context.supabase
+      .from("cascades")
+      .update({ ai_summary: text, ai_generated_at: new Date().toISOString() })
+      .eq("id", data.cascade_id);
+
+    await context.supabase.from("audit_events").insert({
+      actor_id: context.userId,
+      action: "ai_summarize",
+      entity: "cascade",
+      entity_id: data.cascade_id,
+      diff: { responses: responses.length },
+    });
+
+    return { summary: text };
+  });
