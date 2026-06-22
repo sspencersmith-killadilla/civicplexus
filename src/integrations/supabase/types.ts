@@ -453,6 +453,7 @@ export type Database = {
           created_by: string | null
           department: string | null
           end_date: string | null
+          external_id: string | null
           first_name: string
           id: string
           job_title: string | null
@@ -476,6 +477,7 @@ export type Database = {
           created_by?: string | null
           department?: string | null
           end_date?: string | null
+          external_id?: string | null
           first_name: string
           id?: string
           job_title?: string | null
@@ -499,6 +501,7 @@ export type Database = {
           created_by?: string | null
           department?: string | null
           end_date?: string | null
+          external_id?: string | null
           first_name?: string
           id?: string
           job_title?: string | null
@@ -833,6 +836,103 @@ export type Database = {
             columns: ["parent_goal_id"]
             isOneToOne: false
             referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grievance_notes: {
+        Row: {
+          author_id: string | null
+          content: string
+          created_at: string
+          grievance_id: string
+          id: string
+          visibility: string
+        }
+        Insert: {
+          author_id?: string | null
+          content: string
+          created_at?: string
+          grievance_id: string
+          id?: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string | null
+          content?: string
+          created_at?: string
+          grievance_id?: string
+          id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grievance_notes_grievance_id_fkey"
+            columns: ["grievance_id"]
+            isOneToOne: false
+            referencedRelation: "grievances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grievances: {
+        Row: {
+          assigned_hr_id: string | null
+          case_number: string | null
+          category: string
+          created_at: string
+          details: string | null
+          id: string
+          is_anonymous: boolean
+          resolution_summary: string | null
+          resolved_at: string | null
+          severity: string
+          status: string
+          subject_employee_id: string | null
+          submitted_by: string | null
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_hr_id?: string | null
+          case_number?: string | null
+          category: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          is_anonymous?: boolean
+          resolution_summary?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          subject_employee_id?: string | null
+          submitted_by?: string | null
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_hr_id?: string | null
+          case_number?: string | null
+          category?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          is_anonymous?: boolean
+          resolution_summary?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          subject_employee_id?: string | null
+          submitted_by?: string | null
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grievances_subject_employee_id_fkey"
+            columns: ["subject_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -1274,6 +1374,109 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      performance_review_signatures: {
+        Row: {
+          id: string
+          ip_address: string | null
+          review_id: string
+          signature_text: string | null
+          signed_at: string
+          signer_role: string
+          signer_user_id: string
+        }
+        Insert: {
+          id?: string
+          ip_address?: string | null
+          review_id: string
+          signature_text?: string | null
+          signed_at?: string
+          signer_role: string
+          signer_user_id: string
+        }
+        Update: {
+          id?: string
+          ip_address?: string | null
+          review_id?: string
+          signature_text?: string | null
+          signed_at?: string
+          signer_role?: string
+          signer_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_review_signatures_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_reviews: {
+        Row: {
+          ai_draft: string | null
+          ai_generated_at: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          employee_self_assessment: string | null
+          finalized_at: string | null
+          id: string
+          manager_narrative: string | null
+          manager_user_id: string | null
+          overall_rating: number | null
+          ratings: Json
+          review_period_end: string
+          review_period_start: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ai_draft?: string | null
+          ai_generated_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          employee_self_assessment?: string | null
+          finalized_at?: string | null
+          id?: string
+          manager_narrative?: string | null
+          manager_user_id?: string | null
+          overall_rating?: number | null
+          ratings?: Json
+          review_period_end: string
+          review_period_start: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_draft?: string | null
+          ai_generated_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          employee_self_assessment?: string | null
+          finalized_at?: string | null
+          id?: string
+          manager_narrative?: string | null
+          manager_user_id?: string | null
+          overall_rating?: number | null
+          ratings?: Json
+          review_period_end?: string
+          review_period_start?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_reviews_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       policies: {
         Row: {
