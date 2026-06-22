@@ -134,7 +134,7 @@ export const decideApprovalStep = createServerFn({ method: "POST" })
 
     const { data: chain } = await context.supabase
       .from("approval_chains" as never).select("*").eq("id", s.chain_id).single();
-    const c = chain as { id: string; entity_type: string; entity_id: string };
+    const c = chain as unknown as { id: string; entity_type: string; entity_id: string };
 
     if (data.decision === "rejected") {
       await context.supabase.from("approval_chains" as never).update({ status: "rejected" } as never).eq("id", c.id);
@@ -298,7 +298,7 @@ export const scheduleInterview = createServerFn({ method: "POST" })
     try {
       const { sendApplicantEmail } = await import("./applicant-emails.functions");
       const { data: app } = await context.supabase.from("job_applications" as never).select("email, applicant_name").eq("id", data.application_id).single();
-      const a = app as { email: string; applicant_name: string };
+      const a = app as unknown as { email: string; applicant_name: string };
       await sendApplicantEmail({
         to: a.email, subject: "Interview scheduled",
         body: `Hi ${a.applicant_name},\n\nYou're scheduled for an interview on ${new Date(data.scheduled_at).toLocaleString()}.\n${data.location ? `Location: ${data.location}\n` : ""}\nWe look forward to speaking with you.`,
@@ -368,7 +368,7 @@ export const convertApplicationToHire = createServerFn({ method: "POST" })
       const { data: chainRow } = await context.supabase.from("approval_chains" as never)
         .insert({ entity_type: "hire_request", entity_id: hireRequestId, created_by: context.userId } as never)
         .select().single();
-      const cid = (chainRow as { id: string }).id;
+      const cid = (chainRow as unknown as { id: string }).id;
       await context.supabase.from("approval_steps" as never)
         .insert(chain.map((c) => ({ ...c, chain_id: cid })) as never);
       if (chain[0].approver_id) {
