@@ -32,6 +32,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
+import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
@@ -162,6 +163,12 @@ const AuthenticatedTemplatesIndexRoute =
     path: '/templates/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOneOnOnesIndexRoute =
+  AuthenticatedOneOnOnesIndexRouteImport.update({
+    id: '/one-on-ones/',
+    path: '/one-on-ones/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFormsIndexRoute = AuthenticatedFormsIndexRouteImport.update({
   id: '/forms/',
   path: '/forms/',
@@ -233,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/forms/': typeof AuthenticatedFormsIndexRoute
+  '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -265,6 +273,7 @@ export interface FileRoutesByTo {
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/forms': typeof AuthenticatedFormsIndexRoute
+  '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -299,6 +308,7 @@ export interface FileRoutesById {
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
+  '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/policies/$id'
     | '/templates/$id'
     | '/forms/'
+    | '/one-on-ones/'
     | '/templates/'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/policies/$id'
     | '/templates/$id'
     | '/forms'
+    | '/one-on-ones'
     | '/templates'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -398,6 +410,7 @@ export interface FileRouteTypes {
     | '/_authenticated/policies/$id'
     | '/_authenticated/templates/$id'
     | '/_authenticated/forms/'
+    | '/_authenticated/one-on-ones/'
     | '/_authenticated/templates/'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -576,6 +589,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemplatesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/one-on-ones/': {
+      id: '/_authenticated/one-on-ones/'
+      path: '/one-on-ones'
+      fullPath: '/one-on-ones/'
+      preLoaderRoute: typeof AuthenticatedOneOnOnesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/forms/': {
       id: '/_authenticated/forms/'
       path: '/forms'
@@ -685,6 +705,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
+  AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
 }
 
@@ -711,6 +732,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
+  AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
 }
 
