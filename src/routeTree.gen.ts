@@ -25,6 +25,7 @@ import { Route as AuthenticatedPositionsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_authenticated/internal-careers'
 import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authenticated/hire-requests'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
@@ -140,6 +141,12 @@ const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInternalCareersRoute =
+  AuthenticatedInternalCareersRouteImport.update({
+    id: '/internal-careers',
+    path: '/internal-careers',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHireRequestsRoute =
@@ -329,6 +336,7 @@ export interface FileRoutesByFullPath {
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
+  '/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -378,6 +386,7 @@ export interface FileRoutesByTo {
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
+  '/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -429,6 +438,7 @@ export interface FileRoutesById {
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/hire-requests': typeof AuthenticatedHireRequestsRoute
+  '/_authenticated/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -480,6 +490,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/help'
     | '/hire-requests'
+    | '/internal-careers'
     | '/notifications'
     | '/offboarding'
     | '/policies'
@@ -529,6 +540,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/help'
     | '/hire-requests'
+    | '/internal-careers'
     | '/notifications'
     | '/offboarding'
     | '/policies'
@@ -579,6 +591,7 @@ export interface FileRouteTypes {
     | '/_authenticated/goals'
     | '/_authenticated/help'
     | '/_authenticated/hire-requests'
+    | '/_authenticated/internal-careers'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
     | '/_authenticated/policies'
@@ -740,6 +753,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/internal-careers': {
+      id: '/_authenticated/internal-careers'
+      path: '/internal-careers'
+      fullPath: '/internal-careers'
+      preLoaderRoute: typeof AuthenticatedInternalCareersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hire-requests': {
@@ -1007,6 +1027,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedHireRequestsRoute: typeof AuthenticatedHireRequestsRoute
+  AuthenticatedInternalCareersRoute: typeof AuthenticatedInternalCareersRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
@@ -1046,6 +1067,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedHireRequestsRoute: AuthenticatedHireRequestsRoute,
+  AuthenticatedInternalCareersRoute: AuthenticatedInternalCareersRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,

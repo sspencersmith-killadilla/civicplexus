@@ -12,7 +12,7 @@ import { Briefcase, MapPin, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { applyInternally } from "@/lib/jobs.functions";
 
-export const Route = createFileRoute("/_authenticated/careers/")({ component: InternalCareers });
+export const Route = createFileRoute("/_authenticated/internal-careers")({ component: InternalCareers });
 
 function InternalCareers() {
   const qc = useQueryClient();
