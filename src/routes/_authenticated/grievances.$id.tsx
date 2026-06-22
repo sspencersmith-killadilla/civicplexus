@@ -11,7 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
-import { addGrievanceNote, updateGrievanceStatus } from "@/lib/grievances.functions";
+import { addGrievanceNote, updateGrievanceStatus, acknowledgeGrievance, addGrievanceTask, completeGrievanceTask, resolveGrievance } from "@/lib/grievances.functions";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/_authenticated/grievances/$id")({ component: GrievanceDetail });
 
@@ -24,6 +26,10 @@ function GrievanceDetail() {
   const isHR = hasRole(me?.roles, "hr_admin");
   const addNote = useServerFn(addGrievanceNote);
   const changeStatus = useServerFn(updateGrievanceStatus);
+  const ackFn = useServerFn(acknowledgeGrievance);
+  const addTaskFn = useServerFn(addGrievanceTask);
+  const completeTaskFn = useServerFn(completeGrievanceTask);
+  const resolveFn = useServerFn(resolveGrievance);
 
   const gQ = useQuery({
     queryKey: ["grievance", id],
@@ -43,10 +49,50 @@ function GrievanceDetail() {
     },
   });
 
+  const tasksQ = useQuery({
+    queryKey: ["grievance_tasks", id],
+    queryFn: async () => {
+      const { data } = await supabase.from("grievance_tasks" as never).select("*").eq("grievance_id", id).order("created_at");
+      return (data ?? []) as Array<{ id: string; title: string; status: string; due_date: string | null }>;
+    },
+    enabled: isHR,
+  });
+
+  const eventsQ = useQuery({
+    queryKey: ["grievance_events", id],
+    queryFn: async () => {
+      const { data } = await supabase.from("grievance_events" as never).select("*").eq("grievance_id", id).order("created_at");
+      return (data ?? []) as Array<{ id: string; event_type: string; from_status: string | null; to_status: string | null; created_at: string }>;
+    },
+  });
+
   const [note, setNote] = useState("");
   const [vis, setVis] = useState<"hr_only" | "shared_with_submitter">("hr_only");
   const [status, setStatus] = useState<string>("");
   const [resolution, setResolution] = useState<string>("");
+  const [taskTitle, setTaskTitle] = useState("");
+  const [outcome, setOutcome] = useState<"upheld"|"partially_upheld"|"dismissed"|"withdrawn">("upheld");
+  const [resolveSummary, setResolveSummary] = useState("");
+
+  const doAck = useMutation({
+    mutationFn: () => ackFn({ data: { grievance_id: id } }),
+    onSuccess: () => { qc.invalidateQueries(); toast.success("Acknowledged"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+  const doAddTask = useMutation({
+    mutationFn: () => addTaskFn({ data: { grievance_id: id, title: taskTitle } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["grievance_tasks", id] }); setTaskTitle(""); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+  const doCompleteTask = useMutation({
+    mutationFn: (tid: string) => completeTaskFn({ data: { task_id: tid } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["grievance_tasks", id] }),
+  });
+  const doResolve = useMutation({
+    mutationFn: () => resolveFn({ data: { grievance_id: id, outcome, resolution_summary: resolveSummary } }),
+    onSuccess: () => { qc.invalidateQueries(); toast.success("Resolved"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
 
   const postNote = useMutation({
     mutationFn: () => addNote({ data: { grievance_id: id, content: note, visibility: vis } }),
@@ -78,30 +124,89 @@ function GrievanceDetail() {
           {g.details && <p className="text-sm whitespace-pre-wrap">{g.details}</p>}
           {g.resolution_summary && (
             <div className="border-t pt-3">
-              <p className="text-xs font-medium mb-1">Resolution</p>
+              <p className="text-xs font-medium mb-1">Resolution {g.outcome ? `(${g.outcome})` : ""}</p>
               <p className="text-sm whitespace-pre-wrap">{g.resolution_summary}</p>
+              {g.appeal_deadline && <p className="text-xs text-muted-foreground mt-1">Appeal deadline: {g.appeal_deadline}</p>}
             </div>
           )}
         </Card>
 
         {isHR && (
-          <Card className="p-5">
-            <h3 className="font-medium mb-3">HR actions</h3>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Status</Label>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger><SelectValue placeholder="Change status…" /></SelectTrigger>
-                  <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Resolution summary (optional)</Label>
-                <Textarea rows={2} value={resolution} onChange={(e) => setResolution(e.target.value)} />
-              </div>
-            </div>
-            <Button className="mt-3" size="sm" disabled={!status || updStatus.isPending} onClick={() => updStatus.mutate()}>Update status</Button>
-          </Card>
+          <Tabs defaultValue="workflow">
+            <TabsList>
+              <TabsTrigger value="workflow">Workflow</TabsTrigger>
+              <TabsTrigger value="tasks">Investigation</TabsTrigger>
+              <TabsTrigger value="timeline">Timeline</TabsTrigger>
+              <TabsTrigger value="resolve">Resolve</TabsTrigger>
+            </TabsList>
+            <TabsContent value="workflow">
+              <Card className="p-5 space-y-3">
+                <div className="flex gap-2 flex-wrap">
+                  {!g.acknowledged_at && <Button size="sm" onClick={()=>doAck.mutate()} disabled={doAck.isPending}>Acknowledge</Button>}
+                  {g.acknowledged_at && <p className="text-xs text-muted-foreground">Acknowledged {new Date(g.acknowledged_at).toLocaleString()}</p>}
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Status</Label>
+                    <Select value={status} onValueChange={setStatus}>
+                      <SelectTrigger><SelectValue placeholder="Change status…" /></SelectTrigger>
+                      <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Notes (optional)</Label>
+                    <Textarea rows={2} value={resolution} onChange={(e) => setResolution(e.target.value)} />
+                  </div>
+                </div>
+                <Button size="sm" disabled={!status || updStatus.isPending} onClick={() => updStatus.mutate()}>Update status</Button>
+              </Card>
+            </TabsContent>
+            <TabsContent value="tasks">
+              <Card className="p-5 space-y-3">
+                <ul className="space-y-2">
+                  {(tasksQ.data ?? []).map((t) => (
+                    <li key={t.id} className="flex items-center justify-between text-sm border rounded p-2">
+                      <span className={t.status === "done" ? "line-through text-muted-foreground" : ""}>{t.title} {t.due_date && <span className="text-xs text-muted-foreground">· {t.due_date}</span>}</span>
+                      {t.status !== "done" && <Button size="sm" variant="ghost" onClick={() => doCompleteTask.mutate(t.id)}>Done</Button>}
+                    </li>
+                  ))}
+                  {(tasksQ.data?.length ?? 0) === 0 && <li className="text-sm text-muted-foreground">No investigation tasks yet.</li>}
+                </ul>
+                <div className="flex gap-2 border-t pt-3">
+                  <Input placeholder="New task…" value={taskTitle} onChange={(e)=>setTaskTitle(e.target.value)} />
+                  <Button size="sm" disabled={!taskTitle || doAddTask.isPending} onClick={()=>doAddTask.mutate()}>Add</Button>
+                </div>
+              </Card>
+            </TabsContent>
+            <TabsContent value="timeline">
+              <Card className="p-5">
+                <ul className="space-y-2 text-sm">
+                  {(eventsQ.data ?? []).map((ev) => (
+                    <li key={ev.id} className="border-l-2 border-muted pl-3">
+                      <p className="text-xs text-muted-foreground">{new Date(ev.created_at).toLocaleString()}</p>
+                      <p>{ev.event_type}{ev.from_status && ev.to_status ? `: ${ev.from_status} → ${ev.to_status}` : ""}</p>
+                    </li>
+                  ))}
+                  {(eventsQ.data?.length ?? 0) === 0 && <li className="text-muted-foreground">No events yet.</li>}
+                </ul>
+              </Card>
+            </TabsContent>
+            <TabsContent value="resolve">
+              <Card className="p-5 space-y-3">
+                <div><Label>Outcome</Label><Select value={outcome} onValueChange={(v)=>setOutcome(v as typeof outcome)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upheld">Upheld</SelectItem>
+                    <SelectItem value="partially_upheld">Partially upheld</SelectItem>
+                    <SelectItem value="dismissed">Dismissed</SelectItem>
+                    <SelectItem value="withdrawn">Withdrawn</SelectItem>
+                  </SelectContent>
+                </Select></div>
+                <div><Label>Resolution summary</Label><Textarea rows={4} value={resolveSummary} onChange={(e)=>setResolveSummary(e.target.value)} /></div>
+                <div className="flex justify-end"><Button onClick={()=>doResolve.mutate()} disabled={!resolveSummary || doResolve.isPending}>Resolve case</Button></div>
+              </Card>
+            </TabsContent>
+          </Tabs>
         )}
 
         <Card className="p-5">

@@ -24,20 +24,21 @@ export const summarizeOneOnOne = createServerFn({ method: "POST" })
       .maybeSingle();
     if (sErr || !session) throw new Error("Session not found or no access");
 
-    const { data: notes, error: nErr } = await context.supabase
-      .from("one_on_one_notes")
-      .select("content, visibility, created_at")
+    const { data: agenda, error: aErr } = await context.supabase
+      .from("one_on_one_agenda_notes")
+      .select("agenda_index, agenda_prompt, content")
       .eq("session_id", data.session_id)
-      .order("created_at", { ascending: true });
-    if (nErr) throw nErr;
+      .order("agenda_index", { ascending: true });
+    if (aErr) throw aErr;
 
-    const combined = (notes ?? [])
-      .map((n) => `[${n.visibility}] ${n.content}`)
+    const combined = ((agenda ?? []) as Array<{ agenda_prompt: string | null; content: string }>)
+      .filter((a) => a.content?.trim())
+      .map((a) => `Q: ${a.agenda_prompt ?? ""}\nNotes: ${a.content}`)
       .join("\n\n");
-    if (!combined.trim()) throw new Error("No notes to summarize yet");
+    if (!combined.trim()) throw new Error("No agenda notes to summarize yet");
 
     const prompt = `You are an executive coach helping a manager process a 1-on-1 meeting.
-Summarize the following shared meeting notes into:
+Summarize the following agenda-item notes into:
 1. Key themes (2-4 bullets)
 2. Wins and progress
 3. Blockers / concerns
@@ -70,17 +71,23 @@ ${combined}`;
 /** Extract action items from shared notes, insert them as rows. */
 export const extractOneOnOneActionItems = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ session_id: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) => z.object({
+    session_id: z.string().uuid(),
+    agenda_index: z.number().int().optional(),
+  }).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: notes, error } = await context.supabase
-      .from("one_on_one_notes")
-      .select("content")
-      .eq("session_id", data.session_id)
-      .eq("visibility", "shared")
-      .order("created_at", { ascending: true });
+    let q = context.supabase
+      .from("one_on_one_agenda_notes")
+      .select("agenda_index, agenda_prompt, content")
+      .eq("session_id", data.session_id);
+    if (typeof data.agenda_index === "number") q = q.eq("agenda_index", data.agenda_index);
+    const { data: notes, error } = await q;
     if (error) throw error;
-    const combined = (notes ?? []).map((n) => n.content).join("\n\n");
-    if (!combined.trim()) throw new Error("No shared notes to scan");
+    const combined = ((notes ?? []) as Array<{ agenda_prompt: string | null; content: string }>)
+      .filter((n) => n.content?.trim())
+      .map((n) => `Q: ${n.agenda_prompt ?? ""}\nNotes: ${n.content}`)
+      .join("\n\n");
+    if (!combined.trim()) throw new Error("No agenda notes to scan");
 
     const prompt = `Scan the following 1-on-1 meeting notes and extract concrete action items / commitments.
 Return ONLY a JSON array of objects with shape:
