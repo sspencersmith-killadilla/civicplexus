@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone } from "lucide-react";
+import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -32,12 +32,14 @@ const NAV_GROUPS = [
   { label: "Coaching", items: [
     { to: "/one-on-ones", label: "1-on-1s", icon: MessagesSquare, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
     { to: "/goals", label: "Goals", icon: Target, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
+    { to: "/reviews", label: "Reviews", icon: ClipboardCheck, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
     { to: "/cascades", label: "Cascades", icon: Megaphone, roles: ["hr_admin", "hiring_manager", "supervisor"] },
   ]},
   { label: "Compliance", items: [
     { to: "/training", label: "Training & Certs", icon: GraduationCap, roles: ["hr_admin", "hiring_manager"] },
     { to: "/screenings", label: "Screenings", icon: ShieldQuestion, roles: ["hr_admin"] },
     { to: "/policies", label: "Policies", icon: ScrollText, roles: ["hr_admin", "hiring_manager", "employee", "candidate"] },
+    { to: "/grievances", label: "Grievances", icon: ShieldAlert, roles: ["hr_admin", "hiring_manager", "supervisor", "employee", "candidate"] },
     { to: "/documents", label: "Documents", icon: FolderLock, roles: ["hr_admin", "it_admin", "hiring_manager", "employee", "candidate"] },
     { to: "/reports", label: "Reports", icon: BarChart3, roles: ["hr_admin"] },
     { to: "/audit", label: "Audit Log", icon: History, roles: ["hr_admin"] },

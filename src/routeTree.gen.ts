@@ -33,12 +33,16 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
+import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
 import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
+import { Route as AuthenticatedGrievancesIndexRouteImport } from './routes/_authenticated/grievances.index'
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
+import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
+import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
@@ -172,10 +176,22 @@ const AuthenticatedTemplatesIndexRoute =
     path: '/templates/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedReviewsIndexRoute =
+  AuthenticatedReviewsIndexRouteImport.update({
+    id: '/reviews/',
+    path: '/reviews/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedOneOnOnesIndexRoute =
   AuthenticatedOneOnOnesIndexRouteImport.update({
     id: '/one-on-ones/',
     path: '/one-on-ones/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGrievancesIndexRoute =
+  AuthenticatedGrievancesIndexRouteImport.update({
+    id: '/grievances/',
+    path: '/grievances/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFormsIndexRoute = AuthenticatedFormsIndexRouteImport.update({
@@ -195,6 +211,11 @@ const AuthenticatedTemplatesIdRoute =
     path: '/templates/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedReviewsIdRoute = AuthenticatedReviewsIdRouteImport.update({
+  id: '/reviews/$id',
+  path: '/reviews/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -204,6 +225,12 @@ const AuthenticatedOneOnOnesIdRoute =
   AuthenticatedOneOnOnesIdRouteImport.update({
     id: '/one-on-ones/$id',
     path: '/one-on-ones/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGrievancesIdRoute =
+  AuthenticatedGrievancesIdRouteImport.update({
+    id: '/grievances/$id',
+    path: '/grievances/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFormsKeyRoute = AuthenticatedFormsKeyRouteImport.update({
@@ -265,12 +292,16 @@ export interface FileRoutesByFullPath {
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
+  '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/forms/': typeof AuthenticatedFormsIndexRoute
+  '/grievances/': typeof AuthenticatedGrievancesIndexRoute
   '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
+  '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -302,12 +333,16 @@ export interface FileRoutesByTo {
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
+  '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/forms': typeof AuthenticatedFormsIndexRoute
+  '/grievances': typeof AuthenticatedGrievancesIndexRoute
   '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
+  '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -341,12 +376,16 @@ export interface FileRoutesById {
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
+  '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
+  '/_authenticated/grievances/': typeof AuthenticatedGrievancesIndexRoute
   '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
+  '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -380,12 +419,16 @@ export interface FileRouteTypes {
     | '/cascades/$id'
     | '/employees/import'
     | '/forms/$key'
+    | '/grievances/$id'
     | '/one-on-ones/$id'
     | '/policies/$id'
+    | '/reviews/$id'
     | '/templates/$id'
     | '/cascades/'
     | '/forms/'
+    | '/grievances/'
     | '/one-on-ones/'
+    | '/reviews/'
     | '/templates/'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -417,12 +460,16 @@ export interface FileRouteTypes {
     | '/cascades/$id'
     | '/employees/import'
     | '/forms/$key'
+    | '/grievances/$id'
     | '/one-on-ones/$id'
     | '/policies/$id'
+    | '/reviews/$id'
     | '/templates/$id'
     | '/cascades'
     | '/forms'
+    | '/grievances'
     | '/one-on-ones'
+    | '/reviews'
     | '/templates'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -455,12 +502,16 @@ export interface FileRouteTypes {
     | '/_authenticated/cascades/$id'
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
+    | '/_authenticated/grievances/$id'
     | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/policies/$id'
+    | '/_authenticated/reviews/$id'
     | '/_authenticated/templates/$id'
     | '/_authenticated/cascades/'
     | '/_authenticated/forms/'
+    | '/_authenticated/grievances/'
     | '/_authenticated/one-on-ones/'
+    | '/_authenticated/reviews/'
     | '/_authenticated/templates/'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -646,11 +697,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemplatesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reviews/': {
+      id: '/_authenticated/reviews/'
+      path: '/reviews'
+      fullPath: '/reviews/'
+      preLoaderRoute: typeof AuthenticatedReviewsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/one-on-ones/': {
       id: '/_authenticated/one-on-ones/'
       path: '/one-on-ones'
       fullPath: '/one-on-ones/'
       preLoaderRoute: typeof AuthenticatedOneOnOnesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/grievances/': {
+      id: '/_authenticated/grievances/'
+      path: '/grievances'
+      fullPath: '/grievances/'
+      preLoaderRoute: typeof AuthenticatedGrievancesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/forms/': {
@@ -674,6 +739,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemplatesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reviews/$id': {
+      id: '/_authenticated/reviews/$id'
+      path: '/reviews/$id'
+      fullPath: '/reviews/$id'
+      preLoaderRoute: typeof AuthenticatedReviewsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/policies/$id': {
       id: '/_authenticated/policies/$id'
       path: '/$id'
@@ -686,6 +758,13 @@ declare module '@tanstack/react-router' {
       path: '/one-on-ones/$id'
       fullPath: '/one-on-ones/$id'
       preLoaderRoute: typeof AuthenticatedOneOnOnesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/grievances/$id': {
+      id: '/_authenticated/grievances/$id'
+      path: '/grievances/$id'
+      fullPath: '/grievances/$id'
+      preLoaderRoute: typeof AuthenticatedGrievancesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/forms/$key': {
@@ -783,11 +862,15 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
   AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
+  AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
+  AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
   AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
+  AuthenticatedGrievancesIndexRoute: typeof AuthenticatedGrievancesIndexRoute
   AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
+  AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
 }
 
@@ -814,11 +897,15 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
   AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
+  AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
+  AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedCascadesIndexRoute: AuthenticatedCascadesIndexRoute,
   AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
+  AuthenticatedGrievancesIndexRoute: AuthenticatedGrievancesIndexRoute,
   AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
+  AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
 }
 
