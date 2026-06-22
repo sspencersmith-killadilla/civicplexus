@@ -94,6 +94,83 @@ export type Database = {
           },
         ]
       }
+      cascade_responses: {
+        Row: {
+          cascade_id: string
+          created_at: string
+          department: string | null
+          id: string
+          manager_name: string | null
+          responder_id: string | null
+          team_feedback: string
+        }
+        Insert: {
+          cascade_id: string
+          created_at?: string
+          department?: string | null
+          id?: string
+          manager_name?: string | null
+          responder_id?: string | null
+          team_feedback: string
+        }
+        Update: {
+          cascade_id?: string
+          created_at?: string
+          department?: string | null
+          id?: string
+          manager_name?: string | null
+          responder_id?: string | null
+          team_feedback?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cascade_responses_cascade_id_fkey"
+            columns: ["cascade_id"]
+            isOneToOne: false
+            referencedRelation: "cascades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cascades: {
+        Row: {
+          ai_generated_at: string | null
+          ai_summary: string | null
+          attachment_url: string | null
+          broadcast_message: string
+          created_at: string
+          created_by: string | null
+          deadline: string | null
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          ai_generated_at?: string | null
+          ai_summary?: string | null
+          attachment_url?: string | null
+          broadcast_message: string
+          created_at?: string
+          created_by?: string | null
+          deadline?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          ai_generated_at?: string | null
+          ai_summary?: string | null
+          attachment_url?: string | null
+          broadcast_message?: string
+          created_at?: string
+          created_by?: string | null
+          deadline?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       certifications: {
         Row: {
           active: boolean
@@ -662,6 +739,104 @@ export type Database = {
           },
         ]
       }
+      goal_updates: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          goal_id: string
+          id: string
+          note: string | null
+          progress: number | null
+          status: string | null
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          goal_id: string
+          id?: string
+          note?: string | null
+          progress?: number | null
+          status?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          goal_id?: string
+          id?: string
+          note?: string | null
+          progress?: number | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_updates_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          owner_employee_id: string
+          parent_goal_id: string | null
+          progress: number
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          owner_employee_id: string
+          parent_goal_id?: string | null
+          progress?: number
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          owner_employee_id?: string
+          parent_goal_id?: string | null
+          progress?: number
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_owner_employee_id_fkey"
+            columns: ["owner_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_parent_goal_id_fkey"
+            columns: ["parent_goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hire_requests: {
         Row: {
           created_at: string
@@ -855,6 +1030,199 @@ export type Database = {
             columns: ["worker_type_id"]
             isOneToOne: false
             referencedRelation: "worker_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      one_on_one_action_items: {
+        Row: {
+          assignee_label: string | null
+          assignee_user_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          id: string
+          session_id: string
+          status: string
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_label?: string | null
+          assignee_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          session_id: string
+          status?: string
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_label?: string | null
+          assignee_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          session_id?: string
+          status?: string
+          text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_one_action_items_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_ones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      one_on_one_notes: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          session_id: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          session_id: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          session_id?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_one_notes_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_ones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      one_on_one_templates: {
+        Row: {
+          agenda_prompts: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agenda_prompts?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agenda_prompts?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      one_on_ones: {
+        Row: {
+          ai_action_items: Json | null
+          ai_generated_at: string | null
+          ai_summary: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string | null
+          id: string
+          manager_user_id: string
+          scheduled_at: string | null
+          short_code: string
+          status: string
+          summary: string | null
+          template_id: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_action_items?: Json | null
+          ai_generated_at?: string | null
+          ai_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          id?: string
+          manager_user_id: string
+          scheduled_at?: string | null
+          short_code: string
+          status?: string
+          summary?: string | null
+          template_id?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_action_items?: Json | null
+          ai_generated_at?: string | null
+          ai_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          id?: string
+          manager_user_id?: string
+          scheduled_at?: string | null
+          short_code?: string
+          status?: string
+          summary?: string | null
+          template_id?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_ones_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "one_on_ones_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_templates"
             referencedColumns: ["id"]
           },
         ]
