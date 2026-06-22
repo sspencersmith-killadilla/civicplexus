@@ -14,6 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      approval_chains: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          current_stage: number
+          entity_id: string
+          entity_type: string
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          current_stage?: number
+          entity_id: string
+          entity_type: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          current_stage?: number
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      approval_steps: {
+        Row: {
+          approver_id: string | null
+          approver_label: string
+          approver_role: string | null
+          chain_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_notes: string | null
+          id: string
+          stage: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approver_id?: string | null
+          approver_label: string
+          approver_role?: string | null
+          chain_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          id?: string
+          stage: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approver_id?: string | null
+          approver_label?: string
+          approver_role?: string | null
+          chain_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          id?: string
+          stage?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_steps_chain_id_fkey"
+            columns: ["chain_id"]
+            isOneToOne: false
+            referencedRelation: "approval_chains"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_events: {
         Row: {
           action: string
@@ -840,6 +926,47 @@ export type Database = {
           },
         ]
       }
+      grievance_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          from_status: string | null
+          grievance_id: string
+          id: string
+          payload: Json
+          to_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          from_status?: string | null
+          grievance_id: string
+          id?: string
+          payload?: Json
+          to_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          from_status?: string | null
+          grievance_id?: string
+          id?: string
+          payload?: Json
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grievance_events_grievance_id_fkey"
+            columns: ["grievance_id"]
+            isOneToOne: false
+            referencedRelation: "grievances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grievance_notes: {
         Row: {
           author_id: string | null
@@ -875,15 +1002,69 @@ export type Database = {
           },
         ]
       }
+      grievance_tasks: {
+        Row: {
+          assignee_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          grievance_id: string
+          id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          grievance_id: string
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          grievance_id?: string
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grievance_tasks_grievance_id_fkey"
+            columns: ["grievance_id"]
+            isOneToOne: false
+            referencedRelation: "grievances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grievances: {
         Row: {
+          acknowledged_at: string | null
+          appeal_deadline: string | null
           assigned_hr_id: string | null
           case_number: string | null
           category: string
           created_at: string
           details: string | null
+          due_date: string | null
           id: string
           is_anonymous: boolean
+          outcome: string | null
           resolution_summary: string | null
           resolved_at: string | null
           severity: string
@@ -894,13 +1075,17 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          acknowledged_at?: string | null
+          appeal_deadline?: string | null
           assigned_hr_id?: string | null
           case_number?: string | null
           category: string
           created_at?: string
           details?: string | null
+          due_date?: string | null
           id?: string
           is_anonymous?: boolean
+          outcome?: string | null
           resolution_summary?: string | null
           resolved_at?: string | null
           severity?: string
@@ -911,13 +1096,17 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          acknowledged_at?: string | null
+          appeal_deadline?: string | null
           assigned_hr_id?: string | null
           case_number?: string | null
           category?: string
           created_at?: string
           details?: string | null
+          due_date?: string | null
           id?: string
           is_anonymous?: boolean
+          outcome?: string | null
           resolution_summary?: string | null
           resolved_at?: string | null
           severity?: string
@@ -1008,6 +1197,319 @@ export type Database = {
           },
           {
             foreignKeyName: "hire_requests_worker_type_id_fkey"
+            columns: ["worker_type_id"]
+            isOneToOne: false
+            referencedRelation: "worker_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interview_feedback: {
+        Row: {
+          id: string
+          interview_id: string
+          interviewer_id: string
+          notes: string | null
+          rating: number | null
+          recommendation: string | null
+          submitted_at: string
+        }
+        Insert: {
+          id?: string
+          interview_id: string
+          interviewer_id: string
+          notes?: string | null
+          rating?: number | null
+          recommendation?: string | null
+          submitted_at?: string
+        }
+        Update: {
+          id?: string
+          interview_id?: string
+          interviewer_id?: string
+          notes?: string | null
+          rating?: number | null
+          recommendation?: string | null
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_feedback_interview_id_fkey"
+            columns: ["interview_id"]
+            isOneToOne: false
+            referencedRelation: "interviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interviews: {
+        Row: {
+          application_id: string
+          calendar_event_id: string | null
+          created_at: string
+          created_by: string | null
+          duration_minutes: number
+          id: string
+          interviewer_ids: string[]
+          location: string | null
+          notes: string | null
+          scheduled_at: string
+          stage: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          application_id: string
+          calendar_event_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_minutes?: number
+          id?: string
+          interviewer_ids?: string[]
+          location?: string | null
+          notes?: string | null
+          scheduled_at: string
+          stage?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string
+          calendar_event_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_minutes?: number
+          id?: string
+          interviewer_ids?: string[]
+          location?: string | null
+          notes?: string | null
+          scheduled_at?: string
+          stage?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interviews_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_application_events: {
+        Row: {
+          actor_id: string | null
+          application_id: string
+          created_at: string
+          event_type: string
+          from_status: string | null
+          id: string
+          payload: Json
+          to_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          application_id: string
+          created_at?: string
+          event_type: string
+          from_status?: string | null
+          id?: string
+          payload?: Json
+          to_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          application_id?: string
+          created_at?: string
+          event_type?: string
+          from_status?: string | null
+          id?: string
+          payload?: Json
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_application_events_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_applications: {
+        Row: {
+          answers: Json
+          applicant_name: string
+          cover_letter: string | null
+          created_at: string
+          email: string
+          id: string
+          internal_employee_id: string | null
+          is_internal: boolean
+          notes: string | null
+          notify_current_manager: boolean
+          phone: string | null
+          rating: number | null
+          rejection_reason: string | null
+          requisition_id: string
+          resume_url: string | null
+          source: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          answers?: Json
+          applicant_name: string
+          cover_letter?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          internal_employee_id?: string | null
+          is_internal?: boolean
+          notes?: string | null
+          notify_current_manager?: boolean
+          phone?: string | null
+          rating?: number | null
+          rejection_reason?: string | null
+          requisition_id: string
+          resume_url?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          answers?: Json
+          applicant_name?: string
+          cover_letter?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          internal_employee_id?: string | null
+          is_internal?: boolean
+          notes?: string | null
+          notify_current_manager?: boolean
+          phone?: string | null
+          rating?: number | null
+          rejection_reason?: string | null
+          requisition_id?: string
+          resume_url?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_internal_employee_id_fkey"
+            columns: ["internal_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "job_requisitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_requisitions: {
+        Row: {
+          benefits: string | null
+          closes_at: string | null
+          created_at: string
+          department: string | null
+          description: string | null
+          employment_type: string | null
+          hire_request_id: string | null
+          hiring_manager_id: string | null
+          id: string
+          internal_only: boolean
+          location: string | null
+          position_id: string | null
+          posted_at: string | null
+          requested_by: string | null
+          requirements: string | null
+          salary_max: number | null
+          salary_min: number | null
+          slug: string | null
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+          worker_type_id: string | null
+        }
+        Insert: {
+          benefits?: string | null
+          closes_at?: string | null
+          created_at?: string
+          department?: string | null
+          description?: string | null
+          employment_type?: string | null
+          hire_request_id?: string | null
+          hiring_manager_id?: string | null
+          id?: string
+          internal_only?: boolean
+          location?: string | null
+          position_id?: string | null
+          posted_at?: string | null
+          requested_by?: string | null
+          requirements?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          slug?: string | null
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Update: {
+          benefits?: string | null
+          closes_at?: string | null
+          created_at?: string
+          department?: string | null
+          description?: string | null
+          employment_type?: string | null
+          hire_request_id?: string | null
+          hiring_manager_id?: string | null
+          id?: string
+          internal_only?: boolean
+          location?: string | null
+          position_id?: string | null
+          posted_at?: string | null
+          requested_by?: string | null
+          requirements?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          slug?: string | null
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_requisitions_hire_request_id_fkey"
+            columns: ["hire_request_id"]
+            isOneToOne: false
+            referencedRelation: "hire_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_requisitions_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_requisitions_worker_type_id_fkey"
             columns: ["worker_type_id"]
             isOneToOne: false
             referencedRelation: "worker_types"
@@ -1177,6 +1679,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "one_on_one_action_items_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_ones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      one_on_one_agenda_notes: {
+        Row: {
+          agenda_index: number
+          agenda_prompt: string | null
+          author_id: string | null
+          content: string
+          created_at: string
+          id: string
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          agenda_index: number
+          agenda_prompt?: string | null
+          author_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          agenda_index?: number
+          agenda_prompt?: string | null
+          author_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_one_agenda_notes_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "one_on_ones"
