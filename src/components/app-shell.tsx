@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus } from "lucide-react";
+import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -17,6 +17,7 @@ const NAV_GROUPS = [
   ]},
   { label: "People", items: [
     { to: "/employees", label: "Employees", icon: Users, roles: ["hr_admin", "hiring_manager"] },
+    { to: "/positions", label: "Positions", icon: ClipboardList, roles: ["hr_admin", "hiring_manager", "supervisor"] },
     { to: "/hire-requests", label: "Hire Requests", icon: UserPlus, roles: ["hr_admin", "supervisor", "hiring_manager"] },
     { to: "/offboarding", label: "Offboarding", icon: DoorOpen, roles: ["hr_admin"] },
     { to: "/benefits", label: "Benefits", icon: HeartHandshake, roles: ["hr_admin"] },
