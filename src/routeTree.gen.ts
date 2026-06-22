@@ -35,6 +35,7 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
+import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
@@ -181,6 +182,12 @@ const AuthenticatedFormsIndexRoute = AuthenticatedFormsIndexRouteImport.update({
   path: '/forms/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCascadesIndexRoute =
+  AuthenticatedCascadesIndexRouteImport.update({
+    id: '/cascades/',
+    path: '/cascades/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTemplatesIdRoute =
   AuthenticatedTemplatesIdRouteImport.update({
     id: '/templates/$id',
@@ -254,6 +261,7 @@ export interface FileRoutesByFullPath {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/forms/': typeof AuthenticatedFormsIndexRoute
   '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
@@ -289,6 +297,7 @@ export interface FileRoutesByTo {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/forms': typeof AuthenticatedFormsIndexRoute
   '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
@@ -326,6 +335,7 @@ export interface FileRoutesById {
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
   '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
@@ -363,6 +373,7 @@ export interface FileRouteTypes {
     | '/one-on-ones/$id'
     | '/policies/$id'
     | '/templates/$id'
+    | '/cascades/'
     | '/forms/'
     | '/one-on-ones/'
     | '/templates/'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/one-on-ones/$id'
     | '/policies/$id'
     | '/templates/$id'
+    | '/cascades'
     | '/forms'
     | '/one-on-ones'
     | '/templates'
@@ -434,6 +446,7 @@ export interface FileRouteTypes {
     | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/policies/$id'
     | '/_authenticated/templates/$id'
+    | '/_authenticated/cascades/'
     | '/_authenticated/forms/'
     | '/_authenticated/one-on-ones/'
     | '/_authenticated/templates/'
@@ -635,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFormsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cascades/': {
+      id: '/_authenticated/cascades/'
+      path: '/cascades'
+      fullPath: '/cascades/'
+      preLoaderRoute: typeof AuthenticatedCascadesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/templates/$id': {
       id: '/_authenticated/templates/$id'
       path: '/templates/$id'
@@ -745,6 +765,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
+  AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
   AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
   AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
@@ -774,6 +795,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
+  AuthenticatedCascadesIndexRoute: AuthenticatedCascadesIndexRoute,
   AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
   AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
