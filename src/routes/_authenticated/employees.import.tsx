@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, Download, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { importEmployees, importDependents, importCertifications, importTraining, importEquipment } from "@/lib/employee-import.functions";
+import { importEmployees, importDependents, importCertifications, importTraining, importEquipment, importPositions } from "@/lib/employee-import.functions";
 
 export const Route = createFileRoute("/_authenticated/employees/import")({ component: ImportPage });
 
@@ -19,7 +19,8 @@ type Spec = {
 };
 
 const SPECS = {
-  employees: { label: "Employees", required: ["first_name","last_name","personal_email"], optional: ["work_email","phone","department","job_title","worker_type","start_date","status"], example: { first_name: "Ada", last_name: "Lovelace", personal_email: "ada@example.com", work_email: "ada@city.gov", phone: "555-1212", department: "IT", job_title: "Engineer", worker_type: "Full-time", start_date: "2026-07-01", status: "candidate" } },
+  employees: { label: "Employees", required: ["first_name","last_name","personal_email"], optional: ["external_id","work_email","phone","department","job_title","worker_type","start_date","status","position_code","manager_external_id"], example: { external_id: "EMP-001", first_name: "Ada", last_name: "Lovelace", personal_email: "ada@example.com", work_email: "ada@city.gov", phone: "555-1212", department: "IT", job_title: "Engineer", worker_type: "Full-time", start_date: "2026-07-01", status: "candidate", position_code: "IT-ENG-1", manager_external_id: "EMP-100" } },
+  positions: { label: "Positions", required: ["position_code","title"], optional: ["department","flsa_class","pay_grade","pay_step","budgeted_fte","reports_to_position_code","status","notes"], example: { position_code: "IT-ENG-1", title: "Software Engineer", department: "IT", flsa_class: "exempt", pay_grade: "G12", pay_step: "3", budgeted_fte: "1", reports_to_position_code: "IT-DIR", status: "open", notes: "" } },
   dependents: { label: "Dependents", required: ["employee_email","first_name","last_name","relationship"], optional: ["dob","ssn_last4"], example: { employee_email: "ada@example.com", first_name: "Anna", last_name: "Lovelace", relationship: "child", dob: "2015-04-10", ssn_last4: "1234" } },
   certifications: { label: "Certifications", required: ["employee_email","certification_name"], optional: ["issuer","issued_at","expires_at","notes"], example: { employee_email: "ada@example.com", certification_name: "OSHA 10", issuer: "OSHA", issued_at: "2024-01-15", expires_at: "2029-01-15", notes: "" } },
   training: { label: "Training", required: ["employee_email","course_name"], optional: ["status","due_date","completed_at","score"], example: { employee_email: "ada@example.com", course_name: "Workplace Safety", status: "complete", due_date: "2026-06-01", completed_at: "2026-05-28", score: "92" } },
@@ -64,6 +65,7 @@ function ImportPanel({ specKey, spec }: { specKey: keyof typeof SPECS; spec: typ
 
   const fnMap = {
     employees: useServerFn(importEmployees),
+    positions: useServerFn(importPositions),
     dependents: useServerFn(importDependents),
     certifications: useServerFn(importCertifications),
     training: useServerFn(importTraining),
