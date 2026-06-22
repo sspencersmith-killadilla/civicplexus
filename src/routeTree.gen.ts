@@ -25,6 +25,7 @@ import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authenticated/hire-requests'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
+import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
@@ -32,11 +33,15 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
+import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
+import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
+import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
+import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
@@ -126,6 +131,11 @@ const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
   path: '/help',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedEquipmentRoute = AuthenticatedEquipmentRouteImport.update({
   id: '/equipment',
   path: '/equipment',
@@ -162,11 +172,23 @@ const AuthenticatedTemplatesIndexRoute =
     path: '/templates/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOneOnOnesIndexRoute =
+  AuthenticatedOneOnOnesIndexRouteImport.update({
+    id: '/one-on-ones/',
+    path: '/one-on-ones/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFormsIndexRoute = AuthenticatedFormsIndexRouteImport.update({
   id: '/forms/',
   path: '/forms/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCascadesIndexRoute =
+  AuthenticatedCascadesIndexRouteImport.update({
+    id: '/cascades/',
+    path: '/cascades/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTemplatesIdRoute =
   AuthenticatedTemplatesIdRouteImport.update({
     id: '/templates/$id',
@@ -178,6 +200,12 @@ const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedPoliciesRoute,
 } as any)
+const AuthenticatedOneOnOnesIdRoute =
+  AuthenticatedOneOnOnesIdRouteImport.update({
+    id: '/one-on-ones/$id',
+    path: '/one-on-ones/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFormsKeyRoute = AuthenticatedFormsKeyRouteImport.update({
   id: '/forms/$key',
   path: '/forms/$key',
@@ -189,6 +217,11 @@ const AuthenticatedEmployeesImportRoute =
     path: '/import',
     getParentRoute: () => AuthenticatedEmployeesRoute,
   } as any)
+const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
+  id: '/cascades/$id',
+  path: '/cascades/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
   id: '/api/public/hooks/reminders',
   path: '/api/public/hooks/reminders',
@@ -215,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/equipment': typeof AuthenticatedEquipmentRoute
+  '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -228,11 +262,15 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/forms/': typeof AuthenticatedFormsIndexRoute
+  '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -247,6 +285,7 @@ export interface FileRoutesByTo {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/equipment': typeof AuthenticatedEquipmentRoute
+  '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -260,11 +299,15 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/forms': typeof AuthenticatedFormsIndexRoute
+  '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -281,6 +324,7 @@ export interface FileRoutesById {
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
+  '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -294,11 +338,15 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
+  '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -315,6 +363,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/employees'
     | '/equipment'
+    | '/goals'
     | '/help'
     | '/hire-requests'
     | '/notifications'
@@ -328,11 +377,15 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/cascades/$id'
     | '/employees/import'
     | '/forms/$key'
+    | '/one-on-ones/$id'
     | '/policies/$id'
     | '/templates/$id'
+    | '/cascades/'
     | '/forms/'
+    | '/one-on-ones/'
     | '/templates/'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -347,6 +400,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/employees'
     | '/equipment'
+    | '/goals'
     | '/help'
     | '/hire-requests'
     | '/notifications'
@@ -360,11 +414,15 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/cascades/$id'
     | '/employees/import'
     | '/forms/$key'
+    | '/one-on-ones/$id'
     | '/policies/$id'
     | '/templates/$id'
+    | '/cascades'
     | '/forms'
+    | '/one-on-ones'
     | '/templates'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -380,6 +438,7 @@ export interface FileRouteTypes {
     | '/_authenticated/documents'
     | '/_authenticated/employees'
     | '/_authenticated/equipment'
+    | '/_authenticated/goals'
     | '/_authenticated/help'
     | '/_authenticated/hire-requests'
     | '/_authenticated/notifications'
@@ -393,11 +452,15 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/training'
     | '/_authenticated/worker-types'
+    | '/_authenticated/cascades/$id'
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
+    | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/policies/$id'
     | '/_authenticated/templates/$id'
+    | '/_authenticated/cascades/'
     | '/_authenticated/forms/'
+    | '/_authenticated/one-on-ones/'
     | '/_authenticated/templates/'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -527,6 +590,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHelpRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/goals': {
+      id: '/_authenticated/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof AuthenticatedGoalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/equipment': {
       id: '/_authenticated/equipment'
       path: '/equipment'
@@ -576,11 +646,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemplatesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/one-on-ones/': {
+      id: '/_authenticated/one-on-ones/'
+      path: '/one-on-ones'
+      fullPath: '/one-on-ones/'
+      preLoaderRoute: typeof AuthenticatedOneOnOnesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/forms/': {
       id: '/_authenticated/forms/'
       path: '/forms'
       fullPath: '/forms/'
       preLoaderRoute: typeof AuthenticatedFormsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cascades/': {
+      id: '/_authenticated/cascades/'
+      path: '/cascades'
+      fullPath: '/cascades/'
+      preLoaderRoute: typeof AuthenticatedCascadesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/templates/$id': {
@@ -597,6 +681,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPoliciesIdRouteImport
       parentRoute: typeof AuthenticatedPoliciesRoute
     }
+    '/_authenticated/one-on-ones/$id': {
+      id: '/_authenticated/one-on-ones/$id'
+      path: '/one-on-ones/$id'
+      fullPath: '/one-on-ones/$id'
+      preLoaderRoute: typeof AuthenticatedOneOnOnesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/forms/$key': {
       id: '/_authenticated/forms/$key'
       path: '/forms/$key'
@@ -610,6 +701,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/employees/import'
       preLoaderRoute: typeof AuthenticatedEmployeesImportRouteImport
       parentRoute: typeof AuthenticatedEmployeesRoute
+    }
+    '/_authenticated/cascades/$id': {
+      id: '/_authenticated/cascades/$id'
+      path: '/cascades/$id'
+      fullPath: '/cascades/$id'
+      preLoaderRoute: typeof AuthenticatedCascadesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/hooks/reminders': {
       id: '/api/public/hooks/reminders'
@@ -669,6 +767,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRouteWithChildren
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
+  AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedHireRequestsRoute: typeof AuthenticatedHireRequestsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -682,9 +781,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
+  AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
+  AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
+  AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
   AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
+  AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
 }
 
@@ -695,6 +798,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEmployeesRoute: AuthenticatedEmployeesRouteWithChildren,
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
+  AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedHireRequestsRoute: AuthenticatedHireRequestsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
@@ -708,9 +812,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
+  AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
+  AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
+  AuthenticatedCascadesIndexRoute: AuthenticatedCascadesIndexRoute,
   AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
+  AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
 }
 
