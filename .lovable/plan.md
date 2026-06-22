@@ -1,135 +1,91 @@
-# Municipal HRIS — 90-Day Roadmap
+## What we're building
 
-Goal: close the biggest gaps between today's onboarding/compliance system and a working municipal HRIS, sequenced so each milestone is independently usable.
+Four additions on top of the existing Coaching module:
 
-## Prioritization principles
-
-1. **Employee-visible value first** — features the workforce uses daily (time off, self-service) beat back-office plumbing.
-2. **Compliance before convenience** — anything tied to FLSA, FMLA, OSHA, or EEO is non-negotiable for a municipality.
-3. **Build the system of record before integrations** — own positions, leave, and comp data internally before syncing to ADP/Munis.
-4. **Defer payroll engine** — integrate, don't rebuild. Payroll is a 12+ month project on its own.
+1. **Seeded 1-on-1 templates** (curated set inspired by the Leader Hub repo's pattern of per-purpose meeting templates).
+2. **Annual performance reviews** that auto-pull a year's worth of 1-on-1 notes/action items + goal progress into a draft.
+3. **Grievances** — confidential employee-submitted complaints with an HR investigation/resolution workflow and audit trail.
+4. **Org-chart batch import** — CSV upload for Positions and Employees (including manager/reports-to links) with a downloadable template.
 
 ---
 
-## Days 1–30 — Foundations (System of Record)
+## 1. 1-on-1 templates (seed data)
 
-Focus: stand up the data models that everything else depends on, plus the highest-impact employee self-service.
+The McKinney repo seeds templates in the DB (only a 3-question default lives in code). We'll seed a municipal-flavored set into `one_on_one_templates` via migration:
 
-### M1.1 Position Management
-- `positions` table: title, dept, FLSA class, pay grade/step, budgeted FTE, vacant/filled, reports-to
-- Link `employees.position_id` (keep `manager_id` derived from position)
-- Org chart view, vacancy report, headcount vs. budget
+- **Weekly Check-in** (default) — wins, blockers, priorities for next week, support needed
+- **Bi-weekly Coaching** — progress on goals, skill development, feedback exchange
+- **Monthly Career Growth** — career aspirations, growth areas, learning plan, stretch opportunities
+- **Quarterly Goals Review** — goal progress, recalibration, new commitments
+- **Project Retro 1-on-1** — what went well, what didn't, lessons, next steps
+- **New Hire 30-day** — onboarding experience, role clarity, early wins, friction
+- **New Hire 60/90-day** — ramp progress, relationships, performance signals
+- **Skip-Level** — directs' team health, manager effectiveness, org concerns
+- **Return-from-Leave** — re-onboarding, workload calibration, support
+- **Performance Concern** — expectations, gaps, support plan, follow-up cadence (HR-visible flag)
 
-### M1.2 Pay Structure (data only, no payroll engine)
-- `pay_grades` + `pay_steps` tables (grade × step → hourly/annual rate)
-- `compensation_history` per employee (effective-dated rate changes, reason codes: hire, step, COLA, promotion, reclass)
-- Show current comp + history on employee profile
+Each row populates `agenda_prompts` (jsonb array of question strings). The existing 1-on-1 detail page already renders the chosen template — no UI changes needed.
 
-### M1.3 Time-Off / Leave Foundations
-- `leave_types` (vacation, sick, personal, comp, FMLA, military, bereavement)
-- `leave_balances` (per employee per type, accrual rules)
-- `leave_requests` with supervisor approval workflow
-- Employee self-service: request time off, see balances
-- Supervisor inbox: approve/deny
+## 2. Annual reviews
 
-**End-of-30 deliverable:** an employee can see their position, pay history, and PTO balance, and request time off. Supervisors approve. HR sees vacancy and headcount reports.
+### Schema
+- `performance_reviews` — `employee_id`, `manager_user_id`, `review_period_start/end`, `status` (draft/manager_complete/employee_acknowledged/finalized), `manager_narrative`, `employee_self_assessment`, `overall_rating` (1-5), `ratings` jsonb (per-competency), `ai_draft`, `ai_generated_at`, `finalized_at`.
+- `performance_review_signatures` — manager + employee signature timestamps + IP, separate from the row for audit integrity.
+- Reuse existing `audit_events` for change history.
+- RLS: employee can read their own + sign; manager can read/write theirs; `hr_admin` full access.
 
----
+### Server functions (`src/lib/reviews.functions.ts`)
+- `createAnnualReview({ employee_id, period_start, period_end })` — manager/HR only.
+- `compileReviewContext({ review_id })` — pulls all `one_on_ones` + `one_on_one_action_items` + `goals` + `goal_updates` for that employee in the period; returns a structured summary.
+- `generateReviewDraft({ review_id })` — feeds compiled context to Lovable AI (same gateway as coaching-ai), produces markdown narrative + suggested ratings; stored in `ai_draft`.
+- `finalizeReview({ review_id })` — locks fields, requires both signatures.
 
-## Days 31–60 — Compliance & Employee Self-Service
+### UI
+- `src/routes/_authenticated/reviews.index.tsx` — list (filter mine/team/all), "New review" dialog.
+- `src/routes/_authenticated/reviews.$id.tsx` — tabs: Context (read-only roll-up of 1-on-1s/goals), Manager Narrative, Self-Assessment, Ratings, Signatures.
+- Sidebar entry under Coaching.
 
-Focus: the reporting and ESS features that make HR stop using spreadsheets.
+## 3. Grievances
 
-### M2.1 FMLA & Leave Compliance
-- FMLA eligibility check (12 mo / 1,250 hr rule), 12-week rolling balance
-- FMLA case tracking (certification due dates, intermittent vs. continuous)
-- Leave usage report (by type, dept, date range)
+### Schema
+- `grievances` — `submitted_by` (auth.uid), `subject_employee_id` (optional — who it's about), `category` (harassment, retaliation, policy, pay, safety, other), `summary`, `details`, `is_anonymous`, `status` (submitted/triage/investigating/resolved/closed/withdrawn), `severity`, `assigned_hr_id`, `resolution_summary`, `resolved_at`.
+- `grievance_notes` — investigator notes with `visibility` (`hr_only`, `shared_with_submitter`).
+- `grievance_attachments` — links to documents in the existing `onboarding-documents` storage bucket (reuse).
+- RLS: submitter sees their own submissions + shared notes; `hr_admin` sees all; everyone else is blocked. All status changes write to `audit_events`.
 
-### M2.2 Compliance Reports
-- EEO-4 (public sector equivalent of EEO-1): workforce by job category × race/gender
-- OSHA 300 / 300A injury log (uses existing screenings + new incident table)
-- FLSA exempt/non-exempt audit report
-- ACA hours tracking (avg hours/week over measurement period)
+### UI
+- `src/routes/_authenticated/grievances.index.tsx` — "File a grievance" form for any signed-in user; HR sees a triage queue.
+- `src/routes/_authenticated/grievances.$id.tsx` — case view with timeline, notes (visibility toggle), status workflow buttons (HR only), resolution panel.
+- Sidebar entry "Grievances" (visible to all; HR sees queue, others see only their own).
 
-### M2.3 Employee Self-Service Expansion
-- Update personal info (address, phone, emergency contacts, dependents) with HR approval queue
-- View/download pay stubs (placeholder until payroll integration — upload PDFs from current provider)
-- View benefits elections (read-only, sourced from existing benefits_handoffs)
-- Document inbox (W-2s, 1095-Cs, policy updates)
+## 4. Org-chart batch import
 
-### M2.4 Timesheets (basic)
-- `timesheets` table with daily entries, project/grant code optional
-- Supervisor approval, lock-after-approval
-- Overtime calculation per FLSA workweek rule
-- Export to CSV for current payroll provider
+### Templates (downloadable CSV)
+- **Positions template:** `position_code, title, department, flsa_class, pay_grade, pay_step, budgeted_fte, reports_to_position_code, status, notes`
+- **Employees template:** `employee_external_id, first_name, last_name, work_email, personal_email, phone, department, job_title, position_code, manager_employee_external_id, worker_type, start_date, status`
 
-**End-of-60 deliverable:** HR can pull every standard municipal compliance report. Employees manage their own profile, time off, and timesheets. Pay stubs visible.
+### Server functions (`src/lib/org-import.functions.ts`)
+- `previewOrgImport({ kind, csv_text })` — parses, validates, returns row-level diagnostics (new vs match, errors) without writing.
+- `commitOrgImport({ kind, csv_text, mode })` — `mode` = `insert_only` | `upsert`. Resolves `reports_to_position_code` and `manager_employee_external_id` in a second pass so forward references work. Writes one `audit_events` row per inserted/updated record plus a batch summary row.
+- Both gated to `hr_admin`.
+- Employees keyed on a new optional `external_id text unique` column (added via migration) to make idempotent re-imports safe; falls back to email if no external_id.
 
----
-
-## Days 61–90 — Workflows, Performance, Integrations
-
-Focus: replace remaining manual processes and connect to the payroll system of record.
-
-### M3.1 Performance & Discipline
-- Annual review templates (configurable per worker type / union)
-- Goals (SMART), self-assessment, manager assessment, sign-off
-- Disciplinary actions: verbal, written, suspension, termination
-- Union step-discipline tracker (prior offenses lookup window)
-- Grievance log with status workflow
-
-### M3.2 Applicant Tracking (lightweight)
-- Public job board route `/careers` listing open `positions`
-- Application form (resume upload, EEO survey, voluntary self-ID)
-- Candidate pipeline: applied → screened → interviewed → offered → hired
-- Convert hired candidate → hire request (reuses existing flow)
-
-### M3.3 Payroll Integration (one provider)
-- Outbound nightly export to ADP / Munis / Tyler (whichever the municipality uses)
-- Inbound: pay stub PDFs, YTD totals
-- Job/grant code mapping for GL feed
-
-### M3.4 Calendar & Notification Automation
-- ICS feed for cert expirations, review due dates, leave
-- Email digests (supervisor weekly, HR daily)
-- Slack/Teams webhook for hire requests + approvals
-
-**End-of-90 deliverable:** full review cycle runs in-system, public job postings drive the hire pipeline, and payroll runs off our position + timesheet + leave data via the chosen provider.
+### UI
+- `src/routes/_authenticated/employees.import.tsx` already exists — extend it with tabs: "Employees" (existing) and "Positions" (new), plus a "Download template" button on each. Show preview diagnostics table before commit.
+- Add the same import entry point from the Positions page.
 
 ---
 
-## Out of scope for 90 days (call out explicitly)
+## Technical notes
 
-- Building a real payroll engine (tax tables, direct deposit ACH, W-2 generation) — always integrate, never build
-- Pension system integration (PERS/state retirement) — phase 2, requires state-specific certifications
-- Benefits open enrollment engine — phase 2, current handoff workflow is sufficient
-- Badge system / physical access API — phase 2, depends on which vendor (HID, LenelS2, etc.)
-- Mobile native apps — responsive web is enough
+- All new tables follow the project's GRANT → RLS → POLICY order; `has_role` from `private` schema is reused.
+- AI calls reuse `src/lib/ai-gateway.server.ts` + `LOVABLE_API_KEY`.
+- CSV parsing uses a tiny in-repo parser (no new dependency) — comma-separated, quoted fields, header row required.
+- All write paths log to `audit_events` for compliance.
 
----
+## Out of scope (call out)
 
-## Risk & sequencing notes
-
-- **Union contracts gate M3.1** — disciplinary and review workflows must match each CBA. Confirm contracts before building templates.
-- **Payroll vendor choice gates M3.3** — ADP, Tyler Munis, Workday Public Sector, and BambooHR all have different APIs. Pick before day 45.
-- **Leave accrual rules vary by class** — sworn vs. civilian vs. seasonal often have different accrual tables. Model as data, not code.
-- **EEO-4 is biennial, not annual** — but the data model must capture it continuously from day 1.
-
----
-
-## Technical notes (for engineering)
-
-- All new tables follow the existing pattern: GRANTs on create, RLS enabled, `user_id`-scoped self-service policies, `has_role()` for HR/supervisor access (per project security memory).
-- Reuse `create_hire_request` / `decide_hire_request` RPC pattern for new approval workflows (leave, profile changes, discipline).
-- New routes under `src/routes/_authenticated/` with the same query-in-loader + `useSuspenseQuery` pattern.
-- Public ATS route under `src/routes/careers.tsx` (unauthenticated); application submission via server route under `src/routes/api/public/applications.ts` with rate limiting and signature/CAPTCHA.
-- Payroll exports as scheduled server functions; inbound files via `api/public/*` webhook with signature verification.
-
----
-
-## Suggested next step
-
-Pick one of:
-1. **Approve as-is** — I'll start M1.1 (Position Management) on the next turn.
-2. **Reorder** — e.g. promote Timesheets to days 1–30 if payroll integration timing demands it.
-3. **Trim** — drop ATS or Performance from 90 days to add depth elsewhere (e.g. benefits open enrollment).
+- Cross-year review comparisons / calibration sessions
+- Grievance auto-routing rules (manual HR triage only)
+- Excel/.xlsx import (CSV only this turn — easy follow-up)
+- Org-chart visualization (data only; visualization can be a follow-up)
