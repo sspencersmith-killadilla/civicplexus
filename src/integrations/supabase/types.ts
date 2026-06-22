@@ -383,6 +383,7 @@ export type Database = {
           manager_id: string | null
           personal_email: string | null
           phone: string | null
+          position_id: string | null
           rehire_eligible: boolean
           separation_date: string | null
           separation_reason: string | null
@@ -405,6 +406,7 @@ export type Database = {
           manager_id?: string | null
           personal_email?: string | null
           phone?: string | null
+          position_id?: string | null
           rehire_eligible?: boolean
           separation_date?: string | null
           separation_reason?: string | null
@@ -427,6 +429,7 @@ export type Database = {
           manager_id?: string | null
           personal_email?: string | null
           phone?: string | null
+          position_id?: string | null
           rehire_eligible?: boolean
           separation_date?: string | null
           separation_reason?: string | null
@@ -438,6 +441,13 @@ export type Database = {
           worker_type_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "employees_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "employees_worker_type_id_fkey"
             columns: ["worker_type_id"]
@@ -991,6 +1001,72 @@ export type Database = {
           },
         ]
       }
+      positions: {
+        Row: {
+          budgeted_fte: number
+          created_at: string
+          department: string | null
+          flsa_class: string | null
+          id: string
+          notes: string | null
+          pay_grade: string | null
+          pay_step: string | null
+          position_code: string | null
+          reports_to_position_id: string | null
+          status: string
+          title: string
+          updated_at: string
+          worker_type_id: string | null
+        }
+        Insert: {
+          budgeted_fte?: number
+          created_at?: string
+          department?: string | null
+          flsa_class?: string | null
+          id?: string
+          notes?: string | null
+          pay_grade?: string | null
+          pay_step?: string | null
+          position_code?: string | null
+          reports_to_position_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Update: {
+          budgeted_fte?: number
+          created_at?: string
+          department?: string | null
+          flsa_class?: string | null
+          id?: string
+          notes?: string | null
+          pay_grade?: string | null
+          pay_step?: string | null
+          position_code?: string | null
+          reports_to_position_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "positions_reports_to_position_id_fkey"
+            columns: ["reports_to_position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "positions_worker_type_id_fkey"
+            columns: ["worker_type_id"]
+            isOneToOne: false
+            referencedRelation: "worker_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ppe_sizing: {
         Row: {
           boot: string | null
@@ -1427,7 +1503,16 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      position_headcount: {
+        Row: {
+          budgeted_fte: number | null
+          department: string | null
+          filled_count: number | null
+          total_positions: number | null
+          vacant_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_hire_request:
