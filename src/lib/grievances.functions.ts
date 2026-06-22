@@ -95,3 +95,86 @@ export const addGrievanceNote = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+export const acknowledgeGrievance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({
+    grievance_id: z.string().uuid(),
+    due_date: z.string().optional(),
+  }).parse(i))
+  .handler(async ({ data, context }) => {
+    const patch: Record<string, unknown> = {
+      acknowledged_at: new Date().toISOString(),
+      status: "triage",
+    };
+    if (data.due_date) patch.due_date = data.due_date;
+    const { error } = await context.supabase.from("grievances").update(patch as never).eq("id", data.grievance_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const assignGrievance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({
+    grievance_id: z.string().uuid(),
+    assigned_hr_id: z.string().uuid(),
+  }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("grievances")
+      .update({ assigned_hr_id: data.assigned_hr_id } as never).eq("id", data.grievance_id);
+    if (error) throw new Error(error.message);
+    await context.supabase.from("notifications").insert({
+      user_id: data.assigned_hr_id, type: "grievance",
+      title: "Grievance assigned to you", body: "Open your queue to review.", link: `/grievances/${data.grievance_id}`,
+    });
+    return { ok: true };
+  });
+
+export const addGrievanceTask = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({
+    grievance_id: z.string().uuid(),
+    title: z.string().trim().min(2).max(200),
+    description: z.string().max(2000).optional(),
+    assignee_id: z.string().uuid().optional(),
+    due_date: z.string().optional(),
+  }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("grievance_tasks" as never).insert({
+      grievance_id: data.grievance_id, title: data.title,
+      description: data.description ?? null, assignee_id: data.assignee_id ?? null,
+      due_date: data.due_date ?? null, created_by: context.userId,
+    } as never);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const completeGrievanceTask = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ task_id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await context.supabase.from("grievance_tasks" as never).update({
+      status: "done", completed_at: new Date().toISOString(),
+    } as never).eq("id", data.task_id);
+    return { ok: true };
+  });
+
+export const resolveGrievance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({
+    grievance_id: z.string().uuid(),
+    outcome: z.enum(["upheld","partially_upheld","dismissed","withdrawn"]),
+    resolution_summary: z.string().trim().min(5).max(10000),
+    appeal_deadline: z.string().optional(),
+  }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("grievances").update({
+      outcome: data.outcome,
+      resolution_summary: data.resolution_summary,
+      appeal_deadline: data.appeal_deadline ?? null,
+      resolved_at: new Date().toISOString(),
+      status: "resolved",
+    } as never).eq("id", data.grievance_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
