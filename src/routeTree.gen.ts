@@ -42,6 +42,7 @@ import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
+import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
@@ -226,6 +227,12 @@ const AuthenticatedOneOnOnesIdRoute =
     path: '/one-on-ones/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedGrievancesIdRoute =
+  AuthenticatedGrievancesIdRouteImport.update({
+    id: '/grievances/$id',
+    path: '/grievances/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFormsKeyRoute = AuthenticatedFormsKeyRouteImport.update({
   id: '/forms/$key',
   path: '/forms/$key',
@@ -285,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -325,6 +333,7 @@ export interface FileRoutesByTo {
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -367,6 +376,7 @@ export interface FileRoutesById {
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -409,6 +419,7 @@ export interface FileRouteTypes {
     | '/cascades/$id'
     | '/employees/import'
     | '/forms/$key'
+    | '/grievances/$id'
     | '/one-on-ones/$id'
     | '/policies/$id'
     | '/reviews/$id'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/cascades/$id'
     | '/employees/import'
     | '/forms/$key'
+    | '/grievances/$id'
     | '/one-on-ones/$id'
     | '/policies/$id'
     | '/reviews/$id'
@@ -490,6 +502,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cascades/$id'
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
+    | '/_authenticated/grievances/$id'
     | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/policies/$id'
     | '/_authenticated/reviews/$id'
@@ -747,6 +760,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOneOnOnesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/grievances/$id': {
+      id: '/_authenticated/grievances/$id'
+      path: '/grievances/$id'
+      fullPath: '/grievances/$id'
+      preLoaderRoute: typeof AuthenticatedGrievancesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/forms/$key': {
       id: '/_authenticated/forms/$key'
       path: '/forms/$key'
@@ -842,6 +862,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
   AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
+  AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
@@ -876,6 +897,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
   AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
+  AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
