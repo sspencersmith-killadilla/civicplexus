@@ -17,6 +17,7 @@ const rowsInput = <T extends z.ZodTypeAny>(row: T) =>
   z.object({ rows: z.array(row).min(1).max(5000) });
 
 const empRow = z.object({
+  external_id: z.string().trim().max(80).optional().or(z.literal("")),
   first_name: z.string().trim().min(1).max(80),
   last_name: z.string().trim().min(1).max(80),
   personal_email: z.string().trim().email().max(255),
@@ -27,6 +28,8 @@ const empRow = z.object({
   worker_type: z.string().trim().max(120).optional().or(z.literal("")),
   start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
   status: z.enum(["candidate", "preboarding", "active", "offboarded"]).optional().or(z.literal("")),
+  position_code: z.string().trim().max(80).optional().or(z.literal("")),
+  manager_external_id: z.string().trim().max(80).optional().or(z.literal("")),
 });
 
 export const importEmployees = createServerFn({ method: "POST" })
@@ -38,6 +41,8 @@ export const importEmployees = createServerFn({ method: "POST" })
     const result: ImportResult = { inserted: 0, updated: 0, skipped: 0, errors: [] };
     const { data: wts } = await supabaseAdmin.from("worker_types").select("id,name");
     const wtMap = new Map((wts ?? []).map((w) => [w.name.toLowerCase(), w.id]));
+    const { data: poses } = await supabaseAdmin.from("positions").select("id,position_code");
+    const posMap = new Map((poses ?? []).filter((p) => p.position_code).map((p) => [p.position_code!.toLowerCase(), p.id]));
 
     for (let i = 0; i < data.rows.length; i++) {
       const r = data.rows[i];
@@ -49,18 +54,34 @@ export const importEmployees = createServerFn({ method: "POST" })
           if (!id) { result.errors.push({ row: rowNum, column: "worker_type", message: `Unknown worker type: ${r.worker_type}` }); result.skipped++; continue; }
           worker_type_id = id;
         }
+        let position_id: string | null = null;
+        if (r.position_code) {
+          const id = posMap.get(r.position_code.toLowerCase());
+          if (!id) { result.errors.push({ row: rowNum, column: "position_code", message: `Unknown position: ${r.position_code}` }); result.skipped++; continue; }
+          position_id = id;
+        }
         const patch: Record<string, unknown> = {
           first_name: r.first_name, last_name: r.last_name, personal_email: r.personal_email,
         };
+        if (r.external_id) patch.external_id = r.external_id;
         if (r.work_email) patch.work_email = r.work_email;
         if (r.phone) patch.phone = r.phone;
         if (r.department) patch.department = r.department;
         if (r.job_title) patch.job_title = r.job_title;
         if (worker_type_id) patch.worker_type_id = worker_type_id;
+        if (position_id) patch.position_id = position_id;
         if (r.start_date) patch.start_date = r.start_date;
         if (r.status) patch.status = r.status;
 
-        const { data: existing } = await supabaseAdmin.from("employees").select("id").eq("personal_email", r.personal_email).maybeSingle();
+        let existing: { id: string } | null = null;
+        if (r.external_id) {
+          const { data } = await supabaseAdmin.from("employees").select("id").eq("external_id", r.external_id).maybeSingle();
+          existing = data;
+        }
+        if (!existing) {
+          const { data } = await supabaseAdmin.from("employees").select("id").eq("personal_email", r.personal_email).maybeSingle();
+          existing = data;
+        }
         if (existing) {
           const { error } = await supabaseAdmin.from("employees").update(patch as never).eq("id", existing.id);
           if (error) throw new Error(error.message);
@@ -75,6 +96,90 @@ export const importEmployees = createServerFn({ method: "POST" })
         result.skipped++;
       }
     }
+
+    // Second pass: resolve manager_external_id links
+    for (let i = 0; i < data.rows.length; i++) {
+      const r = data.rows[i];
+      if (!r.manager_external_id || !r.external_id) continue;
+      const rowNum = i + 2;
+      try {
+        const { data: mgr } = await supabaseAdmin.from("employees").select("id, user_id").eq("external_id", r.manager_external_id).maybeSingle();
+        if (!mgr) { result.errors.push({ row: rowNum, column: "manager_external_id", message: `Unknown manager external_id: ${r.manager_external_id}` }); continue; }
+        if (mgr.user_id) {
+          await supabaseAdmin.from("employees").update({ manager_id: mgr.user_id } as never).eq("external_id", r.external_id);
+        }
+      } catch (e) {
+        result.errors.push({ row: rowNum, column: "manager_external_id", message: e instanceof Error ? e.message : String(e) });
+      }
+    }
+
+    return result;
+  });
+
+// ============ Positions import =============
+const posRow = z.object({
+  position_code: z.string().trim().min(1).max(80),
+  title: z.string().trim().min(1).max(200),
+  department: z.string().trim().max(120).optional().or(z.literal("")),
+  flsa_class: z.enum(["exempt", "non_exempt"]).optional().or(z.literal("")),
+  pay_grade: z.string().trim().max(40).optional().or(z.literal("")),
+  pay_step: z.string().trim().max(40).optional().or(z.literal("")),
+  budgeted_fte: z.coerce.number().min(0).max(100).optional().or(z.literal("")),
+  reports_to_position_code: z.string().trim().max(80).optional().or(z.literal("")),
+  status: z.enum(["open", "filled", "frozen", "closed"]).optional().or(z.literal("")),
+  notes: z.string().trim().max(1000).optional().or(z.literal("")),
+});
+
+export const importPositions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => rowsInput(posRow).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertHrAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const result: ImportResult = { inserted: 0, updated: 0, skipped: 0, errors: [] };
+
+    // Pass 1: upsert positions (without reports_to)
+    for (let i = 0; i < data.rows.length; i++) {
+      const r = data.rows[i];
+      const rowNum = i + 2;
+      try {
+        const patch: Record<string, unknown> = { position_code: r.position_code, title: r.title };
+        if (r.department) patch.department = r.department;
+        if (r.flsa_class) patch.flsa_class = r.flsa_class;
+        if (r.pay_grade) patch.pay_grade = r.pay_grade;
+        if (r.pay_step) patch.pay_step = r.pay_step;
+        if (typeof r.budgeted_fte === "number") patch.budgeted_fte = r.budgeted_fte;
+        if (r.status) patch.status = r.status;
+        if (r.notes) patch.notes = r.notes;
+
+        const { data: existing } = await supabaseAdmin.from("positions").select("id").eq("position_code", r.position_code).maybeSingle();
+        if (existing) {
+          const { error } = await supabaseAdmin.from("positions").update(patch as never).eq("id", existing.id);
+          if (error) throw new Error(error.message);
+          result.updated++;
+        } else {
+          const { error } = await supabaseAdmin.from("positions").insert(patch as never);
+          if (error) throw new Error(error.message);
+          result.inserted++;
+        }
+      } catch (e) {
+        result.errors.push({ row: rowNum, message: e instanceof Error ? e.message : String(e) });
+        result.skipped++;
+      }
+    }
+
+    // Pass 2: resolve reports_to_position_code
+    const { data: allPos } = await supabaseAdmin.from("positions").select("id, position_code");
+    const codeToId = new Map((allPos ?? []).filter((p) => p.position_code).map((p) => [p.position_code!.toLowerCase(), p.id]));
+    for (let i = 0; i < data.rows.length; i++) {
+      const r = data.rows[i];
+      if (!r.reports_to_position_code) continue;
+      const rowNum = i + 2;
+      const parentId = codeToId.get(r.reports_to_position_code.toLowerCase());
+      if (!parentId) { result.errors.push({ row: rowNum, column: "reports_to_position_code", message: `Unknown parent position: ${r.reports_to_position_code}` }); continue; }
+      await supabaseAdmin.from("positions").update({ reports_to_position_id: parentId } as never).eq("position_code", r.position_code);
+    }
+
     return result;
   });
 
