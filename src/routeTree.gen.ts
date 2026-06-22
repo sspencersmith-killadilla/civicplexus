@@ -36,6 +36,7 @@ import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
+import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
@@ -185,6 +186,12 @@ const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedPoliciesRoute,
 } as any)
+const AuthenticatedOneOnOnesIdRoute =
+  AuthenticatedOneOnOnesIdRouteImport.update({
+    id: '/one-on-ones/$id',
+    path: '/one-on-ones/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFormsKeyRoute = AuthenticatedFormsKeyRouteImport.update({
   id: '/forms/$key',
   path: '/forms/$key',
@@ -237,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/forms/': typeof AuthenticatedFormsIndexRoute
@@ -270,6 +278,7 @@ export interface FileRoutesByTo {
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/forms': typeof AuthenticatedFormsIndexRoute
@@ -305,6 +314,7 @@ export interface FileRoutesById {
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/worker-types'
     | '/employees/import'
     | '/forms/$key'
+    | '/one-on-ones/$id'
     | '/policies/$id'
     | '/templates/$id'
     | '/forms/'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/worker-types'
     | '/employees/import'
     | '/forms/$key'
+    | '/one-on-ones/$id'
     | '/policies/$id'
     | '/templates/$id'
     | '/forms'
@@ -407,6 +419,7 @@ export interface FileRouteTypes {
     | '/_authenticated/worker-types'
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
+    | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/policies/$id'
     | '/_authenticated/templates/$id'
     | '/_authenticated/forms/'
@@ -617,6 +630,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPoliciesIdRouteImport
       parentRoute: typeof AuthenticatedPoliciesRoute
     }
+    '/_authenticated/one-on-ones/$id': {
+      id: '/_authenticated/one-on-ones/$id'
+      path: '/one-on-ones/$id'
+      fullPath: '/one-on-ones/$id'
+      preLoaderRoute: typeof AuthenticatedOneOnOnesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/forms/$key': {
       id: '/_authenticated/forms/$key'
       path: '/forms/$key'
@@ -703,6 +723,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
+  AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
   AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
@@ -730,6 +751,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
+  AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
   AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
