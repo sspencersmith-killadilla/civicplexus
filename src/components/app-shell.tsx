@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -28,6 +28,11 @@ const NAV_GROUPS = [
     { to: "/templates", label: "Templates", icon: ListChecks, roles: ["hr_admin"] },
     { to: "/forms", label: "Forms Library", icon: FileSignature, roles: ["hr_admin"] },
     { to: "/provisioning", label: "IT Provisioning", icon: Server, roles: ["it_admin", "hr_admin"] },
+  ]},
+  { label: "Coaching", items: [
+    { to: "/one-on-ones", label: "1-on-1s", icon: MessagesSquare, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
+    { to: "/goals", label: "Goals", icon: Target, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
+    { to: "/cascades", label: "Cascades", icon: Megaphone, roles: ["hr_admin", "hiring_manager", "supervisor"] },
   ]},
   { label: "Compliance", items: [
     { to: "/training", label: "Training & Certs", icon: GraduationCap, roles: ["hr_admin", "hiring_manager"] },

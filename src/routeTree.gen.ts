@@ -41,6 +41,7 @@ import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
+import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
@@ -216,6 +217,11 @@ const AuthenticatedEmployeesImportRoute =
     path: '/import',
     getParentRoute: () => AuthenticatedEmployeesRoute,
   } as any)
+const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
+  id: '/cascades/$id',
+  path: '/cascades/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
   id: '/api/public/hooks/reminders',
   path: '/api/public/hooks/reminders',
@@ -256,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -292,6 +299,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -330,6 +338,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -368,6 +377,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/cascades/$id'
     | '/employees/import'
     | '/forms/$key'
     | '/one-on-ones/$id'
@@ -404,6 +414,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/cascades/$id'
     | '/employees/import'
     | '/forms/$key'
     | '/one-on-ones/$id'
@@ -441,6 +452,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/training'
     | '/_authenticated/worker-types'
+    | '/_authenticated/cascades/$id'
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
     | '/_authenticated/one-on-ones/$id'
@@ -690,6 +702,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeesImportRouteImport
       parentRoute: typeof AuthenticatedEmployeesRoute
     }
+    '/_authenticated/cascades/$id': {
+      id: '/_authenticated/cascades/$id'
+      path: '/cascades/$id'
+      fullPath: '/cascades/$id'
+      preLoaderRoute: typeof AuthenticatedCascadesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/hooks/reminders': {
       id: '/api/public/hooks/reminders'
       path: '/api/public/hooks/reminders'
@@ -762,6 +781,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
+  AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
@@ -792,6 +812,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
+  AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
