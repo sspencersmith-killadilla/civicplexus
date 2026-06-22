@@ -49,9 +49,23 @@ function OneOnOneDetail() {
         .from("one_on_one_notes")
         .select("*")
         .eq("session_id", id)
+        .eq("visibility", "manager_private")
         .order("created_at", { ascending: true });
       if (error) throw error;
       return data;
+    },
+  });
+
+  const agendaNotesQ = useQuery({
+    queryKey: ["one_on_one_agenda_notes", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("one_on_one_agenda_notes")
+        .select("*")
+        .eq("session_id", id)
+        .order("agenda_index", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
@@ -69,7 +83,6 @@ function OneOnOneDetail() {
   });
 
   const [noteContent, setNoteContent] = useState("");
-  const [noteVis, setNoteVis] = useState<"shared" | "manager_private">("shared");
   const isManager = sessionQ.data?.manager_user_id === uid;
 
   const addNote = useMutation({
@@ -79,7 +92,7 @@ function OneOnOneDetail() {
       const { error } = await supabase.from("one_on_one_notes").insert({
         session_id: id,
         author_id: uid,
-        visibility: noteVis,
+        visibility: "manager_private",
         content: noteContent.trim(),
       });
       if (error) throw error;
@@ -88,6 +101,19 @@ function OneOnOneDetail() {
       setNoteContent("");
       qc.invalidateQueries({ queryKey: ["one_on_one_notes", id] });
     },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
+  });
+
+  const saveAgendaNote = useMutation({
+    mutationFn: async ({ idx, prompt, content }: { idx: number; prompt: string; content: string }) => {
+      if (!uid) throw new Error("Not signed in");
+      const { error } = await supabase.from("one_on_one_agenda_notes").upsert({
+        session_id: id, agenda_index: idx, agenda_prompt: prompt,
+        content, author_id: uid,
+      }, { onConflict: "session_id,agenda_index" });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["one_on_one_agenda_notes", id] }),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
 
@@ -145,7 +171,7 @@ function OneOnOneDetail() {
   });
 
   const doExtract = useMutation({
-    mutationFn: async () => extract({ data: { session_id: id } }),
+    mutationFn: async (idx?: number) => extract({ data: { session_id: id, agenda_index: idx } }),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ["one_on_one_actions", id] });
       toast.success(`Extracted ${r.inserted} action item(s)`);
@@ -188,27 +214,42 @@ function OneOnOneDetail() {
                   </SelectContent>
                 </Select>
               </div>
-              {agenda.length > 0 && (
-                <div className="border-t pt-3">
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Agenda</p>
-                  <ul className="text-sm space-y-1 list-disc list-inside">
-                    {agenda.map((p, i) => <li key={i}>{p}</li>)}
-                  </ul>
-                </div>
-              )}
             </Card>
+
+            {agenda.length > 0 && (
+              <Card className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-medium">Agenda &amp; notes</h3>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" disabled={doSummarize.isPending} onClick={() => doSummarize.mutate()}>
+                      <Sparkles className="h-3 w-3 mr-1" /> {doSummarize.isPending ? "Summarizing…" : "AI summary"}
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={doExtract.isPending} onClick={() => doExtract.mutate(undefined)}>
+                      <ListChecks className="h-3 w-3 mr-1" /> {doExtract.isPending ? "Extracting…" : "Extract all actions"}
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {agenda.map((prompt, idx) => {
+                    const existing = (agendaNotesQ.data ?? []).find((n) => n.agenda_index === idx);
+                    return (
+                      <AgendaItem
+                        key={idx}
+                        prompt={prompt}
+                        initial={existing?.content ?? ""}
+                        onSave={(content) => saveAgendaNote.mutate({ idx, prompt, content })}
+                        onExtract={() => doExtract.mutate(idx)}
+                      />
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
 
             <Card className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-medium flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" /> Notes</h3>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" disabled={doSummarize.isPending} onClick={() => doSummarize.mutate()}>
-                    <Sparkles className="h-3 w-3 mr-1" /> {doSummarize.isPending ? "Summarizing…" : "AI summary"}
-                  </Button>
-                  <Button size="sm" variant="outline" disabled={doExtract.isPending} onClick={() => doExtract.mutate()}>
-                    <ListChecks className="h-3 w-3 mr-1" /> {doExtract.isPending ? "Extracting…" : "Extract actions"}
-                  </Button>
-                </div>
+                <h3 className="font-medium flex items-center gap-2"><Lock className="h-4 w-4 text-amber-600" /> Private notes</h3>
+                <span className="text-xs text-muted-foreground">Manager only</span>
               </div>
 
               <div className="space-y-3 mb-4">
@@ -228,24 +269,17 @@ function OneOnOneDetail() {
                     <p className="text-sm whitespace-pre-wrap">{n.content}</p>
                   </div>
                 ))}
-                {(notesQ.data?.length ?? 0) === 0 && <p className="text-sm text-muted-foreground">No notes yet — both manager and employee can post here.</p>}
+                {(notesQ.data?.length ?? 0) === 0 && <p className="text-sm text-muted-foreground">No private notes yet. Only you can see these.</p>}
               </div>
 
-              <div className="space-y-2 border-t pt-3">
-                <Textarea value={noteContent} onChange={(e) => setNoteContent(e.target.value)} placeholder="Add a note…" rows={3} />
-                <div className="flex items-center gap-2">
-                  {isManager && (
-                    <Select value={noteVis} onValueChange={(v) => setNoteVis(v as never)}>
-                      <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="shared">Shared</SelectItem>
-                        <SelectItem value="manager_private">Manager-private</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                  <Button disabled={addNote.isPending} onClick={() => addNote.mutate()}>{addNote.isPending ? "Saving…" : "Add note"}</Button>
+              {isManager && (
+                <div className="space-y-2 border-t pt-3">
+                  <Textarea value={noteContent} onChange={(e) => setNoteContent(e.target.value)} placeholder="Private thoughts, follow-ups, observations…" rows={3} />
+                  <div className="flex justify-end">
+                    <Button disabled={addNote.isPending} onClick={() => addNote.mutate()}>{addNote.isPending ? "Saving…" : "Save private note"}</Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </Card>
 
             {s.ai_summary && (
