@@ -41,6 +41,7 @@ import { Route as AuthenticatedGrievancesIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
+import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
@@ -223,6 +224,12 @@ const CareersSlugApplyRoute = CareersSlugApplyRouteImport.update({
   path: '/apply',
   getParentRoute: () => CareersSlugRoute,
 } as any)
+const ApiPublicJobApplicationsRoute =
+  ApiPublicJobApplicationsRouteImport.update({
+    id: '/api/public/job-applications',
+    path: '/api/public/job-applications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedTemplatesIdRoute =
   AuthenticatedTemplatesIdRouteImport.update({
     id: '/templates/$id',
@@ -317,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/forms/': typeof AuthenticatedFormsIndexRoute
@@ -361,6 +369,7 @@ export interface FileRoutesByTo {
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/forms': typeof AuthenticatedFormsIndexRoute
@@ -407,6 +416,7 @@ export interface FileRoutesById {
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
+  '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
@@ -453,6 +463,7 @@ export interface FileRouteTypes {
     | '/policies/$id'
     | '/reviews/$id'
     | '/templates/$id'
+    | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/cascades/'
     | '/forms/'
@@ -497,6 +508,7 @@ export interface FileRouteTypes {
     | '/policies/$id'
     | '/reviews/$id'
     | '/templates/$id'
+    | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/cascades'
     | '/forms'
@@ -542,6 +554,7 @@ export interface FileRouteTypes {
     | '/_authenticated/policies/$id'
     | '/_authenticated/reviews/$id'
     | '/_authenticated/templates/$id'
+    | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/_authenticated/cascades/'
     | '/_authenticated/forms/'
@@ -560,6 +573,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
   CareersIndexRoute: typeof CareersIndexRoute
+  ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
@@ -791,6 +805,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CareersSlugApplyRouteImport
       parentRoute: typeof CareersSlugRoute
     }
+    '/api/public/job-applications': {
+      id: '/api/public/job-applications'
+      path: '/api/public/job-applications'
+      fullPath: '/api/public/job-applications'
+      preLoaderRoute: typeof ApiPublicJobApplicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/templates/$id': {
       id: '/_authenticated/templates/$id'
       path: '/templates/$id'
@@ -989,6 +1010,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CareersSlugRoute: CareersSlugRouteWithChildren,
   CareersIndexRoute: CareersIndexRoute,
+  ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
