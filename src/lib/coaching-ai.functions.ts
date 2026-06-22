@@ -130,10 +130,13 @@ export const summarizeCascade = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ cascade_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: isHr } = await context.supabase.rpc("has_role" as never, {
-      _user_id: context.userId, _role: "hr_admin",
-    } as never);
-    if (!isHr) throw new Error("Only HR admins can summarize cascades");
+    const { data: roleRow } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "hr_admin")
+      .maybeSingle();
+    if (!roleRow) throw new Error("Only HR admins can summarize cascades");
 
     const { data: responses, error } = await context.supabase
       .from("cascade_responses")
