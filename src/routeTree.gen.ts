@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -68,6 +69,11 @@ const IndexRoute = IndexRouteImport.update({
 const CareersIndexRoute = CareersIndexRouteImport.update({
   id: '/careers/',
   path: '/careers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CareersSlugRoute = CareersSlugRouteImport.update({
+  id: '/careers/$slug',
+  path: '/careers/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWorkerTypesRoute =
@@ -295,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/careers/$slug': typeof CareersSlugRoute
   '/careers/': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
@@ -337,6 +344,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/careers/$slug': typeof CareersSlugRoute
   '/careers': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
@@ -381,6 +389,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/careers/$slug': typeof CareersSlugRoute
   '/careers/': typeof CareersIndexRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
@@ -425,6 +434,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/careers/$slug'
     | '/careers/'
     | '/cascades/$id'
     | '/employees/import'
@@ -467,6 +477,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/careers/$slug'
     | '/careers'
     | '/cascades/$id'
     | '/employees/import'
@@ -510,6 +521,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/training'
     | '/_authenticated/worker-types'
+    | '/careers/$slug'
     | '/careers/'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/employees/import'
@@ -534,6 +546,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CareersSlugRoute: typeof CareersSlugRoute
   CareersIndexRoute: typeof CareersIndexRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
@@ -568,6 +581,13 @@ declare module '@tanstack/react-router' {
       path: '/careers'
       fullPath: '/careers/'
       preLoaderRoute: typeof CareersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/careers/$slug': {
+      id: '/careers/$slug'
+      path: '/careers/$slug'
+      fullPath: '/careers/$slug'
+      preLoaderRoute: typeof CareersSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/worker-types': {
@@ -936,6 +956,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CareersSlugRoute: CareersSlugRoute,
   CareersIndexRoute: CareersIndexRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
