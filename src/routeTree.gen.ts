@@ -48,6 +48,7 @@ import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
+import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
 import { Route as AuthenticatedReviewCyclesIndexRouteImport } from './routes/_authenticated/review-cycles.index'
@@ -300,6 +301,11 @@ const AuthenticatedAdminMigrationRoute =
     path: '/admin-migration',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const CareersSlugIndexRoute = CareersSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CareersSlugRoute,
+} as any)
 const AuthenticatedTemplatesIndexRoute =
   AuthenticatedTemplatesIndexRouteImport.update({
     id: '/templates/',
@@ -618,6 +624,7 @@ export interface FileRoutesByFullPath {
   '/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
+  '/careers/$slug/': typeof CareersSlugIndexRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -663,7 +670,6 @@ export interface FileRoutesByTo {
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/candidate/$token': typeof CandidateTokenRoute
-  '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
   '/careers': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
@@ -701,6 +707,7 @@ export interface FileRoutesByTo {
   '/review-cycles': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
+  '/careers/$slug': typeof CareersSlugIndexRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -786,6 +793,7 @@ export interface FileRoutesById {
   '/_authenticated/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
+  '/careers/$slug/': typeof CareersSlugIndexRoute
   '/_authenticated/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
@@ -871,6 +879,7 @@ export interface FileRouteTypes {
     | '/review-cycles/'
     | '/reviews/'
     | '/templates/'
+    | '/careers/$slug/'
     | '/review-cycles/$id/calibration'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -916,7 +925,6 @@ export interface FileRouteTypes {
     | '/training'
     | '/worker-types'
     | '/candidate/$token'
-    | '/careers/$slug'
     | '/offer/$token'
     | '/careers'
     | '/cascades/$id'
@@ -954,6 +962,7 @@ export interface FileRouteTypes {
     | '/review-cycles'
     | '/reviews'
     | '/templates'
+    | '/careers/$slug'
     | '/review-cycles/$id/calibration'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -1038,6 +1047,7 @@ export interface FileRouteTypes {
     | '/_authenticated/review-cycles/'
     | '/_authenticated/reviews/'
     | '/_authenticated/templates/'
+    | '/careers/$slug/'
     | '/_authenticated/review-cycles/$id/calibration'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
@@ -1340,6 +1350,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin-migration'
       preLoaderRoute: typeof AuthenticatedAdminMigrationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/careers/$slug/': {
+      id: '/careers/$slug/'
+      path: '/'
+      fullPath: '/careers/$slug/'
+      preLoaderRoute: typeof CareersSlugIndexRouteImport
+      parentRoute: typeof CareersSlugRoute
     }
     '/_authenticated/templates/': {
       id: '/_authenticated/templates/'
@@ -1814,10 +1831,12 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface CareersSlugRouteChildren {
   CareersSlugApplyRoute: typeof CareersSlugApplyRoute
+  CareersSlugIndexRoute: typeof CareersSlugIndexRoute
 }
 
 const CareersSlugRouteChildren: CareersSlugRouteChildren = {
   CareersSlugApplyRoute: CareersSlugApplyRoute,
+  CareersSlugIndexRoute: CareersSlugIndexRoute,
 }
 
 const CareersSlugRouteWithChildren = CareersSlugRoute._addFileChildren(

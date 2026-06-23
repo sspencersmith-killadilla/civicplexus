@@ -126,6 +126,19 @@ export const Route = createFileRoute("/api/public/job-applications")({
             } as never, { onConflict: "application_id" });
           }
 
+          const { generateToken, getAppBaseUrl } = await import("@/lib/candidate-tokens.server");
+          const { token, hash } = generateToken();
+          const tokenExpiresAt = new Date(Date.now() + 60 * 86400000).toISOString();
+          const { error: tokenErr } = await supabaseAdmin.from("candidate_tokens" as never).insert({
+            application_id: a.id,
+            token_hash: hash,
+            purpose: "portal",
+            expires_at: tokenExpiresAt,
+          } as never);
+          if (tokenErr) return j({ error: "Application submitted, but portal setup failed" }, 500);
+          const portalPath = `/candidate/${token}`;
+          const portalUrl = `${getAppBaseUrl(request)}${portalPath}`;
+
           // Notify HR
           const { data: hr } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "hr_admin");
           for (const row of (hr ?? []) as Array<{ user_id: string }>) {
@@ -142,11 +155,11 @@ export const Route = createFileRoute("/api/public/job-applications")({
             await sendApplicantEmail({
               to: parsed.email,
               subject: "Application received",
-              body: `Hi ${parsed.applicant_name},\n\nThanks for applying! We've received your application and will be in touch.`,
+              body: `Hi ${parsed.applicant_name},\n\nThanks for applying! We've received your application and will be in touch.\n\nYou can track your status and message the recruiting team here:\n${portalUrl}`,
             });
           } catch { /* ignore */ }
 
-          return j({ id: a.id }, 200);
+          return j({ id: a.id, portal_token: token, portal_path: portalPath, portal_url: portalUrl, portal_expires_at: tokenExpiresAt }, 200);
         } catch (e) {
           const msg = e instanceof Error ? e.message : "Bad request";
           return j({ error: msg }, 400);
