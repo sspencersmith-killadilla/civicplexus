@@ -3,11 +3,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { completeTraining } from "@/lib/training.functions";
 import { toast } from "sonner";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR });
@@ -16,9 +21,27 @@ function MyHR() {
   const { data: me } = useCurrentUser();
   const qc = useQueryClient();
   const completeFn = useServerFn(completeTraining);
+  const [completeFor, setCompleteFor] = useState<{ id: string; name: string; employee_id: string } | null>(null);
+  const [completeForm, setCompleteForm] = useState<{ score: string; notes: string; file: File | null }>({ score: "", notes: "", file: null });
   const complete = useMutation({
-    mutationFn: (training_id: string) => completeFn({ data: { training_id } }),
-    onSuccess: () => { toast.success("Marked complete"); qc.invalidateQueries({ queryKey: ["my-training"] }); },
+    mutationFn: async () => {
+      if (!completeFor) throw new Error("No assignment");
+      let evidence_path: string | undefined;
+      if (completeForm.file) {
+        const ext = completeForm.file.name.split(".").pop() ?? "bin";
+        const path = `${completeFor.employee_id}/${completeFor.id}-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("training-evidence").upload(path, completeForm.file, { upsert: false });
+        if (upErr) throw new Error(upErr.message);
+        evidence_path = path;
+      }
+      const score = completeForm.score === "" ? undefined : Number(completeForm.score);
+      return completeFn({ data: { training_id: completeFor.id, score, notes: completeForm.notes || undefined, evidence_path } });
+    },
+    onSuccess: (res: { status: string }) => {
+      toast.success(res.status === "failed" ? "Recorded — score below passing" : "Marked complete");
+      setCompleteFor(null); setCompleteForm({ score: "", notes: "", file: null });
+      qc.invalidateQueries({ queryKey: ["my-training"] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -142,7 +165,7 @@ function MyHR() {
                         {t.due_date ? `Due ${t.due_date}` : "No due date"} · {t.status}{overdue ? " · overdue" : ""}
                       </p>
                     </div>
-                    <Button size="sm" variant="outline" disabled={complete.isPending} onClick={() => complete.mutate(t.id)}>
+                    <Button size="sm" variant="outline" onClick={() => { setCompleteFor({ id: t.id, name: t.courses.name, employee_id: empQ.data!.id }); setCompleteForm({ score: "", notes: "", file: null }); }}>
                       Mark complete
                     </Button>
                   </div>
@@ -169,9 +192,30 @@ function MyHR() {
             <Link to="/policies"><Button size="sm" variant="outline">All policies</Button></Link>
             <Link to="/documents"><Button size="sm" variant="outline">My documents</Button></Link>
             <Link to="/internal-careers"><Button size="sm" variant="outline">Internal jobs</Button></Link>
+            {empQ.data?.id && (
+              <Link to="/transcript/$employeeId" params={{ employeeId: empQ.data.id }}>
+                <Button size="sm" variant="outline"><FileText className="h-4 w-4 mr-1" /> My transcript</Button>
+              </Link>
+            )}
           </div>
         </section>
       </div>
+
+      <Dialog open={!!completeFor} onOpenChange={(o) => !o && setCompleteFor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Mark complete: {completeFor?.name}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>Score (optional)</Label><Input type="number" min={0} max={100} value={completeForm.score} onChange={(e) => setCompleteForm({ ...completeForm, score: e.target.value })} placeholder="0–100" /></div>
+            <div><Label>Notes</Label><Textarea rows={2} value={completeForm.notes} onChange={(e) => setCompleteForm({ ...completeForm, notes: e.target.value })} /></div>
+            <div>
+              <Label>Proof of completion (optional)</Label>
+              <Input type="file" accept="application/pdf,image/*" onChange={(e) => setCompleteForm({ ...completeForm, file: e.target.files?.[0] ?? null })} />
+              <p className="text-xs text-muted-foreground mt-1">PDF or image. Visible to HR and your supervisor.</p>
+            </div>
+          </div>
+          <DialogFooter><Button onClick={() => complete.mutate()} disabled={complete.isPending}>Save</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
