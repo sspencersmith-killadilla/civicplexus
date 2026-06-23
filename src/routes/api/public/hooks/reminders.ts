@@ -86,12 +86,79 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
         }
         if (offerNotifs.length) await supabaseAdmin.from("notifications").insert(offerNotifs);
 
+        // ── Review cycle reminders ────────────────────────────────────────
+        const todayDate = new Date().toISOString().slice(0, 10);
+        const { data: dueCycles } = await supabaseAdmin
+          .from("review_cycles")
+          .select("id, name, status, self_review_due, manager_review_due, signoff_due")
+          .in("status", ["open", "in_calibration"]);
+        const cycleNotifs: Array<{ user_id: string; type: string; title: string; body: string; link: string }> = [];
+        for (const c of (dueCycles ?? []) as Array<{ id: string; name: string; self_review_due: string | null; manager_review_due: string | null; signoff_due: string | null }>) {
+          const { data: parts } = await supabaseAdmin
+            .from("review_cycle_participants")
+            .select("status, review_id, employees:employee_id(user_id, first_name, last_name), managers:manager_id(user_id)")
+            .eq("cycle_id", c.id);
+          for (const p of (parts ?? []) as Array<{ status: string; review_id: string | null; employees: { user_id: string | null; first_name: string; last_name: string } | null; managers: { user_id: string | null } | null }>) {
+            if (c.self_review_due && c.self_review_due < todayDate && p.status === "not_started" && p.employees?.user_id) {
+              cycleNotifs.push({ user_id: p.employees.user_id, type: "review_cycle", title: "Self-assessment overdue", body: c.name, link: `/reviews/${p.review_id}` });
+            }
+            if (c.manager_review_due && c.manager_review_due < todayDate && (p.status === "not_started" || p.status === "self_submitted") && p.managers?.user_id) {
+              cycleNotifs.push({ user_id: p.managers.user_id, type: "review_cycle", title: "Manager review overdue", body: `${p.employees?.first_name ?? ""} ${p.employees?.last_name ?? ""}`, link: `/reviews/${p.review_id}` });
+            }
+          }
+        }
+        if (cycleNotifs.length) await supabaseAdmin.from("notifications").insert(cycleNotifs);
+
+        // ── Goal weekly check-in nudges (Monday only) ─────────────────────
+        const weeklyNotifs: Array<{ user_id: string; type: string; title: string; body: string; link: string }> = [];
+        if (new Date().getUTCDay() === 1) {
+          const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+          const { data: staleGoals } = await supabaseAdmin
+            .from("goals")
+            .select("id, title, owner_employee_id, employees:owner_employee_id(user_id)")
+            .eq("status", "active");
+          for (const g of (staleGoals ?? []) as Array<{ id: string; title: string; employees: { user_id: string | null } | null }>) {
+            if (!g.employees?.user_id) continue;
+            const { data: last } = await supabaseAdmin
+              .from("goal_updates").select("created_at").eq("goal_id", g.id)
+              .order("created_at", { ascending: false }).limit(1);
+            const lastAt = (last?.[0] as { created_at: string } | undefined)?.created_at;
+            if (!lastAt || lastAt < weekAgo) {
+              weeklyNotifs.push({ user_id: g.employees.user_id, type: "goal_checkin", title: "Goal check-in", body: g.title, link: "/goals" });
+            }
+          }
+        }
+        if (weeklyNotifs.length) await supabaseAdmin.from("notifications").insert(weeklyNotifs);
+
+        // ── Recurring 1:1 auto-create ─────────────────────────────────────
+        const horizon = new Date(Date.now() + 7 * 86400000).toISOString();
+        const { data: dueRecurring } = await supabaseAdmin
+          .from("one_on_ones")
+          .select("id, employee_id, manager_user_id, template_id, cadence_weeks, next_scheduled_at, title")
+          .not("cadence_weeks", "is", null)
+          .lte("next_scheduled_at", horizon);
+        let created = 0;
+        for (const s of (dueRecurring ?? []) as Array<{ id: string; employee_id: string; manager_user_id: string | null; template_id: string | null; cadence_weeks: number; next_scheduled_at: string; title: string | null }>) {
+          const next = new Date(s.next_scheduled_at);
+          const after = new Date(next.getTime() + s.cadence_weeks * 7 * 86400000).toISOString();
+          // Insert next session (basic clone of parent)
+          await supabaseAdmin.from("one_on_ones").insert({
+            employee_id: s.employee_id, manager_user_id: s.manager_user_id, template_id: s.template_id,
+            title: s.title, status: "scheduled", scheduled_at: s.next_scheduled_at,
+          });
+          await supabaseAdmin.from("one_on_ones").update({ next_scheduled_at: after }).eq("id", s.id);
+          created++;
+        }
+
         return Response.json({
           ok: true,
           queued: notifications.length,
           training,
           interview_reminders: interviewNotifs.length,
           expired_offers: offerNotifs.length,
+          cycle_reminders: cycleNotifs.length,
+          goal_checkins: weeklyNotifs.length,
+          recurring_one_on_ones: created,
         });
       },
     },
