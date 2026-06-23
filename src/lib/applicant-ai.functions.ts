@@ -24,6 +24,18 @@ const ScreenPayload = z.object({
 });
 export type ScreenPayload = z.infer<typeof ScreenPayload>;
 
+// Loose schema for the model's structured-output state machine (Gemini
+// rejects long string bounds / deep optionals). We validate + clamp with
+// the strict ScreenPayload schema after the call.
+const ScreenPayloadLoose = z.object({
+  fit_score: z.number(),
+  strengths: z.array(z.string()),
+  gaps: z.array(z.string()),
+  suggested_status: SuggestedStatus,
+  suggested_rejection_reason: z.string().nullable(),
+  rationale: z.string(),
+});
+
 /**
  * Generate an AI screening suggestion for a job application.
  * Writes one row to `ai_suggestions` with `kind='application_screen'`.
@@ -83,10 +95,17 @@ ${candidate}`;
     try {
       const { object } = await generateObject({
         model: gateway()(MODEL),
-        schema: ScreenPayload,
+        schema: ScreenPayloadLoose,
         prompt,
       });
-      payload = object;
+      payload = ScreenPayload.parse({
+        fit_score: Math.max(0, Math.min(100, Math.round(object.fit_score))),
+        strengths: object.strengths.slice(0, 8).map((s) => s.slice(0, 300)),
+        gaps: object.gaps.slice(0, 8).map((s) => s.slice(0, 300)),
+        suggested_status: object.suggested_status,
+        suggested_rejection_reason: object.suggested_rejection_reason?.slice(0, 500) ?? null,
+        rationale: object.rationale.slice(0, 2000),
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error("[screenApplication] AI call failed", msg);
