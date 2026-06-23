@@ -482,6 +482,54 @@ export type Database = {
           },
         ]
       }
+      employee_leave_enrollments: {
+        Row: {
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          employee_id: string
+          id: string
+          opening_balance_hours: number
+          plan_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          employee_id: string
+          id?: string
+          opening_balance_hours?: number
+          plan_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          employee_id?: string
+          id?: string
+          opening_balance_hours?: number
+          plan_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_leave_enrollments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_leave_enrollments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "leave_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_training: {
         Row: {
           completed_at: string | null
@@ -718,6 +766,74 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "equipment_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fmla_cases: {
+        Row: {
+          case_end_date: string | null
+          case_number: string | null
+          case_start_date: string
+          certification_expires_at: string | null
+          certification_received_at: string | null
+          created_at: string
+          eligibility_confirmed: boolean
+          eligibility_notes: string | null
+          employee_id: string
+          hours_entitled: number
+          hours_used: number
+          id: string
+          is_intermittent: boolean
+          reason: string
+          rolling_period_start: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          case_end_date?: string | null
+          case_number?: string | null
+          case_start_date: string
+          certification_expires_at?: string | null
+          certification_received_at?: string | null
+          created_at?: string
+          eligibility_confirmed?: boolean
+          eligibility_notes?: string | null
+          employee_id: string
+          hours_entitled?: number
+          hours_used?: number
+          id?: string
+          is_intermittent?: boolean
+          reason: string
+          rolling_period_start: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          case_end_date?: string | null
+          case_number?: string | null
+          case_start_date?: string
+          certification_expires_at?: string | null
+          certification_received_at?: string | null
+          created_at?: string
+          eligibility_confirmed?: boolean
+          eligibility_notes?: string | null
+          employee_id?: string
+          hours_entitled?: number
+          hours_used?: number
+          id?: string
+          is_intermittent?: boolean
+          reason?: string
+          rolling_period_start?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fmla_cases_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -1571,6 +1687,210 @@ export type Database = {
           },
         ]
       }
+      leave_balances: {
+        Row: {
+          accrued_hours: number
+          balance_hours: number | null
+          created_at: string
+          employee_id: string
+          id: string
+          last_accrual_at: string | null
+          pending_hours: number
+          plan_id: string
+          updated_at: string
+          used_hours: number
+        }
+        Insert: {
+          accrued_hours?: number
+          balance_hours?: number | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          last_accrual_at?: string | null
+          pending_hours?: number
+          plan_id: string
+          updated_at?: string
+          used_hours?: number
+        }
+        Update: {
+          accrued_hours?: number
+          balance_hours?: number | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          last_accrual_at?: string | null
+          pending_hours?: number
+          plan_id?: string
+          updated_at?: string
+          used_hours?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_balances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_balances_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "leave_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_plans: {
+        Row: {
+          accrual_frequency: string
+          accrual_rate_hours: number
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_comp_time: boolean
+          is_fmla: boolean
+          max_balance_hours: number | null
+          max_carryover_hours: number | null
+          name: string
+          paid: boolean
+          requires_balance: boolean
+          sort_order: number
+          updated_at: string
+          worker_type_id: string | null
+        }
+        Insert: {
+          accrual_frequency?: string
+          accrual_rate_hours?: number
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_comp_time?: boolean
+          is_fmla?: boolean
+          max_balance_hours?: number | null
+          max_carryover_hours?: number | null
+          name: string
+          paid?: boolean
+          requires_balance?: boolean
+          sort_order?: number
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Update: {
+          accrual_frequency?: string
+          accrual_rate_hours?: number
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_comp_time?: boolean
+          is_fmla?: boolean
+          max_balance_hours?: number | null
+          max_carryover_hours?: number | null
+          name?: string
+          paid?: boolean
+          requires_balance?: boolean
+          sort_order?: number
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_plans_worker_type_id_fkey"
+            columns: ["worker_type_id"]
+            isOneToOne: false
+            referencedRelation: "worker_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_notes: string | null
+          employee_id: string
+          end_date: string
+          fmla_case_id: string | null
+          id: string
+          is_intermittent: boolean
+          plan_id: string
+          reason: string | null
+          start_date: string
+          status: string
+          submitted_at: string | null
+          submitted_by: string | null
+          total_hours: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          employee_id: string
+          end_date: string
+          fmla_case_id?: string | null
+          id?: string
+          is_intermittent?: boolean
+          plan_id: string
+          reason?: string | null
+          start_date: string
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          total_hours: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          employee_id?: string
+          end_date?: string
+          fmla_case_id?: string | null
+          id?: string
+          is_intermittent?: boolean
+          plan_id?: string
+          reason?: string | null
+          start_date?: string
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          total_hours?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_fmla_fk"
+            columns: ["fmla_case_id"]
+            isOneToOne: false
+            referencedRelation: "fmla_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "leave_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -1972,6 +2292,50 @@ export type Database = {
         }
         Relationships: []
       }
+      paf_audit: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          from_status: string | null
+          id: string
+          notes: string | null
+          paf_id: string
+          payload: Json | null
+          to_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          paf_id: string
+          payload?: Json | null
+          to_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          paf_id?: string
+          payload?: Json | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paf_audit_paf_id_fkey"
+            columns: ["paf_id"]
+            isOneToOne: false
+            referencedRelation: "personnel_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       performance_review_signatures: {
         Row: {
           id: string
@@ -2068,6 +2432,78 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "performance_reviews_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personnel_actions: {
+        Row: {
+          action_type: string
+          after_values: Json
+          applied_at: string | null
+          applied_by: string | null
+          approval_chain_id: string | null
+          before_values: Json
+          created_at: string
+          effective_date: string
+          employee_id: string
+          id: string
+          initiated_by: string
+          narrative: string | null
+          paf_number: string | null
+          reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          after_values?: Json
+          applied_at?: string | null
+          applied_by?: string | null
+          approval_chain_id?: string | null
+          before_values?: Json
+          created_at?: string
+          effective_date: string
+          employee_id: string
+          id?: string
+          initiated_by: string
+          narrative?: string | null
+          paf_number?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          after_values?: Json
+          applied_at?: string | null
+          applied_by?: string | null
+          approval_chain_id?: string | null
+          before_values?: Json
+          created_at?: string
+          effective_date?: string
+          employee_id?: string
+          id?: string
+          initiated_by?: string
+          narrative?: string | null
+          paf_number?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personnel_actions_approval_chain_id_fkey"
+            columns: ["approval_chain_id"]
+            isOneToOne: false
+            referencedRelation: "approval_chains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personnel_actions_employee_id_fkey"
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
@@ -2715,6 +3151,10 @@ export type Database = {
           }
       decide_hire_request: {
         Args: { _action: string; _hr_notes: string; _request_id: string }
+        Returns: undefined
+      }
+      decide_paf_step: {
+        Args: { _decision: string; _notes: string; _step_id: string }
         Returns: undefined
       }
     }
