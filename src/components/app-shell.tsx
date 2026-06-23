@@ -1,90 +1,22 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness, CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon, DollarSign, Scale, BarChart2, FileStack, Banknote, DatabaseBackup, Landmark, ShieldCheck, BadgeCheck } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import markAsset from "@/assets/civicplexus-mark.png.asset.json";
-
-const NAV_GROUPS = [
-  { label: "Overview", items: [
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
-    { to: "/my-hr", label: "My HR", icon: MeIcon, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate", "supervisor"] },
-    { to: "/notifications", label: "Notifications", icon: Bell, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
-    { to: "/preboarding", label: "My Onboarding", icon: FileText, roles: ["candidate", "employee"] },
-    { to: "/help", label: "Help & Docs", icon: BookOpen, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
-  ]},
-  { label: "Time & Leave", items: [
-    { to: "/leave", label: "Leave Requests", icon: CalendarDays, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
-    { to: "/paf", label: "Personnel Actions", icon: PafIcon, roles: ["hr_admin", "hiring_manager", "supervisor"] },
-  ]},
-  { label: "People", items: [
-    { to: "/employees", label: "Employees", icon: Users, roles: ["hr_admin", "hiring_manager"] },
-    { to: "/positions", label: "Positions", icon: ClipboardList, roles: ["hr_admin", "hiring_manager", "supervisor"] },
-    { to: "/hire-requests", label: "Hire Requests", icon: UserPlus, roles: ["hr_admin", "supervisor", "hiring_manager"] },
-    { to: "/offboarding", label: "Offboarding", icon: DoorOpen, roles: ["hr_admin"] },
-    { to: "/benefits", label: "Benefits", icon: HeartHandshake, roles: ["hr_admin"] },
-    { to: "/equipment", label: "Equipment & PPE", icon: Package, roles: ["hr_admin", "hiring_manager"] },
-  ]},
-  { label: "Workflow", items: [
-    { to: "/worker-types", label: "Worker Types", icon: Briefcase, roles: ["hr_admin"] },
-    { to: "/templates", label: "Templates", icon: ListChecks, roles: ["hr_admin"] },
-    { to: "/forms", label: "Forms Library", icon: FileSignature, roles: ["hr_admin"] },
-    { to: "/provisioning", label: "IT Provisioning", icon: Server, roles: ["it_admin", "hr_admin"] },
-    { to: "/docs-generator", label: "Docs Generator", icon: FileStack, roles: ["hr_admin"] },
-    { to: "/doc-templates", label: "Doc Templates", icon: FileStack, roles: ["hr_admin"] },
-  ]},
-  { label: "Coaching", items: [
-    { to: "/one-on-ones", label: "1-on-1s", icon: MessagesSquare, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
-    { to: "/one-on-one-templates", label: "1-on-1 Templates", icon: MessagesSquare, roles: ["hr_admin"] },
-    { to: "/goals", label: "Goals", icon: Target, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
-    { to: "/reviews", label: "Reviews", icon: ClipboardCheck, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
-    { to: "/review-cycles", label: "Review Cycles", icon: CalendarDays, roles: ["hr_admin"] },
-    { to: "/cascades", label: "Cascades", icon: Megaphone, roles: ["hr_admin", "hiring_manager", "supervisor"] },
-  ]},
-  { label: "Compliance", items: [
-    { to: "/training", label: "Training & Certs", icon: GraduationCap, roles: ["hr_admin", "hiring_manager", "supervisor"] },
-    { to: "/screenings", label: "Screenings", icon: ShieldQuestion, roles: ["hr_admin"] },
-    { to: "/policies", label: "Policies", icon: ScrollText, roles: ["hr_admin", "hiring_manager", "employee", "candidate"] },
-    { to: "/policy-campaigns", label: "Ack Campaigns", icon: Megaphone, roles: ["hr_admin"] },
-    { to: "/grievances", label: "Grievances", icon: ShieldAlert, roles: ["hr_admin", "hiring_manager", "supervisor", "employee", "candidate"] },
-    { to: "/documents", label: "Documents", icon: FolderLock, roles: ["hr_admin", "it_admin", "hiring_manager", "employee", "candidate"] },
-    { to: "/reports", label: "Reports", icon: BarChart3, roles: ["hr_admin"] },
-    { to: "/flsa-audit", label: "FLSA Audit", icon: Scale, roles: ["hr_admin"] },
-    { to: "/eeo-snapshot", label: "EEO Snapshot", icon: BarChart2, roles: ["hr_admin"] },
-    { to: "/audit", label: "Audit Log", icon: History, roles: ["hr_admin"] },
-  ]},
-  { label: "Texas Compliance", items: [
-    { to: "/compliance/new-hire", label: "New-Hire Reporting (TWC)", icon: BadgeCheck, roles: ["hr_admin"] },
-    { to: "/compliance/tmrs", label: "TMRS Monthly", icon: Landmark, roles: ["hr_admin"] },
-    { to: "/compliance/tcole", label: "TCOLE Tracking", icon: ShieldCheck, roles: ["hr_admin"] },
-  ]},
-  { label: "Compensation", items: [
-    { to: "/comp-grades", label: "Pay Grades", icon: DollarSign, roles: ["hr_admin"] },
-    { to: "/comp-market", label: "Market Ranges", icon: BarChart2, roles: ["hr_admin"] },
-    { to: "/comp-cycles", label: "Comp Cycles", icon: CalendarDays, roles: ["hr_admin", "hiring_manager", "supervisor"] },
-    { to: "/payroll", label: "Payroll", icon: Banknote, roles: ["hr_admin"] },
-  ]},
-  { label: "Hiring", items: [
-    { to: "/jobs", label: "Requisitions", icon: BriefcaseBusiness, roles: ["hr_admin", "hiring_manager", "supervisor"] },
-    { to: "/offers", label: "Offers", icon: FileSignature, roles: ["hr_admin", "hiring_manager"] },
-    { to: "/email-templates", label: "Email Templates", icon: ScrollText, roles: ["hr_admin"] },
-    { to: "/approvals", label: "Approvals", icon: CheckSquare, roles: ["hr_admin", "hiring_manager", "supervisor"] },
-    { to: "/internal-careers", label: "Internal Careers", icon: Compass, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
-  ]},
-  { label: "Admin", items: [
-    { to: "/settings", label: "Settings", icon: Settings, roles: ["hr_admin"] },
-    { to: "/admin-migration", label: "Data Migration", icon: DatabaseBackup, roles: ["hr_admin"] },
-  ]},
-] as const;
+import { MODULE_REGISTRY } from "@/lib/modules";
+import { useModuleSettings } from "@/hooks/use-module-settings";
+import { ModuleGate } from "@/components/module-gate";
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
   const { data } = useCurrentUser();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { isEnabled, isModuleEnabled } = useModuleSettings();
 
   async function signOut() {
     await qc.cancelQueries();
@@ -93,10 +25,17 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     navigate({ to: "/auth", replace: true });
   }
 
-  const groups = NAV_GROUPS.map((g) => ({
-    ...g,
-    items: g.items.filter((n) => !data?.roles?.length || n.roles.some((r) => hasRole(data?.roles, r as never))),
-  })).filter((g) => g.items.length);
+  const groups = MODULE_REGISTRY
+    .filter((g) => isModuleEnabled(g.key))
+    .map((g) => ({
+      label: g.label,
+      items: g.items.filter(
+        (n) =>
+          isEnabled(n.key) &&
+          (!data?.roles?.length || n.roles.some((r) => hasRole(data?.roles, r))),
+      ),
+    }))
+    .filter((g) => g.items.length);
 
   return (
     <div className="flex min-h-screen bg-background">
