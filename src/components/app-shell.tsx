@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness, CheckSquare, Compass } from "lucide-react";
+import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness, CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -11,9 +11,14 @@ import markAsset from "@/assets/kyberna-mark.png.asset.json";
 const NAV_GROUPS = [
   { label: "Overview", items: [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
+    { to: "/my-hr", label: "My HR", icon: MeIcon, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate", "supervisor"] },
     { to: "/notifications", label: "Notifications", icon: Bell, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
     { to: "/preboarding", label: "My Onboarding", icon: FileText, roles: ["candidate", "employee"] },
     { to: "/help", label: "Help & Docs", icon: BookOpen, roles: ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"] },
+  ]},
+  { label: "Time & Leave", items: [
+    { to: "/leave", label: "Leave Requests", icon: CalendarDays, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
+    { to: "/paf", label: "Personnel Actions", icon: PafIcon, roles: ["hr_admin", "hiring_manager", "supervisor"] },
   ]},
   { label: "People", items: [
     { to: "/employees", label: "Employees", icon: Users, roles: ["hr_admin", "hiring_manager"] },
