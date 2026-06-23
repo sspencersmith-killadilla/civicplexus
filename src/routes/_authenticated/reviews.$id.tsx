@@ -11,9 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Save, PenLine } from "lucide-react";
+import { Sparkles, Save, PenLine, Printer, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { compileReviewContext, generateReviewDraft, updateReview, signReview } from "@/lib/reviews.functions";
+import { upsertReviewRating } from "@/lib/review-cycles.functions";
 
 export const Route = createFileRoute("/_authenticated/reviews/$id")({ component: ReviewDetail });
 
@@ -24,6 +25,7 @@ function ReviewDetail() {
   const generate = useServerFn(generateReviewDraft);
   const update = useServerFn(updateReview);
   const sign = useServerFn(signReview);
+  const upsertRating = useServerFn(upsertReviewRating);
 
   const reviewQ = useQuery({
     queryKey: ["performance_review", id],
@@ -46,6 +48,30 @@ function ReviewDetail() {
       if (error) throw error;
       return data;
     },
+  });
+
+  const competenciesQ = useQuery({
+    queryKey: ["review_competencies"],
+    queryFn: async () => {
+      const { data } = await supabase.from("org_settings").select("review_competencies").limit(1).maybeSingle();
+      return ((data as { review_competencies?: string[] } | null)?.review_competencies) ?? ["Communication", "Ownership", "Craft", "Collaboration", "Growth"];
+    },
+  });
+
+  const ratingsQ = useQuery({
+    queryKey: ["review_ratings", id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("review_ratings" as never).select("competency, rating, comment").eq("review_id", id);
+      if (error) throw error;
+      return (data ?? []) as unknown as Array<{ competency: string; rating: number | null; comment: string | null }>;
+    },
+  });
+
+  const saveRating = useMutation({
+    mutationFn: (p: { competency: string; rating?: number; comment?: string }) =>
+      upsertRating({ data: { review_id: id, ...p } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["review_ratings", id] }),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
 
   const [narrative, setNarrative] = useState("");
@@ -94,6 +120,8 @@ function ReviewDetail() {
   if (reviewQ.isLoading) return <AppShell title="Review"><p>Loading…</p></AppShell>;
   const r = reviewQ.data;
   if (!r) return <AppShell title="Review"><p>Not found</p></AppShell>;
+  const isFinalized = r.status === "finalized";
+  const ratingsMap = new Map((ratingsQ.data ?? []).map((x) => [x.competency, x]));
 
   return (
     <AppShell title="Annual Review">
@@ -105,10 +133,12 @@ function ReviewDetail() {
               <p className="font-medium">{r.review_period_start} → {r.review_period_end}</p>
             </div>
             <div className="flex gap-2">
+              {isFinalized && <span className="text-xs px-2 py-1 rounded bg-amber-500/15 text-amber-700 flex items-center gap-1"><Lock className="h-3 w-3" /> Finalized</span>}
               <Button variant="outline" size="sm" onClick={() => genDraft.mutate()} disabled={genDraft.isPending}>
                 <Sparkles className="h-4 w-4 mr-1" /> {genDraft.isPending ? "Generating…" : "AI draft"}
               </Button>
-              <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending}><Save className="h-4 w-4 mr-1" /> Save</Button>
+              <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending || isFinalized}><Save className="h-4 w-4 mr-1" /> Save</Button>
+              <Button size="sm" variant="outline" onClick={() => window.print()}><Printer className="h-4 w-4 mr-1" /> Print / PDF</Button>
             </div>
           </div>
         </Card>
@@ -117,6 +147,7 @@ function ReviewDetail() {
           <TabsList>
             <TabsTrigger value="context">Context</TabsTrigger>
             <TabsTrigger value="draft">AI Draft</TabsTrigger>
+            <TabsTrigger value="ratings">Ratings</TabsTrigger>
             <TabsTrigger value="manager">Manager Narrative</TabsTrigger>
             <TabsTrigger value="self">Self-Assessment</TabsTrigger>
             <TabsTrigger value="finalize">Rating &amp; Sign</TabsTrigger>
@@ -152,12 +183,28 @@ function ReviewDetail() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="ratings" className="mt-4">
+            <Card className="p-5 space-y-3">
+              <p className="text-sm text-muted-foreground">Rate each competency 1 (needs improvement) to 5 (exemplary). Auto-saves on blur.</p>
+              {(competenciesQ.data ?? []).map((c) => {
+                const cur = ratingsMap.get(c);
+                return (
+                  <div key={c} className="grid grid-cols-12 gap-2 items-start border-b pb-3 last:border-0">
+                    <div className="col-span-3 pt-2 font-medium text-sm">{c}</div>
+                    <div className="col-span-2"><Input type="number" min={1} max={5} step={0.5} defaultValue={cur?.rating ?? ""} disabled={isFinalized} onBlur={(e) => { const v = e.target.value ? Number(e.target.value) : undefined; saveRating.mutate({ competency: c, rating: v, comment: cur?.comment ?? undefined }); }} /></div>
+                    <div className="col-span-7"><Textarea rows={2} placeholder="Comment (optional)…" defaultValue={cur?.comment ?? ""} disabled={isFinalized} onBlur={(e) => saveRating.mutate({ competency: c, rating: cur?.rating ?? undefined, comment: e.target.value })} /></div>
+                  </div>
+                );
+              })}
+            </Card>
+          </TabsContent>
+
           <TabsContent value="manager" className="mt-4">
-            <Card className="p-5"><Textarea rows={18} value={narrative} onChange={(e) => setNarrative(e.target.value)} placeholder="Manager narrative…" /></Card>
+            <Card className="p-5"><Textarea rows={18} value={narrative} disabled={isFinalized} onChange={(e) => setNarrative(e.target.value)} placeholder="Manager narrative…" /></Card>
           </TabsContent>
 
           <TabsContent value="self" className="mt-4">
-            <Card className="p-5"><Textarea rows={18} value={self} onChange={(e) => setSelf(e.target.value)} placeholder="Employee self-assessment…" /></Card>
+            <Card className="p-5"><Textarea rows={18} value={self} disabled={isFinalized} onChange={(e) => setSelf(e.target.value)} placeholder="Employee self-assessment…" /></Card>
           </TabsContent>
 
           <TabsContent value="finalize" className="mt-4">
