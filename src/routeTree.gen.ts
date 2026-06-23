@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as OfferTokenRouteImport } from './routes/offer.$token'
 import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
 import { Route as CandidateTokenRouteImport } from './routes/candidate.$token'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
@@ -87,6 +88,11 @@ const IndexRoute = IndexRouteImport.update({
 const CareersIndexRoute = CareersIndexRouteImport.update({
   id: '/careers/',
   path: '/careers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfferTokenRoute = OfferTokenRouteImport.update({
+  id: '/offer/$token',
+  path: '/offer/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CareersSlugRoute = CareersSlugRouteImport.update({
@@ -422,6 +428,7 @@ export interface FileRoutesByFullPath {
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/candidate/$token': typeof CandidateTokenRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
+  '/offer/$token': typeof OfferTokenRoute
   '/careers/': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
@@ -483,6 +490,7 @@ export interface FileRoutesByTo {
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/candidate/$token': typeof CandidateTokenRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
+  '/offer/$token': typeof OfferTokenRoute
   '/careers': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
@@ -546,6 +554,7 @@ export interface FileRoutesById {
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/candidate/$token': typeof CandidateTokenRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
+  '/offer/$token': typeof OfferTokenRoute
   '/careers/': typeof CareersIndexRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
@@ -609,6 +618,7 @@ export interface FileRouteTypes {
     | '/worker-types'
     | '/candidate/$token'
     | '/careers/$slug'
+    | '/offer/$token'
     | '/careers/'
     | '/cascades/$id'
     | '/employees/import'
@@ -670,6 +680,7 @@ export interface FileRouteTypes {
     | '/worker-types'
     | '/candidate/$token'
     | '/careers/$slug'
+    | '/offer/$token'
     | '/careers'
     | '/cascades/$id'
     | '/employees/import'
@@ -732,6 +743,7 @@ export interface FileRouteTypes {
     | '/_authenticated/worker-types'
     | '/candidate/$token'
     | '/careers/$slug'
+    | '/offer/$token'
     | '/careers/'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/employees/import'
@@ -773,6 +785,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CandidateTokenRoute: typeof CandidateTokenRoute
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
+  OfferTokenRoute: typeof OfferTokenRoute
   CareersIndexRoute: typeof CareersIndexRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
@@ -812,6 +825,13 @@ declare module '@tanstack/react-router' {
       path: '/careers'
       fullPath: '/careers/'
       preLoaderRoute: typeof CareersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offer/$token': {
+      id: '/offer/$token'
+      path: '/offer/$token'
+      fullPath: '/offer/$token'
+      preLoaderRoute: typeof OfferTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/careers/$slug': {
@@ -1338,6 +1358,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CandidateTokenRoute: CandidateTokenRoute,
   CareersSlugRoute: CareersSlugRouteWithChildren,
+  OfferTokenRoute: OfferTokenRoute,
   CareersIndexRoute: CareersIndexRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
