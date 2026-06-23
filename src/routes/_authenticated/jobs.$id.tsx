@@ -217,7 +217,7 @@ function JobDetail() {
   );
 }
 
-function ApplicantRow({ app, requisitionId }: { app: { id: string; applicant_name: string; email: string; status: string; is_internal: boolean; rating: number | null }; requisitionId: string }) {
+function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: string; applicant_name: string; email: string; status: string; is_internal: boolean; rating: number | null }; requisitionId: string; selected: boolean; onToggle: () => void }) {
   const qc = useQueryClient();
   const change = useServerFn(transitionApplicationStatus);
   const sched = useServerFn(scheduleInterview);
@@ -306,9 +306,12 @@ function ApplicantRow({ app, requisitionId }: { app: { id: string; applicant_nam
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h4 className="font-medium">{app.applicant_name} {app.is_internal && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">Internal</span>}</h4>
-          <p className="text-xs text-muted-foreground">{app.email}</p>
+        <div className="flex items-start gap-3">
+          <Checkbox checked={selected} onCheckedChange={onToggle} className="mt-1" aria-label={`Select ${app.applicant_name}`} />
+          <div>
+            <h4 className="font-medium">{app.applicant_name} {app.is_internal && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">Internal</span>}</h4>
+            <p className="text-xs text-muted-foreground">{app.email}</p>
+          </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Select value={app.status} onValueChange={(v) => set.mutate(v as typeof APP_STATUSES[number])}>
