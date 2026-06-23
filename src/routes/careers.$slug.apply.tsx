@@ -48,22 +48,14 @@ function ApplyPage() {
       fd.append("phone", form.phone);
       fd.append("cover_letter", form.cover_letter);
       if (file) fd.append("resume", file);
+      if (selfId.declined || selfId.gender || selfId.race_ethnicity || selfId.veteran_status || selfId.disability_status) {
+        fd.append("self_id", JSON.stringify(selfId));
+      }
       const res = await fetch("/api/public/job-applications", { method: "POST", body: fd });
       if (!res.ok) {
         const t = await res.text();
         throw new Error(t || "Submission failed");
       }
-      // best-effort voluntary self-id (the server route returns the application id in JSON)
-      try {
-        const json = await res.clone().json().catch(() => null);
-        const appId = (json as { id?: string } | null)?.id;
-        if (appId && (selfId.declined || selfId.gender || selfId.race_ethnicity || selfId.veteran_status || selfId.disability_status)) {
-          await fetch("/api/public/job-applications/self-id", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ application_id: appId, ...selfId }),
-          });
-        }
-      } catch { /* ignore */ }
       toast.success("Application submitted!");
       nav({ to: "/careers" });
     } catch (err) {

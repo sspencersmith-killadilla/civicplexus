@@ -67,7 +67,6 @@ import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
-import { Route as ApiPublicJobApplicationsSelfIdRouteImport } from './routes/api/public/job-applications/self-id'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
@@ -390,12 +389,6 @@ const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
   path: '/cascades/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicJobApplicationsSelfIdRoute =
-  ApiPublicJobApplicationsSelfIdRouteImport.update({
-    id: '/self-id',
-    path: '/self-id',
-    getParentRoute: () => ApiPublicJobApplicationsRoute,
-  } as any)
 const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
   id: '/api/public/hooks/reminders',
   path: '/api/public/hooks/reminders',
@@ -487,7 +480,7 @@ export interface FileRoutesByFullPath {
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
-  '/api/public/job-applications': typeof ApiPublicJobApplicationsRouteWithChildren
+  '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -505,7 +498,6 @@ export interface FileRoutesByFullPath {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
-  '/api/public/job-applications/self-id': typeof ApiPublicJobApplicationsSelfIdRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
@@ -555,7 +547,7 @@ export interface FileRoutesByTo {
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
-  '/api/public/job-applications': typeof ApiPublicJobApplicationsRouteWithChildren
+  '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/employees': typeof AuthenticatedEmployeesIndexRoute
@@ -573,7 +565,6 @@ export interface FileRoutesByTo {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
-  '/api/public/job-applications/self-id': typeof ApiPublicJobApplicationsSelfIdRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
@@ -625,7 +616,7 @@ export interface FileRoutesById {
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
-  '/api/public/job-applications': typeof ApiPublicJobApplicationsRouteWithChildren
+  '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -643,7 +634,6 @@ export interface FileRoutesById {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
-  '/api/public/job-applications/self-id': typeof ApiPublicJobApplicationsSelfIdRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
@@ -713,7 +703,6 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
-    | '/api/public/job-applications/self-id'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
@@ -781,7 +770,6 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
-    | '/api/public/job-applications/self-id'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
@@ -850,7 +838,6 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
-    | '/api/public/job-applications/self-id'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
@@ -865,7 +852,7 @@ export interface RootRouteChildren {
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
   OfferTokenRoute: typeof OfferTokenRoute
   CareersIndexRoute: typeof CareersIndexRoute
-  ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRouteWithChildren
+  ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
@@ -1283,13 +1270,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCascadesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/job-applications/self-id': {
-      id: '/api/public/job-applications/self-id'
-      path: '/self-id'
-      fullPath: '/api/public/job-applications/self-id'
-      preLoaderRoute: typeof ApiPublicJobApplicationsSelfIdRouteImport
-      parentRoute: typeof ApiPublicJobApplicationsRoute
-    }
     '/api/public/hooks/reminders': {
       id: '/api/public/hooks/reminders'
       path: '/api/public/hooks/reminders'
@@ -1496,20 +1476,6 @@ const CareersSlugRouteWithChildren = CareersSlugRoute._addFileChildren(
   CareersSlugRouteChildren,
 )
 
-interface ApiPublicJobApplicationsRouteChildren {
-  ApiPublicJobApplicationsSelfIdRoute: typeof ApiPublicJobApplicationsSelfIdRoute
-}
-
-const ApiPublicJobApplicationsRouteChildren: ApiPublicJobApplicationsRouteChildren =
-  {
-    ApiPublicJobApplicationsSelfIdRoute: ApiPublicJobApplicationsSelfIdRoute,
-  }
-
-const ApiPublicJobApplicationsRouteWithChildren =
-  ApiPublicJobApplicationsRoute._addFileChildren(
-    ApiPublicJobApplicationsRouteChildren,
-  )
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -1518,7 +1484,7 @@ const rootRouteChildren: RootRouteChildren = {
   CareersSlugRoute: CareersSlugRouteWithChildren,
   OfferTokenRoute: OfferTokenRoute,
   CareersIndexRoute: CareersIndexRoute,
-  ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRouteWithChildren,
+  ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
