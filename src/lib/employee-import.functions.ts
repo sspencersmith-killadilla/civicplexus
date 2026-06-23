@@ -264,6 +264,8 @@ export const importDependents = createServerFn({ method: "POST" })
     await assertHrAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const result: ImportResult = { inserted: 0, updated: 0, skipped: 0, errors: [] };
+    const update = await makeJobUpdater(data.job_id, data.rows.length);
+    try {
     for (let i = 0; i < data.rows.length; i++) {
       const r = data.rows[i]; const rowNum = i + 2;
       try {
@@ -285,8 +287,11 @@ export const importDependents = createServerFn({ method: "POST" })
       } catch (e) {
         result.errors.push({ row: rowNum, message: e instanceof Error ? e.message : String(e) }); result.skipped++;
       }
+      await tick(update, result);
     }
-    return result;
+      await finalizeJob(data.job_id, result);
+      return result;
+    } catch (e) { await finalizeJob(data.job_id, result, e); throw e; }
   });
 
 const certRow = z.object({
@@ -305,6 +310,8 @@ export const importCertifications = createServerFn({ method: "POST" })
     await assertHrAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const result: ImportResult = { inserted: 0, updated: 0, skipped: 0, errors: [] };
+    const update = await makeJobUpdater(data.job_id, data.rows.length);
+    try {
     const { data: certs } = await supabaseAdmin.from("certifications").select("id,name");
     const certMap = new Map((certs ?? []).map((c) => [c.name.toLowerCase(), c.id]));
     for (let i = 0; i < data.rows.length; i++) {
@@ -327,8 +334,11 @@ export const importCertifications = createServerFn({ method: "POST" })
           if (error) throw new Error(error.message); result.inserted++;
         }
       } catch (e) { result.errors.push({ row: rowNum, message: e instanceof Error ? e.message : String(e) }); result.skipped++; }
+      await tick(update, result);
     }
-    return result;
+      await finalizeJob(data.job_id, result);
+      return result;
+    } catch (e) { await finalizeJob(data.job_id, result, e); throw e; }
   });
 
 const trainingRow = z.object({
@@ -347,6 +357,8 @@ export const importTraining = createServerFn({ method: "POST" })
     await assertHrAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const result: ImportResult = { inserted: 0, updated: 0, skipped: 0, errors: [] };
+    const update = await makeJobUpdater(data.job_id, data.rows.length);
+    try {
     const { data: cs } = await supabaseAdmin.from("courses").select("id,name");
     const courseMap = new Map((cs ?? []).map((c) => [c.name.toLowerCase(), c.id]));
     for (let i = 0; i < data.rows.length; i++) {
@@ -370,8 +382,11 @@ export const importTraining = createServerFn({ method: "POST" })
           if (error) throw new Error(error.message); result.inserted++;
         }
       } catch (e) { result.errors.push({ row: rowNum, message: e instanceof Error ? e.message : String(e) }); result.skipped++; }
+      await tick(update, result);
     }
-    return result;
+      await finalizeJob(data.job_id, result);
+      return result;
+    } catch (e) { await finalizeJob(data.job_id, result, e); throw e; }
   });
 
 const equipRow = z.object({
@@ -391,6 +406,8 @@ export const importEquipment = createServerFn({ method: "POST" })
     await assertHrAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const result: ImportResult = { inserted: 0, updated: 0, skipped: 0, errors: [] };
+    const update = await makeJobUpdater(data.job_id, data.rows.length);
+    try {
     const { data: catalog } = await supabaseAdmin.from("equipment_catalog").select("id,name");
     const catMap = new Map((catalog ?? []).map((c) => [c.name.toLowerCase(), c.id]));
     for (let i = 0; i < data.rows.length; i++) {
@@ -415,6 +432,9 @@ export const importEquipment = createServerFn({ method: "POST" })
           if (error) throw new Error(error.message); result.inserted++;
         }
       } catch (e) { result.errors.push({ row: rowNum, message: e instanceof Error ? e.message : String(e) }); result.skipped++; }
+      await tick(update, result);
     }
-    return result;
+      await finalizeJob(data.job_id, result);
+      return result;
+    } catch (e) { await finalizeJob(data.job_id, result, e); throw e; }
   });
