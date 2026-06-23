@@ -59,7 +59,7 @@ export const submitPaf = createServerFn({ method: "POST" })
       .eq("chain_id", chain.id).eq("stage", 1).maybeSingle();
     if (firstStep?.approver_role) {
       const { data: approvers } = await supabaseAdmin
-        .from("user_roles").select("user_id").eq("role", firstStep.approver_role);
+        .from("user_roles").select("user_id").eq("role", firstStep.approver_role as "hr_admin");
       for (const a of approvers ?? []) {
         await supabaseAdmin.from("notifications").insert({
           user_id: a.user_id, type: "paf_approval",
