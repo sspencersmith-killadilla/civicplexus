@@ -57,13 +57,10 @@ ${combined}`;
       .update({ ai_summary: text, ai_generated_at: new Date().toISOString() })
       .eq("id", data.session_id);
 
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId,
-      action: "ai_summarize",
-      entity: "one_on_one",
-      entity_id: data.session_id,
-      diff: { model: MODEL },
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "ai_summarize", _entity: "one_on_one", _entity_id: data.session_id,
+      _diff: { model: MODEL },
+    } as never);
 
     return { summary: text };
   });
@@ -121,13 +118,10 @@ ${combined}`;
     const { error: insErr } = await context.supabase.from("one_on_one_action_items").insert(rows);
     if (insErr) throw insErr;
 
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId,
-      action: "ai_extract_actions",
-      entity: "one_on_one",
-      entity_id: data.session_id,
-      diff: { count: rows.length },
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "ai_extract_actions", _entity: "one_on_one", _entity_id: data.session_id,
+      _diff: { count: rows.length },
+    } as never);
 
     return { inserted: rows.length, items: rows };
   });
@@ -172,13 +166,10 @@ ${combined}`;
       .update({ ai_summary: text, ai_generated_at: new Date().toISOString() })
       .eq("id", data.cascade_id);
 
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId,
-      action: "ai_summarize",
-      entity: "cascade",
-      entity_id: data.cascade_id,
-      diff: { responses: responses.length },
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "ai_summarize", _entity: "cascade", _entity_id: data.cascade_id,
+      _diff: { responses: responses.length },
+    } as never);
 
     return { summary: text };
   });
