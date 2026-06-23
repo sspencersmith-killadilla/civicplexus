@@ -189,6 +189,8 @@ export const importPositions = createServerFn({ method: "POST" })
     await assertHrAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const result: ImportResult = { inserted: 0, updated: 0, skipped: 0, errors: [] };
+    const update = await makeJobUpdater(data.job_id, data.rows.length);
+    try {
 
     // Pass 1: upsert positions (without reports_to)
     for (let i = 0; i < data.rows.length; i++) {
@@ -218,6 +220,7 @@ export const importPositions = createServerFn({ method: "POST" })
         result.errors.push({ row: rowNum, message: e instanceof Error ? e.message : String(e) });
         result.skipped++;
       }
+      await tick(update, result);
     }
 
     // Pass 2: resolve reports_to_position_code
@@ -232,7 +235,12 @@ export const importPositions = createServerFn({ method: "POST" })
       await supabaseAdmin.from("positions").update({ reports_to_position_id: parentId } as never).eq("position_code", r.position_code);
     }
 
-    return result;
+      await finalizeJob(data.job_id, result);
+      return result;
+    } catch (e) {
+      await finalizeJob(data.job_id, result, e);
+      throw e;
+    }
   });
 
 async function resolveEmployeeId(sb: typeof import("@/integrations/supabase/client.server")["supabaseAdmin"], email: string) {
