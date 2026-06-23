@@ -94,13 +94,19 @@ function JobDetail() {
     const ids = Array.from(selected);
     if (!ids.length) return;
     setBulkRunning(true);
-    let ok = 0, fail = 0;
+    let ok = 0;
+    const failures: string[] = [];
     for (const appId of ids) {
-      try { await fn(appId); ok++; } catch { fail++; }
+      try { await fn(appId); ok++; }
+      catch (e) { failures.push(e instanceof Error ? e.message : String(e)); }
     }
     setBulkRunning(false);
     qc.invalidateQueries();
-    toast[fail ? "warning" : "success"](`${label}: ${ok} done${fail ? `, ${fail} failed` : ""}`);
+    if (failures.length) {
+      toast.error(`${label}: ${ok} done, ${failures.length} failed`, { description: failures[0]?.slice(0, 200) });
+    } else {
+      toast.success(`${label}: ${ok} done`);
+    }
   };
 
   const bulkGenerate = () => runBulk("AI screening queued", (appId) => screen({ data: { application_id: appId } }));
