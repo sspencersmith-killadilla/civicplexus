@@ -15,7 +15,7 @@ import { Plus, Users, Upload, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { PROVISIONING_KINDS, DEFAULT_PROVISIONING_KINDS } from "@/lib/provisioning-kinds";
 
-export const Route = createFileRoute("/_authenticated/employees")({
+export const Route = createFileRoute("/_authenticated/employees/")({
   component: EmployeesPage,
 });
 
