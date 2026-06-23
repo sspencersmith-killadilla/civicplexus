@@ -727,6 +727,60 @@ export type Database = {
           },
         ]
       }
+      demo_audit_log: {
+        Row: {
+          created_at: string
+          id: number
+          new_row: Json | null
+          note: string | null
+          old_row: Json | null
+          op: string
+          pk_val: string | null
+          table_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          new_row?: Json | null
+          note?: string | null
+          old_row?: Json | null
+          op: string
+          pk_val?: string | null
+          table_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          new_row?: Json | null
+          note?: string | null
+          old_row?: Json | null
+          op?: string
+          pk_val?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
+      demo_config: {
+        Row: {
+          demo_user_id: string | null
+          id: boolean
+          last_reset_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          demo_user_id?: string | null
+          id?: boolean
+          last_reset_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          demo_user_id?: string | null
+          id?: boolean
+          last_reset_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dependents: {
         Row: {
           created_at: string
@@ -5148,6 +5202,7 @@ export type Database = {
         }
         Returns: string
       }
+      restore_demo_changes: { Args: never; Returns: Json }
       update_my_employee_contact: {
         Args: { _personal_email?: string; _phone?: string }
         Returns: undefined

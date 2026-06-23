@@ -49,6 +49,7 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authenticated/admin-modules'
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
+import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin-demo'
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
@@ -308,6 +309,11 @@ const AuthenticatedAdminMigrationRoute =
     path: '/admin-migration',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminDemoRoute = AuthenticatedAdminDemoRouteImport.update({
+  id: '/admin-demo',
+  path: '/admin-demo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const CareersSlugIndexRoute = CareersSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -560,6 +566,7 @@ const ApiPublicCandidateTokenMessageRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -645,6 +652,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -731,6 +739,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/_authenticated/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
@@ -818,6 +827,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/admin-demo'
     | '/admin-migration'
     | '/admin-modules'
     | '/approvals'
@@ -903,6 +913,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/admin-demo'
     | '/admin-migration'
     | '/admin-modules'
     | '/approvals'
@@ -988,6 +999,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/admin-demo'
     | '/_authenticated/admin-migration'
     | '/_authenticated/admin-modules'
     | '/_authenticated/approvals'
@@ -1371,6 +1383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminMigrationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin-demo': {
+      id: '/_authenticated/admin-demo'
+      path: '/admin-demo'
+      fullPath: '/admin-demo'
+      preLoaderRoute: typeof AuthenticatedAdminDemoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/careers/$slug/': {
       id: '/careers/$slug/'
       path: '/'
@@ -1711,6 +1730,7 @@ const AuthenticatedReviewCyclesIdRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminDemoRoute: typeof AuthenticatedAdminDemoRoute
   AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
   AuthenticatedAdminModulesRoute: typeof AuthenticatedAdminModulesRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
@@ -1779,6 +1799,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminDemoRoute: AuthenticatedAdminDemoRoute,
   AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
   AuthenticatedAdminModulesRoute: AuthenticatedAdminModulesRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
