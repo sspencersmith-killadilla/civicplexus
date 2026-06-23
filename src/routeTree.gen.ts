@@ -35,6 +35,7 @@ import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedFlsaAuditRouteImport } from './routes/_authenticated/flsa-audit'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
 import { Route as AuthenticatedEmailTemplatesRouteImport } from './routes/_authenticated/email-templates'
+import { Route as AuthenticatedEeoSnapshotRouteImport } from './routes/_authenticated/eeo-snapshot'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
@@ -212,6 +213,12 @@ const AuthenticatedEmailTemplatesRoute =
   AuthenticatedEmailTemplatesRouteImport.update({
     id: '/email-templates',
     path: '/email-templates',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEeoSnapshotRoute =
+  AuthenticatedEeoSnapshotRouteImport.update({
+    id: '/eeo-snapshot',
+    path: '/eeo-snapshot',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
@@ -450,6 +457,7 @@ export interface FileRoutesByFullPath {
   '/benefits': typeof AuthenticatedBenefitsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
+  '/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
   '/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/flsa-audit': typeof AuthenticatedFlsaAuditRoute
@@ -518,6 +526,7 @@ export interface FileRoutesByTo {
   '/benefits': typeof AuthenticatedBenefitsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
+  '/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
   '/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/flsa-audit': typeof AuthenticatedFlsaAuditRoute
@@ -588,6 +597,7 @@ export interface FileRoutesById {
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
+  '/_authenticated/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
   '/_authenticated/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
   '/_authenticated/flsa-audit': typeof AuthenticatedFlsaAuditRoute
@@ -658,6 +668,7 @@ export interface FileRouteTypes {
     | '/benefits'
     | '/dashboard'
     | '/documents'
+    | '/eeo-snapshot'
     | '/email-templates'
     | '/equipment'
     | '/flsa-audit'
@@ -726,6 +737,7 @@ export interface FileRouteTypes {
     | '/benefits'
     | '/dashboard'
     | '/documents'
+    | '/eeo-snapshot'
     | '/email-templates'
     | '/equipment'
     | '/flsa-audit'
@@ -795,6 +807,7 @@ export interface FileRouteTypes {
     | '/_authenticated/benefits'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
+    | '/_authenticated/eeo-snapshot'
     | '/_authenticated/email-templates'
     | '/_authenticated/equipment'
     | '/_authenticated/flsa-audit'
@@ -1056,6 +1069,13 @@ declare module '@tanstack/react-router' {
       path: '/email-templates'
       fullPath: '/email-templates'
       preLoaderRoute: typeof AuthenticatedEmailTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/eeo-snapshot': {
+      id: '/_authenticated/eeo-snapshot'
+      path: '/eeo-snapshot'
+      fullPath: '/eeo-snapshot'
+      preLoaderRoute: typeof AuthenticatedEeoSnapshotRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/documents': {
@@ -1382,6 +1402,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
+  AuthenticatedEeoSnapshotRoute: typeof AuthenticatedEeoSnapshotRoute
   AuthenticatedEmailTemplatesRoute: typeof AuthenticatedEmailTemplatesRoute
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
   AuthenticatedFlsaAuditRoute: typeof AuthenticatedFlsaAuditRoute
@@ -1434,6 +1455,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
+  AuthenticatedEeoSnapshotRoute: AuthenticatedEeoSnapshotRoute,
   AuthenticatedEmailTemplatesRoute: AuthenticatedEmailTemplatesRoute,
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
   AuthenticatedFlsaAuditRoute: AuthenticatedFlsaAuditRoute,
