@@ -5,7 +5,7 @@ import {
   MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness,
   CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon,
   DollarSign, Scale, BarChart2, FileStack, Banknote, DatabaseBackup, Landmark,
-  ShieldCheck, BadgeCheck, ToggleLeft,
+  ShieldCheck, BadgeCheck, ToggleLeft, UserCog,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRole } from "@/hooks/use-current-user";
@@ -105,6 +105,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/settings", "Settings", Settings, ["hr_admin"]),
     def("/admin-migration", "Data Migration", DatabaseBackup, ["hr_admin"]),
     def("/admin-modules", "Modules & Features", ToggleLeft, ["hr_admin"]),
+    def("/admin-demo", "Demo Account", UserCog, ["hr_admin"]),
   ]},
 ];
 
