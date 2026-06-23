@@ -37,7 +37,7 @@ export const generateNewHireBatch = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: pending, error } = await supabaseAdmin
       .from("new_hire_reports")
-      .select("id,employee_id,hire_date,employees(first_name,last_name,personal_email,address,ssn_last4)")
+      .select("id,employee_id,hire_date,employees(first_name,last_name,personal_email)")
       .eq("status", "queued")
       .limit(500);
     if (error) throw new Error(error.message);
