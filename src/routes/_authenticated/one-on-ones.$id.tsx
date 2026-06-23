@@ -60,7 +60,7 @@ function OneOnOneDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("one_on_ones")
-        .select("*, one_on_one_templates(title, agenda_prompts), employees(first_name,last_name,department,job_title)")
+        .select("*, one_on_one_templates(title, agenda_prompts, manager_prompts, employee_prompts), employees(first_name,last_name,department,job_title)")
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
@@ -206,7 +206,15 @@ function OneOnOneDetail() {
   });
 
   const s = sessionQ.data;
-  const agenda = ((s?.one_on_one_templates as { agenda_prompts?: AgendaPrompt[] } | null)?.agenda_prompts) ?? [];
+  const tpl = s?.one_on_one_templates as {
+    agenda_prompts?: AgendaPrompt[];
+    manager_prompts?: AgendaPrompt[];
+    employee_prompts?: AgendaPrompt[];
+  } | null;
+  const rolePrompts = isManager ? tpl?.manager_prompts : tpl?.employee_prompts;
+  const agenda = (rolePrompts && rolePrompts.length > 0)
+    ? rolePrompts
+    : (tpl?.agenda_prompts ?? []);
 
   return (
     <AppShell title={s?.title ?? "1-on-1"}>
