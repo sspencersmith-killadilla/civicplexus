@@ -96,14 +96,14 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
         for (const c of (dueCycles ?? []) as Array<{ id: string; name: string; self_review_due: string | null; manager_review_due: string | null; signoff_due: string | null }>) {
           const { data: parts } = await supabaseAdmin
             .from("review_cycle_participants")
-            .select("status, review_id, employees:employee_id(user_id, first_name, last_name), managers:manager_id(user_id)")
+            .select("status, review_id, employee:employee_id(user_id, first_name, last_name), manager:manager_id(user_id)")
             .eq("cycle_id", c.id);
-          for (const p of (parts ?? []) as Array<{ status: string; review_id: string | null; employees: { user_id: string | null; first_name: string; last_name: string } | null; managers: { user_id: string | null } | null }>) {
-            if (c.self_review_due && c.self_review_due < todayDate && p.status === "not_started" && p.employees?.user_id) {
-              cycleNotifs.push({ user_id: p.employees.user_id, type: "review_cycle", title: "Self-assessment overdue", body: c.name, link: `/reviews/${p.review_id}` });
+          for (const p of (parts ?? []) as unknown as Array<{ status: string; review_id: string | null; employee: { user_id: string | null; first_name: string; last_name: string } | null; manager: { user_id: string | null } | null }>) {
+            if (c.self_review_due && c.self_review_due < todayDate && p.status === "not_started" && p.employee?.user_id) {
+              cycleNotifs.push({ user_id: p.employee.user_id, type: "review_cycle", title: "Self-assessment overdue", body: c.name, link: `/reviews/${p.review_id ?? ""}` });
             }
-            if (c.manager_review_due && c.manager_review_due < todayDate && (p.status === "not_started" || p.status === "self_submitted") && p.managers?.user_id) {
-              cycleNotifs.push({ user_id: p.managers.user_id, type: "review_cycle", title: "Manager review overdue", body: `${p.employees?.first_name ?? ""} ${p.employees?.last_name ?? ""}`, link: `/reviews/${p.review_id}` });
+            if (c.manager_review_due && c.manager_review_due < todayDate && (p.status === "not_started" || p.status === "self_submitted") && p.manager?.user_id) {
+              cycleNotifs.push({ user_id: p.manager.user_id, type: "review_cycle", title: "Manager review overdue", body: `${p.employee?.first_name ?? ""} ${p.employee?.last_name ?? ""}`, link: `/reviews/${p.review_id ?? ""}` });
             }
           }
         }
@@ -117,14 +117,14 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
             .from("goals")
             .select("id, title, owner_employee_id, employees:owner_employee_id(user_id)")
             .eq("status", "active");
-          for (const g of (staleGoals ?? []) as Array<{ id: string; title: string; employees: { user_id: string | null } | null }>) {
-            if (!g.employees?.user_id) continue;
+          for (const g of (staleGoals ?? []) as unknown as Array<{ id: string; title: string; owner: { user_id: string | null } | null }>) {
+            if (!g.owner?.user_id) continue;
             const { data: last } = await supabaseAdmin
               .from("goal_updates").select("created_at").eq("goal_id", g.id)
               .order("created_at", { ascending: false }).limit(1);
             const lastAt = (last?.[0] as { created_at: string } | undefined)?.created_at;
             if (!lastAt || lastAt < weekAgo) {
-              weeklyNotifs.push({ user_id: g.employees.user_id, type: "goal_checkin", title: "Goal check-in", body: g.title, link: "/goals" });
+              weeklyNotifs.push({ user_id: g.owner.user_id, type: "goal_checkin", title: "Goal check-in", body: g.title, link: "/goals" });
             }
           }
         }
