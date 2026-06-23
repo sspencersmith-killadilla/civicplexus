@@ -2,8 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
-async function assertHr(ctx: { supabase: { from: (t: string) => { select: (c: string) => { eq: (col: string, v: string) => { eq: (col: string, v: string) => Promise<{ data: unknown[] | null }> } } } }; userId: string }) {
-  const { data } = await ctx.supabase.from("user_roles").select("role").eq("user_id", ctx.userId).eq("role", "hr_admin");
+async function assertHr(userId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", userId).eq("role", "hr_admin");
   if (!data?.length) throw new Error("Forbidden — HR admin only");
 }
 
@@ -11,7 +12,7 @@ async function assertHr(ctx: { supabase: { from: (t: string) => { select: (c: st
 export const listFlsaAudit = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertHr(context);
+    await assertHr(context.userId);
     const { data: positions, error } = await context.supabase
       .from("positions")
       .select("id,title,department,flsa_class,pay_grade,status,reports_to_position_id")
@@ -45,7 +46,7 @@ export const recordFlsaReview = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertHr(context);
+    await assertHr(context.userId);
     const { error } = await context.supabase.from("flsa_reviews").insert({
       position_id: data.position_id,
       reviewed_by: context.userId,
@@ -69,7 +70,7 @@ export const eeoWorkforceSnapshot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ asOf: z.string() }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertHr(context);
+    await assertHr(context.userId);
     const { data: emps, error } = await context.supabase
       .from("employees")
       .select("id,department,status,start_date,end_date,worker_type_id,worker_types(name)")
@@ -110,7 +111,7 @@ export const queryAudit = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertHr(context);
+    await assertHr(context.userId);
     let q = context.supabase.from("audit_events").select("*").order("created_at", { ascending: false }).limit(data.limit);
     if (data.from) q = q.gte("created_at", data.from);
     if (data.to) q = q.lte("created_at", data.to);
