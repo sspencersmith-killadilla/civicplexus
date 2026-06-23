@@ -139,6 +139,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
           .lte("next_scheduled_at", horizon);
         let created = 0;
         for (const s of (dueRecurring ?? []) as Array<{ id: string; employee_id: string; manager_user_id: string | null; template_id: string | null; cadence_weeks: number; next_scheduled_at: string; title: string | null }>) {
+          if (!s.manager_user_id) continue;
           const next = new Date(s.next_scheduled_at);
           const after = new Date(next.getTime() + s.cadence_weeks * 7 * 86400000).toISOString();
           // Insert next session (basic clone of parent)
