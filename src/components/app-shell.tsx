@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness, CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon } from "lucide-react";
+import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness, CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon, DollarSign, Scale, BarChart2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -45,10 +45,18 @@ const NAV_GROUPS = [
     { to: "/training", label: "Training & Certs", icon: GraduationCap, roles: ["hr_admin", "hiring_manager", "supervisor"] },
     { to: "/screenings", label: "Screenings", icon: ShieldQuestion, roles: ["hr_admin"] },
     { to: "/policies", label: "Policies", icon: ScrollText, roles: ["hr_admin", "hiring_manager", "employee", "candidate"] },
+    { to: "/policy-campaigns", label: "Ack Campaigns", icon: Megaphone, roles: ["hr_admin"] },
     { to: "/grievances", label: "Grievances", icon: ShieldAlert, roles: ["hr_admin", "hiring_manager", "supervisor", "employee", "candidate"] },
     { to: "/documents", label: "Documents", icon: FolderLock, roles: ["hr_admin", "it_admin", "hiring_manager", "employee", "candidate"] },
     { to: "/reports", label: "Reports", icon: BarChart3, roles: ["hr_admin"] },
+    { to: "/flsa-audit", label: "FLSA Audit", icon: Scale, roles: ["hr_admin"] },
+    { to: "/eeo-snapshot", label: "EEO Snapshot", icon: BarChart2, roles: ["hr_admin"] },
     { to: "/audit", label: "Audit Log", icon: History, roles: ["hr_admin"] },
+  ]},
+  { label: "Compensation", items: [
+    { to: "/comp-grades", label: "Pay Grades", icon: DollarSign, roles: ["hr_admin"] },
+    { to: "/comp-market", label: "Market Ranges", icon: BarChart2, roles: ["hr_admin"] },
+    { to: "/comp-cycles", label: "Comp Cycles", icon: CalendarDays, roles: ["hr_admin", "hiring_manager", "supervisor"] },
   ]},
   { label: "Hiring", items: [
     { to: "/jobs", label: "Requisitions", icon: BriefcaseBusiness, roles: ["hr_admin", "hiring_manager", "supervisor"] },
