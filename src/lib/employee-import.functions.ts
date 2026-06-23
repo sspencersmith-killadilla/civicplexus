@@ -14,7 +14,51 @@ async function assertHrAdmin(ctx: { supabase: ReturnType<typeof Object>; userId:
 }
 
 const rowsInput = <T extends z.ZodTypeAny>(row: T) =>
-  z.object({ rows: z.array(row).min(1).max(5000) });
+  z.object({ rows: z.array(row).min(1).max(5000), job_id: z.string().uuid().optional() });
+
+type JobUpdater = ((partial: Record<string, unknown>) => Promise<void>) | null;
+
+async function makeJobUpdater(jobId: string | undefined, totalRows: number): Promise<JobUpdater> {
+  if (!jobId) return null;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await supabaseAdmin
+    .from("import_jobs")
+    .update({ status: "processing", started_at: new Date().toISOString(), total_rows: totalRows } as never)
+    .eq("id", jobId);
+  let last = 0;
+  return async (partial) => {
+    const now = Date.now();
+    if (now - last < 400 && (partial.processed_rows as number | undefined) !== totalRows) return;
+    last = now;
+    await supabaseAdmin.from("import_jobs").update(partial as never).eq("id", jobId);
+  };
+}
+
+async function finalizeJob(jobId: string | undefined, result: ImportResult, threw?: unknown) {
+  if (!jobId) return;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await supabaseAdmin.from("import_jobs").update({
+    status: threw ? "failed" : "completed",
+    finished_at: new Date().toISOString(),
+    inserted: result.inserted,
+    updated: result.updated,
+    skipped: result.skipped,
+    errors: result.errors as never,
+    processed_rows: result.inserted + result.updated + result.skipped,
+    error_message: threw ? (threw instanceof Error ? threw.message : String(threw)) : null,
+  } as never).eq("id", jobId);
+}
+
+async function tick(update: JobUpdater, result: ImportResult) {
+  if (!update) return;
+  await update({
+    processed_rows: result.inserted + result.updated + result.skipped,
+    inserted: result.inserted,
+    updated: result.updated,
+    skipped: result.skipped,
+    errors: result.errors as never,
+  });
+}
 
 const empRow = z.object({
   external_id: z.string().trim().max(80).optional().or(z.literal("")),
