@@ -24,6 +24,7 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProvisioningRouteImport } from './routes/_authenticated/provisioning'
 import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenticated/preboarding'
 import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
+import { Route as AuthenticatedPolicyCampaignsRouteImport } from './routes/_authenticated/policy-campaigns'
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -155,6 +156,12 @@ const AuthenticatedPositionsRoute = AuthenticatedPositionsRouteImport.update({
   path: '/positions',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPolicyCampaignsRoute =
+  AuthenticatedPolicyCampaignsRouteImport.update({
+    id: '/policy-campaigns',
+    path: '/policy-campaigns',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
   id: '/policies',
   path: '/policies',
@@ -469,6 +476,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
+  '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
@@ -538,6 +546,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
+  '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
@@ -609,6 +618,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
+  '/_authenticated/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
   '/_authenticated/preboarding': typeof AuthenticatedPreboardingRoute
   '/_authenticated/provisioning': typeof AuthenticatedProvisioningRoute
@@ -680,6 +690,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/offboarding'
     | '/policies'
+    | '/policy-campaigns'
     | '/positions'
     | '/preboarding'
     | '/provisioning'
@@ -749,6 +760,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/offboarding'
     | '/policies'
+    | '/policy-campaigns'
     | '/positions'
     | '/preboarding'
     | '/provisioning'
@@ -819,6 +831,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
     | '/_authenticated/policies'
+    | '/_authenticated/policy-campaigns'
     | '/_authenticated/positions'
     | '/_authenticated/preboarding'
     | '/_authenticated/provisioning'
@@ -992,6 +1005,13 @@ declare module '@tanstack/react-router' {
       path: '/positions'
       fullPath: '/positions'
       preLoaderRoute: typeof AuthenticatedPositionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/policy-campaigns': {
+      id: '/_authenticated/policy-campaigns'
+      path: '/policy-campaigns'
+      fullPath: '/policy-campaigns'
+      preLoaderRoute: typeof AuthenticatedPolicyCampaignsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/policies': {
@@ -1414,6 +1434,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
+  AuthenticatedPolicyCampaignsRoute: typeof AuthenticatedPolicyCampaignsRoute
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
   AuthenticatedPreboardingRoute: typeof AuthenticatedPreboardingRoute
   AuthenticatedProvisioningRoute: typeof AuthenticatedProvisioningRoute
@@ -1467,6 +1488,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,
+  AuthenticatedPolicyCampaignsRoute: AuthenticatedPolicyCampaignsRoute,
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
   AuthenticatedPreboardingRoute: AuthenticatedPreboardingRoute,
   AuthenticatedProvisioningRoute: AuthenticatedProvisioningRoute,
