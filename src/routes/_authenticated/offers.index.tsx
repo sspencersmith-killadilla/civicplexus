@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Send, Ban, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { sendOffer, voidOffer } from "@/lib/offers.functions";
+import DOMPurify from "isomorphic-dompurify";
 
 export const Route = createFileRoute("/_authenticated/offers/")({ component: OffersIndex });
 
