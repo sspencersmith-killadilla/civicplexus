@@ -34,6 +34,7 @@ const NAV_GROUPS = [
     { to: "/forms", label: "Forms Library", icon: FileSignature, roles: ["hr_admin"] },
     { to: "/provisioning", label: "IT Provisioning", icon: Server, roles: ["it_admin", "hr_admin"] },
     { to: "/docs-generator", label: "Docs Generator", icon: FileStack, roles: ["hr_admin"] },
+    { to: "/doc-templates", label: "Doc Templates", icon: FileStack, roles: ["hr_admin"] },
   ]},
   { label: "Coaching", items: [
     { to: "/one-on-ones", label: "1-on-1s", icon: MessagesSquare, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },

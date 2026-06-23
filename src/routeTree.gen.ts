@@ -39,6 +39,7 @@ import { Route as AuthenticatedEmailTemplatesRouteImport } from './routes/_authe
 import { Route as AuthenticatedEeoSnapshotRouteImport } from './routes/_authenticated/eeo-snapshot'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDocsGeneratorRouteImport } from './routes/_authenticated/docs-generator'
+import { Route as AuthenticatedDocTemplatesRouteImport } from './routes/_authenticated/doc-templates'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCompMarketRouteImport } from './routes/_authenticated/comp-market'
 import { Route as AuthenticatedCompGradesRouteImport } from './routes/_authenticated/comp-grades'
@@ -242,6 +243,12 @@ const AuthenticatedDocsGeneratorRoute =
   AuthenticatedDocsGeneratorRouteImport.update({
     id: '/docs-generator',
     path: '/docs-generator',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDocTemplatesRoute =
+  AuthenticatedDocTemplatesRouteImport.update({
+    id: '/doc-templates',
+    path: '/doc-templates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -498,6 +505,7 @@ export interface FileRoutesByFullPath {
   '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/comp-market': typeof AuthenticatedCompMarketRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/doc-templates': typeof AuthenticatedDocTemplatesRoute
   '/docs-generator': typeof AuthenticatedDocsGeneratorRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
@@ -573,6 +581,7 @@ export interface FileRoutesByTo {
   '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/comp-market': typeof AuthenticatedCompMarketRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/doc-templates': typeof AuthenticatedDocTemplatesRoute
   '/docs-generator': typeof AuthenticatedDocsGeneratorRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
@@ -650,6 +659,7 @@ export interface FileRoutesById {
   '/_authenticated/comp-grades': typeof AuthenticatedCompGradesRoute
   '/_authenticated/comp-market': typeof AuthenticatedCompMarketRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/doc-templates': typeof AuthenticatedDocTemplatesRoute
   '/_authenticated/docs-generator': typeof AuthenticatedDocsGeneratorRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
@@ -727,6 +737,7 @@ export interface FileRouteTypes {
     | '/comp-grades'
     | '/comp-market'
     | '/dashboard'
+    | '/doc-templates'
     | '/docs-generator'
     | '/documents'
     | '/eeo-snapshot'
@@ -802,6 +813,7 @@ export interface FileRouteTypes {
     | '/comp-grades'
     | '/comp-market'
     | '/dashboard'
+    | '/doc-templates'
     | '/docs-generator'
     | '/documents'
     | '/eeo-snapshot'
@@ -878,6 +890,7 @@ export interface FileRouteTypes {
     | '/_authenticated/comp-grades'
     | '/_authenticated/comp-market'
     | '/_authenticated/dashboard'
+    | '/_authenticated/doc-templates'
     | '/_authenticated/docs-generator'
     | '/_authenticated/documents'
     | '/_authenticated/eeo-snapshot'
@@ -1173,6 +1186,13 @@ declare module '@tanstack/react-router' {
       path: '/docs-generator'
       fullPath: '/docs-generator'
       preLoaderRoute: typeof AuthenticatedDocsGeneratorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/doc-templates': {
+      id: '/_authenticated/doc-templates'
+      path: '/doc-templates'
+      fullPath: '/doc-templates'
+      preLoaderRoute: typeof AuthenticatedDocTemplatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -1521,6 +1541,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompGradesRoute: typeof AuthenticatedCompGradesRoute
   AuthenticatedCompMarketRoute: typeof AuthenticatedCompMarketRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDocTemplatesRoute: typeof AuthenticatedDocTemplatesRoute
   AuthenticatedDocsGeneratorRoute: typeof AuthenticatedDocsGeneratorRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEeoSnapshotRoute: typeof AuthenticatedEeoSnapshotRoute
@@ -1580,6 +1601,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompGradesRoute: AuthenticatedCompGradesRoute,
   AuthenticatedCompMarketRoute: AuthenticatedCompMarketRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDocTemplatesRoute: AuthenticatedDocTemplatesRoute,
   AuthenticatedDocsGeneratorRoute: AuthenticatedDocsGeneratorRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEeoSnapshotRoute: AuthenticatedEeoSnapshotRoute,

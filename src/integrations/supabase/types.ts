@@ -664,6 +664,72 @@ export type Database = {
           },
         ]
       }
+      doc_templates: {
+        Row: {
+          body_font: string
+          brand_accent: string
+          brand_primary: string
+          cover_style: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          footer_text: string | null
+          header_font: string
+          id: string
+          include_signature_block: boolean
+          include_toc: boolean
+          is_default: boolean
+          logo_url: string | null
+          name: string
+          org_address: string | null
+          org_name: string | null
+          section_order: string[]
+          updated_at: string
+        }
+        Insert: {
+          body_font?: string
+          brand_accent?: string
+          brand_primary?: string
+          cover_style?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          footer_text?: string | null
+          header_font?: string
+          id?: string
+          include_signature_block?: boolean
+          include_toc?: boolean
+          is_default?: boolean
+          logo_url?: string | null
+          name: string
+          org_address?: string | null
+          org_name?: string | null
+          section_order?: string[]
+          updated_at?: string
+        }
+        Update: {
+          body_font?: string
+          brand_accent?: string
+          brand_primary?: string
+          cover_style?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          footer_text?: string | null
+          header_font?: string
+          id?: string
+          include_signature_block?: boolean
+          include_toc?: boolean
+          is_default?: boolean
+          logo_url?: string | null
+          name?: string
+          org_address?: string | null
+          org_name?: string | null
+          section_order?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string
