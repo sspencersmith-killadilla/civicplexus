@@ -153,7 +153,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
         }
 
         // Policy campaign nudges (weekly cadence)
-        const nowIso = new Date().toISOString();
+        const nowIso2 = new Date().toISOString();
         const oneWeekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
         const { data: pending } = await supabaseAdmin
           .from("policy_campaign_assignments")
@@ -172,7 +172,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
             body: a.policy_campaigns.due_date ? `Due ${a.policy_campaigns.due_date}` : "Action required",
             link: `/policies/${a.policy_campaigns.policy_id}`,
           });
-          await supabaseAdmin.from("policy_campaign_assignments").update({ last_nudged_at: nowIso }).eq("id", a.id);
+          await supabaseAdmin.from("policy_campaign_assignments").update({ last_nudged_at: nowIso2 }).eq("id", a.id);
         }
         if (campNotifs.length) await supabaseAdmin.from("notifications").insert(campNotifs);
 
