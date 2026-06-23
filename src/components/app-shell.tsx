@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import markAsset from "@/assets/kyberna-mark.png.asset.json";
+import markAsset from "@/assets/noopolis-mark.png.asset.json";
 
 const NAV_GROUPS = [
   { label: "Overview", items: [

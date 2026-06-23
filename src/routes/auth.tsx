@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import markAsset from "@/assets/kyberna-mark.png.asset.json";
+import markAsset from "@/assets/noopolis-mark.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Noöpolis" }, { name: "description", content: "Sign in or create your Noöpolis account." }] }),

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Users, HardHat, Shield, Clock, FileBadge, HeartHandshake, Landmark, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import markAsset from "@/assets/kyberna-mark.png.asset.json";
+import markAsset from "@/assets/noopolis-mark.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({

@@ -13,7 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
-import markAsset from "@/assets/kyberna-mark.png.asset.json";
+import markAsset from "@/assets/noopolis-mark.png.asset.json";
 
 function NotFoundComponent() {
   return (
