@@ -83,6 +83,8 @@ export const importEmployees = createServerFn({ method: "POST" })
     await assertHrAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const result: ImportResult = { inserted: 0, updated: 0, skipped: 0, errors: [] };
+    const update = await makeJobUpdater(data.job_id, data.rows.length);
+    try {
     const { data: wts } = await supabaseAdmin.from("worker_types").select("id,name");
     const wtMap = new Map((wts ?? []).map((w) => [w.name.toLowerCase(), w.id]));
     const { data: poses } = await supabaseAdmin.from("positions").select("id,position_code");
@@ -139,6 +141,7 @@ export const importEmployees = createServerFn({ method: "POST" })
         result.errors.push({ row: rowNum, message: e instanceof Error ? e.message : String(e) });
         result.skipped++;
       }
+      await tick(update, result);
     }
 
     // Second pass: resolve manager_external_id links
@@ -157,7 +160,12 @@ export const importEmployees = createServerFn({ method: "POST" })
       }
     }
 
-    return result;
+      await finalizeJob(data.job_id, result);
+      return result;
+    } catch (e) {
+      await finalizeJob(data.job_id, result, e);
+      throw e;
+    }
   });
 
 // ============ Positions import =============
