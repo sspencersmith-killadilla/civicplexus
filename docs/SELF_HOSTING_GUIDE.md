@@ -1,6 +1,6 @@
-# Kyberna Self-Hosting Guide
+# Noöpolis Self-Hosting Guide
 
-A non-developer can follow this guide end-to-end and stand up a secure, production-ready Kyberna deployment on their own infrastructure in roughly two hours. Each section ends with a **Did it work?** check.
+A non-developer can follow this guide end-to-end and stand up a secure, production-ready Noöpolis deployment on their own infrastructure in roughly two hours. Each section ends with a **Did it work?** check.
 
 ---
 
@@ -70,8 +70,8 @@ Sign up for all of these now and turn on **two-factor authentication** for each:
 
 ### Clone and install
 ```bash
-git clone https://github.com/<your-org>/kyberna.git
-cd kyberna
+git clone https://github.com/<your-org>/noopolis.git
+cd noopolis
 bun install
 ```
 
@@ -205,7 +205,7 @@ Front with Caddy (same recipe as §6).
 
 Push the repo, set the same env vars in the dashboard, set build command `bun run build`, output `.output/public`. Custom domain via their UI.
 
-**Did it work?** ✅ Your domain serves the Kyberna landing page over HTTPS.
+**Did it work?** ✅ Your domain serves the Noöpolis landing page over HTTPS.
 
 ---
 
@@ -231,7 +231,7 @@ create extension if not exists pg_net;
 
 -- Daily overdue-task reminders (06:00 UTC)
 select cron.schedule(
-  'kyberna-daily-reminders', '0 6 * * *',
+  'noopolis-daily-reminders', '0 6 * * *',
   $$select net.http_post(
       url := 'https://onboarding.cityofx.gov/api/public/hooks/reminders',
       headers := jsonb_build_object('x-cron-secret', current_setting('app.cron_secret', true))
@@ -240,7 +240,7 @@ select cron.schedule(
 
 -- Weekly cert-expiry sweep (Mondays 07:00 UTC)
 select cron.schedule(
-  'kyberna-cert-expiry', '0 7 * * 1',
+  'noopolis-cert-expiry', '0 7 * * 1',
   $$select net.http_post(
       url := 'https://onboarding.cityofx.gov/api/public/hooks/reminders?kind=cert_expiry',
       headers := jsonb_build_object('x-cron-secret', current_setting('app.cron_secret', true))
@@ -293,7 +293,7 @@ Tick every item before you let real employees in:
 
 ## 13. Compliance notes
 
-| Requirement | How Kyberna helps | What you must do |
+| Requirement | How Noöpolis helps | What you must do |
 | --- | --- | --- |
 | **I-9 §2** | Captures employee §1 + uploads | In-person verifier signs §2 within 3 business days |
 | **CJIS** | Encrypted storage, audit log, RBAC | Use a CJIS-eligible region (AWS GovCloud / Azure Gov); sign CJIS addendum with vendor |
@@ -393,8 +393,8 @@ wrangler deploy
 Both `onboarding-documents` and `policy-documents` are private. RLS lets a user read/write only their own folder (`auth.uid()::text = (storage.foldername(name))[1]`).
 
 ### Cron jobs
-- `kyberna-daily-reminders` — 06:00 UTC daily
-- `kyberna-cert-expiry` — 07:00 UTC Mondays
+- `noopolis-daily-reminders` — 06:00 UTC daily
+- `noopolis-cert-expiry` — 07:00 UTC Mondays
 
 ### Cost worksheet
 | Item | Monthly |
