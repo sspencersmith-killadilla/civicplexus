@@ -15,7 +15,7 @@ import { listFlsaAudit, recordFlsaReview } from "@/lib/compliance.functions";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/reports/flsa")({ component: FlsaPage });
+export const Route = createFileRoute("/_authenticated/flsa-audit")({ component: FlsaPage });
 
 function FlsaPage() {
   const qc = useQueryClient();

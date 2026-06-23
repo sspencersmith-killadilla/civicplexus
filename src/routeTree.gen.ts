@@ -32,6 +32,7 @@ import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_auth
 import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authenticated/hire-requests'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
+import { Route as AuthenticatedFlsaAuditRouteImport } from './routes/_authenticated/flsa-audit'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
 import { Route as AuthenticatedEmailTemplatesRouteImport } from './routes/_authenticated/email-templates'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
@@ -57,7 +58,6 @@ import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedReviewCyclesIdRouteImport } from './routes/_authenticated/review-cycles.$id'
-import { Route as AuthenticatedReportsFlsaRouteImport } from './routes/_authenticated/reports.flsa'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
 import { Route as AuthenticatedPafIdRouteImport } from './routes/_authenticated/paf.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
@@ -198,6 +198,11 @@ const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
   path: '/goals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFlsaAuditRoute = AuthenticatedFlsaAuditRouteImport.update({
+  id: '/flsa-audit',
+  path: '/flsa-audit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedEquipmentRoute = AuthenticatedEquipmentRouteImport.update({
   id: '/equipment',
   path: '/equipment',
@@ -336,12 +341,6 @@ const AuthenticatedReviewCyclesIdRoute =
     path: '/review-cycles/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedReportsFlsaRoute =
-  AuthenticatedReportsFlsaRouteImport.update({
-    id: '/flsa',
-    path: '/flsa',
-    getParentRoute: () => AuthenticatedReportsRoute,
-  } as any)
 const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -453,6 +452,7 @@ export interface FileRoutesByFullPath {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
+  '/flsa-audit': typeof AuthenticatedFlsaAuditRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
@@ -464,7 +464,7 @@ export interface FileRoutesByFullPath {
   '/positions': typeof AuthenticatedPositionsRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
-  '/reports': typeof AuthenticatedReportsRouteWithChildren
+  '/reports': typeof AuthenticatedReportsRoute
   '/screenings': typeof AuthenticatedScreeningsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
@@ -483,7 +483,6 @@ export interface FileRoutesByFullPath {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
-  '/reports/flsa': typeof AuthenticatedReportsFlsaRoute
   '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -521,6 +520,7 @@ export interface FileRoutesByTo {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
+  '/flsa-audit': typeof AuthenticatedFlsaAuditRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
@@ -532,7 +532,7 @@ export interface FileRoutesByTo {
   '/positions': typeof AuthenticatedPositionsRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
-  '/reports': typeof AuthenticatedReportsRouteWithChildren
+  '/reports': typeof AuthenticatedReportsRoute
   '/screenings': typeof AuthenticatedScreeningsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
@@ -551,7 +551,6 @@ export interface FileRoutesByTo {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
-  '/reports/flsa': typeof AuthenticatedReportsFlsaRoute
   '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -591,6 +590,7 @@ export interface FileRoutesById {
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
+  '/_authenticated/flsa-audit': typeof AuthenticatedFlsaAuditRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/hire-requests': typeof AuthenticatedHireRequestsRoute
@@ -602,7 +602,7 @@ export interface FileRoutesById {
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
   '/_authenticated/preboarding': typeof AuthenticatedPreboardingRoute
   '/_authenticated/provisioning': typeof AuthenticatedProvisioningRoute
-  '/_authenticated/reports': typeof AuthenticatedReportsRouteWithChildren
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/screenings': typeof AuthenticatedScreeningsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
@@ -621,7 +621,6 @@ export interface FileRoutesById {
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/paf/$id': typeof AuthenticatedPafIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
-  '/_authenticated/reports/flsa': typeof AuthenticatedReportsFlsaRoute
   '/_authenticated/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -661,6 +660,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/email-templates'
     | '/equipment'
+    | '/flsa-audit'
     | '/goals'
     | '/help'
     | '/hire-requests'
@@ -691,7 +691,6 @@ export interface FileRouteTypes {
     | '/one-on-ones/$id'
     | '/paf/$id'
     | '/policies/$id'
-    | '/reports/flsa'
     | '/review-cycles/$id'
     | '/reviews/$id'
     | '/templates/$id'
@@ -729,6 +728,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/email-templates'
     | '/equipment'
+    | '/flsa-audit'
     | '/goals'
     | '/help'
     | '/hire-requests'
@@ -759,7 +759,6 @@ export interface FileRouteTypes {
     | '/one-on-ones/$id'
     | '/paf/$id'
     | '/policies/$id'
-    | '/reports/flsa'
     | '/review-cycles/$id'
     | '/reviews/$id'
     | '/templates/$id'
@@ -798,6 +797,7 @@ export interface FileRouteTypes {
     | '/_authenticated/documents'
     | '/_authenticated/email-templates'
     | '/_authenticated/equipment'
+    | '/_authenticated/flsa-audit'
     | '/_authenticated/goals'
     | '/_authenticated/help'
     | '/_authenticated/hire-requests'
@@ -828,7 +828,6 @@ export interface FileRouteTypes {
     | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/paf/$id'
     | '/_authenticated/policies/$id'
-    | '/_authenticated/reports/flsa'
     | '/_authenticated/review-cycles/$id'
     | '/_authenticated/reviews/$id'
     | '/_authenticated/templates/$id'
@@ -1038,6 +1037,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGoalsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/flsa-audit': {
+      id: '/_authenticated/flsa-audit'
+      path: '/flsa-audit'
+      fullPath: '/flsa-audit'
+      preLoaderRoute: typeof AuthenticatedFlsaAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/equipment': {
       id: '/_authenticated/equipment'
       path: '/equipment'
@@ -1213,13 +1219,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewCyclesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/reports/flsa': {
-      id: '/_authenticated/reports/flsa'
-      path: '/flsa'
-      fullPath: '/reports/flsa'
-      preLoaderRoute: typeof AuthenticatedReportsFlsaRouteImport
-      parentRoute: typeof AuthenticatedReportsRoute
-    }
     '/_authenticated/policies/$id': {
       id: '/_authenticated/policies/$id'
       path: '/$id'
@@ -1362,17 +1361,6 @@ const AuthenticatedPoliciesRouteWithChildren =
     AuthenticatedPoliciesRouteChildren,
   )
 
-interface AuthenticatedReportsRouteChildren {
-  AuthenticatedReportsFlsaRoute: typeof AuthenticatedReportsFlsaRoute
-}
-
-const AuthenticatedReportsRouteChildren: AuthenticatedReportsRouteChildren = {
-  AuthenticatedReportsFlsaRoute: AuthenticatedReportsFlsaRoute,
-}
-
-const AuthenticatedReportsRouteWithChildren =
-  AuthenticatedReportsRoute._addFileChildren(AuthenticatedReportsRouteChildren)
-
 interface AuthenticatedReviewCyclesIdRouteChildren {
   AuthenticatedReviewCyclesIdCalibrationRoute: typeof AuthenticatedReviewCyclesIdCalibrationRoute
 }
@@ -1396,6 +1384,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEmailTemplatesRoute: typeof AuthenticatedEmailTemplatesRoute
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
+  AuthenticatedFlsaAuditRoute: typeof AuthenticatedFlsaAuditRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedHireRequestsRoute: typeof AuthenticatedHireRequestsRoute
@@ -1407,7 +1396,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
   AuthenticatedPreboardingRoute: typeof AuthenticatedPreboardingRoute
   AuthenticatedProvisioningRoute: typeof AuthenticatedProvisioningRoute
-  AuthenticatedReportsRoute: typeof AuthenticatedReportsRouteWithChildren
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedScreeningsRoute: typeof AuthenticatedScreeningsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
@@ -1447,6 +1436,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEmailTemplatesRoute: AuthenticatedEmailTemplatesRoute,
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
+  AuthenticatedFlsaAuditRoute: AuthenticatedFlsaAuditRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedHireRequestsRoute: AuthenticatedHireRequestsRoute,
@@ -1458,7 +1448,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
   AuthenticatedPreboardingRoute: AuthenticatedPreboardingRoute,
   AuthenticatedProvisioningRoute: AuthenticatedProvisioningRoute,
-  AuthenticatedReportsRoute: AuthenticatedReportsRouteWithChildren,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedScreeningsRoute: AuthenticatedScreeningsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
