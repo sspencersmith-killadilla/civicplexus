@@ -101,7 +101,7 @@ export const assemblePayPeriod = createServerFn({ method: "POST" })
 
     const { data: leaves } = await supabaseAdmin
       .from("leave_requests")
-      .select("employee_id, leave_type, start_date, end_date, status")
+      .select("employee_id, plan_id, start_date, end_date, status, leave_plans(code, is_fmla, paid)")
       .in("employee_id", empIds)
       .eq("status", "approved")
       .lte("start_date", period.period_end)
@@ -137,14 +137,23 @@ export const assemblePayPeriod = createServerFn({ method: "POST" })
     const baseHours = 80;
     let totalGross = 0;
     let totalHours = 0;
+    type LeaveRow = {
+      employee_id: string;
+      plan_id: string;
+      start_date: string;
+      end_date: string;
+      leave_plans: { code: string; is_fmla: boolean; paid: boolean } | null;
+    };
+    const leaveRows = (leaves ?? []) as unknown as LeaveRow[];
     const lines = emps.map((e) => {
       const comp = compByEmp.get(e.id);
-      const empLeaves = (leaves ?? []).filter((l) => l.employee_id === e.id);
-      const pto = empLeaves.filter((l) => l.leave_type === "pto" || l.leave_type === "vacation")
+      const empLeaves = leaveRows.filter((l) => l.employee_id === e.id);
+      const codeOf = (l: LeaveRow) => (l.leave_plans?.code ?? "").toLowerCase();
+      const pto = empLeaves.filter((l) => codeOf(l).includes("pto") || codeOf(l).includes("vac"))
         .reduce((s, l) => s + hoursInPeriod(period.period_start, period.period_end, l.start_date, l.end_date), 0);
-      const sick = empLeaves.filter((l) => l.leave_type === "sick")
+      const sick = empLeaves.filter((l) => codeOf(l).includes("sick"))
         .reduce((s, l) => s + hoursInPeriod(period.period_start, period.period_end, l.start_date, l.end_date), 0);
-      const fmla = empLeaves.filter((l) => l.leave_type === "fmla")
+      const fmla = empLeaves.filter((l) => l.leave_plans?.is_fmla)
         .reduce((s, l) => s + hoursInPeriod(period.period_start, period.period_end, l.start_date, l.end_date), 0);
       const leaveHrs = pto + sick + fmla;
       const regularHours = Math.max(0, baseHours - leaveHrs);
@@ -175,8 +184,8 @@ export const assemblePayPeriod = createServerFn({ method: "POST" })
     if (linesErr) throw new Error(linesErr.message);
 
     await supabaseAdmin.from("payroll_runs").update({
-      total_gross: totalGross.toFixed(2),
-      total_hours: totalHours.toFixed(2),
+      total_gross: Number(totalGross.toFixed(2)),
+      total_hours: Number(totalHours.toFixed(2)),
       headcount: emps.length,
       status: "awaiting_signoff",
     }).eq("id", run.id);
