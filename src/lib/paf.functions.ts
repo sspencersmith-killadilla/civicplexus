@@ -32,7 +32,7 @@ export const submitPaf = createServerFn({ method: "POST" })
     const roles = data.approval_roles ?? ["supervisor","hr_admin"];
     for (let i = 0; i < roles.length; i++) {
       await supabaseAdmin.from("approval_steps").insert({
-        chain_id: chain.id, stage: i + 1, required_role: roles[i], status: "pending",
+        chain_id: chain.id, stage: i + 1, approver_role: roles[i], status: "pending",
       } as never);
     }
 
@@ -55,11 +55,11 @@ export const submitPaf = createServerFn({ method: "POST" })
 
     // Notify first approver pool
     const { data: firstStep } = await supabaseAdmin
-      .from("approval_steps").select("required_role")
+      .from("approval_steps").select("approver_role")
       .eq("chain_id", chain.id).eq("stage", 1).maybeSingle();
-    if (firstStep?.required_role) {
+    if (firstStep?.approver_role) {
       const { data: approvers } = await supabaseAdmin
-        .from("user_roles").select("user_id").eq("role", firstStep.required_role);
+        .from("user_roles").select("user_id").eq("role", firstStep.approver_role);
       for (const a of approvers ?? []) {
         await supabaseAdmin.from("notifications").insert({
           user_id: a.user_id, type: "paf_approval",
