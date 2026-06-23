@@ -2692,6 +2692,44 @@ export type Database = {
           },
         ]
       }
+      module_settings: {
+        Row: {
+          enabled: boolean
+          key: string
+          kind: string
+          label: string
+          parent_key: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          key: string
+          kind: string
+          label: string
+          parent_key?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          key?: string
+          kind?: string
+          label?: string
+          parent_key?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_settings_parent_key_fkey"
+            columns: ["parent_key"]
+            isOneToOne: false
+            referencedRelation: "module_settings"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       new_hire_batches: {
         Row: {
           created_at: string
