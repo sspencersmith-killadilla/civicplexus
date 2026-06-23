@@ -1,6 +1,6 @@
-# Noöpolis User Guide
+# CivicPlexus User Guide
 
-Welcome to **Noöpolis**, your municipal onboarding suite. This guide walks every role — Admins, HR, Hiring Managers, IT, and Employees — through first-time setup and daily operations. No technical background required.
+Welcome to **CivicPlexus**, your municipal onboarding suite. This guide walks every role — Admins, HR, Hiring Managers, IT, and Employees — through first-time setup and daily operations. No technical background required.
 
 > Screenshots referenced as `![placeholder]` are intentionally blank. Drop your own PNGs into `docs/img/` before printing or sharing.
 
@@ -188,7 +188,7 @@ Filter by actor, entity, date range. Read-only. Retain forever; never delete.
 
 ### Support escalation template
 ```
-Subject: Noöpolis issue — <one-line summary>
+Subject: CivicPlexus issue — <one-line summary>
 Environment: <production / staging>
 User affected: <email + role>
 What I expected: ...

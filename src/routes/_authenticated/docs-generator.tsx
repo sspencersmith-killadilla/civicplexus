@@ -14,7 +14,7 @@ import { FileText, Sparkles, Printer, Download, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/docs-generator")({
-  head: () => ({ meta: [{ title: "Docs Generator — Noöpolis" }] }),
+  head: () => ({ meta: [{ title: "Docs Generator — CivicPlexus" }] }),
   component: DocsGeneratorPage,
 });
 
@@ -125,7 +125,7 @@ function DocsGeneratorPage() {
   function buildMarkdown(): string | null {
     const p = buildPacket();
     if (!p) return null;
-    const orgName = tpl?.org_name || org?.org_name || "Noöpolis";
+    const orgName = tpl?.org_name || org?.org_name || "CivicPlexus";
     const today = new Date().toISOString().slice(0, 10);
     const sectionOrder = tpl?.section_order ?? ["forms", "policies", "courses"];
     const includeToc = tpl?.include_toc ?? true;
@@ -190,7 +190,7 @@ function DocsGeneratorPage() {
     const md = buildMarkdown();
     if (!md) return;
     const html = mdToHtml(md);
-    const orgName = tpl?.org_name || org?.org_name || "Noöpolis";
+    const orgName = tpl?.org_name || org?.org_name || "CivicPlexus";
     const primary = tpl?.brand_primary ?? "#1E2761";
     const accent = tpl?.brand_accent ?? "#CADCFC";
     const headerFont = tpl?.header_font ?? "Georgia, serif";

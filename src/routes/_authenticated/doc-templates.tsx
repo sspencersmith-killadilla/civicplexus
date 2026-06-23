@@ -16,7 +16,7 @@ import { Plus, Trash2, Pencil, FileStack, Star } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/doc-templates")({
-  head: () => ({ meta: [{ title: "Document Templates — Noöpolis" }] }),
+  head: () => ({ meta: [{ title: "Document Templates — CivicPlexus" }] }),
   component: DocTemplatesPage,
 });
 
