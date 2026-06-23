@@ -1,32 +1,39 @@
-## Goal
+## Short answer
 
-Replace the existing seed `one_on_one_templates` rows with the 25 templates in the uploaded CSV, preserving theme grouping and both manager / employee question sets.
+Right now it isn't. The database has the scaffolding for human-in-the-loop AI in the applicant pool, but no UI surfaces it.
 
-## Approach
+## What exists today
 
-One new migration that:
+- **`public.application_ai_parse`** — one row per application holding `parsed jsonb` (resume parse), `model`, `redaction_version`, `input_hash`, `created_by`. No writer, no reader in the app.
+- **`public.ai_suggestions`** — HITL-shaped table with `application_id` / `interview_id`, `kind`, `payload jsonb` (the AI proposal), plus `decision`, `decision_diff jsonb`, `decided_by`, `decided_at` (the human review). No writer, no reader in the app.
+- **Applicant pool UI** (`src/routes/_authenticated/jobs.$id.tsx` → `ApplicantRow`): purely manual — status changes, schedule interview, draft offer, send rejection. No AI panel, no suggestions, no parse view.
+- **Public apply route** (`src/routes/api/public/job-applications.ts`): inserts the application and resume but does not enqueue an AI parse or summary.
 
-1. **Adds a `theme` column** (`text`, nullable) to `public.one_on_one_templates` so the "Theme 1: Foundational Check-ins" / etc. grouping from the CSV is preserved and can be shown in the UI later.
-2. **Clears existing seed templates** (`DELETE FROM public.one_on_one_templates WHERE title IN (...)` for the current 4 seeds: `Standard 1-on-1 Check-in`, `Weekly 1-on-1`, plus the two from migration `…224736`). Any user-created templates and any `one_on_ones` rows referencing them are preserved (`template_id` is `ON DELETE SET NULL`).
-3. **Inserts 25 rows** from the CSV, one per template:
-   - `title` ← `template_title` (e.g. "Template 1: The Standard Check-in")
-   - `theme` ← `theme_title`
-   - `description` ← `theme_title` (so existing UI still shows useful context until a theme column is wired in)
-   - `manager_prompts` ← `questions` JSON array
-   - `employee_prompts` ← `employee_questions` JSON array
-   - `agenda_prompts` ← `questions` (kept in sync for legacy readers)
-   - `is_default` = true only for Template 1, false elsewhere
-   - `is_active` = true
+So the HITL plumbing is in the schema but nothing in the app generates suggestions, displays them, or records human accept/edit/reject.
 
-Insertion uses `INSERT ... ON CONFLICT` isn't possible (no unique on title); we instead `DELETE` the 25 target titles first, then `INSERT` to make the migration idempotent.
+## If you want to actually showcase HITL here
+
+This is the minimum that would make it visible in the applicant pool:
+
+1. **Generate on application submit** (server fn called from the apply route, via Lovable AI):
+   - Resume parse → `application_ai_parse.parsed` (name, contact, years of experience, skills, education, work history).
+   - "Screening summary" suggestion → `ai_suggestions` row with `kind='application_screen'` and `payload` = `{ fit_score, strengths[], gaps[], suggested_status, suggested_rejection_reason?, rationale }`.
+2. **Applicant pool UI** (`jobs.$id.tsx`, expand `ApplicantRow`):
+   - Inline **AI summary card** per applicant with fit score, strengths/gaps, and the AI's suggested next action.
+   - HITL controls: **Accept**, **Edit** (opens the payload as an editable form, diff captured into `decision_diff`), **Reject suggestion**. Each writes `decision`, `decision_diff`, `decided_by`, `decided_at` on the `ai_suggestions` row, with a small "Reviewed by you · 2m ago" badge afterward.
+   - "Show parsed resume" drawer reading from `application_ai_parse`.
+3. **Backfill** existing demo applicants with one parse + one suggestion each so the screen has something to demo.
+4. **Audit/trust affordances** already implied by the schema: show the model name, input hash, and timestamp on each suggestion so reviewers can see provenance.
 
 ## Out of scope
 
-- No UI changes. The templates page already renders `description` and prompt counts; theme grouping in the UI can be a follow-up.
-- No changes to `one_on_ones` rows, AI coaching, or reminders.
-- No edits to `src/lib`, routes, or types — `theme` is additive and nullable so the generated types file is fine to leave; if typecheck flags it, regenerate or add the column to the types file in the same change.
+Bulk auto-advance, auto-rejection, or any flow that acts on AI output without an explicit human decision recorded in `ai_suggestions`.
 
-## Files
+## Files that would change
 
-- New: `supabase/migrations/<ts>_replace_one_on_one_templates.sql`
-- Possibly: `src/integrations/supabase/types.ts` to add `theme` to the row type if typecheck requires it.
+- `src/lib/applicant-ai.functions.ts` (new) — generate parse + suggestion, record decision.
+- `src/routes/api/public/job-applications.ts` — fire-and-forget enqueue on submit.
+- `src/routes/_authenticated/jobs.$id.tsx` — AI summary card + Accept/Edit/Reject controls in `ApplicantRow`, parsed-resume drawer.
+- One migration to seed demo `application_ai_parse` + `ai_suggestions` rows for existing applicants.
+
+Want me to build this, or were you only asking for the current state?
