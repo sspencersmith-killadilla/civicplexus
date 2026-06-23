@@ -12,12 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2, Sparkles, FileText, Check, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { submitRequisitionForApproval, postRequisition, closeRequisition, transitionApplicationStatus, scheduleInterview, convertApplicationToHire } from "@/lib/jobs.functions";
 import { createOffer } from "@/lib/offers.functions";
 import { mintCandidatePortalToken, postRecruiterMessage } from "@/lib/candidate-portal.functions";
 import { sendTemplatedToApplicant } from "@/lib/email-templates.functions";
+import { screenApplication, recordScreenDecision } from "@/lib/applicant-ai.functions";
+import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/jobs/$id")({ component: JobDetail });
 
@@ -313,6 +315,221 @@ function ApplicantRow({ app, requisitionId }: { app: { id: string; applicant_nam
           )}
         </div>
       </div>
+      <AiScreeningPanel applicationId={app.id} requisitionId={requisitionId} />
     </Card>
+  );
+}
+
+type ScreenSuggestion = {
+  id: string;
+  payload: {
+    fit_score: number;
+    strengths: string[];
+    gaps: string[];
+    suggested_status: "advance" | "interview" | "reject" | "hold";
+    suggested_rejection_reason?: string | null;
+    rationale: string;
+  };
+  model: string | null;
+  decision: "accepted" | "edited" | "rejected" | null;
+  decision_diff: Record<string, { from: unknown; to: unknown }> | null;
+  decided_at: string | null;
+  created_at: string;
+};
+
+function AiScreeningPanel({ applicationId, requisitionId }: { applicationId: string; requisitionId: string }) {
+  const qc = useQueryClient();
+  const screen = useServerFn(screenApplication);
+  const decide = useServerFn(recordScreenDecision);
+  const [editing, setEditing] = useState(false);
+  const [edited, setEdited] = useState<ScreenSuggestion["payload"] | null>(null);
+  const [resumeOpen, setResumeOpen] = useState(false);
+
+  const suggestionQ = useQuery({
+    queryKey: ["ai_screen", applicationId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ai_suggestions" as never)
+        .select("id, payload, model, decision, decision_diff, decided_at, created_at")
+        .eq("application_id", applicationId)
+        .eq("kind", "application_screen")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data as ScreenSuggestion | null;
+    },
+  });
+
+  const parseQ = useQuery({
+    queryKey: ["ai_parse", applicationId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("application_ai_parse" as never)
+        .select("parsed, model, created_at")
+        .eq("application_id", applicationId)
+        .maybeSingle();
+      return data as { parsed: { resume_text?: string; pages?: number; truncated?: boolean }; model: string | null; created_at: string } | null;
+    },
+    enabled: resumeOpen,
+  });
+
+  const generate = useMutation({
+    mutationFn: () => screen({ data: { application_id: applicationId } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai_screen", applicationId] }); toast.success("AI screening drafted — review and decide"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const accept = useMutation({
+    mutationFn: () => decide({ data: { suggestion_id: suggestionQ.data!.id, decision: "accepted" } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai_screen", applicationId] }); qc.invalidateQueries({ queryKey: ["job_applications", requisitionId] }); toast.success("Accepted"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+  const reject = useMutation({
+    mutationFn: () => decide({ data: { suggestion_id: suggestionQ.data!.id, decision: "rejected" } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai_screen", applicationId] }); toast.success("Suggestion dismissed"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+  const saveEdit = useMutation({
+    mutationFn: () => decide({ data: { suggestion_id: suggestionQ.data!.id, decision: "edited", edited_payload: edited! } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai_screen", applicationId] }); setEditing(false); toast.success("Saved your edits"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  if (suggestionQ.isLoading) return null;
+  const s = suggestionQ.data;
+
+  const startEdit = () => { if (s) { setEdited(s.payload); setEditing(true); } };
+
+  return (
+    <div className="mt-4 border-t pt-4">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium">AI screening</span>
+          <span className="text-xs text-muted-foreground">Suggestions only — a human always decides.</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Dialog open={resumeOpen} onOpenChange={setResumeOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="ghost"><FileText className="h-3 w-3 mr-1" />Parsed resume</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader><DialogTitle>Parsed resume text</DialogTitle></DialogHeader>
+              {parseQ.data?.parsed?.resume_text ? (
+                <>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Extractor: {parseQ.data.model ?? "?"} · {parseQ.data.parsed.pages ?? 0} pages
+                    {parseQ.data.parsed.truncated ? " · truncated" : ""}
+                  </p>
+                  <pre className="text-xs whitespace-pre-wrap font-sans max-h-[60vh] overflow-auto border rounded p-3 bg-muted/30">{parseQ.data.parsed.resume_text}</pre>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">No parsed resume text on file (the candidate may not have uploaded a PDF).</p>
+              )}
+            </DialogContent>
+          </Dialog>
+          <Button size="sm" variant={s ? "ghost" : "outline"} onClick={() => generate.mutate()} disabled={generate.isPending}>
+            <Sparkles className="h-3 w-3 mr-1" />
+            {generate.isPending ? "Generating…" : s ? "Re-run" : "Generate AI screening"}
+          </Button>
+        </div>
+      </div>
+
+      {!s && !generate.isPending && (
+        <p className="text-xs text-muted-foreground mt-3">No AI screening yet. Click Generate to draft fit score, strengths, gaps, and a suggested next step for your review.</p>
+      )}
+
+      {s && !editing && (
+        <div className="mt-3 space-y-3 rounded-lg border bg-muted/20 p-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-3">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-semibold">{s.payload.fit_score}</span>
+                <span className="text-xs text-muted-foreground">/ 100 fit</span>
+              </div>
+              <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary capitalize">Suggested: {s.payload.suggested_status}</span>
+              {s.decision && (
+                <span className={`text-xs px-2 py-0.5 rounded ${s.decision === "accepted" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : s.decision === "edited" ? "bg-amber-500/10 text-amber-700 dark:text-amber-300" : "bg-muted text-muted-foreground"}`}>
+                  {s.decision === "accepted" ? "Accepted" : s.decision === "edited" ? "Edited" : "Dismissed"}
+                  {s.decided_at ? ` · ${formatDistanceToNow(new Date(s.decided_at), { addSuffix: true })}` : ""}
+                </span>
+              )}
+            </div>
+            {!s.decision && (
+              <div className="flex items-center gap-1">
+                <Button size="sm" variant="default" onClick={() => accept.mutate()} disabled={accept.isPending}><Check className="h-3 w-3 mr-1" />Accept</Button>
+                <Button size="sm" variant="outline" onClick={startEdit}><Pencil className="h-3 w-3 mr-1" />Edit</Button>
+                <Button size="sm" variant="ghost" onClick={() => reject.mutate()} disabled={reject.isPending}><X className="h-3 w-3 mr-1" />Dismiss</Button>
+              </div>
+            )}
+            {s.decision && (
+              <Button size="sm" variant="ghost" onClick={startEdit}><Pencil className="h-3 w-3 mr-1" />Revise</Button>
+            )}
+          </div>
+          <div className="grid md:grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-xs font-medium uppercase text-muted-foreground mb-1">Strengths</p>
+              <ul className="list-disc pl-5 space-y-0.5">{s.payload.strengths.map((b, i) => <li key={i}>{b}</li>)}</ul>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase text-muted-foreground mb-1">Gaps</p>
+              <ul className="list-disc pl-5 space-y-0.5">{s.payload.gaps.map((b, i) => <li key={i}>{b}</li>)}</ul>
+            </div>
+          </div>
+          <p className="text-sm"><span className="text-xs font-medium uppercase text-muted-foreground">Rationale</span><br />{s.payload.rationale}</p>
+          {s.payload.suggested_status === "reject" && s.payload.suggested_rejection_reason && (
+            <p className="text-xs text-muted-foreground"><span className="font-medium">Suggested reason:</span> {s.payload.suggested_rejection_reason}</p>
+          )}
+          <p className="text-[10px] text-muted-foreground">Model: {s.model ?? "?"} · drafted {formatDistanceToNow(new Date(s.created_at), { addSuffix: true })}{s.decision_diff && Object.keys(s.decision_diff).length ? ` · reviewer edited ${Object.keys(s.decision_diff).join(", ")}` : ""}</p>
+        </div>
+      )}
+
+      {s && editing && edited && (
+        <div className="mt-3 space-y-3 rounded-lg border bg-muted/20 p-3">
+          <p className="text-xs text-muted-foreground">Edit the AI's draft before recording your decision. Your changes are logged alongside the original.</p>
+          <div className="grid md:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">Fit score (0-100)</Label>
+              <Input type="number" min={0} max={100} value={edited.fit_score} onChange={(e) => setEdited({ ...edited, fit_score: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })} />
+            </div>
+            <div>
+              <Label className="text-xs">Suggested next step</Label>
+              <Select value={edited.suggested_status} onValueChange={(v) => setEdited({ ...edited, suggested_status: v as ScreenSuggestion["payload"]["suggested_status"] })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="advance">Advance to screening</SelectItem>
+                  <SelectItem value="interview">Schedule interview</SelectItem>
+                  <SelectItem value="hold">Hold</SelectItem>
+                  <SelectItem value="reject">Reject</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Strengths (one per line)</Label>
+            <Textarea rows={3} value={edited.strengths.join("\n")} onChange={(e) => setEdited({ ...edited, strengths: e.target.value.split("\n").map(s => s.trim()).filter(Boolean).slice(0, 8) })} />
+          </div>
+          <div>
+            <Label className="text-xs">Gaps (one per line)</Label>
+            <Textarea rows={3} value={edited.gaps.join("\n")} onChange={(e) => setEdited({ ...edited, gaps: e.target.value.split("\n").map(s => s.trim()).filter(Boolean).slice(0, 8) })} />
+          </div>
+          <div>
+            <Label className="text-xs">Rationale</Label>
+            <Textarea rows={4} value={edited.rationale} onChange={(e) => setEdited({ ...edited, rationale: e.target.value.slice(0, 2000) })} />
+          </div>
+          {edited.suggested_status === "reject" && (
+            <div>
+              <Label className="text-xs">Suggested rejection reason</Label>
+              <Input value={edited.suggested_rejection_reason ?? ""} onChange={(e) => setEdited({ ...edited, suggested_rejection_reason: e.target.value.slice(0, 500) })} />
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="ghost" onClick={() => { setEditing(false); setEdited(null); }}>Cancel</Button>
+            <Button size="sm" onClick={() => saveEdit.mutate()} disabled={saveEdit.isPending}>{saveEdit.isPending ? "Saving…" : "Save as my decision"}</Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
