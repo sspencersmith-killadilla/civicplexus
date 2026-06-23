@@ -22,35 +22,24 @@ const completeInput = z.object({
   notes: z.string().max(1000).optional(),
 });
 
-type Sb = {
-  from: (t: string) => {
-    select: (c: string) => {
-      eq: (k: string, v: unknown) => { maybeSingle: () => Promise<{ data: unknown }> } & Promise<{ data: unknown[] | null; error: { message: string } | null }>;
-      in: (k: string, v: unknown[]) => Promise<{ data: Array<Record<string, unknown>> | null; error: { message: string } | null }>;
-    };
-    insert: (v: unknown) => { select: (c: string) => Promise<{ data: Array<Record<string, unknown>> | null; error: { message: string } | null }> } & Promise<{ error: { message: string } | null }>;
-    update: (v: unknown) => { eq: (k: string, v: unknown) => Promise<{ error: { message: string } | null }> };
-  };
-};
-
-async function authorize(context: { supabase: unknown; userId: string }, employeeIds: string[]) {
-  const sb = context.supabase as Sb;
-  // hr_admin / hiring_manager allowed for any; supervisor only for direct reports
-  const { data: roles } = await (sb.from("user_roles").select("role").eq("user_id", context.userId) as unknown as Promise<{ data: Array<{ role: string }> | null }>);
-  const r = (roles ?? []).map((x) => x.role);
+async function authorize(userId: string, employeeIds: string[]) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: roles } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", userId);
+  const r = ((roles ?? []) as Array<{ role: string }>).map((x) => x.role);
   const isHr = r.includes("hr_admin") || r.includes("hiring_manager");
   if (isHr) return;
   if (!r.includes("supervisor")) throw new Error("Not authorized to assign training");
-  const { data: emps } = await sb.from("employees").select("id,manager_id").in("id", employeeIds);
-  const bad = (emps ?? []).some((e) => e.manager_id !== context.userId);
-  if (bad || (emps ?? []).length !== employeeIds.length) throw new Error("Some employees are not your direct reports");
+  const { data: emps } = await supabaseAdmin.from("employees").select("id,manager_id").in("id", employeeIds);
+  const list = (emps ?? []) as Array<{ id: string; manager_id: string | null }>;
+  const bad = list.some((e) => e.manager_id !== userId);
+  if (bad || list.length !== employeeIds.length) throw new Error("Some employees are not your direct reports");
 }
 
 export const assignTraining = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => assignInput.parse(d))
   .handler(async ({ data, context }) => {
-    await authorize(context, data.employee_ids);
+    await authorize(context.userId, data.employee_ids);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const rows = data.employee_ids.map((employee_id) => ({
       employee_id,
@@ -88,12 +77,11 @@ export const assignTrainingByWorkerType = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => assignByWorkerTypeInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const sb = context.supabase as Sb;
-    const { data: roles } = await (sb.from("user_roles").select("role").eq("user_id", context.userId) as unknown as Promise<{ data: Array<{ role: string }> | null }>);
-    const isHr = (roles ?? []).some((r) => r.role === "hr_admin" || r.role === "hiring_manager");
+    const { data: roles } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId);
+    const isHr = ((roles ?? []) as Array<{ role: string }>).some((r) => r.role === "hr_admin" || r.role === "hiring_manager");
     if (!isHr) throw new Error("Only HR can bulk-assign by worker type");
     const { data: emps } = await supabaseAdmin.from("employees").select("id").eq("worker_type_id", data.worker_type_id);
-    const ids = (emps ?? []).map((e: { id: string }) => e.id);
+    const ids = ((emps ?? []) as Array<{ id: string }>).map((e) => e.id);
     if (!ids.length) return { assigned: 0 };
     return assignTraining({ data: { course_id: data.course_id, employee_ids: ids, due_date: data.due_date, notes: data.notes } });
   });
@@ -102,13 +90,25 @@ export const completeTraining = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => completeInput.parse(d))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as Sb;
-    const { error } = await sb.from("employee_training").update({
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Verify caller owns this training row OR is hr/supervisor of the employee
+    const { data: row } = await supabaseAdmin.from("employee_training").select("employee_id").eq("id", data.training_id).maybeSingle();
+    const r = row as { employee_id: string } | null;
+    if (!r) throw new Error("Training assignment not found");
+    const { data: emp } = await supabaseAdmin.from("employees").select("user_id,manager_id").eq("id", r.employee_id).maybeSingle();
+    const e = emp as { user_id: string | null; manager_id: string | null } | null;
+    const { data: roles } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId);
+    const roleNames = ((roles ?? []) as Array<{ role: string }>).map((x) => x.role);
+    const isHr = roleNames.includes("hr_admin") || roleNames.includes("hiring_manager");
+    const isOwner = e?.user_id === context.userId;
+    const isMgr = e?.manager_id === context.userId;
+    if (!isHr && !isOwner && !isMgr) throw new Error("Not authorized");
+    const { error } = await supabaseAdmin.from("employee_training").update({
       status: "complete",
       completed_at: new Date().toISOString(),
       score: data.score ?? null,
       notes: data.notes ?? null,
-    }).eq("id", data.training_id);
+    } as never).eq("id", data.training_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
