@@ -15,7 +15,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
 import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
-import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedScreeningsRouteImport } from './routes/_authenticated/screenings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -94,11 +93,6 @@ const AuthenticatedWorkerTypesRoute =
     path: '/worker-types',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedTrainingRoute = AuthenticatedTrainingRouteImport.update({
-  id: '/training',
-  path: '/training',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -377,7 +371,6 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/screenings': typeof AuthenticatedScreeningsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/careers/': typeof CareersIndexRoute
@@ -432,7 +425,6 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/screenings': typeof AuthenticatedScreeningsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/careers': typeof CareersIndexRoute
@@ -489,7 +481,6 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/screenings': typeof AuthenticatedScreeningsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/careers/': typeof CareersIndexRoute
@@ -546,7 +537,6 @@ export interface FileRouteTypes {
     | '/reports'
     | '/screenings'
     | '/settings'
-    | '/training'
     | '/worker-types'
     | '/careers/$slug'
     | '/careers/'
@@ -601,7 +591,6 @@ export interface FileRouteTypes {
     | '/reports'
     | '/screenings'
     | '/settings'
-    | '/training'
     | '/worker-types'
     | '/careers/$slug'
     | '/careers'
@@ -657,7 +646,6 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/screenings'
     | '/_authenticated/settings'
-    | '/_authenticated/training'
     | '/_authenticated/worker-types'
     | '/careers/$slug'
     | '/careers/'
@@ -744,13 +732,6 @@ declare module '@tanstack/react-router' {
       path: '/worker-types'
       fullPath: '/worker-types'
       preLoaderRoute: typeof AuthenticatedWorkerTypesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/training': {
-      id: '/_authenticated/training'
-      path: '/training'
-      fullPath: '/training'
-      preLoaderRoute: typeof AuthenticatedTrainingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -1119,7 +1100,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedScreeningsRoute: typeof AuthenticatedScreeningsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
   AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
   AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
@@ -1165,7 +1145,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedScreeningsRoute: AuthenticatedScreeningsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
   AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
   AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
