@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Download } from "lucide-react";
 import { timeToFill, sourceOfHire, applicantFlowLog } from "@/lib/recruiting-reports.functions";
+import { Link } from "@tanstack/react-router";
 import { offerStats } from "@/lib/offers.functions";
 import { useState } from "react";
 
@@ -44,6 +45,12 @@ function ReportsPage() {
 
   return (
     <AppShell title="Reports & Compliance">
+      <div className="flex flex-wrap gap-2 mb-4 text-sm">
+        <Link to="/eeo-snapshot" className="px-3 py-1.5 rounded-md border hover:bg-accent">EEO workforce snapshot</Link>
+        <Link to="/flsa-audit" className="px-3 py-1.5 rounded-md border hover:bg-accent">FLSA audit</Link>
+        <Link to="/policy-campaigns" className="px-3 py-1.5 rounded-md border hover:bg-accent">Policy ack campaigns</Link>
+        <Link to="/audit" className="px-3 py-1.5 rounded-md border hover:bg-accent">Audit log</Link>
+      </div>
       <Tabs defaultValue="ops">
         <TabsList>
           <TabsTrigger value="ops">Operations</TabsTrigger>
