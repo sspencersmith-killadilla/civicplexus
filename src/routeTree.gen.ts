@@ -85,6 +85,7 @@ import { Route as AuthenticatedComplianceTcoleRouteImport } from './routes/_auth
 import { Route as AuthenticatedComplianceNewHireRouteImport } from './routes/_authenticated/compliance.new-hire'
 import { Route as AuthenticatedCompCyclesIdRouteImport } from './routes/_authenticated/comp-cycles.$id'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
+import { Route as ApiPublicHooksResetDemoRouteImport } from './routes/api/public/hooks/reset-demo'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
@@ -510,6 +511,11 @@ const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
   path: '/cascades/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicHooksResetDemoRoute = ApiPublicHooksResetDemoRouteImport.update({
+  id: '/api/public/hooks/reset-demo',
+  path: '/api/public/hooks/reset-demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
   id: '/api/public/hooks/reminders',
   path: '/api/public/hooks/reminders',
@@ -637,6 +643,7 @@ export interface FileRoutesByFullPath {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/hooks/reset-demo': typeof ApiPublicHooksResetDemoRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
@@ -721,6 +728,7 @@ export interface FileRoutesByTo {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/hooks/reset-demo': typeof ApiPublicHooksResetDemoRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
@@ -808,6 +816,7 @@ export interface FileRoutesById {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/hooks/reset-demo': typeof ApiPublicHooksResetDemoRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
@@ -895,6 +904,7 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/hooks/reset-demo'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
@@ -979,6 +989,7 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/hooks/reset-demo'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
@@ -1065,6 +1076,7 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/hooks/reset-demo'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
@@ -1083,6 +1095,7 @@ export interface RootRouteChildren {
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
+  ApiPublicHooksResetDemoRoute: typeof ApiPublicHooksResetDemoRoute
   ApiPublicCandidateTokenMessageRoute: typeof ApiPublicCandidateTokenMessageRoute
   ApiPublicCandidateTokenStatusRoute: typeof ApiPublicCandidateTokenStatusRoute
   ApiPublicOffersTokenRespondRoute: typeof ApiPublicOffersTokenRespondRoute
@@ -1623,6 +1636,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCascadesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/reset-demo': {
+      id: '/api/public/hooks/reset-demo'
+      path: '/api/public/hooks/reset-demo'
+      fullPath: '/api/public/hooks/reset-demo'
+      preLoaderRoute: typeof ApiPublicHooksResetDemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/reminders': {
       id: '/api/public/hooks/reminders'
       path: '/api/public/hooks/reminders'
@@ -1877,6 +1897,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
+  ApiPublicHooksResetDemoRoute: ApiPublicHooksResetDemoRoute,
   ApiPublicCandidateTokenMessageRoute: ApiPublicCandidateTokenMessageRoute,
   ApiPublicCandidateTokenStatusRoute: ApiPublicCandidateTokenStatusRoute,
   ApiPublicOffersTokenRespondRoute: ApiPublicOffersTokenRespondRoute,
