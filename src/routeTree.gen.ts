@@ -64,6 +64,7 @@ import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authentic
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
+import { Route as ApiPublicCandidateTokenStatusRouteImport } from './routes/api/public/candidate/$token/status'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -360,6 +361,12 @@ const ApiPublicDocsFileRoute = ApiPublicDocsFileRouteImport.update({
   path: '/api/public/docs/$file',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCandidateTokenStatusRoute =
+  ApiPublicCandidateTokenStatusRouteImport.update({
+    id: '/api/public/candidate/$token/status',
+    path: '/api/public/candidate/$token/status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -416,6 +423,7 @@ export interface FileRoutesByFullPath {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -472,6 +480,7 @@ export interface FileRoutesByTo {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -530,6 +539,7 @@ export interface FileRoutesById {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -588,6 +598,7 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/candidate/$token/status'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -644,6 +655,7 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/candidate/$token/status'
   id:
     | '__root__'
     | '/'
@@ -701,6 +713,7 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/candidate/$token/status'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -713,6 +726,7 @@ export interface RootRouteChildren {
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
+  ApiPublicCandidateTokenStatusRoute: typeof ApiPublicCandidateTokenStatusRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1102,6 +1116,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDocsFileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/candidate/$token/status': {
+      id: '/api/public/candidate/$token/status'
+      path: '/api/public/candidate/$token/status'
+      fullPath: '/api/public/candidate/$token/status'
+      preLoaderRoute: typeof ApiPublicCandidateTokenStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1238,6 +1259,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
+  ApiPublicCandidateTokenStatusRoute: ApiPublicCandidateTokenStatusRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
