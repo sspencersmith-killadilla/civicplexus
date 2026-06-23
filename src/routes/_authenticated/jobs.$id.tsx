@@ -163,7 +163,7 @@ function ApplicantRow({ app, requisitionId }: { app: { id: string; applicant_nam
       const { data } = await supabase.from("worker_types").select("id, name").order("name");
       return (data ?? []) as Array<{ id: string; name: string }>;
     },
-    enabled: openHire,
+    enabled: openHire || openOffer,
   });
 
   const set = useMutation({
