@@ -200,6 +200,7 @@ function EmployeesPage() {
                 <div className="flex items-center gap-3">
                   <span className="text-xs px-2 py-0.5 rounded bg-secondary text-secondary-foreground">{e.status}</span>
                   <span className="text-xs text-muted-foreground">{e.start_date ?? ""}</span>
+                  <Link to="/transcript/$employeeId" params={{ employeeId: e.id }} className="text-xs text-primary hover:underline">Transcript</Link>
                 </div>
               </div>
             );
