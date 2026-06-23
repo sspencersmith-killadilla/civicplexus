@@ -25,6 +25,29 @@ const ScreenPayload = z.object({
 });
 export type ScreenPayload = z.infer<typeof ScreenPayload>;
 
+function safeErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object") {
+    const o = error as Record<string, unknown>;
+    const parts = [o.message, o.details, o.hint, o.code]
+      .filter((v): v is string | number => typeof v === "string" || typeof v === "number")
+      .map(String);
+    if (parts.length) return parts.join(" — ");
+    try {
+      return JSON.stringify(o);
+    } catch {
+      return "Unknown object error";
+    }
+  }
+  return String(error ?? "Unknown error");
+}
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 // Robust JSON extraction — strips markdown fences, isolates the first
 // top-level object, and repairs common model JSON mistakes such as trailing
 // commas, single quotes, or unquoted keys before strict validation.
@@ -177,15 +200,18 @@ ${candidate}`;
       });
       payload = normalize(extractJsonObject(text));
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg = safeErrorMessage(e);
       console.error("[screenApplication] AI call failed", msg);
       throw new Error(`AI screening failed: Could not read the generated screening response. ${msg.slice(0, 180)}`);
     }
+
+    const inputHash = await sha256Hex([MODEL, KIND, data.application_id, reqContext, candidate].join("\n---\n"));
 
     const { data: ins, error: insErr } = await context.supabase
       .from("ai_suggestions")
       .insert({
         application_id: data.application_id,
+        input_hash: inputHash,
         kind: KIND,
         payload: payload as unknown as Record<string, unknown>,
         model: MODEL,
@@ -193,12 +219,13 @@ ${candidate}`;
       } as never)
       .select()
       .single();
-    if (insErr) throw insErr;
+    if (insErr) throw new Error(`Could not queue AI screening: ${safeErrorMessage(insErr)}`);
 
-    await context.supabase.rpc("record_audit_event" as never, {
+    const { error: auditErr } = await context.supabase.rpc("record_audit_event" as never, {
       _action: "ai_screen", _entity: "job_application", _entity_id: data.application_id,
       _diff: { model: MODEL, fit_score: payload.fit_score },
     } as never);
+    if (auditErr) console.error("[screenApplication] audit failed", safeErrorMessage(auditErr));
 
     return ins as unknown as { id: string };
   });
@@ -223,7 +250,7 @@ export const recordScreenDecision = createServerFn({ method: "POST" })
       .select("id, payload")
       .eq("id", data.suggestion_id)
       .maybeSingle();
-    if (error || !row) throw new Error("Suggestion not found or no access");
+    if (error || !row) throw new Error(error ? `Suggestion not found or no access: ${safeErrorMessage(error)}` : "Suggestion not found or no access");
 
     let diff: Record<string, { from: unknown; to: unknown }> | null = null;
     let finalPayload = (row as { payload: Record<string, unknown> }).payload;
@@ -250,12 +277,13 @@ export const recordScreenDecision = createServerFn({ method: "POST" })
         ...(data.decision === "edited" ? { payload: finalPayload } : {}),
       } as never)
       .eq("id", data.suggestion_id);
-    if (upErr) throw upErr;
+    if (upErr) throw new Error(`Could not record AI screening decision: ${safeErrorMessage(upErr)}`);
 
-    await context.supabase.rpc("record_audit_event" as never, {
+    const { error: auditErr } = await context.supabase.rpc("record_audit_event" as never, {
       _action: "ai_screen_decision", _entity: "ai_suggestion", _entity_id: data.suggestion_id,
       _diff: { decision: data.decision, notes: data.notes ?? null, changed_keys: diff ? Object.keys(diff) : [] },
     } as never);
+    if (auditErr) console.error("[recordScreenDecision] audit failed", safeErrorMessage(auditErr));
 
     return { ok: true };
   });

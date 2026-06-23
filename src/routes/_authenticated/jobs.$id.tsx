@@ -26,6 +26,24 @@ export const Route = createFileRoute("/_authenticated/jobs/$id")({ component: Jo
 
 const APP_STATUSES = ["new","screening","interview","offer","hired","rejected","withdrawn"] as const;
 
+function getErrorMessage(error: unknown, fallback = "Failed") {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object") {
+    const o = error as Record<string, unknown>;
+    const parts = [o.message, o.details, o.hint, o.code]
+      .filter((v): v is string | number => typeof v === "string" || typeof v === "number")
+      .map(String);
+    if (parts.length) return parts.join(" — ");
+    try {
+      return JSON.stringify(o);
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
+}
+
 function JobDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
@@ -68,11 +86,11 @@ function JobDetail() {
 
   const sub = useMutation({ mutationFn: () => submitForApproval({ data: { requisition_id: id } }),
     onSuccess: () => { qc.invalidateQueries(); toast.success("Submitted for approval"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
   const pst = useMutation({ mutationFn: () => post({ data: { requisition_id: id } }),
     onSuccess: () => { qc.invalidateQueries(); toast.success("Posted!"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
   const cls = useMutation({ mutationFn: () => close({ data: { requisition_id: id } }),
     onSuccess: () => { qc.invalidateQueries(); toast.success("Closed"); },
@@ -98,7 +116,7 @@ function JobDetail() {
     const failures: string[] = [];
     for (const appId of ids) {
       try { await fn(appId); ok++; }
-      catch (e) { failures.push(e instanceof Error ? e.message : String(e)); }
+      catch (e) { failures.push(getErrorMessage(e)); }
     }
     setBulkRunning(false);
     qc.invalidateQueries();
@@ -253,7 +271,7 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
   const set = useMutation({
     mutationFn: (status: typeof APP_STATUSES[number]) => change({ data: { application_id: app.id, status } }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["job_applications", requisitionId] }); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const doSched = useMutation({
@@ -270,13 +288,13 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
       }});
     },
     onSuccess: () => { qc.invalidateQueries(); setOpenIv(false); toast.success("Interview scheduled"); set.mutate("interview"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const doHire = useMutation({
     mutationFn: () => convert({ data: { application_id: app.id, worker_type_id: hire.worker_type_id, start_date: hire.start_date } }),
     onSuccess: () => { setOpenHire(false); toast.success("Hire request created — awaiting approvals"); set.mutate("offer"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const doOffer = useMutation({
@@ -288,25 +306,25 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
       expires_at: offer.expires_at ? new Date(offer.expires_at).toISOString() : undefined,
     } }),
     onSuccess: () => { setOpenOffer(false); toast.success("Offer drafted — release it from the Offers page"); set.mutate("offer"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const doPortal = useMutation({
     mutationFn: () => mintPortal({ data: { application_id: app.id, days_valid: 60 } }),
     onSuccess: (r) => { navigator.clipboard?.writeText(r.url).catch(() => {}); toast.success("Portal link copied"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const doMsg = useMutation({
     mutationFn: () => sendMsg({ data: { application_id: app.id, body: msg } }),
     onSuccess: () => { setMsg(""); setOpenMsg(false); toast.success("Message posted"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const doReject = useMutation({
     mutationFn: async () => { await sendEmail({ data: { application_id: app.id, template_key: "rejection" } }); await change({ data: { application_id: app.id, status: "rejected" } }); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["job_applications", requisitionId] }); toast.success("Rejection email sent"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   return (
@@ -462,23 +480,23 @@ function AiScreeningPanel({ applicationId, requisitionId }: { applicationId: str
   const generate = useMutation({
     mutationFn: () => screen({ data: { application_id: applicationId } }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai_screen", applicationId] }); toast.success("AI screening drafted — review and decide"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const accept = useMutation({
     mutationFn: () => decide({ data: { suggestion_id: suggestionQ.data!.id, decision: "accepted" } }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai_screen", applicationId] }); qc.invalidateQueries({ queryKey: ["job_applications", requisitionId] }); toast.success("Accepted"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
   const reject = useMutation({
     mutationFn: () => decide({ data: { suggestion_id: suggestionQ.data!.id, decision: "rejected" } }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai_screen", applicationId] }); toast.success("Suggestion dismissed"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
   const saveEdit = useMutation({
     mutationFn: () => decide({ data: { suggestion_id: suggestionQ.data!.id, decision: "edited", edited_payload: edited! } }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai_screen", applicationId] }); setEditing(false); toast.success("Saved your edits"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   if (suggestionQ.isLoading) return null;
