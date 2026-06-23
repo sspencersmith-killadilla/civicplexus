@@ -25,6 +25,7 @@ import { Route as AuthenticatedPositionsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
 import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_authenticated/internal-careers'
 import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authenticated/hire-requests'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
@@ -37,7 +38,9 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
+import { Route as AuthenticatedPafIndexRouteImport } from './routes/_authenticated/paf.index'
 import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
+import { Route as AuthenticatedLeaveIndexRouteImport } from './routes/_authenticated/leave.index'
 import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authenticated/jobs.index'
 import { Route as AuthenticatedGrievancesIndexRouteImport } from './routes/_authenticated/grievances.index'
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
@@ -48,7 +51,9 @@ import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/publi
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
+import { Route as AuthenticatedPafIdRouteImport } from './routes/_authenticated/paf.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
+import { Route as AuthenticatedLeaveIdRouteImport } from './routes/_authenticated/leave.$id'
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
 import { Route as AuthenticatedInterviewsIdRouteImport } from './routes/_authenticated/interviews.$id'
 import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
@@ -143,6 +148,11 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMyHrRoute = AuthenticatedMyHrRouteImport.update({
+  id: '/my-hr',
+  path: '/my-hr',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedInternalCareersRoute =
   AuthenticatedInternalCareersRouteImport.update({
     id: '/internal-careers',
@@ -207,12 +217,22 @@ const AuthenticatedReviewsIndexRoute =
     path: '/reviews/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPafIndexRoute = AuthenticatedPafIndexRouteImport.update({
+  id: '/paf/',
+  path: '/paf/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOneOnOnesIndexRoute =
   AuthenticatedOneOnOnesIndexRouteImport.update({
     id: '/one-on-ones/',
     path: '/one-on-ones/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLeaveIndexRoute = AuthenticatedLeaveIndexRouteImport.update({
+  id: '/leave/',
+  path: '/leave/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedJobsIndexRoute = AuthenticatedJobsIndexRouteImport.update({
   id: '/jobs/',
   path: '/jobs/',
@@ -268,12 +288,22 @@ const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedPoliciesRoute,
 } as any)
+const AuthenticatedPafIdRoute = AuthenticatedPafIdRouteImport.update({
+  id: '/paf/$id',
+  path: '/paf/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOneOnOnesIdRoute =
   AuthenticatedOneOnOnesIdRouteImport.update({
     id: '/one-on-ones/$id',
     path: '/one-on-ones/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLeaveIdRoute = AuthenticatedLeaveIdRouteImport.update({
+  id: '/leave/$id',
+  path: '/leave/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedJobsIdRoute = AuthenticatedJobsIdRouteImport.update({
   id: '/jobs/$id',
   path: '/jobs/$id',
@@ -337,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -356,7 +387,9 @@ export interface FileRoutesByFullPath {
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/interviews/$id': typeof AuthenticatedInterviewsIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
+  '/paf/$id': typeof AuthenticatedPafIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -367,7 +400,9 @@ export interface FileRoutesByFullPath {
   '/forms/': typeof AuthenticatedFormsIndexRoute
   '/grievances/': typeof AuthenticatedGrievancesIndexRoute
   '/jobs/': typeof AuthenticatedJobsIndexRoute
+  '/leave/': typeof AuthenticatedLeaveIndexRoute
   '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
+  '/paf/': typeof AuthenticatedPafIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -387,6 +422,7 @@ export interface FileRoutesByTo {
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -406,7 +442,9 @@ export interface FileRoutesByTo {
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/interviews/$id': typeof AuthenticatedInterviewsIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
+  '/paf/$id': typeof AuthenticatedPafIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -417,7 +455,9 @@ export interface FileRoutesByTo {
   '/forms': typeof AuthenticatedFormsIndexRoute
   '/grievances': typeof AuthenticatedGrievancesIndexRoute
   '/jobs': typeof AuthenticatedJobsIndexRoute
+  '/leave': typeof AuthenticatedLeaveIndexRoute
   '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
+  '/paf': typeof AuthenticatedPafIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -439,6 +479,7 @@ export interface FileRoutesById {
   '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/hire-requests': typeof AuthenticatedHireRequestsRoute
   '/_authenticated/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
@@ -458,7 +499,9 @@ export interface FileRoutesById {
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRoute
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/_authenticated/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
+  '/_authenticated/paf/$id': typeof AuthenticatedPafIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -469,7 +512,9 @@ export interface FileRoutesById {
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
   '/_authenticated/grievances/': typeof AuthenticatedGrievancesIndexRoute
   '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
+  '/_authenticated/leave/': typeof AuthenticatedLeaveIndexRoute
   '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
+  '/_authenticated/paf/': typeof AuthenticatedPafIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -491,6 +536,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/hire-requests'
     | '/internal-careers'
+    | '/my-hr'
     | '/notifications'
     | '/offboarding'
     | '/policies'
@@ -510,7 +556,9 @@ export interface FileRouteTypes {
     | '/grievances/$id'
     | '/interviews/$id'
     | '/jobs/$id'
+    | '/leave/$id'
     | '/one-on-ones/$id'
+    | '/paf/$id'
     | '/policies/$id'
     | '/reviews/$id'
     | '/templates/$id'
@@ -521,7 +569,9 @@ export interface FileRouteTypes {
     | '/forms/'
     | '/grievances/'
     | '/jobs/'
+    | '/leave/'
     | '/one-on-ones/'
+    | '/paf/'
     | '/reviews/'
     | '/templates/'
     | '/api/public/docs/$file'
@@ -541,6 +591,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/hire-requests'
     | '/internal-careers'
+    | '/my-hr'
     | '/notifications'
     | '/offboarding'
     | '/policies'
@@ -560,7 +611,9 @@ export interface FileRouteTypes {
     | '/grievances/$id'
     | '/interviews/$id'
     | '/jobs/$id'
+    | '/leave/$id'
     | '/one-on-ones/$id'
+    | '/paf/$id'
     | '/policies/$id'
     | '/reviews/$id'
     | '/templates/$id'
@@ -571,7 +624,9 @@ export interface FileRouteTypes {
     | '/forms'
     | '/grievances'
     | '/jobs'
+    | '/leave'
     | '/one-on-ones'
+    | '/paf'
     | '/reviews'
     | '/templates'
     | '/api/public/docs/$file'
@@ -592,6 +647,7 @@ export interface FileRouteTypes {
     | '/_authenticated/help'
     | '/_authenticated/hire-requests'
     | '/_authenticated/internal-careers'
+    | '/_authenticated/my-hr'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
     | '/_authenticated/policies'
@@ -611,7 +667,9 @@ export interface FileRouteTypes {
     | '/_authenticated/grievances/$id'
     | '/_authenticated/interviews/$id'
     | '/_authenticated/jobs/$id'
+    | '/_authenticated/leave/$id'
     | '/_authenticated/one-on-ones/$id'
+    | '/_authenticated/paf/$id'
     | '/_authenticated/policies/$id'
     | '/_authenticated/reviews/$id'
     | '/_authenticated/templates/$id'
@@ -622,7 +680,9 @@ export interface FileRouteTypes {
     | '/_authenticated/forms/'
     | '/_authenticated/grievances/'
     | '/_authenticated/jobs/'
+    | '/_authenticated/leave/'
     | '/_authenticated/one-on-ones/'
+    | '/_authenticated/paf/'
     | '/_authenticated/reviews/'
     | '/_authenticated/templates/'
     | '/api/public/docs/$file'
@@ -756,6 +816,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/my-hr': {
+      id: '/_authenticated/my-hr'
+      path: '/my-hr'
+      fullPath: '/my-hr'
+      preLoaderRoute: typeof AuthenticatedMyHrRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/internal-careers': {
       id: '/_authenticated/internal-careers'
       path: '/internal-careers'
@@ -840,11 +907,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/paf/': {
+      id: '/_authenticated/paf/'
+      path: '/paf'
+      fullPath: '/paf/'
+      preLoaderRoute: typeof AuthenticatedPafIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/one-on-ones/': {
       id: '/_authenticated/one-on-ones/'
       path: '/one-on-ones'
       fullPath: '/one-on-ones/'
       preLoaderRoute: typeof AuthenticatedOneOnOnesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/leave/': {
+      id: '/_authenticated/leave/'
+      path: '/leave'
+      fullPath: '/leave/'
+      preLoaderRoute: typeof AuthenticatedLeaveIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/jobs/': {
@@ -917,11 +998,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPoliciesIdRouteImport
       parentRoute: typeof AuthenticatedPoliciesRoute
     }
+    '/_authenticated/paf/$id': {
+      id: '/_authenticated/paf/$id'
+      path: '/paf/$id'
+      fullPath: '/paf/$id'
+      preLoaderRoute: typeof AuthenticatedPafIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/one-on-ones/$id': {
       id: '/_authenticated/one-on-ones/$id'
       path: '/one-on-ones/$id'
       fullPath: '/one-on-ones/$id'
       preLoaderRoute: typeof AuthenticatedOneOnOnesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/leave/$id': {
+      id: '/_authenticated/leave/$id'
+      path: '/leave/$id'
+      fullPath: '/leave/$id'
+      preLoaderRoute: typeof AuthenticatedLeaveIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/jobs/$id': {
@@ -1014,6 +1109,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedHireRequestsRoute: typeof AuthenticatedHireRequestsRoute
   AuthenticatedInternalCareersRoute: typeof AuthenticatedInternalCareersRoute
+  AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
@@ -1031,7 +1127,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
   AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRoute
   AuthenticatedJobsIdRoute: typeof AuthenticatedJobsIdRoute
+  AuthenticatedLeaveIdRoute: typeof AuthenticatedLeaveIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
+  AuthenticatedPafIdRoute: typeof AuthenticatedPafIdRoute
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
@@ -1039,7 +1137,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
   AuthenticatedGrievancesIndexRoute: typeof AuthenticatedGrievancesIndexRoute
   AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute
+  AuthenticatedLeaveIndexRoute: typeof AuthenticatedLeaveIndexRoute
   AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
+  AuthenticatedPafIndexRoute: typeof AuthenticatedPafIndexRoute
   AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
 }
@@ -1055,6 +1155,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedHireRequestsRoute: AuthenticatedHireRequestsRoute,
   AuthenticatedInternalCareersRoute: AuthenticatedInternalCareersRoute,
+  AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,
@@ -1072,7 +1173,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
   AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRoute,
   AuthenticatedJobsIdRoute: AuthenticatedJobsIdRoute,
+  AuthenticatedLeaveIdRoute: AuthenticatedLeaveIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
+  AuthenticatedPafIdRoute: AuthenticatedPafIdRoute,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedCascadesIndexRoute: AuthenticatedCascadesIndexRoute,
@@ -1080,7 +1183,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
   AuthenticatedGrievancesIndexRoute: AuthenticatedGrievancesIndexRoute,
   AuthenticatedJobsIndexRoute: AuthenticatedJobsIndexRoute,
+  AuthenticatedLeaveIndexRoute: AuthenticatedLeaveIndexRoute,
   AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
+  AuthenticatedPafIndexRoute: AuthenticatedPafIndexRoute,
   AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
 }
@@ -1114,13 +1219,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
