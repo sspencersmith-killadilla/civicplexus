@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { completeTraining } from "@/lib/training.functions";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
@@ -11,6 +14,13 @@ export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR 
 
 function MyHR() {
   const { data: me } = useCurrentUser();
+  const qc = useQueryClient();
+  const completeFn = useServerFn(completeTraining);
+  const complete = useMutation({
+    mutationFn: (training_id: string) => completeFn({ data: { training_id } }),
+    onSuccess: () => { toast.success("Marked complete"); qc.invalidateQueries({ queryKey: ["my-training"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const empQ = useQuery({
     queryKey: ["me-employee", me?.user?.id],
@@ -122,12 +132,22 @@ function MyHR() {
           <section>
             <h3 className="font-medium mb-3 flex items-center gap-2"><GraduationCap className="h-4 w-4 text-primary" /> Training due</h3>
             <Card className="divide-y">
-              {(trainingQ.data ?? []).map((t) => (
-                <div key={t.id} className="p-3 text-sm flex justify-between">
-                  <span>{t.courses.name}</span>
-                  <span className="text-muted-foreground text-xs">{t.due_date ?? "no due date"} · {t.status}</span>
-                </div>
-              ))}
+              {(trainingQ.data ?? []).map((t) => {
+                const overdue = t.due_date && new Date(t.due_date) < new Date();
+                return (
+                  <div key={t.id} className="p-3 text-sm flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate">{t.courses.name}</p>
+                      <p className={`text-xs ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
+                        {t.due_date ? `Due ${t.due_date}` : "No due date"} · {t.status}{overdue ? " · overdue" : ""}
+                      </p>
+                    </div>
+                    <Button size="sm" variant="outline" disabled={complete.isPending} onClick={() => complete.mutate(t.id)}>
+                      Mark complete
+                    </Button>
+                  </div>
+                );
+              })}
               {(trainingQ.data?.length ?? 0) === 0 && <p className="p-4 text-sm text-muted-foreground">All current.</p>}
             </Card>
           </section>

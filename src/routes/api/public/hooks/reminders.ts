@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { dispatchTrainingReminders } from "@/lib/training.functions";
 
 export const Route = createFileRoute("/api/public/hooks/reminders")({
   server: {
@@ -46,7 +47,8 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
           }
         }
         if (notifications.length) await supabaseAdmin.from("notifications").insert(notifications);
-        return Response.json({ ok: true, queued: notifications.length });
+        const training = await dispatchTrainingReminders();
+        return Response.json({ ok: true, queued: notifications.length, training });
       },
     },
   },

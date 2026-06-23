@@ -532,34 +532,46 @@ export type Database = {
       }
       employee_training: {
         Row: {
+          assigned_at: string
+          assigned_by: string | null
           completed_at: string | null
           course_id: string
           created_at: string
           due_date: string | null
           employee_id: string
           id: string
+          last_reminded_at: string | null
+          notes: string | null
           score: number | null
           status: string
           updated_at: string
         }
         Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
           completed_at?: string | null
           course_id: string
           created_at?: string
           due_date?: string | null
           employee_id: string
           id?: string
+          last_reminded_at?: string | null
+          notes?: string | null
           score?: number | null
           status?: string
           updated_at?: string
         }
         Update: {
+          assigned_at?: string
+          assigned_by?: string | null
           completed_at?: string | null
           course_id?: string
           created_at?: string
           due_date?: string | null
           employee_id?: string
           id?: string
+          last_reminded_at?: string | null
+          notes?: string | null
           score?: number | null
           status?: string
           updated_at?: string
