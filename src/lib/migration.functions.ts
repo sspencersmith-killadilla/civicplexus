@@ -29,7 +29,7 @@ export const stageMigrationRows = createServerFn({ method: "POST" })
     if (!jobId) {
       const { data: job, error } = await supabaseAdmin
         .from("import_jobs")
-        .insert({ created_by: context.userId, status: "staging", kind: "hris_migration", row_count: data.rows.length })
+        .insert({ created_by: context.userId, status: "staging", kind: "hris_migration", total_rows: data.rows.length })
         .select("id").single();
       if (error) throw new Error(error.message);
       jobId = job.id;
@@ -40,10 +40,10 @@ export const stageMigrationRows = createServerFn({ method: "POST" })
       source_id: data.source_id ?? null,
       stage: data.stage,
       external_key: r.external_key,
-      payload: r.payload,
+      payload: r.payload as never,
       outcome: "pending" as const,
     }));
-    const { error } = await supabaseAdmin.from("migration_stages").upsert(inserts, { onConflict: "import_job_id,stage,external_key" });
+    const { error } = await supabaseAdmin.from("migration_stages").upsert(inserts as never, { onConflict: "import_job_id,stage,external_key" });
     if (error) throw new Error(error.message);
     return { import_job_id: jobId!, staged: inserts.length };
   });
@@ -92,12 +92,13 @@ export const commitMigrationStage = createServerFn({ method: "POST" })
       try {
         if (data.stage === "worker_types") {
           const name = pickText(p, "name", "worker_type") ?? r.external_key;
+          const key = (pickText(p, "key") ?? name).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
           const { data: existing } = await supabaseAdmin.from("worker_types").select("id").eq("name", name).maybeSingle();
           if (existing) {
             await supabaseAdmin.from("migration_stages").update({ outcome: "updated", target_id: existing.id, outcome_message: "matched by name" }).eq("id", r.id);
             updated++;
           } else {
-            const { data: row, error } = await supabaseAdmin.from("worker_types").insert({ name, description: pickText(p, "description") }).select("id").single();
+            const { data: row, error } = await supabaseAdmin.from("worker_types").insert({ name, key, description: pickText(p, "description") }).select("id").single();
             if (error) throw new Error(error.message);
             await supabaseAdmin.from("migration_stages").update({ outcome: "created", target_id: row.id }).eq("id", r.id);
             created++;
