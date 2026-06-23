@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
 import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
+import { Route as CandidateTokenRouteImport } from './routes/candidate.$token'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -91,6 +92,11 @@ const CareersIndexRoute = CareersIndexRouteImport.update({
 const CareersSlugRoute = CareersSlugRouteImport.update({
   id: '/careers/$slug',
   path: '/careers/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CandidateTokenRoute = CandidateTokenRouteImport.update({
+  id: '/candidate/$token',
+  path: '/candidate/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWorkerTypesRoute =
@@ -414,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/candidate/$token': typeof CandidateTokenRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/careers/': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
@@ -474,6 +481,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/candidate/$token': typeof CandidateTokenRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/careers': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
@@ -536,6 +544,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/candidate/$token': typeof CandidateTokenRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/careers/': typeof CareersIndexRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
@@ -598,6 +607,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/candidate/$token'
     | '/careers/$slug'
     | '/careers/'
     | '/cascades/$id'
@@ -658,6 +668,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/candidate/$token'
     | '/careers/$slug'
     | '/careers'
     | '/cascades/$id'
@@ -719,6 +730,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/training'
     | '/_authenticated/worker-types'
+    | '/candidate/$token'
     | '/careers/$slug'
     | '/careers/'
     | '/_authenticated/cascades/$id'
@@ -759,6 +771,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CandidateTokenRoute: typeof CandidateTokenRoute
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
   CareersIndexRoute: typeof CareersIndexRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
@@ -806,6 +819,13 @@ declare module '@tanstack/react-router' {
       path: '/careers/$slug'
       fullPath: '/careers/$slug'
       preLoaderRoute: typeof CareersSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidate/$token': {
+      id: '/candidate/$token'
+      path: '/candidate/$token'
+      fullPath: '/candidate/$token'
+      preLoaderRoute: typeof CandidateTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/worker-types': {
@@ -1316,6 +1336,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CandidateTokenRoute: CandidateTokenRoute,
   CareersSlugRoute: CareersSlugRouteWithChildren,
   CareersIndexRoute: CareersIndexRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
