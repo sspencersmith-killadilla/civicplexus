@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { generateObject } from "ai";
+import { generateText } from "ai";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 const MODEL = "google/gemini-3-flash-preview";
@@ -24,17 +24,44 @@ const ScreenPayload = z.object({
 });
 export type ScreenPayload = z.infer<typeof ScreenPayload>;
 
-// Loose schema for the model's structured-output state machine (Gemini
-// rejects long string bounds / deep optionals). We validate + clamp with
-// the strict ScreenPayload schema after the call.
-const ScreenPayloadLoose = z.object({
-  fit_score: z.number(),
-  strengths: z.array(z.string()),
-  gaps: z.array(z.string()),
-  suggested_status: SuggestedStatus,
-  suggested_rejection_reason: z.string().nullable(),
-  rationale: z.string(),
-});
+// Robust JSON extraction — strips markdown fences and isolates the first
+// top-level object even if the model wraps it in prose.
+function extractJsonObject(raw: string): unknown {
+  let s = raw.replace(/^```(?:json)?\s*/im, "").replace(/```\s*$/im, "").trim();
+  if (!s.startsWith("{")) {
+    const start = s.indexOf("{");
+    const end = s.lastIndexOf("}");
+    if (start === -1 || end <= start) throw new Error("No JSON object found in response");
+    s = s.slice(start, end + 1);
+  }
+  return JSON.parse(s);
+}
+
+function normalize(raw: unknown): ScreenPayload {
+  const o = (raw ?? {}) as Record<string, unknown>;
+  const toStrArr = (v: unknown): string[] =>
+    Array.isArray(v)
+      ? v.filter((x): x is string => typeof x === "string" && x.trim().length > 0).slice(0, 8).map((s) => s.trim().slice(0, 300))
+      : [];
+  const scoreRaw = typeof o.fit_score === "number" ? o.fit_score : Number(o.fit_score);
+  const fit_score = Number.isFinite(scoreRaw) ? Math.max(0, Math.min(100, Math.round(scoreRaw))) : 0;
+  const statusRaw = typeof o.suggested_status === "string" ? o.suggested_status.toLowerCase() : "";
+  const suggested_status = (["advance", "interview", "reject", "hold"] as const).includes(statusRaw as never)
+    ? (statusRaw as ScreenPayload["suggested_status"])
+    : "hold";
+  const reasonRaw = o.suggested_rejection_reason;
+  const suggested_rejection_reason =
+    typeof reasonRaw === "string" && reasonRaw.trim().length > 0 ? reasonRaw.trim().slice(0, 500) : null;
+  const rationale = typeof o.rationale === "string" ? o.rationale.trim().slice(0, 2000) : "";
+  return ScreenPayload.parse({
+    fit_score,
+    strengths: toStrArr(o.strengths),
+    gaps: toStrArr(o.gaps),
+    suggested_status,
+    suggested_rejection_reason,
+    rationale,
+  });
+}
 
 /**
  * Generate an AI screening suggestion for a job application.
@@ -85,6 +112,16 @@ export const screenApplication = createServerFn({ method: "POST" })
 
     const prompt = `You are an HR screening assistant for a municipal employer. Draft a fair, evidence-based screening summary for a recruiter to review. The recruiter — a human — will accept, edit, or reject your suggestion before any action is taken on the candidate. Be conservative, cite concrete evidence from the resume/cover letter only, and never infer protected characteristics. Keep each bullet under 200 characters and the rationale 2-4 sentences.
 
+Return ONLY a single raw JSON object — no markdown fences, no commentary — with this exact shape:
+{
+  "fit_score": <integer 0-100>,
+  "strengths": [<up to 8 short strings>],
+  "gaps": [<up to 8 short strings>],
+  "suggested_status": "advance" | "interview" | "reject" | "hold",
+  "suggested_rejection_reason": <string or null>,
+  "rationale": <string, 2-4 sentences>
+}
+
 REQUISITION CONTEXT:
 ${reqContext}
 
@@ -93,19 +130,11 @@ ${candidate}`;
 
     let payload: ScreenPayload;
     try {
-      const { object } = await generateObject({
+      const { text } = await generateText({
         model: gateway()(MODEL),
-        schema: ScreenPayloadLoose,
         prompt,
       });
-      payload = ScreenPayload.parse({
-        fit_score: Math.max(0, Math.min(100, Math.round(object.fit_score))),
-        strengths: object.strengths.slice(0, 8).map((s) => s.slice(0, 300)),
-        gaps: object.gaps.slice(0, 8).map((s) => s.slice(0, 300)),
-        suggested_status: object.suggested_status,
-        suggested_rejection_reason: object.suggested_rejection_reason?.slice(0, 500) ?? null,
-        rationale: object.rationale.slice(0, 2000),
-      });
+      payload = normalize(extractJsonObject(text));
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error("[screenApplication] AI call failed", msg);
