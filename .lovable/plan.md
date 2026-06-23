@@ -1,70 +1,89 @@
-# Finish the Training Module
+## Recruiting & Onboarding — completing the loop
 
-Builds on what already exists (assignments, mark-complete, overdue reminders, cron, supervisor RLS) and fills the remaining gaps that a municipal HR team would expect.
+The skeleton (requisitions, careers site, applications, interviews, screenings, hire requests, preboarding tasks) is already in place. The flow breaks down in four spots: there is no formal **offer** step, external candidates have **no portal** after applying, **applicant communications** are barebones, and **onboarding** doesn't automatically advance state or surface progress to managers. This plan closes those four gaps and adds the municipal-grade reporting expected of an HRIS.
 
-## What gets added
+### 1. Offer management (new)
 
-### 1. Course content & materials
-- Add `description`, `passing_score`, `materials_url`, `content_md` (rich text / link block), `recurrence_months` (for annual safety etc.), `issues_certification_id` (link a course to a cert type), and `auto_assign_on_hire` to `courses`.
-- Course detail view with description, materials link, and an "Assign" shortcut.
+```text
+application (finalist) ─► offer (draft → sent → accepted/declined/expired) ─► hire_request
+```
 
-### 2. Auto-assign on hire
-- When a new employee record is created (or worker_type changes), automatically create assignments for every active course whose `required_for_worker_types` includes that worker type **or** has `auto_assign_on_hire = true`, with a due date of `start_date + 30 days`.
-- Done with a database trigger so it fires no matter how the employee was created (UI, import, hire request).
+- New `offers` table: `application_id`, `salary`, `pay_grade`, `start_date`, `expires_at`, `letter_html`, `status`, `sent_at`, `signed_at`, `signature_id`, `decline_reason`.
+- Offer letter generated from a configurable template (org_settings) with variable substitution (name, title, salary, start date, supervisor).
+- Hiring manager drafts → HR approves → emailed to candidate with a secure tokenized accept/decline link (no auth required, signed JWT).
+- Accept captures e-signature (reuse `signatures` table), then auto-calls `convertApplicationToHire`. Decline records reason and reopens the requisition.
+- Reject path also generates a templated rejection email for any application not advanced.
 
-### 3. Completion evidence & scoring
-- Mark-complete dialog with optional score and an optional **proof-of-completion file** (PDF/image) uploaded to a new private `training-evidence` storage bucket scoped per employee.
-- If `score < passing_score` the row stays `assigned`; otherwise marked `complete`.
-- If the course is linked to a certification type, completing it inserts/refreshes an `employee_certifications` row with `expires_at = now() + validity_months`.
+### 2. Candidate portal (new)
 
-### 4. Recurring training
-- After a completion, if `recurrence_months` is set, schedule the next assignment automatically with `due_date = completed_at + recurrence_months`.
-- A small nightly job in the existing reminders cron reopens recurring assignments that have come due.
+A tokenized public route `/candidate/$token` (no login) where each external applicant can:
 
-### 5. Supervisor / approver view
-- Add a "My Team" toggle to the Assignments tab that filters to direct reports only (uses existing `manager_id`).
-- Bulk actions: re-assign, change due date, cancel.
+- See current stage (Submitted / Screening / Interview / Offer / Closed).
+- View scheduled interview details (time, location, interviewer names, video link).
+- Upload requested documents (resume update, references, work samples) into `job-applications` bucket.
+- Accept/decline interview times and offers.
+- Read messages from recruiter and reply (stored in `application_messages` table).
 
-### 6. Employee transcript
-- `/my-hr/transcript` route: printable list of all completed training and active certifications with dates, scores, and download links for evidence.
-- HR can open any employee's transcript from the employee detail page.
+Tokens minted per application (HMAC-signed, expirable, revocable), verified in a `/api/public/candidate/*` route family.
 
-### 7. Compliance dashboard tab
-- New "Compliance" tab on the Training page with:
-  - % complete overall, by department, by worker type, and by compliance framework (OSHA, CJIS, HIPAA, etc.).
-  - Overdue count and 30/60/90-day expiring certs.
-  - Drill-down list under each tile.
+### 3. Applicant communications
 
-### 8. CSV export
-- Export buttons on Assignments, Compliance, and Cert Expiry tabs (matches the export pattern used elsewhere in the app).
+- `email_templates` table seeded with: application received, screening invite, interview confirmation, interview reminder (24h), offer extended, offer reminder, rejection (with EEO-compliant language), and welcome (post-hire).
+- `applicant-emails.functions.ts` extended with `sendTemplated(template_key, application_id)` that pulls variables from the application/requisition.
+- Auto-triggers: acknowledge on apply, reminder 24h before interview (cron), follow-up if no offer response in 5 days.
+- All sends logged to `job_application_events` so the application timeline shows every touchpoint.
 
-### 9. Email notifications (in-app already exists)
-- Reuse the existing email queue to send: assignment notice, 7-days-before-due, overdue (daily, capped), and cert-expiring (90/60/30/7 days). The cron already runs daily; we add the email side alongside the in-app `notifications` insert.
+### 4. Onboarding closeout & manager visibility
 
-## Technical notes
+- Trigger `tg_onboarding_progress`: when all `is_required` task_instances for an instance reach `complete` AND `employees.start_date <= today`, flip `employees.status` from `preboarding` → `active` and emit a notification to the supervisor.
+- "My Team — New Hires" panel on the supervisor dashboard: per-direct-report progress bar, blocked tasks, days-until-start.
+- Welcome day-one schedule auto-generated from a configurable template (org_settings.day_one_agenda): orientation slot, IT pickup, benefits intro — written as `task_instances` with due_at = start_date.
+- Surface provisioning request status (equipment, accounts) inside preboarding so the new hire knows what's coming.
+- Auto-issue PPE sizing form to new hires whose worker_type requires it.
 
-- **Migration**:
-  - `courses`: add columns above.
-  - `employee_training`: add `evidence_path text`, `parent_id uuid` (for recurrence chain), `cancelled_at`, `cancelled_by`.
-  - Trigger `tg_employees_autoassign_training` on `INSERT` / `worker_type_id` change on `employees`.
-  - Trigger `tg_training_recurrence_and_cert` on `UPDATE` of `employee_training` when `status` becomes `complete` to (a) insert the cert row when `issues_certification_id` is set and (b) queue the next recurrence row.
-  - New storage bucket `training-evidence` (private) + RLS so employees can upload/read their own and HR can read all.
+### 5. Municipal compliance reports (Reports tab additions)
 
-- **Server functions** (`src/lib/training.functions.ts`):
-  - Extend `completeTraining` to accept `evidence_path` and `score` and to enforce `passing_score`.
-  - `cancelTrainingAssignment`, `reassignTraining`, `updateTrainingDueDate`.
-  - `getEmployeeTranscript(employee_id)`.
-  - `exportTrainingCsv(filters)`.
+- **Applicant flow log** (EEO-4 / EEOC) — applications by job category × gender × race × veteran status × disability with voluntary self-id collected on the public apply form (separate table, never shown to hiring managers).
+- **Time-to-fill** by department and requisition (posted → hired in days).
+- **Source-of-hire** breakdown.
+- **Offer acceptance rate** and **decline reasons**.
+- All exportable as CSV.
 
-- **UI**:
-  - `src/routes/_authenticated/training.tsx`: add **Compliance** tab, **My Team** toggle, bulk actions, CSV export buttons.
-  - `src/routes/_authenticated/courses.$id.tsx`: course detail with materials & required-for settings.
-  - `src/routes/_authenticated/transcript.$employeeId.tsx`: printable transcript.
-  - Update `my-hr.tsx` mark-complete to a dialog supporting score + evidence upload.
+### Technical details
 
-- **Cron**: extend `dispatchTrainingReminders` to (a) send pre-due (7-day) reminders, (b) reopen recurring rows whose next-due has arrived, (c) push notifications into the existing email queue alongside the in-app `notifications` table.
+**Migrations**
+- `offers` table + RLS (HR + hiring manager + assigned recruiter can manage; candidate accesses via token route only, so no anon policy needed).
+- `application_messages` table (RLS: HR/hiring manager full; candidates by token via server route).
+- `application_self_id` table (RLS: insert-only by candidate token; read restricted to `hr_admin` for aggregate reports; no manager access).
+- `email_templates` table (HR-admin managed).
+- `candidate_tokens` table (`application_id`, `token_hash`, `expires_at`, `revoked_at`).
+- Trigger `tg_onboarding_progress` on `task_instances` AFTER UPDATE.
+- Storage: add `offer-letters` bucket (private, signed URLs).
 
-## Out of scope (call out if you want them next)
-- SCORM / xAPI content hosting
-- External LMS sync (Cornerstone, Vector, TargetSolutions)
-- Live instructor-led class rosters with seat limits
+**Server functions** (`src/lib/`)
+- `offers.functions.ts`: `createOffer`, `sendOffer`, `getOfferByToken`, `respondToOffer`, `voidOffer`.
+- `candidate-portal.functions.ts`: `getApplicationByToken`, `postCandidateMessage`, `uploadCandidateDocument`, `confirmInterviewTime`.
+- `email-templates.functions.ts`: CRUD plus `sendTemplated`.
+- `reports.functions.ts`: `applicantFlowLog`, `timeToFill`, `sourceOfHire`, `offerStats`.
+- Extend `dispatchTrainingReminders` cron route to also dispatch interview reminders, offer expirations, and welcome-day prep.
+
+**Public routes** (`src/routes/api/public/`)
+- `candidate/$token/status.ts`, `candidate/$token/message.ts`, `candidate/$token/document.ts`
+- `offers/$token/view.ts`, `offers/$token/respond.ts`
+
+**UI**
+- `_authenticated/offers.index.tsx`, `_authenticated/offers.$id.tsx`
+- `_authenticated/applications.$id.tsx` — unified application timeline (events + messages + interviews + offers + emails).
+- `_authenticated/email-templates.tsx`
+- Extend `reports.tsx` with the four new municipal reports.
+- Extend `preboarding.tsx` and `dashboard.tsx` with the manager/new-hire panels.
+- Public `/candidate/$token.tsx` and `/offer/$token.tsx` (top-level, no auth).
+- Add voluntary self-id step to `careers.$slug.apply.tsx` (optional, EEO-mandated language).
+
+**Out of scope** (call out, don't build): SMS notifications, video interview hosting, AI resume screening, integration with external job boards (Indeed/LinkedIn), assessment platforms, e-verify automation.
+
+### Acceptance checks
+- A finalist application can be moved through Offer → Accepted → Hire Request → Active employee with no manual data re-entry.
+- An external candidate can complete the entire journey (apply → schedule → accept offer → first day) without ever creating an account.
+- A new hire's required onboarding tasks completing flips status to `active` and notifies their supervisor.
+- HR can generate an EEO-4 applicant flow log for any date range as a CSV.

@@ -13,7 +13,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as OfferTokenRouteImport } from './routes/offer.$token'
 import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
+import { Route as CandidateTokenRouteImport } from './routes/candidate.$token'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -31,6 +33,7 @@ import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authent
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
+import { Route as AuthenticatedEmailTemplatesRouteImport } from './routes/_authenticated/email-templates'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
@@ -40,6 +43,7 @@ import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
 import { Route as AuthenticatedPafIndexRouteImport } from './routes/_authenticated/paf.index'
 import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
+import { Route as AuthenticatedOffersIndexRouteImport } from './routes/_authenticated/offers.index'
 import { Route as AuthenticatedLeaveIndexRouteImport } from './routes/_authenticated/leave.index'
 import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authenticated/jobs.index'
 import { Route as AuthenticatedGrievancesIndexRouteImport } from './routes/_authenticated/grievances.index'
@@ -61,9 +65,14 @@ import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
+import { Route as ApiPublicJobApplicationsSelfIdRouteImport } from './routes/api/public/job-applications/self-id'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
+import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
+import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
+import { Route as ApiPublicCandidateTokenStatusRouteImport } from './routes/api/public/candidate/$token/status'
+import { Route as ApiPublicCandidateTokenMessageRouteImport } from './routes/api/public/candidate/$token/message'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -84,9 +93,19 @@ const CareersIndexRoute = CareersIndexRouteImport.update({
   path: '/careers/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OfferTokenRoute = OfferTokenRouteImport.update({
+  id: '/offer/$token',
+  path: '/offer/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CareersSlugRoute = CareersSlugRouteImport.update({
   id: '/careers/$slug',
   path: '/careers/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CandidateTokenRoute = CandidateTokenRouteImport.update({
+  id: '/candidate/$token',
+  path: '/candidate/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWorkerTypesRoute =
@@ -181,6 +200,12 @@ const AuthenticatedEquipmentRoute = AuthenticatedEquipmentRouteImport.update({
   path: '/equipment',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEmailTemplatesRoute =
+  AuthenticatedEmailTemplatesRouteImport.update({
+    id: '/email-templates',
+    path: '/email-templates',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
@@ -227,6 +252,12 @@ const AuthenticatedOneOnOnesIndexRoute =
   AuthenticatedOneOnOnesIndexRouteImport.update({
     id: '/one-on-ones/',
     path: '/one-on-ones/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOffersIndexRoute =
+  AuthenticatedOffersIndexRouteImport.update({
+    id: '/offers/',
+    path: '/offers/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedLeaveIndexRoute = AuthenticatedLeaveIndexRouteImport.update({
@@ -344,6 +375,12 @@ const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
   path: '/cascades/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicJobApplicationsSelfIdRoute =
+  ApiPublicJobApplicationsSelfIdRouteImport.update({
+    id: '/self-id',
+    path: '/self-id',
+    getParentRoute: () => ApiPublicJobApplicationsRoute,
+  } as any)
 const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
   id: '/api/public/hooks/reminders',
   path: '/api/public/hooks/reminders',
@@ -360,6 +397,30 @@ const ApiPublicDocsFileRoute = ApiPublicDocsFileRouteImport.update({
   path: '/api/public/docs/$file',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOffersTokenViewRoute =
+  ApiPublicOffersTokenViewRouteImport.update({
+    id: '/api/public/offers/$token/view',
+    path: '/api/public/offers/$token/view',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicOffersTokenRespondRoute =
+  ApiPublicOffersTokenRespondRouteImport.update({
+    id: '/api/public/offers/$token/respond',
+    path: '/api/public/offers/$token/respond',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCandidateTokenStatusRoute =
+  ApiPublicCandidateTokenStatusRouteImport.update({
+    id: '/api/public/candidate/$token/status',
+    path: '/api/public/candidate/$token/status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCandidateTokenMessageRoute =
+  ApiPublicCandidateTokenMessageRouteImport.update({
+    id: '/api/public/candidate/$token/message',
+    path: '/api/public/candidate/$token/message',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -369,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/benefits': typeof AuthenticatedBenefitsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
+  '/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
@@ -386,7 +448,9 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/candidate/$token': typeof CandidateTokenRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
+  '/offer/$token': typeof OfferTokenRoute
   '/careers/': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
@@ -401,7 +465,7 @@ export interface FileRoutesByFullPath {
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
-  '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/api/public/job-applications': typeof ApiPublicJobApplicationsRouteWithChildren
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -409,6 +473,7 @@ export interface FileRoutesByFullPath {
   '/grievances/': typeof AuthenticatedGrievancesIndexRoute
   '/jobs/': typeof AuthenticatedJobsIndexRoute
   '/leave/': typeof AuthenticatedLeaveIndexRoute
+  '/offers/': typeof AuthenticatedOffersIndexRoute
   '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/paf/': typeof AuthenticatedPafIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
@@ -416,6 +481,11 @@ export interface FileRoutesByFullPath {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/job-applications/self-id': typeof ApiPublicJobApplicationsSelfIdRoute
+  '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
+  '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
+  '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -425,6 +495,7 @@ export interface FileRoutesByTo {
   '/benefits': typeof AuthenticatedBenefitsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
+  '/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
@@ -442,7 +513,9 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/candidate/$token': typeof CandidateTokenRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
+  '/offer/$token': typeof OfferTokenRoute
   '/careers': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
@@ -457,7 +530,7 @@ export interface FileRoutesByTo {
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
-  '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/api/public/job-applications': typeof ApiPublicJobApplicationsRouteWithChildren
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/employees': typeof AuthenticatedEmployeesIndexRoute
@@ -465,6 +538,7 @@ export interface FileRoutesByTo {
   '/grievances': typeof AuthenticatedGrievancesIndexRoute
   '/jobs': typeof AuthenticatedJobsIndexRoute
   '/leave': typeof AuthenticatedLeaveIndexRoute
+  '/offers': typeof AuthenticatedOffersIndexRoute
   '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
   '/paf': typeof AuthenticatedPafIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
@@ -472,6 +546,11 @@ export interface FileRoutesByTo {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/job-applications/self-id': typeof ApiPublicJobApplicationsSelfIdRoute
+  '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
+  '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
+  '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -483,6 +562,7 @@ export interface FileRoutesById {
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
+  '/_authenticated/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/help': typeof AuthenticatedHelpRoute
@@ -500,7 +580,9 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
+  '/candidate/$token': typeof CandidateTokenRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
+  '/offer/$token': typeof OfferTokenRoute
   '/careers/': typeof CareersIndexRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
@@ -515,7 +597,7 @@ export interface FileRoutesById {
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
-  '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/api/public/job-applications': typeof ApiPublicJobApplicationsRouteWithChildren
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -523,6 +605,7 @@ export interface FileRoutesById {
   '/_authenticated/grievances/': typeof AuthenticatedGrievancesIndexRoute
   '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
   '/_authenticated/leave/': typeof AuthenticatedLeaveIndexRoute
+  '/_authenticated/offers/': typeof AuthenticatedOffersIndexRoute
   '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/_authenticated/paf/': typeof AuthenticatedPafIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
@@ -530,6 +613,11 @@ export interface FileRoutesById {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/job-applications/self-id': typeof ApiPublicJobApplicationsSelfIdRoute
+  '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
+  '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
+  '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -541,6 +629,7 @@ export interface FileRouteTypes {
     | '/benefits'
     | '/dashboard'
     | '/documents'
+    | '/email-templates'
     | '/equipment'
     | '/goals'
     | '/help'
@@ -558,7 +647,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/candidate/$token'
     | '/careers/$slug'
+    | '/offer/$token'
     | '/careers/'
     | '/cascades/$id'
     | '/employees/import'
@@ -581,6 +672,7 @@ export interface FileRouteTypes {
     | '/grievances/'
     | '/jobs/'
     | '/leave/'
+    | '/offers/'
     | '/one-on-ones/'
     | '/paf/'
     | '/reviews/'
@@ -588,6 +680,11 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/job-applications/self-id'
+    | '/api/public/candidate/$token/message'
+    | '/api/public/candidate/$token/status'
+    | '/api/public/offers/$token/respond'
+    | '/api/public/offers/$token/view'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -597,6 +694,7 @@ export interface FileRouteTypes {
     | '/benefits'
     | '/dashboard'
     | '/documents'
+    | '/email-templates'
     | '/equipment'
     | '/goals'
     | '/help'
@@ -614,7 +712,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/training'
     | '/worker-types'
+    | '/candidate/$token'
     | '/careers/$slug'
+    | '/offer/$token'
     | '/careers'
     | '/cascades/$id'
     | '/employees/import'
@@ -637,6 +737,7 @@ export interface FileRouteTypes {
     | '/grievances'
     | '/jobs'
     | '/leave'
+    | '/offers'
     | '/one-on-ones'
     | '/paf'
     | '/reviews'
@@ -644,6 +745,11 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/job-applications/self-id'
+    | '/api/public/candidate/$token/message'
+    | '/api/public/candidate/$token/status'
+    | '/api/public/offers/$token/respond'
+    | '/api/public/offers/$token/view'
   id:
     | '__root__'
     | '/'
@@ -654,6 +760,7 @@ export interface FileRouteTypes {
     | '/_authenticated/benefits'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
+    | '/_authenticated/email-templates'
     | '/_authenticated/equipment'
     | '/_authenticated/goals'
     | '/_authenticated/help'
@@ -671,7 +778,9 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/training'
     | '/_authenticated/worker-types'
+    | '/candidate/$token'
     | '/careers/$slug'
+    | '/offer/$token'
     | '/careers/'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/employees/import'
@@ -694,6 +803,7 @@ export interface FileRouteTypes {
     | '/_authenticated/grievances/'
     | '/_authenticated/jobs/'
     | '/_authenticated/leave/'
+    | '/_authenticated/offers/'
     | '/_authenticated/one-on-ones/'
     | '/_authenticated/paf/'
     | '/_authenticated/reviews/'
@@ -701,18 +811,29 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/job-applications/self-id'
+    | '/api/public/candidate/$token/message'
+    | '/api/public/candidate/$token/status'
+    | '/api/public/offers/$token/respond'
+    | '/api/public/offers/$token/view'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CandidateTokenRoute: typeof CandidateTokenRoute
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
+  OfferTokenRoute: typeof OfferTokenRoute
   CareersIndexRoute: typeof CareersIndexRoute
-  ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
+  ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRouteWithChildren
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
+  ApiPublicCandidateTokenMessageRoute: typeof ApiPublicCandidateTokenMessageRoute
+  ApiPublicCandidateTokenStatusRoute: typeof ApiPublicCandidateTokenStatusRoute
+  ApiPublicOffersTokenRespondRoute: typeof ApiPublicOffersTokenRespondRoute
+  ApiPublicOffersTokenViewRoute: typeof ApiPublicOffersTokenViewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -745,11 +866,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CareersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/offer/$token': {
+      id: '/offer/$token'
+      path: '/offer/$token'
+      fullPath: '/offer/$token'
+      preLoaderRoute: typeof OfferTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/careers/$slug': {
       id: '/careers/$slug'
       path: '/careers/$slug'
       fullPath: '/careers/$slug'
       preLoaderRoute: typeof CareersSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidate/$token': {
+      id: '/candidate/$token'
+      path: '/candidate/$token'
+      fullPath: '/candidate/$token'
+      preLoaderRoute: typeof CandidateTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/worker-types': {
@@ -871,6 +1006,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEquipmentRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/email-templates': {
+      id: '/_authenticated/email-templates'
+      path: '/email-templates'
+      fullPath: '/email-templates'
+      preLoaderRoute: typeof AuthenticatedEmailTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/documents': {
       id: '/_authenticated/documents'
       path: '/documents'
@@ -932,6 +1074,13 @@ declare module '@tanstack/react-router' {
       path: '/one-on-ones'
       fullPath: '/one-on-ones/'
       preLoaderRoute: typeof AuthenticatedOneOnOnesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/offers/': {
+      id: '/_authenticated/offers/'
+      path: '/offers'
+      fullPath: '/offers/'
+      preLoaderRoute: typeof AuthenticatedOffersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/leave/': {
@@ -1081,6 +1230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCascadesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/job-applications/self-id': {
+      id: '/api/public/job-applications/self-id'
+      path: '/self-id'
+      fullPath: '/api/public/job-applications/self-id'
+      preLoaderRoute: typeof ApiPublicJobApplicationsSelfIdRouteImport
+      parentRoute: typeof ApiPublicJobApplicationsRoute
+    }
     '/api/public/hooks/reminders': {
       id: '/api/public/hooks/reminders'
       path: '/api/public/hooks/reminders'
@@ -1100,6 +1256,34 @@ declare module '@tanstack/react-router' {
       path: '/api/public/docs/$file'
       fullPath: '/api/public/docs/$file'
       preLoaderRoute: typeof ApiPublicDocsFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/offers/$token/view': {
+      id: '/api/public/offers/$token/view'
+      path: '/api/public/offers/$token/view'
+      fullPath: '/api/public/offers/$token/view'
+      preLoaderRoute: typeof ApiPublicOffersTokenViewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/offers/$token/respond': {
+      id: '/api/public/offers/$token/respond'
+      path: '/api/public/offers/$token/respond'
+      fullPath: '/api/public/offers/$token/respond'
+      preLoaderRoute: typeof ApiPublicOffersTokenRespondRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/candidate/$token/status': {
+      id: '/api/public/candidate/$token/status'
+      path: '/api/public/candidate/$token/status'
+      fullPath: '/api/public/candidate/$token/status'
+      preLoaderRoute: typeof ApiPublicCandidateTokenStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/candidate/$token/message': {
+      id: '/api/public/candidate/$token/message'
+      path: '/api/public/candidate/$token/message'
+      fullPath: '/api/public/candidate/$token/message'
+      preLoaderRoute: typeof ApiPublicCandidateTokenMessageRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -1124,6 +1308,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
+  AuthenticatedEmailTemplatesRoute: typeof AuthenticatedEmailTemplatesRoute
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
@@ -1159,6 +1344,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGrievancesIndexRoute: typeof AuthenticatedGrievancesIndexRoute
   AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute
   AuthenticatedLeaveIndexRoute: typeof AuthenticatedLeaveIndexRoute
+  AuthenticatedOffersIndexRoute: typeof AuthenticatedOffersIndexRoute
   AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
   AuthenticatedPafIndexRoute: typeof AuthenticatedPafIndexRoute
   AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
@@ -1171,6 +1357,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
+  AuthenticatedEmailTemplatesRoute: AuthenticatedEmailTemplatesRoute,
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
@@ -1207,6 +1394,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGrievancesIndexRoute: AuthenticatedGrievancesIndexRoute,
   AuthenticatedJobsIndexRoute: AuthenticatedJobsIndexRoute,
   AuthenticatedLeaveIndexRoute: AuthenticatedLeaveIndexRoute,
+  AuthenticatedOffersIndexRoute: AuthenticatedOffersIndexRoute,
   AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
   AuthenticatedPafIndexRoute: AuthenticatedPafIndexRoute,
   AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
@@ -1228,16 +1416,36 @@ const CareersSlugRouteWithChildren = CareersSlugRoute._addFileChildren(
   CareersSlugRouteChildren,
 )
 
+interface ApiPublicJobApplicationsRouteChildren {
+  ApiPublicJobApplicationsSelfIdRoute: typeof ApiPublicJobApplicationsSelfIdRoute
+}
+
+const ApiPublicJobApplicationsRouteChildren: ApiPublicJobApplicationsRouteChildren =
+  {
+    ApiPublicJobApplicationsSelfIdRoute: ApiPublicJobApplicationsSelfIdRoute,
+  }
+
+const ApiPublicJobApplicationsRouteWithChildren =
+  ApiPublicJobApplicationsRoute._addFileChildren(
+    ApiPublicJobApplicationsRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CandidateTokenRoute: CandidateTokenRoute,
   CareersSlugRoute: CareersSlugRouteWithChildren,
+  OfferTokenRoute: OfferTokenRoute,
   CareersIndexRoute: CareersIndexRoute,
-  ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
+  ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRouteWithChildren,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
+  ApiPublicCandidateTokenMessageRoute: ApiPublicCandidateTokenMessageRoute,
+  ApiPublicCandidateTokenStatusRoute: ApiPublicCandidateTokenStatusRoute,
+  ApiPublicOffersTokenRespondRoute: ApiPublicOffersTokenRespondRoute,
+  ApiPublicOffersTokenViewRoute: ApiPublicOffersTokenViewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

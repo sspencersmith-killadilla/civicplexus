@@ -48,7 +48,51 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
         }
         if (notifications.length) await supabaseAdmin.from("notifications").insert(notifications);
         const training = await dispatchTrainingReminders();
-        return Response.json({ ok: true, queued: notifications.length, training });
+
+        // ── Interview reminders (24h before) ───────────────────────────────
+        const in24h = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+        const in23h = new Date(Date.now() + 23 * 3600 * 1000).toISOString();
+        const { data: upcoming } = await supabaseAdmin
+          .from("interviews")
+          .select("id, scheduled_at, interviewer_ids, location, application_id")
+          .gte("scheduled_at", in23h).lte("scheduled_at", in24h);
+        const interviewNotifs: Array<{ user_id: string; type: string; title: string; body: string; link: string }> = [];
+        for (const iv of (upcoming ?? []) as Array<{ id: string; scheduled_at: string; interviewer_ids: string[] | null; location: string | null }>) {
+          for (const uid of iv.interviewer_ids ?? []) {
+            interviewNotifs.push({
+              user_id: uid, type: "interview", title: "Interview tomorrow",
+              body: `${new Date(iv.scheduled_at).toLocaleString()}${iv.location ? ` · ${iv.location}` : ""}`,
+              link: `/interviews/${iv.id}`,
+            });
+          }
+        }
+        if (interviewNotifs.length) await supabaseAdmin.from("notifications").insert(interviewNotifs);
+
+        // ── Offer expiration (mark expired, notify HR) ─────────────────────
+        const nowIso = new Date().toISOString();
+        const { data: expired } = await supabaseAdmin
+          .from("offers")
+          .select("id, application_id, expires_at, created_by")
+          .eq("status", "sent")
+          .lt("expires_at", nowIso);
+        const offerNotifs: Array<{ user_id: string; type: string; title: string; body: string; link: string }> = [];
+        for (const o of (expired ?? []) as Array<{ id: string; expires_at: string; created_by: string }>) {
+          await supabaseAdmin.from("offers").update({ status: "expired" }).eq("id", o.id);
+          offerNotifs.push({
+            user_id: o.created_by, type: "offer", title: "Offer expired",
+            body: `Offer expired on ${new Date(o.expires_at).toLocaleDateString()} without response`,
+            link: "/offers",
+          });
+        }
+        if (offerNotifs.length) await supabaseAdmin.from("notifications").insert(offerNotifs);
+
+        return Response.json({
+          ok: true,
+          queued: notifications.length,
+          training,
+          interview_reminders: interviewNotifs.length,
+          expired_offers: offerNotifs.length,
+        });
       },
     },
   },

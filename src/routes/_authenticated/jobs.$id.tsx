@@ -12,9 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, ExternalLink, CalendarClock, UserPlus } from "lucide-react";
+import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { submitRequisitionForApproval, postRequisition, closeRequisition, transitionApplicationStatus, scheduleInterview, convertApplicationToHire } from "@/lib/jobs.functions";
+import { createOffer } from "@/lib/offers.functions";
+import { mintCandidatePortalToken, postRecruiterMessage } from "@/lib/candidate-portal.functions";
+import { sendTemplatedToApplicant } from "@/lib/email-templates.functions";
 
 export const Route = createFileRoute("/_authenticated/jobs/$id")({ component: JobDetail });
 
@@ -141,9 +144,17 @@ function ApplicantRow({ app, requisitionId }: { app: { id: string; applicant_nam
   const change = useServerFn(transitionApplicationStatus);
   const sched = useServerFn(scheduleInterview);
   const convert = useServerFn(convertApplicationToHire);
+  const draftOffer = useServerFn(createOffer);
+  const mintPortal = useServerFn(mintCandidatePortalToken);
+  const sendMsg = useServerFn(postRecruiterMessage);
+  const sendEmail = useServerFn(sendTemplatedToApplicant);
   const [iv, setIv] = useState({ scheduled_at: "", interviewer_emails: "", location: "", duration_minutes: 45, stage: "first_round" as const });
   const [openIv, setOpenIv] = useState(false);
   const [openHire, setOpenHire] = useState(false);
+  const [openOffer, setOpenOffer] = useState(false);
+  const [openMsg, setOpenMsg] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [offer, setOffer] = useState({ worker_type_id: "", salary: "", start_date: "", expires_at: "" });
   const [hire, setHire] = useState({ worker_type_id: "", start_date: "" });
 
   const wtsQ = useQuery({
@@ -152,7 +163,7 @@ function ApplicantRow({ app, requisitionId }: { app: { id: string; applicant_nam
       const { data } = await supabase.from("worker_types").select("id, name").order("name");
       return (data ?? []) as Array<{ id: string; name: string }>;
     },
-    enabled: openHire,
+    enabled: openHire || openOffer,
   });
 
   const set = useMutation({
@@ -181,6 +192,36 @@ function ApplicantRow({ app, requisitionId }: { app: { id: string; applicant_nam
   const doHire = useMutation({
     mutationFn: () => convert({ data: { application_id: app.id, worker_type_id: hire.worker_type_id, start_date: hire.start_date } }),
     onSuccess: () => { setOpenHire(false); toast.success("Hire request created — awaiting approvals"); set.mutate("offer"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const doOffer = useMutation({
+    mutationFn: () => draftOffer({ data: {
+      application_id: app.id,
+      worker_type_id: offer.worker_type_id,
+      salary: offer.salary ? Number(offer.salary) : undefined,
+      start_date: offer.start_date || undefined,
+      expires_at: offer.expires_at ? new Date(offer.expires_at).toISOString() : undefined,
+    } }),
+    onSuccess: () => { setOpenOffer(false); toast.success("Offer drafted — release it from the Offers page"); set.mutate("offer"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const doPortal = useMutation({
+    mutationFn: () => mintPortal({ data: { application_id: app.id, days_valid: 60 } }),
+    onSuccess: (r) => { navigator.clipboard?.writeText(r.url).catch(() => {}); toast.success("Portal link copied"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const doMsg = useMutation({
+    mutationFn: () => sendMsg({ data: { application_id: app.id, body: msg } }),
+    onSuccess: () => { setMsg(""); setOpenMsg(false); toast.success("Message posted"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const doReject = useMutation({
+    mutationFn: async () => { await sendEmail({ data: { application_id: app.id, template_key: "rejection" } }); await change({ data: { application_id: app.id, status: "rejected" } }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["job_applications", requisitionId] }); toast.success("Rejection email sent"); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
@@ -235,6 +276,41 @@ function ApplicantRow({ app, requisitionId }: { app: { id: string; applicant_nam
               </div>
             </DialogContent>
           </Dialog>
+
+          <Dialog open={openOffer} onOpenChange={setOpenOffer}>
+            <DialogTrigger asChild><Button size="sm" variant="outline"><FileSignature className="h-3 w-3 mr-1" />Offer</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Draft offer</DialogTitle></DialogHeader>
+              <p className="text-xs text-muted-foreground mb-3">Drafts a tokenized offer. Release it from the Offers page to email the candidate.</p>
+              <div className="space-y-3">
+                <div><Label>Worker type</Label><Select value={offer.worker_type_id} onValueChange={(v)=>setOffer({...offer, worker_type_id: v})}>
+                  <SelectTrigger><SelectValue placeholder="Pick worker type…" /></SelectTrigger>
+                  <SelectContent>{(wtsQ.data ?? []).map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent>
+                </Select></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>Annual salary</Label><Input type="number" value={offer.salary} onChange={(e)=>setOffer({...offer, salary: e.target.value})} /></div>
+                  <div><Label>Start date</Label><Input type="date" value={offer.start_date} onChange={(e)=>setOffer({...offer, start_date: e.target.value})} /></div>
+                </div>
+                <div><Label>Offer expires</Label><Input type="datetime-local" value={offer.expires_at} onChange={(e)=>setOffer({...offer, expires_at: e.target.value})} /></div>
+                <div className="flex justify-end"><Button disabled={!offer.worker_type_id || doOffer.isPending} onClick={()=>doOffer.mutate()}>{doOffer.isPending ? "Drafting…" : "Draft offer"}</Button></div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={openMsg} onOpenChange={setOpenMsg}>
+            <DialogTrigger asChild><Button size="sm" variant="ghost"><Send className="h-3 w-3 mr-1" />Message</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Message candidate</DialogTitle></DialogHeader>
+              <Textarea rows={4} value={msg} onChange={(e)=>setMsg(e.target.value)} placeholder="Type your message…" />
+              <div className="flex justify-end mt-3"><Button disabled={!msg.trim() || doMsg.isPending} onClick={()=>doMsg.mutate()}>Send</Button></div>
+              <p className="text-xs text-muted-foreground mt-2">Message appears in the candidate's portal. Share their portal link first.</p>
+            </DialogContent>
+          </Dialog>
+
+          <Button size="sm" variant="ghost" onClick={() => doPortal.mutate()} disabled={doPortal.isPending}><Link2 className="h-3 w-3 mr-1" />Portal link</Button>
+          {app.status !== "rejected" && app.status !== "hired" && (
+            <Button size="sm" variant="ghost" onClick={() => doReject.mutate()} disabled={doReject.isPending}>Reject + email</Button>
+          )}
         </div>
       </div>
     </Card>
