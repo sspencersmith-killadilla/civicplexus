@@ -51,6 +51,7 @@ import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
+import { Route as AuthenticatedLeaveIdRouteImport } from './routes/_authenticated/leave.$id'
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
 import { Route as AuthenticatedInterviewsIdRouteImport } from './routes/_authenticated/interviews.$id'
 import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
@@ -286,6 +287,11 @@ const AuthenticatedOneOnOnesIdRoute =
     path: '/one-on-ones/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLeaveIdRoute = AuthenticatedLeaveIdRouteImport.update({
+  id: '/leave/$id',
+  path: '/leave/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedJobsIdRoute = AuthenticatedJobsIdRouteImport.update({
   id: '/jobs/$id',
   path: '/jobs/$id',
@@ -369,6 +375,7 @@ export interface FileRoutesByFullPath {
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/interviews/$id': typeof AuthenticatedInterviewsIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -421,6 +428,7 @@ export interface FileRoutesByTo {
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/interviews/$id': typeof AuthenticatedInterviewsIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -475,6 +483,7 @@ export interface FileRoutesById {
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRoute
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/_authenticated/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -529,6 +538,7 @@ export interface FileRouteTypes {
     | '/grievances/$id'
     | '/interviews/$id'
     | '/jobs/$id'
+    | '/leave/$id'
     | '/one-on-ones/$id'
     | '/policies/$id'
     | '/reviews/$id'
@@ -581,6 +591,7 @@ export interface FileRouteTypes {
     | '/grievances/$id'
     | '/interviews/$id'
     | '/jobs/$id'
+    | '/leave/$id'
     | '/one-on-ones/$id'
     | '/policies/$id'
     | '/reviews/$id'
@@ -634,6 +645,7 @@ export interface FileRouteTypes {
     | '/_authenticated/grievances/$id'
     | '/_authenticated/interviews/$id'
     | '/_authenticated/jobs/$id'
+    | '/_authenticated/leave/$id'
     | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/policies/$id'
     | '/_authenticated/reviews/$id'
@@ -962,6 +974,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOneOnOnesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/leave/$id': {
+      id: '/_authenticated/leave/$id'
+      path: '/leave/$id'
+      fullPath: '/leave/$id'
+      preLoaderRoute: typeof AuthenticatedLeaveIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/jobs/$id': {
       id: '/_authenticated/jobs/$id'
       path: '/jobs/$id'
@@ -1070,6 +1089,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
   AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRoute
   AuthenticatedJobsIdRoute: typeof AuthenticatedJobsIdRoute
+  AuthenticatedLeaveIdRoute: typeof AuthenticatedLeaveIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
@@ -1113,6 +1133,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
   AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRoute,
   AuthenticatedJobsIdRoute: AuthenticatedJobsIdRoute,
+  AuthenticatedLeaveIdRoute: AuthenticatedLeaveIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
