@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2, Sparkles, FileText, Check, Pencil, X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { submitRequisitionForApproval, postRequisition, closeRequisition, transitionApplicationStatus, scheduleInterview, convertApplicationToHire } from "@/lib/jobs.functions";
 import { createOffer } from "@/lib/offers.functions";
@@ -31,6 +32,10 @@ function JobDetail() {
   const submitForApproval = useServerFn(submitRequisitionForApproval);
   const post = useServerFn(postRequisition);
   const close = useServerFn(closeRequisition);
+  const screen = useServerFn(screenApplication);
+  const decide = useServerFn(recordScreenDecision);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkRunning, setBulkRunning] = useState(false);
 
   const reqQ = useQuery({
     queryKey: ["job_requisition", id],
@@ -76,6 +81,49 @@ function JobDetail() {
   if (reqQ.isLoading || !reqQ.data) return <AppShell title="Requisition"><p>Loading…</p></AppShell>;
   const r = reqQ.data;
 
+  const apps = appsQ.data ?? [];
+  const allSelected = apps.length > 0 && apps.every(a => selected.has(a.id));
+  const toggleOne = (appId: string) => setSelected(prev => {
+    const next = new Set(prev);
+    if (next.has(appId)) next.delete(appId); else next.add(appId);
+    return next;
+  });
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(apps.map(a => a.id)));
+
+  const runBulk = async (label: string, fn: (appId: string) => Promise<unknown>) => {
+    const ids = Array.from(selected);
+    if (!ids.length) return;
+    setBulkRunning(true);
+    let ok = 0, fail = 0;
+    for (const appId of ids) {
+      try { await fn(appId); ok++; } catch { fail++; }
+    }
+    setBulkRunning(false);
+    qc.invalidateQueries();
+    toast[fail ? "warning" : "success"](`${label}: ${ok} done${fail ? `, ${fail} failed` : ""}`);
+  };
+
+  const bulkGenerate = () => runBulk("AI screening queued", (appId) => screen({ data: { application_id: appId } }));
+  const bulkDecideQueued = async (decision: "accepted" | "rejected") => {
+    const ids = Array.from(selected);
+    if (!ids.length) return;
+    setBulkRunning(true);
+    const { data: pending } = await supabase
+      .from("ai_suggestions" as never)
+      .select("id, application_id")
+      .in("application_id", ids)
+      .eq("kind", "application_screen")
+      .is("decision", null);
+    const rows = (pending ?? []) as Array<{ id: string; application_id: string }>;
+    let ok = 0, fail = 0;
+    for (const row of rows) {
+      try { await decide({ data: { suggestion_id: row.id, decision } }); ok++; } catch { fail++; }
+    }
+    setBulkRunning(false);
+    qc.invalidateQueries();
+    toast[fail ? "warning" : "success"](`${decision === "accepted" ? "Accepted" : "Dismissed"} ${ok} queued${fail ? `, ${fail} failed` : ""}`);
+  };
+
   return (
     <AppShell title={r.title}>
       <Link to="/jobs" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
@@ -108,10 +156,38 @@ function JobDetail() {
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
         <TabsContent value="apps" className="space-y-3">
-          {(appsQ.data ?? []).map((a) => (
-            <ApplicantRow key={a.id} app={a} requisitionId={id} />
+          {apps.length > 0 && (
+            <Card className="p-3 flex items-center justify-between flex-wrap gap-3 bg-muted/30">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+                {selected.size > 0 ? `${selected.size} selected` : "Select all applicants"}
+              </label>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button size="sm" variant="default" disabled={!selected.size || bulkRunning} onClick={bulkGenerate}>
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  {bulkRunning ? "Working…" : `Generate AI screening (${selected.size})`}
+                </Button>
+                <Button size="sm" variant="outline" disabled={!selected.size || bulkRunning} onClick={() => bulkDecideQueued("accepted")}>
+                  <Check className="h-3 w-3 mr-1" />Accept queued
+                </Button>
+                <Button size="sm" variant="ghost" disabled={!selected.size || bulkRunning} onClick={() => bulkDecideQueued("rejected")}>
+                  <X className="h-3 w-3 mr-1" />Dismiss queued
+                </Button>
+                {selected.size > 0 && (
+                  <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Clear</Button>
+                )}
+              </div>
+            </Card>
+          )}
+          {selected.size > 0 && (
+            <p className="text-xs text-muted-foreground px-1">
+              Bulk AI runs draft a suggestion per applicant and queue it for your accept / edit / dismiss review below. Nothing is sent to candidates automatically.
+            </p>
+          )}
+          {apps.map((a) => (
+            <ApplicantRow key={a.id} app={a} requisitionId={id} selected={selected.has(a.id)} onToggle={() => toggleOne(a.id)} />
           ))}
-          {(appsQ.data?.length ?? 0) === 0 && <p className="text-sm text-muted-foreground">No applications yet.</p>}
+          {apps.length === 0 && <p className="text-sm text-muted-foreground">No applications yet.</p>}
         </TabsContent>
         <TabsContent value="approval">
           {!chainQ.data?.chain ? (
