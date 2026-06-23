@@ -26,6 +26,24 @@ export const Route = createFileRoute("/_authenticated/jobs/$id")({ component: Jo
 
 const APP_STATUSES = ["new","screening","interview","offer","hired","rejected","withdrawn"] as const;
 
+function getErrorMessage(error: unknown, fallback = "Failed") {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object") {
+    const o = error as Record<string, unknown>;
+    const parts = [o.message, o.details, o.hint, o.code]
+      .filter((v): v is string | number => typeof v === "string" || typeof v === "number")
+      .map(String);
+    if (parts.length) return parts.join(" — ");
+    try {
+      return JSON.stringify(o);
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
+}
+
 function JobDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
@@ -98,7 +116,7 @@ function JobDetail() {
     const failures: string[] = [];
     for (const appId of ids) {
       try { await fn(appId); ok++; }
-      catch (e) { failures.push(e instanceof Error ? e.message : String(e)); }
+      catch (e) { failures.push(getErrorMessage(e)); }
     }
     setBulkRunning(false);
     qc.invalidateQueries();
@@ -253,7 +271,7 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
   const set = useMutation({
     mutationFn: (status: typeof APP_STATUSES[number]) => change({ data: { application_id: app.id, status } }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["job_applications", requisitionId] }); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const doSched = useMutation({
@@ -270,7 +288,7 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
       }});
     },
     onSuccess: () => { qc.invalidateQueries(); setOpenIv(false); toast.success("Interview scheduled"); set.mutate("interview"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const doHire = useMutation({
