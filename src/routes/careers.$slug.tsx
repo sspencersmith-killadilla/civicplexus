@@ -26,6 +26,8 @@ export const Route = createFileRoute("/careers/$slug")({
 function JobDetail() {
   const { slug } = Route.useParams();
   const { data: j } = useSuspenseQuery(jobQuery(slug));
+  const sections = (j as unknown as { posting_sections?: Record<string, string | null> | null }).posting_sections ?? {};
+  const has = (k: string) => Boolean(sections?.[k]);
   return (
     <div className="min-h-screen bg-background">
       <main className="max-w-3xl mx-auto px-6 py-10">
@@ -38,16 +40,38 @@ function JobDetail() {
           {j.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{j.location}</span>}
           {j.employment_type && <span>{j.employment_type}</span>}
         </div>
-        <Card className="p-6 mt-6 space-y-5">
-          {j.summary && <p className="text-base">{j.summary}</p>}
-          {j.description && <section><h2 className="font-medium mb-2">About the role</h2><div className="text-sm whitespace-pre-wrap">{j.description}</div></section>}
-          {j.requirements && <section><h2 className="font-medium mb-2">Requirements</h2><div className="text-sm whitespace-pre-wrap">{j.requirements}</div></section>}
-          {j.benefits && <section><h2 className="font-medium mb-2">Benefits</h2><div className="text-sm whitespace-pre-wrap">{j.benefits}</div></section>}
+        <Card className="p-6 mt-6 space-y-6">
+          {j.summary && <p className="text-base leading-relaxed">{j.summary}</p>}
+          {has("essential_functions") ? (
+            <Section title="Essential Functions">{sections.essential_functions!}</Section>
+          ) : (
+            j.description && <Section title="About the role">{j.description}</Section>
+          )}
+          {has("ksa") && <Section title="Knowledge, Skills, Abilities & Behaviors">{sections.ksa!}</Section>}
+          {has("qualifications") ? (
+            <Section title="Required Qualifications">{sections.qualifications!}</Section>
+          ) : (
+            j.requirements && <Section title="Requirements">{j.requirements}</Section>
+          )}
+          {has("physical_demands") && <Section title="Physical Demands">{sections.physical_demands!}</Section>}
+          {has("supplemental") && <Section title="Supplemental">{sections.supplemental!}</Section>}
+          {j.benefits && <Section title="Benefits">{j.benefits}</Section>}
         </Card>
         <div className="mt-6 flex justify-end">
-          <Link to="/careers/$slug/apply" params={{ slug }}><Button size="lg">Apply for this role</Button></Link>
+          <Button asChild size="lg">
+            <Link to="/careers/$slug/apply" params={{ slug }}>Apply for this role</Link>
+          </Button>
         </div>
       </main>
     </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: string }) {
+  return (
+    <section className="border-t pt-5 first:border-t-0 first:pt-0">
+      <h2 className="font-medium mb-2 text-base">{title}</h2>
+      <div className="text-sm whitespace-pre-wrap leading-relaxed text-muted-foreground">{children}</div>
+    </section>
   );
 }
