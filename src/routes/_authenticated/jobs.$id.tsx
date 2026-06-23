@@ -18,8 +18,6 @@ import { submitRequisitionForApproval, postRequisition, closeRequisition, transi
 import { createOffer } from "@/lib/offers.functions";
 import { mintCandidatePortalToken, postRecruiterMessage } from "@/lib/candidate-portal.functions";
 import { sendTemplatedToApplicant } from "@/lib/email-templates.functions";
-import { parseApplicationResume, scoreApplicationAgainstRubric, saveRequisitionRubric, decideSuggestion } from "@/lib/applicant-ai.functions";
-import { Sparkles, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/jobs/$id")({ component: JobDetail });
 
@@ -37,7 +35,7 @@ function JobDetail() {
     queryFn: async () => {
       const { data, error } = await supabase.from("job_requisitions" as never).select("*").eq("id", id).single();
       if (error) throw error;
-      return data as never as { id: string; title: string; status: string; slug: string | null; internal_only: boolean; department: string | null; description: string | null; summary: string | null; ai_rubric: { required_skills?: string[]; preferred_skills?: string[]; must_have_certifications?: string[]; min_years_experience?: number | null; notes?: string } | null };
+      return data as never as { id: string; title: string; status: string; slug: string | null; internal_only: boolean; department: string | null; description: string | null; summary: string | null };
     },
   });
 
@@ -105,7 +103,6 @@ function JobDetail() {
         <TabsList>
           <TabsTrigger value="apps">Applications ({appsQ.data?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="approval">Approval</TabsTrigger>
-          <TabsTrigger value="rubric">AI rubric</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
         <TabsContent value="apps" className="space-y-3">
@@ -131,9 +128,6 @@ function JobDetail() {
             </Card>
           )}
         </TabsContent>
-        <TabsContent value="rubric">
-          <RubricEditor requisitionId={id} initial={r.ai_rubric ?? {}} />
-        </TabsContent>
         <TabsContent value="details">
           <Card className="p-4 space-y-3">
             {r.summary && <p className="text-sm">{r.summary}</p>}
@@ -154,23 +148,6 @@ function ApplicantRow({ app, requisitionId }: { app: { id: string; applicant_nam
   const mintPortal = useServerFn(mintCandidatePortalToken);
   const sendMsg = useServerFn(postRecruiterMessage);
   const sendEmail = useServerFn(sendTemplatedToApplicant);
-  const parseFn = useServerFn(parseApplicationResume);
-  const scoreFn = useServerFn(scoreApplicationAgainstRubric);
-  const decideFn = useServerFn(decideSuggestion);
-  const [aiOpen, setAiOpen] = useState(false);
-  const [parsed, setParsed] = useState<null | { years_experience: number | null; skills: string[]; certifications: string[]; prior_titles: string[]; summary: string }>(null);
-  const [score, setScore] = useState<null | { overall: number; confidence: string; dimensions: Array<{ label: string; score: number | null; evidence: string; insufficient_evidence: boolean }>; missing_must_haves: string[]; caveats: string[] }>(null);
-  const [scoreSuggestionId, setScoreSuggestionId] = useState<string | null>(null);
-  const doParse = useMutation({
-    mutationFn: () => parseFn({ data: { application_id: app.id } }),
-    onSuccess: (r) => { setParsed(r.parsed as never); toast.success("Parsed (redacted before AI saw it)"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
-  });
-  const doScore = useMutation({
-    mutationFn: () => scoreFn({ data: { application_id: app.id } }),
-    onSuccess: (r) => { setScore(r.score as never); setScoreSuggestionId(r.suggestion_id); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
-  });
   const [iv, setIv] = useState({ scheduled_at: "", interviewer_emails: "", location: "", duration_minutes: 45, stage: "first_round" as const });
   const [openIv, setOpenIv] = useState(false);
   const [openHire, setOpenHire] = useState(false);
@@ -331,87 +308,11 @@ function ApplicantRow({ app, requisitionId }: { app: { id: string; applicant_nam
           </Dialog>
 
           <Button size="sm" variant="ghost" onClick={() => doPortal.mutate()} disabled={doPortal.isPending}><Link2 className="h-3 w-3 mr-1" />Portal link</Button>
-          <Button size="sm" variant="ghost" onClick={() => setAiOpen((v) => !v)}><Sparkles className="h-3 w-3 mr-1" />AI review</Button>
           {app.status !== "rejected" && app.status !== "hired" && (
             <Button size="sm" variant="ghost" onClick={() => doReject.mutate()} disabled={doReject.isPending}>Reject + email</Button>
           )}
         </div>
       </div>
-      {aiOpen && (
-        <div className="mt-4 rounded border bg-muted/30 p-3 space-y-3">
-          <p className="text-xs text-muted-foreground flex items-center gap-1"><ShieldAlert className="h-3 w-3" /> AI is advisory only. Resume text is redacted (email, phone, address, years, name-blind) before any model sees it. You are the decider — every AI suggestion is logged with your accept / override action.</p>
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => doParse.mutate()} disabled={doParse.isPending}>{doParse.isPending ? "Parsing…" : "1. Parse application"}</Button>
-            <Button size="sm" variant="outline" onClick={() => doScore.mutate()} disabled={doScore.isPending}>{doScore.isPending ? "Scoring…" : "2. Score vs rubric"}</Button>
-          </div>
-          {parsed && (
-            <div className="text-sm space-y-1">
-              <p><span className="font-medium">Years experience:</span> {parsed.years_experience ?? "—"}</p>
-              {!!parsed.skills.length && <p><span className="font-medium">Skills:</span> {parsed.skills.join(", ")}</p>}
-              {!!parsed.certifications.length && <p><span className="font-medium">Certifications:</span> {parsed.certifications.join(", ")}</p>}
-              {!!parsed.prior_titles.length && <p><span className="font-medium">Prior titles:</span> {parsed.prior_titles.join(", ")}</p>}
-              {parsed.summary && <p className="text-muted-foreground italic">{parsed.summary}</p>}
-            </div>
-          )}
-          {score && (
-            <div className="text-sm space-y-2">
-              <p><span className="font-medium">Overall fit:</span> {score.overall}/100 · confidence {score.confidence}</p>
-              {!!score.missing_must_haves.length && <p className="text-destructive">Missing must-haves: {score.missing_must_haves.join(", ")}</p>}
-              <ul className="space-y-1">
-                {score.dimensions.map((d, i) => (
-                  <li key={i} className="border-l-2 border-muted pl-2">
-                    <span className="font-medium">{d.label}:</span> {d.insufficient_evidence ? <em>insufficient evidence</em> : `${d.score}/100`}
-                    <div className="text-xs text-muted-foreground">"{d.evidence}"</div>
-                  </li>
-                ))}
-              </ul>
-              {!!score.caveats.length && <p className="text-xs text-muted-foreground">Caveats: {score.caveats.join("; ")}</p>}
-              {scoreSuggestionId && (
-                <div className="flex gap-2 pt-1">
-                  <Button size="sm" variant="outline" onClick={() => { decideFn({ data: { suggestion_id: scoreSuggestionId, decision: "accepted" } }); toast.success("Acknowledged"); }}>Acknowledge</Button>
-                  <Button size="sm" variant="ghost" onClick={() => { const reason = window.prompt("Why are you overriding the AI score?") ?? ""; if (reason.trim()) { decideFn({ data: { suggestion_id: scoreSuggestionId, decision: "rejected", reason } }); toast.success("Override logged"); } }}>Override</Button>
-                </div>
-              )}
-            </div>
-          )}
-          {!parsed && !score && <p className="text-xs text-muted-foreground">Parse first, then score against the requisition's rubric (set rubric in the AI rubric tab).</p>}
-        </div>
-      )}
-    </Card>
-  );
-}
-
-function RubricEditor({ requisitionId, initial }: { requisitionId: string; initial: { required_skills?: string[]; preferred_skills?: string[]; must_have_certifications?: string[]; min_years_experience?: number | null; notes?: string } }) {
-  const qc = useQueryClient();
-  const save = useServerFn(saveRequisitionRubric);
-  const [req, setReq] = useState((initial.required_skills ?? []).join(", "));
-  const [pref, setPref] = useState((initial.preferred_skills ?? []).join(", "));
-  const [certs, setCerts] = useState((initial.must_have_certifications ?? []).join(", "));
-  const [years, setYears] = useState(initial.min_years_experience ?? "");
-  const [notes, setNotes] = useState(initial.notes ?? "");
-  const doSave = useMutation({
-    mutationFn: () => save({ data: { requisition_id: requisitionId, rubric: {
-      required_skills: req.split(",").map(s=>s.trim()).filter(Boolean),
-      preferred_skills: pref.split(",").map(s=>s.trim()).filter(Boolean),
-      must_have_certifications: certs.split(",").map(s=>s.trim()).filter(Boolean),
-      min_years_experience: years === "" ? null : Number(years),
-      notes: notes || undefined,
-    } } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["job_requisition", requisitionId] }); toast.success("Rubric saved"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
-  });
-  return (
-    <Card className="p-4 space-y-3">
-      <div>
-        <h3 className="font-medium">AI scoring rubric</h3>
-        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1"><ShieldAlert className="h-3 w-3" /> The rubric defines what AI may evaluate against. Keep entries job-related and bona fide. Never list demographic or "culture fit" criteria.</p>
-      </div>
-      <div><Label>Required skills (comma-separated)</Label><Input value={req} onChange={(e)=>setReq(e.target.value)} placeholder="e.g. CDL Class B, GIS, Crew leadership" /></div>
-      <div><Label>Preferred skills</Label><Input value={pref} onChange={(e)=>setPref(e.target.value)} /></div>
-      <div><Label>Must-have certifications</Label><Input value={certs} onChange={(e)=>setCerts(e.target.value)} placeholder="e.g. TCOLE Basic Peace Officer" /></div>
-      <div><Label>Minimum years of relevant experience</Label><Input type="number" value={years as never} onChange={(e)=>setYears(e.target.value === "" ? "" : Number(e.target.value))} /></div>
-      <div><Label>Notes for the AI scorer</Label><Textarea rows={3} value={notes} onChange={(e)=>setNotes(e.target.value)} placeholder="What 'looks like' a strong applicant for this role?" /></div>
-      <div className="flex justify-end"><Button onClick={()=>doSave.mutate()} disabled={doSave.isPending}>{doSave.isPending ? "Saving…" : "Save rubric"}</Button></div>
     </Card>
   );
 }

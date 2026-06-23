@@ -14,110 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      ai_suggestions: {
-        Row: {
-          application_id: string | null
-          created_at: string
-          created_by: string | null
-          decided_at: string | null
-          decided_by: string | null
-          decision: string | null
-          decision_diff: Json | null
-          id: string
-          input_hash: string
-          interview_id: string | null
-          kind: string
-          model: string
-          payload: Json
-        }
-        Insert: {
-          application_id?: string | null
-          created_at?: string
-          created_by?: string | null
-          decided_at?: string | null
-          decided_by?: string | null
-          decision?: string | null
-          decision_diff?: Json | null
-          id?: string
-          input_hash: string
-          interview_id?: string | null
-          kind: string
-          model: string
-          payload: Json
-        }
-        Update: {
-          application_id?: string | null
-          created_at?: string
-          created_by?: string | null
-          decided_at?: string | null
-          decided_by?: string | null
-          decision?: string | null
-          decision_diff?: Json | null
-          id?: string
-          input_hash?: string
-          interview_id?: string | null
-          kind?: string
-          model?: string
-          payload?: Json
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_suggestions_application_id_fkey"
-            columns: ["application_id"]
-            isOneToOne: false
-            referencedRelation: "job_applications"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ai_suggestions_interview_id_fkey"
-            columns: ["interview_id"]
-            isOneToOne: false
-            referencedRelation: "interviews"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      application_ai_parse: {
-        Row: {
-          application_id: string
-          created_at: string
-          created_by: string | null
-          input_hash: string
-          model: string
-          parsed: Json
-          redaction_version: string
-          updated_at: string
-        }
-        Insert: {
-          application_id: string
-          created_at?: string
-          created_by?: string | null
-          input_hash: string
-          model: string
-          parsed: Json
-          redaction_version: string
-          updated_at?: string
-        }
-        Update: {
-          application_id?: string
-          created_at?: string
-          created_by?: string | null
-          input_hash?: string
-          model?: string
-          parsed?: Json
-          redaction_version?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "application_ai_parse_application_id_fkey"
-            columns: ["application_id"]
-            isOneToOne: true
-            referencedRelation: "job_applications"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       application_messages: {
         Row: {
           application_id: string
@@ -2252,7 +2148,6 @@ export type Database = {
       }
       job_requisitions: {
         Row: {
-          ai_rubric: Json
           benefits: string | null
           closes_at: string | null
           created_at: string
@@ -2278,7 +2173,6 @@ export type Database = {
           worker_type_id: string | null
         }
         Insert: {
-          ai_rubric?: Json
           benefits?: string | null
           closes_at?: string | null
           created_at?: string
@@ -2304,7 +2198,6 @@ export type Database = {
           worker_type_id?: string | null
         }
         Update: {
-          ai_rubric?: Json
           benefits?: string | null
           closes_at?: string | null
           created_at?: string
@@ -3233,7 +3126,6 @@ export type Database = {
         Row: {
           accent_color: string | null
           address: string | null
-          ai_features: Json
           cutover_mode: boolean
           ein: string | null
           fed_employer_id: string | null
@@ -3257,7 +3149,6 @@ export type Database = {
         Insert: {
           accent_color?: string | null
           address?: string | null
-          ai_features?: Json
           cutover_mode?: boolean
           ein?: string | null
           fed_employer_id?: string | null
@@ -3281,7 +3172,6 @@ export type Database = {
         Update: {
           accent_color?: string | null
           address?: string | null
-          ai_features?: Json
           cutover_mode?: boolean
           ein?: string | null
           fed_employer_id?: string | null

@@ -12,9 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { submitInterviewFeedback } from "@/lib/jobs.functions";
-import { generateInterviewQuestions, summarizeInterviewNotes, comparePanelFeedback } from "@/lib/interview-ai.functions";
-import { decideSuggestion } from "@/lib/applicant-ai.functions";
-import { Sparkles, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/interviews/$id")({ component: InterviewDetail });
@@ -24,10 +21,6 @@ function InterviewDetail() {
   const qc = useQueryClient();
   const { data: me } = useCurrentUser();
   const submit = useServerFn(submitInterviewFeedback);
-  const genQs = useServerFn(generateInterviewQuestions);
-  const summarize = useServerFn(summarizeInterviewNotes);
-  const compare = useServerFn(comparePanelFeedback);
-  const decide = useServerFn(decideSuggestion);
 
   const ivQ = useQuery({
     queryKey: ["interview", id],
@@ -48,34 +41,6 @@ function InterviewDetail() {
   const [rating, setRating] = useState(3);
   const [rec, setRec] = useState<"strong_hire" | "hire" | "no_hire" | "strong_no_hire">("hire");
   const [notes, setNotes] = useState("");
-  const [questions, setQuestions] = useState<Array<{ text: string; rubric_dimension: string; rationale: string }> | null>(null);
-  const [questionsSuggestionId, setQuestionsSuggestionId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<null | { rating_suggestion: number; recommendation_suggestion: typeof rec; strengths: string[]; concerns: string[]; evidence_quotes: string[]; open_questions: string[] }>(null);
-  const [draftSuggestionId, setDraftSuggestionId] = useState<string | null>(null);
-  const [panel, setPanel] = useState<null | { consensus: string[]; divergences: Array<{ topic: string; positions: string[] }>; unresolved_questions: string[]; notes: string }>(null);
-
-  const doGen = useMutation({
-    mutationFn: () => genQs({ data: { interview_id: id } }),
-    onSuccess: (r) => { setQuestions(r.questions); setQuestionsSuggestionId(r.suggestion_id); toast.success("Question bank generated"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
-  });
-  const doSummarize = useMutation({
-    mutationFn: () => summarize({ data: { interview_id: id, notes } }),
-    onSuccess: (r) => { setDraft(r.draft as never); setDraftSuggestionId(r.suggestion_id); toast.success("Draft scorecard generated — review before submitting"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
-  });
-  const doCompare = useMutation({
-    mutationFn: () => compare({ data: { interview_id: id } }),
-    onSuccess: (r) => { setPanel(r.comparison as never); toast.success("Panel comparison ready"); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
-  });
-  const acceptDraft = () => {
-    if (!draft) return;
-    setRating(draft.rating_suggestion);
-    setRec(draft.recommendation_suggestion);
-    if (draftSuggestionId) decide({ data: { suggestion_id: draftSuggestionId, decision: "accepted" } });
-    toast.success("Draft applied — edit and submit when ready");
-  };
 
   const save = useMutation({
     mutationFn: () => submit({ data: { interview_id: id, rating, recommendation: rec, notes } }),
@@ -101,25 +66,7 @@ function InterviewDetail() {
 
       {isInterviewer && (
         <Card className="p-4 mb-6 space-y-3">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h3 className="font-medium">Your scorecard</h3>
-            <Button size="sm" variant="outline" onClick={() => doGen.mutate()} disabled={doGen.isPending}>
-              <Sparkles className="h-3 w-3 mr-1" /> {doGen.isPending ? "Generating…" : "Generate question bank"}
-            </Button>
-          </div>
-          {questions && (
-            <div className="rounded border bg-muted/30 p-3 space-y-2">
-              <p className="text-xs text-muted-foreground flex items-center gap-1"><ShieldAlert className="h-3 w-3" /> AI-assisted — review before using. Same question bank should be used for every candidate on this requisition.</p>
-              <ol className="list-decimal pl-5 space-y-2 text-sm">
-                {questions.map((q, i) => (
-                  <li key={i}><span className="font-medium">{q.text}</span><div className="text-xs text-muted-foreground">Probes: {q.rubric_dimension} — {q.rationale}</div></li>
-                ))}
-              </ol>
-              {questionsSuggestionId && (
-                <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => { if (questionsSuggestionId) decide({ data: { suggestion_id: questionsSuggestionId, decision: "rejected", reason: "Manager discarded" } }); setQuestions(null); }}>Discard</Button></div>
-              )}
-            </div>
-          )}
+          <h3 className="font-medium">Your scorecard</h3>
           <div className="grid sm:grid-cols-2 gap-3">
             <div><Label>Rating (1-5)</Label><Select value={String(rating)} onValueChange={(v)=>setRating(parseInt(v))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -136,42 +83,12 @@ function InterviewDetail() {
             </Select></div>
           </div>
           <div><Label>Notes</Label><Textarea rows={4} value={notes} onChange={(e)=>setNotes(e.target.value)} /></div>
-          <div className="flex justify-between items-center flex-wrap gap-2">
-            <Button size="sm" variant="outline" disabled={notes.trim().length < 20 || doSummarize.isPending} onClick={() => doSummarize.mutate()}>
-              <Sparkles className="h-3 w-3 mr-1" /> {doSummarize.isPending ? "Drafting…" : "Draft scorecard from my notes"}
-            </Button>
-            <Button onClick={()=>save.mutate()} disabled={save.isPending}>{save.isPending ? "Saving…" : "Submit scorecard"}</Button>
-          </div>
-          {draft && (
-            <div className="rounded border bg-muted/30 p-3 space-y-2 text-sm">
-              <p className="text-xs text-muted-foreground flex items-center gap-1"><ShieldAlert className="h-3 w-3" /> AI-suggested draft — you are the decider. Accept to prefill rating/recommendation, then edit before submitting.</p>
-              <p><span className="font-medium">Suggested:</span> {draft.recommendation_suggestion.replace("_", " ")} · {draft.rating_suggestion}/5</p>
-              {!!draft.strengths.length && <div><span className="font-medium">Strengths:</span><ul className="list-disc pl-5">{draft.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul></div>}
-              {!!draft.concerns.length && <div><span className="font-medium">Concerns:</span><ul className="list-disc pl-5">{draft.concerns.map((s, i) => <li key={i}>{s}</li>)}</ul></div>}
-              {!!draft.evidence_quotes.length && <div className="text-xs italic text-muted-foreground">Evidence: {draft.evidence_quotes.map((q, i) => <span key={i}>"{q}" </span>)}</div>}
-              <div className="flex gap-2"><Button size="sm" onClick={acceptDraft}>Apply to form</Button><Button size="sm" variant="ghost" onClick={() => { if (draftSuggestionId) decide({ data: { suggestion_id: draftSuggestionId, decision: "rejected", reason: "Reviewer discarded" } }); setDraft(null); }}>Discard</Button></div>
-            </div>
-          )}
+          <div className="flex justify-end"><Button onClick={()=>save.mutate()} disabled={save.isPending}>{save.isPending ? "Saving…" : "Submit scorecard"}</Button></div>
         </Card>
       )}
 
       <Card className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium">All feedback</h3>
-          {(fbQ.data?.length ?? 0) >= 2 && (
-            <Button size="sm" variant="outline" onClick={() => doCompare.mutate()} disabled={doCompare.isPending}>
-              <Sparkles className="h-3 w-3 mr-1" /> {doCompare.isPending ? "Comparing…" : "AI panel comparison"}
-            </Button>
-          )}
-        </div>
-        {panel && (
-          <div className="rounded border bg-muted/30 p-3 mb-3 text-sm space-y-2">
-            <p className="text-xs text-muted-foreground flex items-center gap-1"><ShieldAlert className="h-3 w-3" /> AI describes the panel's positions only — it does not recommend hire / no-hire.</p>
-            {!!panel.consensus.length && <div><span className="font-medium">Consensus:</span><ul className="list-disc pl-5">{panel.consensus.map((s,i)=><li key={i}>{s}</li>)}</ul></div>}
-            {!!panel.divergences.length && <div><span className="font-medium">Divergences:</span><ul className="list-disc pl-5">{panel.divergences.map((d,i)=><li key={i}><span className="font-medium">{d.topic}:</span> {d.positions.join(" / ")}</li>)}</ul></div>}
-            {!!panel.unresolved_questions.length && <div><span className="font-medium">Unresolved:</span><ul className="list-disc pl-5">{panel.unresolved_questions.map((s,i)=><li key={i}>{s}</li>)}</ul></div>}
-          </div>
-        )}
+        <h3 className="font-medium mb-3">All feedback</h3>
         {(fbQ.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No feedback submitted yet.</p> :
           <ul className="space-y-3">
             {(fbQ.data ?? []).map((f) => (
