@@ -2,14 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Users, HardHat, Shield, Clock, FileBadge, HeartHandshake, Landmark, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import markAsset from "@/assets/noopolis-mark.png.asset.json";
+import markAsset from "@/assets/civicplexus-mark.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Noöpolis — Onboarding for Every Municipal Worker" },
-      { name: "description", content: "From sworn officers to seasonal park crews, Noöpolis gives every municipal hire the right pre-boarding, forms, training, and provisioning — on day zero." },
-      { property: "og:title", content: "Noöpolis — Onboarding for Every Municipal Worker" },
+      { title: "CivicPlexus — Onboarding for Every Municipal Worker" },
+      { name: "description", content: "From sworn officers to seasonal park crews, CivicPlexus gives every municipal hire the right pre-boarding, forms, training, and provisioning — on day zero." },
+      { property: "og:title", content: "CivicPlexus — Onboarding for Every Municipal Worker" },
       { property: "og:description", content: "Worker-type templates, mobile field flows, compliance built in." },
     ],
   }),
@@ -31,9 +31,9 @@ function Index() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5" aria-label="Noöpolis home">
+          <Link to="/" className="flex items-center gap-2.5" aria-label="CivicPlexus home">
             <img src={markAsset.url} alt="" aria-hidden="true" className="h-10 w-10 object-contain" />
-            <span className="font-serif text-xl tracking-tight">Noöpolis</span>
+            <span className="font-serif text-xl tracking-tight">CivicPlexus</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/auth"><Button variant="ghost">Sign in</Button></Link>
@@ -94,7 +94,7 @@ function Index() {
 
       <footer className="border-t">
         <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground flex flex-wrap justify-between items-center gap-4">
-          <p>© {new Date().getFullYear()} Noöpolis. Built for public service.</p>
+          <p>© {new Date().getFullYear()} CivicPlexus. Built for public service.</p>
           <div className="flex items-center gap-4">
             <a href="/api/public/docs/user-guide" className="hover:text-foreground transition-colors">User Guide</a>
             <a href="/api/public/docs/self-hosting" className="hover:text-foreground transition-colors">Self-Hosting Guide</a>

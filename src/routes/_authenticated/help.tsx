@@ -11,7 +11,7 @@ import userGuide from "@/../docs/USER_GUIDE.md?raw";
 import selfHostGuide from "@/../docs/SELF_HOSTING_GUIDE.md?raw";
 
 export const Route = createFileRoute("/_authenticated/help")({
-  head: () => ({ meta: [{ title: "Help & Docs — Noöpolis" }] }),
+  head: () => ({ meta: [{ title: "Help & Docs — CivicPlexus" }] }),
   component: HelpPage,
 });
 
@@ -37,8 +37,8 @@ function HelpPage() {
             variant="outline" size="sm"
             onClick={() =>
               tab === "user"
-                ? download("noopolis-user-guide.md", userGuide)
-                : download("noopolis-self-hosting-guide.md", selfHostGuide)
+                ? download("civicplexus-user-guide.md", userGuide)
+                : download("civicplexus-self-hosting-guide.md", selfHostGuide)
             }
           >
             <Download className="h-4 w-4 mr-2" /> Download Markdown
