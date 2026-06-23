@@ -77,6 +77,9 @@ import { Route as AuthenticatedInterviewsIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
+import { Route as AuthenticatedComplianceTmrsRouteImport } from './routes/_authenticated/compliance.tmrs'
+import { Route as AuthenticatedComplianceTcoleRouteImport } from './routes/_authenticated/compliance.tcole'
+import { Route as AuthenticatedComplianceNewHireRouteImport } from './routes/_authenticated/compliance.new-hire'
 import { Route as AuthenticatedCompCyclesIdRouteImport } from './routes/_authenticated/comp-cycles.$id'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
@@ -458,6 +461,24 @@ const AuthenticatedEmployeesImportRoute =
     path: '/employees/import',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedComplianceTmrsRoute =
+  AuthenticatedComplianceTmrsRouteImport.update({
+    id: '/compliance/tmrs',
+    path: '/compliance/tmrs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedComplianceTcoleRoute =
+  AuthenticatedComplianceTcoleRouteImport.update({
+    id: '/compliance/tcole',
+    path: '/compliance/tcole',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedComplianceNewHireRoute =
+  AuthenticatedComplianceNewHireRouteImport.update({
+    id: '/compliance/new-hire',
+    path: '/compliance/new-hire',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCompCyclesIdRoute =
   AuthenticatedCompCyclesIdRouteImport.update({
     id: '/comp-cycles/$id',
@@ -556,6 +577,9 @@ export interface FileRoutesByFullPath {
   '/careers/': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
+  '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
+  '/compliance/tcole': typeof AuthenticatedComplianceTcoleRoute
+  '/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -635,6 +659,9 @@ export interface FileRoutesByTo {
   '/careers': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
+  '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
+  '/compliance/tcole': typeof AuthenticatedComplianceTcoleRoute
+  '/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -716,6 +743,9 @@ export interface FileRoutesById {
   '/careers/': typeof CareersIndexRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
+  '/_authenticated/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
+  '/_authenticated/compliance/tcole': typeof AuthenticatedComplianceTcoleRoute
+  '/_authenticated/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -797,6 +827,9 @@ export interface FileRouteTypes {
     | '/careers/'
     | '/cascades/$id'
     | '/comp-cycles/$id'
+    | '/compliance/new-hire'
+    | '/compliance/tcole'
+    | '/compliance/tmrs'
     | '/employees/import'
     | '/forms/$key'
     | '/grievances/$id'
@@ -876,6 +909,9 @@ export interface FileRouteTypes {
     | '/careers'
     | '/cascades/$id'
     | '/comp-cycles/$id'
+    | '/compliance/new-hire'
+    | '/compliance/tcole'
+    | '/compliance/tmrs'
     | '/employees/import'
     | '/forms/$key'
     | '/grievances/$id'
@@ -956,6 +992,9 @@ export interface FileRouteTypes {
     | '/careers/'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
+    | '/_authenticated/compliance/new-hire'
+    | '/_authenticated/compliance/tcole'
+    | '/_authenticated/compliance/tmrs'
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
     | '/_authenticated/grievances/$id'
@@ -1492,6 +1531,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeesImportRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/compliance/tmrs': {
+      id: '/_authenticated/compliance/tmrs'
+      path: '/compliance/tmrs'
+      fullPath: '/compliance/tmrs'
+      preLoaderRoute: typeof AuthenticatedComplianceTmrsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/compliance/tcole': {
+      id: '/_authenticated/compliance/tcole'
+      path: '/compliance/tcole'
+      fullPath: '/compliance/tcole'
+      preLoaderRoute: typeof AuthenticatedComplianceTcoleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/compliance/new-hire': {
+      id: '/_authenticated/compliance/new-hire'
+      path: '/compliance/new-hire'
+      fullPath: '/compliance/new-hire'
+      preLoaderRoute: typeof AuthenticatedComplianceNewHireRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/comp-cycles/$id': {
       id: '/_authenticated/comp-cycles/$id'
       path: '/comp-cycles/$id'
@@ -1627,6 +1687,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
   AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
   AuthenticatedCompCyclesIdRoute: typeof AuthenticatedCompCyclesIdRoute
+  AuthenticatedComplianceNewHireRoute: typeof AuthenticatedComplianceNewHireRoute
+  AuthenticatedComplianceTcoleRoute: typeof AuthenticatedComplianceTcoleRoute
+  AuthenticatedComplianceTmrsRoute: typeof AuthenticatedComplianceTmrsRoute
   AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
@@ -1690,6 +1753,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
   AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
   AuthenticatedCompCyclesIdRoute: AuthenticatedCompCyclesIdRoute,
+  AuthenticatedComplianceNewHireRoute: AuthenticatedComplianceNewHireRoute,
+  AuthenticatedComplianceTcoleRoute: AuthenticatedComplianceTcoleRoute,
+  AuthenticatedComplianceTmrsRoute: AuthenticatedComplianceTmrsRoute,
   AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,

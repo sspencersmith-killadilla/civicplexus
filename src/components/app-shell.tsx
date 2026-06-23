@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness, CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon, DollarSign, Scale, BarChart2, FileStack, Banknote, DatabaseBackup } from "lucide-react";
+import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness, CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon, DollarSign, Scale, BarChart2, FileStack, Banknote, DatabaseBackup, Landmark, ShieldCheck, BadgeCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -54,6 +54,11 @@ const NAV_GROUPS = [
     { to: "/flsa-audit", label: "FLSA Audit", icon: Scale, roles: ["hr_admin"] },
     { to: "/eeo-snapshot", label: "EEO Snapshot", icon: BarChart2, roles: ["hr_admin"] },
     { to: "/audit", label: "Audit Log", icon: History, roles: ["hr_admin"] },
+  ]},
+  { label: "Texas Compliance", items: [
+    { to: "/compliance/new-hire", label: "New-Hire Reporting (TWC)", icon: BadgeCheck, roles: ["hr_admin"] },
+    { to: "/compliance/tmrs", label: "TMRS Monthly", icon: Landmark, roles: ["hr_admin"] },
+    { to: "/compliance/tcole", label: "TCOLE Tracking", icon: ShieldCheck, roles: ["hr_admin"] },
   ]},
   { label: "Compensation", items: [
     { to: "/comp-grades", label: "Pay Grades", icon: DollarSign, roles: ["hr_admin"] },

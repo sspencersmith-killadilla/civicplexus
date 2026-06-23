@@ -29,6 +29,7 @@ type WT = {
   is_active: boolean;
   sort_order: number;
   default_provisioning: string[] | null;
+  is_peace_officer?: boolean;
 };
 
 function WorkerTypesPage() {
@@ -124,6 +125,7 @@ function WorkerTypeDialog({ editing, onSubmit, saving }: { editing: WT | null; o
   const [description, setDescription] = useState(editing?.description ?? "");
   const [isActive, setIsActive] = useState(editing?.is_active ?? true);
   const [sortOrder, setSortOrder] = useState(editing?.sort_order ?? 100);
+  const [isPeaceOfficer, setIsPeaceOfficer] = useState(editing?.is_peace_officer ?? false);
   const [provDefaults, setProvDefaults] = useState<string[]>(
     Array.isArray(editing?.default_provisioning) ? (editing?.default_provisioning as string[]) : [],
   );
@@ -137,6 +139,13 @@ function WorkerTypeDialog({ editing, onSubmit, saving }: { editing: WT | null; o
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2"><Label>Sort order</Label><Input type="number" value={sortOrder} onChange={(e) => setSortOrder(Number(e.target.value))} /></div>
           <div className="space-y-2"><Label>Active</Label><div className="flex items-center h-9"><Switch checked={isActive} onCheckedChange={setIsActive} /></div></div>
+        </div>
+        <div className="flex items-center justify-between rounded border p-3">
+          <div>
+            <Label className="text-sm">Peace officer (TCOLE)</Label>
+            <p className="text-xs text-muted-foreground">Tracks license cycle and continuing-ed hours on the TCOLE dashboard.</p>
+          </div>
+          <Switch checked={isPeaceOfficer} onCheckedChange={setIsPeaceOfficer} />
         </div>
         <div className="space-y-2 border-t pt-3">
           <Label>Default IT provisioning</Label>
@@ -157,7 +166,7 @@ function WorkerTypeDialog({ editing, onSubmit, saving }: { editing: WT | null; o
         </div>
       </div>
       <DialogFooter>
-        <Button disabled={saving || !name} onClick={() => onSubmit({ name, description, is_active: isActive, sort_order: sortOrder, default_provisioning: provDefaults as never })}>
+        <Button disabled={saving || !name} onClick={() => onSubmit({ name, description, is_active: isActive, sort_order: sortOrder, default_provisioning: provDefaults as never, is_peace_officer: isPeaceOfficer })}>
           {saving ? "Saving…" : "Save"}
         </Button>
       </DialogFooter>

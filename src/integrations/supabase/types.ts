@@ -2582,6 +2582,95 @@ export type Database = {
           },
         ]
       }
+      new_hire_batches: {
+        Row: {
+          created_at: string
+          employee_count: number
+          file_hash: string | null
+          file_path: string | null
+          generated_at: string
+          generated_by: string | null
+          id: string
+          period_end: string
+          period_start: string
+          submitted_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          employee_count?: number
+          file_hash?: string | null
+          file_path?: string | null
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          period_end: string
+          period_start: string
+          submitted_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          employee_count?: number
+          file_hash?: string | null
+          file_path?: string | null
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          submitted_at?: string | null
+        }
+        Relationships: []
+      }
+      new_hire_reports: {
+        Row: {
+          ack_received_at: string | null
+          batch_id: string | null
+          created_at: string
+          employee_id: string
+          hire_date: string
+          id: string
+          notes: string | null
+          queued_at: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          ack_received_at?: string | null
+          batch_id?: string | null
+          created_at?: string
+          employee_id: string
+          hire_date: string
+          id?: string
+          notes?: string | null
+          queued_at?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ack_received_at?: string | null
+          batch_id?: string | null
+          created_at?: string
+          employee_id?: string
+          hire_date?: string
+          id?: string
+          notes?: string | null
+          queued_at?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "new_hire_reports_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -3053,6 +3142,8 @@ export type Database = {
           singleton: boolean
           sso_metadata_url: string | null
           sso_only: boolean
+          tmrs_employer_match_pct: number | null
+          tmrs_member_rate_pct: number | null
           updated_at: string
         }
         Insert: {
@@ -3074,6 +3165,8 @@ export type Database = {
           singleton?: boolean
           sso_metadata_url?: string | null
           sso_only?: boolean
+          tmrs_employer_match_pct?: number | null
+          tmrs_member_rate_pct?: number | null
           updated_at?: string
         }
         Update: {
@@ -3095,6 +3188,8 @@ export type Database = {
           singleton?: boolean
           sso_metadata_url?: string | null
           sso_only?: boolean
+          tmrs_employer_match_pct?: number | null
+          tmrs_member_rate_pct?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -4455,6 +4550,110 @@ export type Database = {
           },
         ]
       }
+      tcole_completions: {
+        Row: {
+          certificate_url: string | null
+          completed_on: string
+          course_title: string
+          created_at: string
+          employee_id: string
+          hours: number
+          id: string
+          license_id: string | null
+          recorded_by: string | null
+          topic: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          completed_on: string
+          course_title: string
+          created_at?: string
+          employee_id: string
+          hours: number
+          id?: string
+          license_id?: string | null
+          recorded_by?: string | null
+          topic: string
+        }
+        Update: {
+          certificate_url?: string | null
+          completed_on?: string
+          course_title?: string
+          created_at?: string
+          employee_id?: string
+          hours?: number
+          id?: string
+          license_id?: string | null
+          recorded_by?: string | null
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tcole_completions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tcole_completions_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "tcole_licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tcole_licenses: {
+        Row: {
+          created_at: string
+          cycle_end: string
+          cycle_start: string
+          employee_id: string
+          id: string
+          issued_on: string
+          license_level: string
+          license_number: string
+          required_hours: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_end: string
+          cycle_start: string
+          employee_id: string
+          id?: string
+          issued_on: string
+          license_level: string
+          license_number: string
+          required_hours?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cycle_end?: string
+          cycle_start?: string
+          employee_id?: string
+          id?: string
+          issued_on?: string
+          license_level?: string
+          license_number?: string
+          required_hours?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tcole_licenses_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       template_tasks: {
         Row: {
           assignee: Database["public"]["Enums"]["task_assignee"]
@@ -4502,6 +4701,158 @@ export type Database = {
           },
         ]
       }
+      tmrs_enrollments: {
+        Row: {
+          created_at: string
+          employee_id: string
+          enrolled_on: string
+          exited_on: string | null
+          id: string
+          member_id_external: string | null
+          member_rate_pct: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          enrolled_on: string
+          exited_on?: string | null
+          id?: string
+          member_id_external?: string | null
+          member_rate_pct: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          enrolled_on?: string
+          exited_on?: string | null
+          id?: string
+          member_id_external?: string | null
+          member_rate_pct?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tmrs_enrollments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tmrs_file_lines: {
+        Row: {
+          created_at: string
+          employee_id: string
+          employer_contrib: number
+          file_id: string
+          gross: number
+          id: string
+          member_contrib: number
+          record_type: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          employer_contrib?: number
+          file_id: string
+          gross?: number
+          id?: string
+          member_contrib?: number
+          record_type?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          employer_contrib?: number
+          file_id?: string
+          gross?: number
+          id?: string
+          member_contrib?: number
+          record_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tmrs_file_lines_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tmrs_file_lines_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "tmrs_monthly_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tmrs_monthly_files: {
+        Row: {
+          created_at: string
+          employee_count: number
+          file_hash: string | null
+          file_path: string | null
+          id: string
+          notes: string | null
+          period_month: number
+          period_year: number
+          prepared_at: string | null
+          prepared_by: string | null
+          signed_off_at: string | null
+          signed_off_by: string | null
+          status: string
+          total_employer_contrib: number
+          total_gross: number
+          total_member_contrib: number
+          updated_at: string
+          variance_pct: number | null
+        }
+        Insert: {
+          created_at?: string
+          employee_count?: number
+          file_hash?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          period_month: number
+          period_year: number
+          prepared_at?: string | null
+          prepared_by?: string | null
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          status?: string
+          total_employer_contrib?: number
+          total_gross?: number
+          total_member_contrib?: number
+          updated_at?: string
+          variance_pct?: number | null
+        }
+        Update: {
+          created_at?: string
+          employee_count?: number
+          file_hash?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          period_month?: number
+          period_year?: number
+          prepared_at?: string | null
+          prepared_by?: string | null
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          status?: string
+          total_employer_contrib?: number
+          total_gross?: number
+          total_member_contrib?: number
+          updated_at?: string
+          variance_pct?: number | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -4531,6 +4882,7 @@ export type Database = {
           icon: string | null
           id: string
           is_active: boolean
+          is_peace_officer: boolean
           key: string
           name: string
           sort_order: number
@@ -4543,6 +4895,7 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean
+          is_peace_officer?: boolean
           key: string
           name: string
           sort_order?: number
@@ -4555,6 +4908,7 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean
+          is_peace_officer?: boolean
           key?: string
           name?: string
           sort_order?: number
