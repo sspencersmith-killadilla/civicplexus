@@ -5084,6 +5084,23 @@ export type Database = {
         Args: { _decision: string; _notes: string; _step_id: string }
         Returns: undefined
       }
+      mark_my_training_started: {
+        Args: { _training_id: string }
+        Returns: undefined
+      }
+      record_audit_event: {
+        Args: {
+          _action: string
+          _diff?: Json
+          _entity: string
+          _entity_id: string
+        }
+        Returns: string
+      }
+      update_my_employee_contact: {
+        Args: { _personal_email?: string; _phone?: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:

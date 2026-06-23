@@ -40,10 +40,10 @@ export const createRequisition = createServerFn({ method: "POST" })
       .select()
       .single();
     if (error) throw new Error(error.message);
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId, action: "create", entity: "job_requisition",
-      entity_id: (row as { id: string }).id, diff: { title: data.title },
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "create", _entity: "job_requisition",
+      _entity_id: (row as { id: string }).id, _diff: { title: data.title },
+    } as never);
     return row;
   });
 

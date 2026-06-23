@@ -32,13 +32,10 @@ export const fileGrievance = createServerFn({ method: "POST" })
       .select()
       .single();
     if (error) throw new Error(error.message);
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId,
-      action: "file",
-      entity: "grievance",
-      entity_id: row.id,
-      diff: { category: data.category, severity: data.severity },
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "file", _entity: "grievance", _entity_id: row.id,
+      _diff: { category: data.category, severity: data.severity },
+    } as never);
     return row;
   });
 
@@ -59,13 +56,10 @@ export const updateGrievanceStatus = createServerFn({ method: "POST" })
     if (data.status === "resolved" || data.status === "closed") patch.resolved_at = new Date().toISOString();
     const { error } = await context.supabase.from("grievances").update(patch as never).eq("id", data.grievance_id);
     if (error) throw new Error(error.message);
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId,
-      action: "status_change",
-      entity: "grievance",
-      entity_id: data.grievance_id,
-      diff: patch as never,
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "status_change", _entity: "grievance", _entity_id: data.grievance_id,
+      _diff: patch as never,
+    } as never);
     return { ok: true };
   });
 
@@ -86,13 +80,10 @@ export const addGrievanceNote = createServerFn({ method: "POST" })
       content: data.content,
     });
     if (error) throw new Error(error.message);
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId,
-      action: "add_note",
-      entity: "grievance",
-      entity_id: data.grievance_id,
-      diff: { visibility: data.visibility },
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "add_note", _entity: "grievance", _entity_id: data.grievance_id,
+      _diff: { visibility: data.visibility },
+    } as never);
     return { ok: true };
   });
 

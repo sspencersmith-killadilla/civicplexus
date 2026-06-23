@@ -33,13 +33,10 @@ export const createAnnualReview = createServerFn({ method: "POST" })
       .select()
       .single();
     if (error) throw new Error(error.message);
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId,
-      action: "create",
-      entity: "performance_review",
-      entity_id: row.id,
-      diff: { employee_id: data.employee_id },
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "create", _entity: "performance_review", _entity_id: row.id,
+      _diff: { employee_id: data.employee_id },
+    } as never);
     return row;
   });
 
@@ -141,13 +138,10 @@ ${summary}`;
       .update({ ai_draft: text, ai_generated_at: new Date().toISOString() })
       .eq("id", data.review_id);
 
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId,
-      action: "ai_draft_review",
-      entity: "performance_review",
-      entity_id: data.review_id,
-      diff: { sessions: ctx.sessions.length, goals: ctx.goals.length },
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "ai_draft_review", _entity: "performance_review", _entity_id: data.review_id,
+      _diff: { sessions: ctx.sessions.length, goals: ctx.goals.length },
+    } as never);
 
     return { draft: text };
   });
@@ -172,13 +166,10 @@ export const updateReview = createServerFn({ method: "POST" })
       .update(data.patch as never)
       .eq("id", data.review_id);
     if (error) throw new Error(error.message);
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId,
-      action: "update",
-      entity: "performance_review",
-      entity_id: data.review_id,
-      diff: data.patch as never,
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "update", _entity: "performance_review", _entity_id: data.review_id,
+      _diff: data.patch as never,
+    } as never);
     return { ok: true };
   });
 
@@ -199,12 +190,9 @@ export const signReview = createServerFn({ method: "POST" })
       signature_text: data.signature_text ?? null,
     });
     if (error) throw new Error(error.message);
-    await context.supabase.from("audit_events").insert({
-      actor_id: context.userId,
-      action: "sign",
-      entity: "performance_review",
-      entity_id: data.review_id,
-      diff: { role: data.signer_role },
-    });
+    await context.supabase.rpc("record_audit_event" as never, {
+      _action: "sign", _entity: "performance_review", _entity_id: data.review_id,
+      _diff: { role: data.signer_role },
+    } as never);
     return { ok: true };
   });
