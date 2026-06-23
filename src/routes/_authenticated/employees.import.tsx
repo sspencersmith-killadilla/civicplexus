@@ -11,7 +11,10 @@ import { Upload, Download, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { importEmployees, importDependents, importCertifications, importTraining, importEquipment, importPositions } from "@/lib/employee-import.functions";
 
-export const Route = createFileRoute("/_authenticated/employees/import")({ component: ImportPage });
+export const Route = createFileRoute("/_authenticated/employees/import")({
+  component: ImportPage,
+  validateSearch: (s: Record<string, unknown>) => ({ tab: typeof s.tab === "string" ? s.tab : undefined }),
+});
 
 type Spec = {
   key: string; label: string; required: string[]; optional: string[]; example: Record<string, string>;
@@ -40,10 +43,12 @@ function downloadFile(name: string, content: string) {
 }
 
 function ImportPage() {
+  const { tab } = Route.useSearch();
+  const initial = tab && tab in SPECS ? tab : "employees";
   return (
     <AppShell title="Bulk Import">
       <Link to="/employees" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"><ArrowLeft className="h-4 w-4 mr-1" /> Back to employees</Link>
-      <Tabs defaultValue="employees" className="w-full">
+      <Tabs defaultValue={initial} className="w-full">
         <TabsList>
           {Object.entries(SPECS).map(([k, s]) => <TabsTrigger key={k} value={k}>{s.label}</TabsTrigger>)}
         </TabsList>

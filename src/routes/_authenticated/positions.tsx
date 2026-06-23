@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Briefcase } from "lucide-react";
+import { Plus, Pencil, Trash2, Briefcase, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 
@@ -148,7 +148,11 @@ function PositionsPage() {
           The position catalog tracks every budgeted job — filled or vacant — separate from the people in them. Used for org charts, vacancy reports, and headcount-vs-budget.
         </p>
         {isHR && (
-          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
+          <div className="flex items-center gap-2">
+            <Link to="/employees/import" search={{ tab: "positions" } as never}>
+              <Button variant="outline"><Upload className="h-4 w-4 mr-2" /> Bulk import</Button>
+            </Link>
+            <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
             <DialogTrigger asChild>
               <Button><Plus className="h-4 w-4 mr-2" /> New position</Button>
             </DialogTrigger>
@@ -159,7 +163,8 @@ function PositionsPage() {
               onSubmit={(f) => save.mutate(f)}
               saving={save.isPending}
             />
-          </Dialog>
+            </Dialog>
+          </div>
         )}
       </div>
 
