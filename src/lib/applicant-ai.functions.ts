@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { generateText } from "ai";
+import { generateObject } from "ai";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 const MODEL = "google/gemini-3-flash-preview";
@@ -71,17 +71,7 @@ export const screenApplication = createServerFn({ method: "POST" })
       `Resume text:\n${resumeText || "(no parsed resume text — base assessment on cover letter only)"}`,
     ].join("\n\n");
 
-    const prompt = `You are an HR screening assistant for a municipal employer. Your job is to draft a fair, evidence-based screening summary for a recruiter to review. The recruiter — a human — will accept, edit, or reject your suggestion before any action is taken on the candidate. Be conservative, cite concrete evidence from the resume/cover letter only, and never infer protected characteristics.
-
-Return STRICT JSON only, no markdown, matching this exact shape:
-{
-  "fit_score": <integer 0-100>,
-  "strengths": ["short bullet", ...],
-  "gaps": ["short bullet", ...],
-  "suggested_status": "advance" | "interview" | "reject" | "hold",
-  "suggested_rejection_reason": "<short reason if suggested_status is 'reject', else null>",
-  "rationale": "<2-4 sentence plain-English justification a recruiter could paste into a hiring discussion>"
-}
+    const prompt = `You are an HR screening assistant for a municipal employer. Draft a fair, evidence-based screening summary for a recruiter to review. The recruiter — a human — will accept, edit, or reject your suggestion before any action is taken on the candidate. Be conservative, cite concrete evidence from the resume/cover letter only, and never infer protected characteristics. Keep each bullet under 200 characters and the rationale 2-4 sentences.
 
 REQUISITION CONTEXT:
 ${reqContext}
@@ -89,14 +79,18 @@ ${reqContext}
 CANDIDATE:
 ${candidate}`;
 
-    const { text } = await generateText({ model: gateway()(MODEL), prompt });
-
     let payload: ScreenPayload;
     try {
-      const cleaned = text.replace(/```json|```/g, "").trim();
-      payload = ScreenPayload.parse(JSON.parse(cleaned));
-    } catch {
-      throw new Error("AI returned malformed JSON; try again");
+      const { object } = await generateObject({
+        model: gateway()(MODEL),
+        schema: ScreenPayload,
+        prompt,
+      });
+      payload = object;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("[screenApplication] AI call failed", msg);
+      throw new Error(`AI screening failed: ${msg.slice(0, 300)}`);
     }
 
     const { data: ins, error: insErr } = await context.supabase
