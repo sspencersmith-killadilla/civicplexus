@@ -65,6 +65,7 @@ import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
+import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
 import { Route as ApiPublicCandidateTokenStatusRouteImport } from './routes/api/public/candidate/$token/status'
 import { Route as ApiPublicCandidateTokenMessageRouteImport } from './routes/api/public/candidate/$token/message'
 
@@ -369,6 +370,12 @@ const ApiPublicOffersTokenViewRoute =
     path: '/api/public/offers/$token/view',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicOffersTokenRespondRoute =
+  ApiPublicOffersTokenRespondRouteImport.update({
+    id: '/api/public/offers/$token/respond',
+    path: '/api/public/offers/$token/respond',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCandidateTokenStatusRoute =
   ApiPublicCandidateTokenStatusRouteImport.update({
     id: '/api/public/candidate/$token/status',
@@ -439,6 +446,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
 }
 export interface FileRoutesByTo {
@@ -498,6 +506,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
 }
 export interface FileRoutesById {
@@ -559,6 +568,7 @@ export interface FileRoutesById {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
 }
 export interface FileRouteTypes {
@@ -620,6 +630,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
+    | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -679,6 +690,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
+    | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
   id:
     | '__root__'
@@ -739,6 +751,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
+    | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
   fileRoutesById: FileRoutesById
 }
@@ -754,6 +767,7 @@ export interface RootRouteChildren {
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
   ApiPublicCandidateTokenMessageRoute: typeof ApiPublicCandidateTokenMessageRoute
   ApiPublicCandidateTokenStatusRoute: typeof ApiPublicCandidateTokenStatusRoute
+  ApiPublicOffersTokenRespondRoute: typeof ApiPublicOffersTokenRespondRoute
   ApiPublicOffersTokenViewRoute: typeof ApiPublicOffersTokenViewRoute
 }
 
@@ -1151,6 +1165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicOffersTokenViewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/offers/$token/respond': {
+      id: '/api/public/offers/$token/respond'
+      path: '/api/public/offers/$token/respond'
+      fullPath: '/api/public/offers/$token/respond'
+      preLoaderRoute: typeof ApiPublicOffersTokenRespondRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/candidate/$token/status': {
       id: '/api/public/candidate/$token/status'
       path: '/api/public/candidate/$token/status'
@@ -1303,6 +1324,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
   ApiPublicCandidateTokenMessageRoute: ApiPublicCandidateTokenMessageRoute,
   ApiPublicCandidateTokenStatusRoute: ApiPublicCandidateTokenStatusRoute,
+  ApiPublicOffersTokenRespondRoute: ApiPublicOffersTokenRespondRoute,
   ApiPublicOffersTokenViewRoute: ApiPublicOffersTokenViewRoute,
 }
 export const routeTree = rootRouteImport
