@@ -60,10 +60,17 @@ export const Route = createFileRoute("/api/public/job-applications")({
           if (!r || r.status !== "posted" || r.internal_only) return j({ error: "Position not available" }, 400);
 
           let resumeUrl: string | null = null;
+          let resumeBytes: Uint8Array | null = null;
+          let resumeIsPdf = false;
           if (resumeFile) {
             const ext = resumeFile.name.split(".").pop()?.toLowerCase() ?? "bin";
             const path = `${parsed.requisition_id}/${crypto.randomUUID()}.${ext}`;
-            const { error: upErr } = await supabaseAdmin.storage.from("job-applications").upload(path, resumeFile, {
+            const ab = await resumeFile.arrayBuffer();
+            resumeBytes = new Uint8Array(ab);
+            resumeIsPdf =
+              (resumeFile.type || "").toLowerCase() === "application/pdf" ||
+              ext === "pdf";
+            const { error: upErr } = await supabaseAdmin.storage.from("job-applications").upload(path, resumeBytes, {
               contentType: resumeFile.type || undefined,
             });
             if (upErr) return j({ error: "Resume upload failed" }, 500);
@@ -86,6 +93,22 @@ export const Route = createFileRoute("/api/public/job-applications")({
           await supabaseAdmin.from("job_application_events" as never).insert({
             application_id: a.id, event_type: "submitted",
           } as never);
+
+          // Best-effort: extract text from PDF resumes for HR search / AI screening.
+          if (resumeBytes && resumeIsPdf) {
+            try {
+              const { extractPdfText } = await import("@/lib/pdf-text.server");
+              const { text, pages, truncated } = await extractPdfText(resumeBytes);
+              if (text.trim().length > 0) {
+                await supabaseAdmin.from("application_ai_parse" as never).upsert({
+                  application_id: a.id,
+                  parsed: { resume_text: text, pages, truncated, source: "pdf" },
+                  model: "unpdf",
+                  redaction_version: "v1",
+                } as never, { onConflict: "application_id" });
+              }
+            } catch { /* ignore — extraction is non-blocking */ }
+          }
 
           // Voluntary self-identification — written atomically with the
           // application via the trusted server route, so external candidates
