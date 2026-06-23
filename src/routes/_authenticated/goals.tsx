@@ -10,9 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Target, TrendingUp } from "lucide-react";
+import { Plus, Target, TrendingUp, GitBranch } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useServerFn } from "@tanstack/react-start";
+import { cascadeGoal } from "@/lib/goals.functions";
 
 export const Route = createFileRoute("/_authenticated/goals")({
   component: GoalsPage,
@@ -30,13 +32,14 @@ function GoalsPage() {
   const qc = useQueryClient();
   const { data: me } = useCurrentUser();
   const uid = me?.user.id;
+  const cascade = useServerFn(cascadeGoal);
 
   const goalsQ = useQuery({
     queryKey: ["goals_all"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("goals")
-        .select("*, employees(first_name,last_name,department)")
+        .select("*, employees(first_name,last_name,department), parent:parent_goal_id(title)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -96,14 +99,74 @@ function GoalsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["goals_all"] }),
   });
 
+  // ── Cascade dialog state ──────────────────────────────────────
+  const [cascadeOpen, setCascadeOpen] = useState(false);
+  const [cascadeParent, setCascadeParent] = useState<string>("");
+  const [cascadeRows, setCascadeRows] = useState<Array<{ owner_employee_id: string; title: string; weight: number }>>([
+    { owner_employee_id: "", title: "", weight: 1 },
+  ]);
+  const doCascade = useMutation({
+    mutationFn: () => {
+      if (!cascadeParent) throw new Error("Pick a parent goal");
+      const children = cascadeRows.filter((r) => r.owner_employee_id && r.title.trim()).map((r) => ({
+        owner_employee_id: r.owner_employee_id, title: r.title.trim(), weight: r.weight,
+      }));
+      if (!children.length) throw new Error("Add at least one child goal");
+      return cascade({ data: { parent_goal_id: cascadeParent, children } });
+    },
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["goals_all"] });
+      setCascadeOpen(false);
+      setCascadeRows([{ owner_employee_id: "", title: "", weight: 1 }]);
+      setCascadeParent("");
+      toast.success(`Cascaded ${r.inserted} goal(s)`);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Cascade failed"),
+  });
+
   return (
     <AppShell title="Goals">
       <div className="flex items-center justify-between mb-6">
         <p className="text-muted-foreground max-w-2xl">
           Performance and development goals owned by each employee. Discuss progress in 1-on-1s and update the progress bar to keep an audit trail.
         </p>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> New goal</Button></DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={cascadeOpen} onOpenChange={setCascadeOpen}>
+            <DialogTrigger asChild><Button variant="outline"><GitBranch className="h-4 w-4 mr-2" /> Cascade</Button></DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader><DialogTitle>Cascade from a parent goal</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>Parent goal</Label>
+                  <Select value={cascadeParent} onValueChange={setCascadeParent}>
+                    <SelectTrigger><SelectValue placeholder="Pick parent…" /></SelectTrigger>
+                    <SelectContent>
+                      {(goalsQ.data ?? []).map((g) => <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Child goals</Label>
+                  {cascadeRows.map((row, idx) => (
+                    <div key={idx} className="grid grid-cols-12 gap-2">
+                      <div className="col-span-4">
+                        <Select value={row.owner_employee_id} onValueChange={(v) => setCascadeRows(cascadeRows.map((r, i) => i === idx ? { ...r, owner_employee_id: v } : r))}>
+                          <SelectTrigger><SelectValue placeholder="Report" /></SelectTrigger>
+                          <SelectContent>{(employeesQ.data ?? []).map((e) => <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="col-span-6"><Input placeholder="Child goal title" value={row.title} onChange={(e) => setCascadeRows(cascadeRows.map((r, i) => i === idx ? { ...r, title: e.target.value } : r))} /></div>
+                      <div className="col-span-2"><Input type="number" min={0.1} step={0.1} value={row.weight} onChange={(e) => setCascadeRows(cascadeRows.map((r, i) => i === idx ? { ...r, weight: Number(e.target.value) } : r))} /></div>
+                    </div>
+                  ))}
+                  <Button size="sm" variant="ghost" onClick={() => setCascadeRows([...cascadeRows, { owner_employee_id: "", title: "", weight: 1 }])}>+ Add row</Button>
+                </div>
+              </div>
+              <DialogFooter><Button disabled={doCascade.isPending} onClick={() => doCascade.mutate()}>{doCascade.isPending ? "Cascading…" : "Create children"}</Button></DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> New goal</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>New goal</DialogTitle></DialogHeader>
             <div className="space-y-3">
@@ -139,12 +202,14 @@ function GoalsPage() {
             </div>
             <DialogFooter><Button disabled={create.isPending} onClick={() => create.mutate()}>{create.isPending ? "Saving…" : "Create"}</Button></DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         {(goalsQ.data ?? []).map((g) => {
           const owner = g.employees as { first_name: string; last_name: string; department: string | null } | null;
+          const parent = (g as unknown as { parent: { title: string } | null }).parent;
           return (
             <Card key={g.id} className="p-4">
               <div className="flex items-start justify-between gap-3 mb-2">
@@ -153,6 +218,7 @@ function GoalsPage() {
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {owner ? `${owner.first_name} ${owner.last_name}` : "Owner unknown"}
                     {g.target_date ? ` · target ${g.target_date}` : ""}
+                    {parent ? ` · child of "${parent.title}"` : ""}
                   </p>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded ${STATUS_COLORS[g.status] ?? ""}`}>{g.status}</span>
