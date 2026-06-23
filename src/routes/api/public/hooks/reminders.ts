@@ -146,6 +146,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
           await supabaseAdmin.from("one_on_ones").insert({
             employee_id: s.employee_id, manager_user_id: s.manager_user_id, template_id: s.template_id,
             title: s.title, status: "scheduled", scheduled_at: s.next_scheduled_at,
+            short_code: Math.random().toString(36).slice(2, 8).toUpperCase(),
           });
           await supabaseAdmin.from("one_on_ones").update({ next_scheduled_at: after }).eq("id", s.id);
           created++;
