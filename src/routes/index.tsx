@@ -61,7 +61,7 @@ function Index() {
             Hire-to-retire HR, payroll-adjacent workflows, performance, compensation, and public-sector compliance — in one system that understands sworn officers, field crews, seasonals, contractors, volunteers, and elected officials.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/auth"><Button size="lg">Request a demo <ArrowRight className="h-4 w-4 ml-2" /></Button></Link>
+            <Link to="/auth"><Button size="lg">This is a demo <ArrowRight className="h-4 w-4 ml-2" /></Button></Link>
             <Link to="/auth"><Button size="lg" variant="outline">HR admin sign in</Button></Link>
           </div>
         </div>
