@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Briefcase, ListChecks, Clock, FileSignature, FolderLock, Server } from "lucide-react";
+import { Users, Briefcase, ListChecks, Clock, FileSignature, FolderLock, Server, ClipboardCheck, AlertTriangle, MessagesSquare, Target } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
@@ -28,6 +28,7 @@ function Stat({ label, value, icon: Icon }: { label: string; value: number | str
 
 function Dashboard() {
   const { data: me } = useCurrentUser();
+  const uid = me?.user.id;
 
   const { data: stats } = useQuery({
     queryKey: ["dash-stats"],
@@ -48,6 +49,37 @@ function Dashboard() {
   });
 
   const isHR = hasRole(me?.roles, "hr_admin");
+
+  // Manager panel: only for users with direct reports
+  const teamQ = useQuery({
+    enabled: !!uid,
+    queryKey: ["manager-team", uid],
+    queryFn: async () => {
+      const { data: meEmp } = await supabase.from("employees").select("id").eq("user_id", uid!).maybeSingle();
+      if (!meEmp) return null;
+      const myEmpId = (meEmp as { id: string }).id;
+      const { data: reports } = await supabase.from("employees").select("id, first_name, last_name").eq("manager_id", myEmpId);
+      if (!reports?.length) return null;
+      const ids = reports.map((r) => r.id);
+      const [reviews, goals, sessions] = await Promise.all([
+        supabase.from("performance_reviews").select("id, status, employee_id").in("employee_id", ids).neq("status", "finalized"),
+        supabase.from("goals").select("id, status, owner_employee_id, title").in("owner_employee_id", ids).in("status", ["at_risk", "active"]),
+        supabase.from("one_on_ones").select("id, employee_id, scheduled_at").in("employee_id", ids).order("scheduled_at", { ascending: false }),
+      ]);
+      const cutoff = Date.now() - 30 * 86400000;
+      const lastByEmp = new Map<string, number>();
+      for (const s of (sessions.data ?? []) as Array<{ employee_id: string; scheduled_at: string | null }>) {
+        if (!s.scheduled_at) continue;
+        const t = new Date(s.scheduled_at).getTime();
+        if (!lastByEmp.has(s.employee_id) || (lastByEmp.get(s.employee_id) ?? 0) < t) lastByEmp.set(s.employee_id, t);
+      }
+      const overdueOneOnOnes = reports.filter((r) => (lastByEmp.get(r.id) ?? 0) < cutoff);
+      const atRiskGoals = (goals.data ?? []).filter((g) => g.status === "at_risk");
+      const pendingReviews = reviews.data ?? [];
+      return { reports, overdueOneOnOnes, atRiskGoals, pendingReviews };
+    },
+  });
+  const team = teamQ.data;
 
   return (
     <AppShell title={`Welcome, ${me?.profile?.full_name?.split(" ")[0] ?? ""}`}>
@@ -71,6 +103,34 @@ function Dashboard() {
           <p>3. Create your first <strong>Employee</strong> and start a pre-boarding instance.</p>
         </CardContent>
       </Card>
+
+      {team && (
+        <Card className="mt-8">
+          <CardHeader><CardTitle className="font-serif">My team — Performance</CardTitle></CardHeader>
+          <CardContent className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link to="/reviews" className="border rounded p-3 hover:bg-secondary/40">
+              <ClipboardCheck className="h-4 w-4 text-primary mb-2" />
+              <p className="text-2xl font-serif">{team.pendingReviews.length}</p>
+              <p className="text-xs text-muted-foreground">Open reviews</p>
+            </Link>
+            <Link to="/goals" className="border rounded p-3 hover:bg-secondary/40">
+              <AlertTriangle className="h-4 w-4 text-amber-600 mb-2" />
+              <p className="text-2xl font-serif">{team.atRiskGoals.length}</p>
+              <p className="text-xs text-muted-foreground">Goals at risk</p>
+            </Link>
+            <Link to="/one-on-ones" className="border rounded p-3 hover:bg-secondary/40">
+              <MessagesSquare className="h-4 w-4 text-primary mb-2" />
+              <p className="text-2xl font-serif">{team.overdueOneOnOnes.length}</p>
+              <p className="text-xs text-muted-foreground">Overdue 1:1s (&gt;30 days)</p>
+            </Link>
+            <Link to="/employees" className="border rounded p-3 hover:bg-secondary/40">
+              <Target className="h-4 w-4 text-primary mb-2" />
+              <p className="text-2xl font-serif">{team.reports.length}</p>
+              <p className="text-xs text-muted-foreground">Direct reports</p>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       {isHR && (
         <div className="mt-8 grid sm:grid-cols-3 gap-4">
