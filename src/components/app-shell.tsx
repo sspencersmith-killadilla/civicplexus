@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness, CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon, DollarSign, Scale, BarChart2, FileStack } from "lucide-react";
+import { LayoutDashboard, Users, ListChecks, Briefcase, FileText, LogOut, FileSignature, FolderLock, Server, Bell, BarChart3, Package, GraduationCap, ShieldQuestion, HeartHandshake, ScrollText, DoorOpen, Settings, History, BookOpen, UserPlus, ClipboardList, MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness, CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon, DollarSign, Scale, BarChart2, FileStack, Banknote, DatabaseBackup } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -59,6 +59,7 @@ const NAV_GROUPS = [
     { to: "/comp-grades", label: "Pay Grades", icon: DollarSign, roles: ["hr_admin"] },
     { to: "/comp-market", label: "Market Ranges", icon: BarChart2, roles: ["hr_admin"] },
     { to: "/comp-cycles", label: "Comp Cycles", icon: CalendarDays, roles: ["hr_admin", "hiring_manager", "supervisor"] },
+    { to: "/payroll", label: "Payroll", icon: Banknote, roles: ["hr_admin"] },
   ]},
   { label: "Hiring", items: [
     { to: "/jobs", label: "Requisitions", icon: BriefcaseBusiness, roles: ["hr_admin", "hiring_manager", "supervisor"] },
@@ -69,6 +70,7 @@ const NAV_GROUPS = [
   ]},
   { label: "Admin", items: [
     { to: "/settings", label: "Settings", icon: Settings, roles: ["hr_admin"] },
+    { to: "/admin-migration", label: "Data Migration", icon: DatabaseBackup, roles: ["hr_admin"] },
   ]},
 ] as const;
 
