@@ -1215,6 +1215,7 @@ export type Database = {
           target_date: string | null
           title: string
           updated_at: string
+          weight: number
         }
         Insert: {
           category?: string | null
@@ -1229,6 +1230,7 @@ export type Database = {
           target_date?: string | null
           title: string
           updated_at?: string
+          weight?: number
         }
         Update: {
           category?: string | null
@@ -1243,6 +1245,7 @@ export type Database = {
           target_date?: string | null
           title?: string
           updated_at?: string
+          weight?: number
         }
         Relationships: [
           {
@@ -2491,11 +2494,13 @@ export type Database = {
           ai_action_items: Json | null
           ai_generated_at: string | null
           ai_summary: string | null
+          cadence_weeks: number | null
           created_at: string
           created_by: string | null
           employee_id: string | null
           id: string
           manager_user_id: string
+          next_scheduled_at: string | null
           scheduled_at: string | null
           short_code: string
           status: string
@@ -2508,11 +2513,13 @@ export type Database = {
           ai_action_items?: Json | null
           ai_generated_at?: string | null
           ai_summary?: string | null
+          cadence_weeks?: number | null
           created_at?: string
           created_by?: string | null
           employee_id?: string | null
           id?: string
           manager_user_id: string
+          next_scheduled_at?: string | null
           scheduled_at?: string | null
           short_code: string
           status?: string
@@ -2525,11 +2532,13 @@ export type Database = {
           ai_action_items?: Json | null
           ai_generated_at?: string | null
           ai_summary?: string | null
+          cadence_weeks?: number | null
           created_at?: string
           created_by?: string | null
           employee_id?: string | null
           id?: string
           manager_user_id?: string
+          next_scheduled_at?: string | null
           scheduled_at?: string | null
           short_code?: string
           status?: string
@@ -2567,6 +2576,7 @@ export type Database = {
           phone: string | null
           primary_color: string | null
           retention_policy: Json | null
+          review_competencies: Json
           singleton: boolean
           sso_metadata_url: string | null
           updated_at: string
@@ -2582,6 +2592,7 @@ export type Database = {
           phone?: string | null
           primary_color?: string | null
           retention_policy?: Json | null
+          review_competencies?: Json
           singleton?: boolean
           sso_metadata_url?: string | null
           updated_at?: string
@@ -2597,6 +2608,7 @@ export type Database = {
           phone?: string | null
           primary_color?: string | null
           retention_policy?: Json | null
+          review_competencies?: Json
           singleton?: boolean
           sso_metadata_url?: string | null
           updated_at?: string
@@ -3106,6 +3118,195 @@ export type Database = {
             columns: ["task_instance_id"]
             isOneToOne: false
             referencedRelation: "task_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_cycle_participants: {
+        Row: {
+          created_at: string
+          cycle_id: string
+          employee_id: string
+          id: string
+          manager_id: string | null
+          review_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_id: string
+          employee_id: string
+          id?: string
+          manager_id?: string | null
+          review_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cycle_id?: string
+          employee_id?: string
+          id?: string
+          manager_id?: string | null
+          review_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_cycle_participants_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "review_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_cycle_participants_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_cycle_participants_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_cycle_participants_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_cycles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          eligibility_filter: Json
+          id: string
+          kickoff_at: string | null
+          manager_review_due: string | null
+          name: string
+          period_end: string
+          period_start: string
+          self_review_due: string | null
+          signoff_due: string | null
+          status: string
+          template_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          eligibility_filter?: Json
+          id?: string
+          kickoff_at?: string | null
+          manager_review_due?: string | null
+          name: string
+          period_end: string
+          period_start: string
+          self_review_due?: string | null
+          signoff_due?: string | null
+          status?: string
+          template_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          eligibility_filter?: Json
+          id?: string
+          kickoff_at?: string | null
+          manager_review_due?: string | null
+          name?: string
+          period_end?: string
+          period_start?: string
+          self_review_due?: string | null
+          signoff_due?: string | null
+          status?: string
+          template_key?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      review_rating_changes: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          from_rating: number | null
+          id: string
+          reason: string | null
+          review_id: string
+          to_rating: number | null
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          from_rating?: number | null
+          id?: string
+          reason?: string | null
+          review_id: string
+          to_rating?: number | null
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          from_rating?: number | null
+          id?: string
+          reason?: string | null
+          review_id?: string
+          to_rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_rating_changes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_ratings: {
+        Row: {
+          comment: string | null
+          competency: string
+          created_at: string
+          id: string
+          rating: number | null
+          review_id: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          competency: string
+          created_at?: string
+          id?: string
+          rating?: number | null
+          review_id: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          competency?: string
+          created_at?: string
+          id?: string
+          rating?: number | null
+          review_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_ratings_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
             referencedColumns: ["id"]
           },
         ]
