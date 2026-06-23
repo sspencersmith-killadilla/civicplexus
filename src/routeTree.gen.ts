@@ -38,6 +38,7 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
+import { Route as AuthenticatedPafIndexRouteImport } from './routes/_authenticated/paf.index'
 import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
 import { Route as AuthenticatedLeaveIndexRouteImport } from './routes/_authenticated/leave.index'
 import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authenticated/jobs.index'
@@ -215,6 +216,11 @@ const AuthenticatedReviewsIndexRoute =
     path: '/reviews/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPafIndexRoute = AuthenticatedPafIndexRouteImport.update({
+  id: '/paf/',
+  path: '/paf/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOneOnOnesIndexRoute =
   AuthenticatedOneOnOnesIndexRouteImport.update({
     id: '/one-on-ones/',
@@ -389,6 +395,7 @@ export interface FileRoutesByFullPath {
   '/jobs/': typeof AuthenticatedJobsIndexRoute
   '/leave/': typeof AuthenticatedLeaveIndexRoute
   '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
+  '/paf/': typeof AuthenticatedPafIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -442,6 +449,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof AuthenticatedJobsIndexRoute
   '/leave': typeof AuthenticatedLeaveIndexRoute
   '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
+  '/paf': typeof AuthenticatedPafIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -497,6 +505,7 @@ export interface FileRoutesById {
   '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
   '/_authenticated/leave/': typeof AuthenticatedLeaveIndexRoute
   '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
+  '/_authenticated/paf/': typeof AuthenticatedPafIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -552,6 +561,7 @@ export interface FileRouteTypes {
     | '/jobs/'
     | '/leave/'
     | '/one-on-ones/'
+    | '/paf/'
     | '/reviews/'
     | '/templates/'
     | '/api/public/docs/$file'
@@ -605,6 +615,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/leave'
     | '/one-on-ones'
+    | '/paf'
     | '/reviews'
     | '/templates'
     | '/api/public/docs/$file'
@@ -659,6 +670,7 @@ export interface FileRouteTypes {
     | '/_authenticated/jobs/'
     | '/_authenticated/leave/'
     | '/_authenticated/one-on-ones/'
+    | '/_authenticated/paf/'
     | '/_authenticated/reviews/'
     | '/_authenticated/templates/'
     | '/api/public/docs/$file'
@@ -883,6 +895,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/paf/': {
+      id: '/_authenticated/paf/'
+      path: '/paf'
+      fullPath: '/paf/'
+      preLoaderRoute: typeof AuthenticatedPafIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/one-on-ones/': {
       id: '/_authenticated/one-on-ones/'
       path: '/one-on-ones'
@@ -1100,6 +1119,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute
   AuthenticatedLeaveIndexRoute: typeof AuthenticatedLeaveIndexRoute
   AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
+  AuthenticatedPafIndexRoute: typeof AuthenticatedPafIndexRoute
   AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
 }
@@ -1144,6 +1164,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedJobsIndexRoute: AuthenticatedJobsIndexRoute,
   AuthenticatedLeaveIndexRoute: AuthenticatedLeaveIndexRoute,
   AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
+  AuthenticatedPafIndexRoute: AuthenticatedPafIndexRoute,
   AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
 }
