@@ -97,8 +97,21 @@ export const submitRequisitionForApproval = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => z.object({ requisition_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const sb = context.supabase as never;
-    const chain = await defaultApproverChain(sb, context.userId);
-    if (chain.length === 0) throw new Error("No approvers available; ensure an HR admin and supervisor exist.");
+    let chain = await defaultApproverChain(sb, context.userId);
+    // Fallback: try the requisition's hiring manager as a stage-1 approver
+    if (chain.length === 0) {
+      const { data: req } = await context.supabase
+        .from("job_requisitions" as never)
+        .select("hiring_manager_id").eq("id", data.requisition_id).maybeSingle();
+      const hmId = (req as { hiring_manager_id: string | null } | null)?.hiring_manager_id ?? null;
+      if (hmId && hmId !== context.userId) {
+        chain = [{ stage: 1, approver_label: "Hiring Manager", approver_role: "hiring_manager", approver_id: hmId }];
+      }
+    }
+    if (chain.length === 0) {
+      // No approvers configured — surface gracefully so the wizard can offer direct posting
+      return { chain_id: null, skipped: true, reason: "no_approvers" as const };
+    }
     const { data: chainRow, error: cErr } = await context.supabase
       .from("approval_chains" as never)
       .insert({ entity_type: "requisition", entity_id: data.requisition_id, created_by: context.userId } as never)
@@ -118,7 +131,7 @@ export const submitRequisitionForApproval = createServerFn({ method: "POST" })
         link: "/approvals",
       });
     }
-    return { chain_id: chainId };
+    return { chain_id: chainId, skipped: false as const };
   });
 
 export const decideApprovalStep = createServerFn({ method: "POST" })
