@@ -428,9 +428,22 @@ export const getPublicRequisition = createServerFn({ method: "GET" })
       auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
     });
     const { data: row, error } = await sb.from("job_requisitions")
-      .select("id, slug, title, department, location, employment_type, summary, description, requirements, benefits, posted_at, closes_at, salary_min, salary_max")
+      .select("id, slug, title, department, location, employment_type, summary, description, requirements, benefits, posting_sections, posted_at, closes_at, salary_min, salary_max")
       .eq("slug", data.slug).eq("status", "posted").eq("internal_only", false).maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Position not found");
     return row;
+  });
+
+/** Authenticated: list active positions (job classifications) for the wizard dropdown. */
+export const listPositionsForRequisition = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("positions")
+      .select("id, title, department, worker_type_id, status")
+      .in("status", ["open", "filled"])
+      .order("title", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Array<{ id: string; title: string; department: string | null; worker_type_id: string | null; status: string }>;
   });
