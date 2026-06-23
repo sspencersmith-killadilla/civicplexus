@@ -413,7 +413,10 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
         <div className="space-y-4">
           <Card className="p-4 bg-muted/30">
             {approvalSkipped ? (
-              <p className="text-sm text-muted-foreground">Approval skipped. Posting will work only if your role allows direct posting; otherwise approve the requisition first from <span className="font-mono">/approvals</span>.</p>
+              <p className="text-sm text-muted-foreground">
+                {approvalNotice ?? "Approval skipped."} Posting will work only if your role allows direct posting; otherwise approve the requisition first from "}
+                <span className="font-mono">/approvals</span>.
+              </p>
             ) : (
               <p className="text-sm">
                 <Check className="inline h-4 w-4 text-primary mr-1" /> Submitted. Once all approvers sign off, the requisition is ready to post.
