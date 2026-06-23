@@ -24,6 +24,7 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProvisioningRouteImport } from './routes/_authenticated/provisioning'
 import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenticated/preboarding'
 import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
+import { Route as AuthenticatedPolicyCampaignsRouteImport } from './routes/_authenticated/policy-campaigns'
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -32,10 +33,14 @@ import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_auth
 import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authenticated/hire-requests'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
+import { Route as AuthenticatedFlsaAuditRouteImport } from './routes/_authenticated/flsa-audit'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
 import { Route as AuthenticatedEmailTemplatesRouteImport } from './routes/_authenticated/email-templates'
+import { Route as AuthenticatedEeoSnapshotRouteImport } from './routes/_authenticated/eeo-snapshot'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCompMarketRouteImport } from './routes/_authenticated/comp-market'
+import { Route as AuthenticatedCompGradesRouteImport } from './routes/_authenticated/comp-grades'
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
@@ -50,6 +55,7 @@ import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authentica
 import { Route as AuthenticatedGrievancesIndexRouteImport } from './routes/_authenticated/grievances.index'
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
 import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authenticated/employees.index'
+import { Route as AuthenticatedCompCyclesIndexRouteImport } from './routes/_authenticated/comp-cycles.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
@@ -66,6 +72,7 @@ import { Route as AuthenticatedInterviewsIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
+import { Route as AuthenticatedCompCyclesIdRouteImport } from './routes/_authenticated/comp-cycles.$id'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
@@ -153,6 +160,12 @@ const AuthenticatedPositionsRoute = AuthenticatedPositionsRouteImport.update({
   path: '/positions',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPolicyCampaignsRoute =
+  AuthenticatedPolicyCampaignsRouteImport.update({
+    id: '/policy-campaigns',
+    path: '/policy-campaigns',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
   id: '/policies',
   path: '/policies',
@@ -197,6 +210,11 @@ const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
   path: '/goals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFlsaAuditRoute = AuthenticatedFlsaAuditRouteImport.update({
+  id: '/flsa-audit',
+  path: '/flsa-audit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedEquipmentRoute = AuthenticatedEquipmentRouteImport.update({
   id: '/equipment',
   path: '/equipment',
@@ -208,6 +226,12 @@ const AuthenticatedEmailTemplatesRoute =
     path: '/email-templates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEeoSnapshotRoute =
+  AuthenticatedEeoSnapshotRouteImport.update({
+    id: '/eeo-snapshot',
+    path: '/eeo-snapshot',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
@@ -216,6 +240,16 @@ const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCompMarketRoute = AuthenticatedCompMarketRouteImport.update({
+  id: '/comp-market',
+  path: '/comp-market',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCompGradesRoute = AuthenticatedCompGradesRouteImport.update({
+  id: '/comp-grades',
+  path: '/comp-grades',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBenefitsRoute = AuthenticatedBenefitsRouteImport.update({
@@ -293,6 +327,12 @@ const AuthenticatedEmployeesIndexRoute =
   AuthenticatedEmployeesIndexRouteImport.update({
     id: '/employees/',
     path: '/employees/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCompCyclesIndexRoute =
+  AuthenticatedCompCyclesIndexRouteImport.update({
+    id: '/comp-cycles/',
+    path: '/comp-cycles/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCascadesIndexRoute =
@@ -384,6 +424,12 @@ const AuthenticatedEmployeesImportRoute =
     path: '/employees/import',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCompCyclesIdRoute =
+  AuthenticatedCompCyclesIdRouteImport.update({
+    id: '/comp-cycles/$id',
+    path: '/comp-cycles/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
   id: '/cascades/$id',
   path: '/cascades/$id',
@@ -442,10 +488,14 @@ export interface FileRoutesByFullPath {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
+  '/comp-grades': typeof AuthenticatedCompGradesRoute
+  '/comp-market': typeof AuthenticatedCompMarketRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
+  '/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
   '/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
+  '/flsa-audit': typeof AuthenticatedFlsaAuditRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
@@ -454,6 +504,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
+  '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
@@ -467,6 +518,7 @@ export interface FileRoutesByFullPath {
   '/offer/$token': typeof OfferTokenRoute
   '/careers/': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
+  '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -483,6 +535,7 @@ export interface FileRoutesByFullPath {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
+  '/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
   '/forms/': typeof AuthenticatedFormsIndexRoute
   '/grievances/': typeof AuthenticatedGrievancesIndexRoute
@@ -509,10 +562,14 @@ export interface FileRoutesByTo {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
+  '/comp-grades': typeof AuthenticatedCompGradesRoute
+  '/comp-market': typeof AuthenticatedCompMarketRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
+  '/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
   '/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
+  '/flsa-audit': typeof AuthenticatedFlsaAuditRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
@@ -521,6 +578,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
+  '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
   '/provisioning': typeof AuthenticatedProvisioningRoute
@@ -534,6 +592,7 @@ export interface FileRoutesByTo {
   '/offer/$token': typeof OfferTokenRoute
   '/careers': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
+  '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -550,6 +609,7 @@ export interface FileRoutesByTo {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
+  '/comp-cycles': typeof AuthenticatedCompCyclesIndexRoute
   '/employees': typeof AuthenticatedEmployeesIndexRoute
   '/forms': typeof AuthenticatedFormsIndexRoute
   '/grievances': typeof AuthenticatedGrievancesIndexRoute
@@ -578,10 +638,14 @@ export interface FileRoutesById {
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
+  '/_authenticated/comp-grades': typeof AuthenticatedCompGradesRoute
+  '/_authenticated/comp-market': typeof AuthenticatedCompMarketRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
+  '/_authenticated/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
   '/_authenticated/email-templates': typeof AuthenticatedEmailTemplatesRoute
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
+  '/_authenticated/flsa-audit': typeof AuthenticatedFlsaAuditRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/hire-requests': typeof AuthenticatedHireRequestsRoute
@@ -590,6 +654,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
+  '/_authenticated/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
   '/_authenticated/preboarding': typeof AuthenticatedPreboardingRoute
   '/_authenticated/provisioning': typeof AuthenticatedProvisioningRoute
@@ -603,6 +668,7 @@ export interface FileRoutesById {
   '/offer/$token': typeof OfferTokenRoute
   '/careers/': typeof CareersIndexRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
+  '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -619,6 +685,7 @@ export interface FileRoutesById {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
+  '/_authenticated/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
   '/_authenticated/grievances/': typeof AuthenticatedGrievancesIndexRoute
@@ -647,10 +714,14 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/audit'
     | '/benefits'
+    | '/comp-grades'
+    | '/comp-market'
     | '/dashboard'
     | '/documents'
+    | '/eeo-snapshot'
     | '/email-templates'
     | '/equipment'
+    | '/flsa-audit'
     | '/goals'
     | '/help'
     | '/hire-requests'
@@ -659,6 +730,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/offboarding'
     | '/policies'
+    | '/policy-campaigns'
     | '/positions'
     | '/preboarding'
     | '/provisioning'
@@ -672,6 +744,7 @@ export interface FileRouteTypes {
     | '/offer/$token'
     | '/careers/'
     | '/cascades/$id'
+    | '/comp-cycles/$id'
     | '/employees/import'
     | '/forms/$key'
     | '/grievances/$id'
@@ -688,6 +761,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/cascades/'
+    | '/comp-cycles/'
     | '/employees/'
     | '/forms/'
     | '/grievances/'
@@ -714,10 +788,14 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/audit'
     | '/benefits'
+    | '/comp-grades'
+    | '/comp-market'
     | '/dashboard'
     | '/documents'
+    | '/eeo-snapshot'
     | '/email-templates'
     | '/equipment'
+    | '/flsa-audit'
     | '/goals'
     | '/help'
     | '/hire-requests'
@@ -726,6 +804,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/offboarding'
     | '/policies'
+    | '/policy-campaigns'
     | '/positions'
     | '/preboarding'
     | '/provisioning'
@@ -739,6 +818,7 @@ export interface FileRouteTypes {
     | '/offer/$token'
     | '/careers'
     | '/cascades/$id'
+    | '/comp-cycles/$id'
     | '/employees/import'
     | '/forms/$key'
     | '/grievances/$id'
@@ -755,6 +835,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/cascades'
+    | '/comp-cycles'
     | '/employees'
     | '/forms'
     | '/grievances'
@@ -782,10 +863,14 @@ export interface FileRouteTypes {
     | '/_authenticated/approvals'
     | '/_authenticated/audit'
     | '/_authenticated/benefits'
+    | '/_authenticated/comp-grades'
+    | '/_authenticated/comp-market'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
+    | '/_authenticated/eeo-snapshot'
     | '/_authenticated/email-templates'
     | '/_authenticated/equipment'
+    | '/_authenticated/flsa-audit'
     | '/_authenticated/goals'
     | '/_authenticated/help'
     | '/_authenticated/hire-requests'
@@ -794,6 +879,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
     | '/_authenticated/policies'
+    | '/_authenticated/policy-campaigns'
     | '/_authenticated/positions'
     | '/_authenticated/preboarding'
     | '/_authenticated/provisioning'
@@ -807,6 +893,7 @@ export interface FileRouteTypes {
     | '/offer/$token'
     | '/careers/'
     | '/_authenticated/cascades/$id'
+    | '/_authenticated/comp-cycles/$id'
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
     | '/_authenticated/grievances/$id'
@@ -823,6 +910,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/_authenticated/cascades/'
+    | '/_authenticated/comp-cycles/'
     | '/_authenticated/employees/'
     | '/_authenticated/forms/'
     | '/_authenticated/grievances/'
@@ -969,6 +1057,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPositionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/policy-campaigns': {
+      id: '/_authenticated/policy-campaigns'
+      path: '/policy-campaigns'
+      fullPath: '/policy-campaigns'
+      preLoaderRoute: typeof AuthenticatedPolicyCampaignsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/policies': {
       id: '/_authenticated/policies'
       path: '/policies'
@@ -1025,6 +1120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGoalsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/flsa-audit': {
+      id: '/_authenticated/flsa-audit'
+      path: '/flsa-audit'
+      fullPath: '/flsa-audit'
+      preLoaderRoute: typeof AuthenticatedFlsaAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/equipment': {
       id: '/_authenticated/equipment'
       path: '/equipment'
@@ -1039,6 +1141,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmailTemplatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/eeo-snapshot': {
+      id: '/_authenticated/eeo-snapshot'
+      path: '/eeo-snapshot'
+      fullPath: '/eeo-snapshot'
+      preLoaderRoute: typeof AuthenticatedEeoSnapshotRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/documents': {
       id: '/_authenticated/documents'
       path: '/documents'
@@ -1051,6 +1160,20 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/comp-market': {
+      id: '/_authenticated/comp-market'
+      path: '/comp-market'
+      fullPath: '/comp-market'
+      preLoaderRoute: typeof AuthenticatedCompMarketRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/comp-grades': {
+      id: '/_authenticated/comp-grades'
+      path: '/comp-grades'
+      fullPath: '/comp-grades'
+      preLoaderRoute: typeof AuthenticatedCompGradesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/benefits': {
@@ -1149,6 +1272,13 @@ declare module '@tanstack/react-router' {
       path: '/employees'
       fullPath: '/employees/'
       preLoaderRoute: typeof AuthenticatedEmployeesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/comp-cycles/': {
+      id: '/_authenticated/comp-cycles/'
+      path: '/comp-cycles'
+      fullPath: '/comp-cycles/'
+      preLoaderRoute: typeof AuthenticatedCompCyclesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cascades/': {
@@ -1263,6 +1393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeesImportRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/comp-cycles/$id': {
+      id: '/_authenticated/comp-cycles/$id'
+      path: '/comp-cycles/$id'
+      fullPath: '/comp-cycles/$id'
+      preLoaderRoute: typeof AuthenticatedCompCyclesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cascades/$id': {
       id: '/_authenticated/cascades/$id'
       path: '/cascades/$id'
@@ -1361,10 +1498,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
+  AuthenticatedCompGradesRoute: typeof AuthenticatedCompGradesRoute
+  AuthenticatedCompMarketRoute: typeof AuthenticatedCompMarketRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
+  AuthenticatedEeoSnapshotRoute: typeof AuthenticatedEeoSnapshotRoute
   AuthenticatedEmailTemplatesRoute: typeof AuthenticatedEmailTemplatesRoute
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
+  AuthenticatedFlsaAuditRoute: typeof AuthenticatedFlsaAuditRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedHireRequestsRoute: typeof AuthenticatedHireRequestsRoute
@@ -1373,6 +1514,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
+  AuthenticatedPolicyCampaignsRoute: typeof AuthenticatedPolicyCampaignsRoute
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
   AuthenticatedPreboardingRoute: typeof AuthenticatedPreboardingRoute
   AuthenticatedProvisioningRoute: typeof AuthenticatedProvisioningRoute
@@ -1382,6 +1524,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
   AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
+  AuthenticatedCompCyclesIdRoute: typeof AuthenticatedCompCyclesIdRoute
   AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
@@ -1395,6 +1538,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedTranscriptEmployeeIdRoute: typeof AuthenticatedTranscriptEmployeeIdRoute
   AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
+  AuthenticatedCompCyclesIndexRoute: typeof AuthenticatedCompCyclesIndexRoute
   AuthenticatedEmployeesIndexRoute: typeof AuthenticatedEmployeesIndexRoute
   AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
   AuthenticatedGrievancesIndexRoute: typeof AuthenticatedGrievancesIndexRoute
@@ -1412,10 +1556,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
+  AuthenticatedCompGradesRoute: AuthenticatedCompGradesRoute,
+  AuthenticatedCompMarketRoute: AuthenticatedCompMarketRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
+  AuthenticatedEeoSnapshotRoute: AuthenticatedEeoSnapshotRoute,
   AuthenticatedEmailTemplatesRoute: AuthenticatedEmailTemplatesRoute,
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
+  AuthenticatedFlsaAuditRoute: AuthenticatedFlsaAuditRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedHireRequestsRoute: AuthenticatedHireRequestsRoute,
@@ -1424,6 +1572,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,
+  AuthenticatedPolicyCampaignsRoute: AuthenticatedPolicyCampaignsRoute,
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
   AuthenticatedPreboardingRoute: AuthenticatedPreboardingRoute,
   AuthenticatedProvisioningRoute: AuthenticatedProvisioningRoute,
@@ -1433,6 +1582,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
   AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
+  AuthenticatedCompCyclesIdRoute: AuthenticatedCompCyclesIdRoute,
   AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
@@ -1448,6 +1598,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTranscriptEmployeeIdRoute:
     AuthenticatedTranscriptEmployeeIdRoute,
   AuthenticatedCascadesIndexRoute: AuthenticatedCascadesIndexRoute,
+  AuthenticatedCompCyclesIndexRoute: AuthenticatedCompCyclesIndexRoute,
   AuthenticatedEmployeesIndexRoute: AuthenticatedEmployeesIndexRoute,
   AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
   AuthenticatedGrievancesIndexRoute: AuthenticatedGrievancesIndexRoute,

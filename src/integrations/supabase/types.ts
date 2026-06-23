@@ -410,6 +410,154 @@ export type Database = {
         }
         Relationships: []
       }
+      comp_cycles: {
+        Row: {
+          budget_pct: number
+          created_at: string
+          created_by: string | null
+          effective_date: string
+          eligibility_filter: Json
+          id: string
+          name: string
+          period_end: string
+          period_start: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          budget_pct?: number
+          created_at?: string
+          created_by?: string | null
+          effective_date: string
+          eligibility_filter?: Json
+          id?: string
+          name: string
+          period_end: string
+          period_start: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          budget_pct?: number
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string
+          eligibility_filter?: Json
+          id?: string
+          name?: string
+          period_end?: string
+          period_start?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      comp_review_participants: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          current_comp_id: string | null
+          cycle_id: string
+          employee_id: string
+          id: string
+          latest_rating: string | null
+          latest_review_id: string | null
+          manager_id: string | null
+          manager_notes: string | null
+          proposed_bonus_amount: number | null
+          proposed_merit_pct: number | null
+          proposed_promotion_grade_id: string | null
+          recommended_merit_pct: number | null
+          status: string
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          current_comp_id?: string | null
+          cycle_id: string
+          employee_id: string
+          id?: string
+          latest_rating?: string | null
+          latest_review_id?: string | null
+          manager_id?: string | null
+          manager_notes?: string | null
+          proposed_bonus_amount?: number | null
+          proposed_merit_pct?: number | null
+          proposed_promotion_grade_id?: string | null
+          recommended_merit_pct?: number | null
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          current_comp_id?: string | null
+          cycle_id?: string
+          employee_id?: string
+          id?: string
+          latest_rating?: string | null
+          latest_review_id?: string | null
+          manager_id?: string | null
+          manager_notes?: string | null
+          proposed_bonus_amount?: number | null
+          proposed_merit_pct?: number | null
+          proposed_promotion_grade_id?: string | null
+          recommended_merit_pct?: number | null
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comp_review_participants_current_comp_id_fkey"
+            columns: ["current_comp_id"]
+            isOneToOne: false
+            referencedRelation: "employee_comp"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comp_review_participants_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "comp_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comp_review_participants_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comp_review_participants_latest_review_id_fkey"
+            columns: ["latest_review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comp_review_participants_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comp_review_participants_proposed_promotion_grade_id_fkey"
+            columns: ["proposed_promotion_grade_id"]
+            isOneToOne: false
+            referencedRelation: "pay_grades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           active: boolean
@@ -666,6 +814,82 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_comp: {
+        Row: {
+          base_annual: number | null
+          change_reason: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          cycle_id: string | null
+          effective_date: string
+          employee_id: string
+          hourly_rate: number | null
+          id: string
+          pay_grade_id: string | null
+          source: string
+          target_bonus_pct: number | null
+          target_equity: number | null
+          updated_at: string
+        }
+        Insert: {
+          base_annual?: number | null
+          change_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          cycle_id?: string | null
+          effective_date: string
+          employee_id: string
+          hourly_rate?: number | null
+          id?: string
+          pay_grade_id?: string | null
+          source?: string
+          target_bonus_pct?: number | null
+          target_equity?: number | null
+          updated_at?: string
+        }
+        Update: {
+          base_annual?: number | null
+          change_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          cycle_id?: string | null
+          effective_date?: string
+          employee_id?: string
+          hourly_rate?: number | null
+          id?: string
+          pay_grade_id?: string | null
+          source?: string
+          target_bonus_pct?: number | null
+          target_equity?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_comp_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "comp_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_comp_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_comp_pay_grade_id_fkey"
+            columns: ["pay_grade_id"]
+            isOneToOne: false
+            referencedRelation: "pay_grades"
             referencedColumns: ["id"]
           },
         ]
@@ -985,6 +1209,53 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "equipment_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flsa_reviews: {
+        Row: {
+          created_at: string
+          decision: string
+          duties_test_notes: string | null
+          exempt_basis: string | null
+          id: string
+          next_review_date: string | null
+          position_id: string
+          reviewed_at: string
+          reviewed_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decision: string
+          duties_test_notes?: string | null
+          exempt_basis?: string | null
+          id?: string
+          next_review_date?: string | null
+          position_id: string
+          reviewed_at?: string
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decision?: string
+          duties_test_notes?: string | null
+          exempt_basis?: string | null
+          id?: string
+          next_review_date?: string | null
+          position_id?: string
+          reviewed_at?: string
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flsa_reviews_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
             referencedColumns: ["id"]
           },
         ]
@@ -2113,6 +2384,51 @@ export type Database = {
           },
         ]
       }
+      market_ranges: {
+        Row: {
+          created_at: string
+          currency: string
+          effective_date: string
+          geo: string
+          id: string
+          job_family: string
+          level: string
+          p25: number
+          p50: number
+          p75: number
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          effective_date?: string
+          geo?: string
+          id?: string
+          job_family: string
+          level: string
+          p25: number
+          p50: number
+          p75: number
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          effective_date?: string
+          geo?: string
+          id?: string
+          job_family?: string
+          level?: string
+          p25?: number
+          p50?: number
+          p75?: number
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -2659,6 +2975,51 @@ export type Database = {
           },
         ]
       }
+      pay_grades: {
+        Row: {
+          code: string
+          created_at: string
+          currency: string
+          flsa_default: string | null
+          id: string
+          is_active: boolean
+          max_annual: number
+          mid_annual: number
+          min_annual: number
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          currency?: string
+          flsa_default?: string | null
+          id?: string
+          is_active?: boolean
+          max_annual: number
+          mid_annual: number
+          min_annual: number
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          currency?: string
+          flsa_default?: string | null
+          id?: string
+          is_active?: boolean
+          max_annual?: number
+          mid_annual?: number
+          min_annual?: number
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       performance_review_signatures: {
         Row: {
           id: string
@@ -2928,6 +3289,108 @@ export type Database = {
           },
         ]
       }
+      policy_campaign_assignments: {
+        Row: {
+          acknowledgment_id: string | null
+          campaign_id: string
+          completed_at: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          last_nudged_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledgment_id?: string | null
+          campaign_id: string
+          completed_at?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          last_nudged_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledgment_id?: string | null
+          campaign_id?: string
+          completed_at?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          last_nudged_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_campaign_assignments_acknowledgment_id_fkey"
+            columns: ["acknowledgment_id"]
+            isOneToOne: false
+            referencedRelation: "policy_acknowledgments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policy_campaign_assignments_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "policy_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policy_campaign_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      policy_campaigns: {
+        Row: {
+          audience_filter: Json
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          id: string
+          name: string
+          policy_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          audience_filter?: Json
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          name: string
+          policy_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          audience_filter?: Json
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          name?: string
+          policy_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_campaigns_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       positions: {
         Row: {
           budgeted_fte: number
@@ -2937,6 +3400,7 @@ export type Database = {
           id: string
           notes: string | null
           pay_grade: string | null
+          pay_grade_id: string | null
           pay_step: string | null
           position_code: string | null
           reports_to_position_id: string | null
@@ -2953,6 +3417,7 @@ export type Database = {
           id?: string
           notes?: string | null
           pay_grade?: string | null
+          pay_grade_id?: string | null
           pay_step?: string | null
           position_code?: string | null
           reports_to_position_id?: string | null
@@ -2969,6 +3434,7 @@ export type Database = {
           id?: string
           notes?: string | null
           pay_grade?: string | null
+          pay_grade_id?: string | null
           pay_step?: string | null
           position_code?: string | null
           reports_to_position_id?: string | null
@@ -2978,6 +3444,13 @@ export type Database = {
           worker_type_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "positions_pay_grade_id_fkey"
+            columns: ["pay_grade_id"]
+            isOneToOne: false
+            referencedRelation: "pay_grades"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "positions_reports_to_position_id_fkey"
             columns: ["reports_to_position_id"]

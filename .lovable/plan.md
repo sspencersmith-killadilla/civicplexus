@@ -1,67 +1,78 @@
-## Performance & Goals — Build Plan
+## Module A — Compliance & Reporting
 
-The bones exist (`performance_reviews`, `performance_review_signatures`, `goals`, `goal_updates`, `one_on_ones*`, `cascades`). What's missing is the *cycle* wrapper, calibration, structured 1:1 prep, goal cascading/check-ins, and a single manager view that pulls it together. This plan closes those gaps.
+Compliance officers need provable evidence the org is following EEO, wage-hour, and policy obligations, plus a single place to pull reports.
 
-### 1. Review Cycles (new)
-- New table `review_cycles`: `name`, `period_start`, `period_end`, `kickoff_at`, `self_review_due`, `manager_review_due`, `signoff_due`, `status (draft|open|in_calibration|closed)`, `eligibility_filter (jsonb)`, `template_key`.
-- New table `review_cycle_participants`: `cycle_id`, `employee_id`, `manager_id`, `review_id?`, `status (not_started|self_submitted|manager_submitted|acknowledged|finalized)`.
-- HR launches a cycle → trigger seeds `performance_reviews` rows for every eligible employee (active on `period_end`, optionally filtered by department/worker type) and notifies managers + employees.
-- Daily cron in `reminders.ts`: ping self-review when overdue, escalate to manager 3 days after `manager_review_due`, notify HR for unsigned reviews past `signoff_due`.
-- New UI: `/_authenticated/review-cycles/` (HR list + launcher) and `/_authenticated/review-cycles/$id` (progress bar, per-participant status, "send reminder" / "reopen" actions, CSV export).
+### What's added
 
-### 2. Review Detail Upgrades
-- Add structured rating sections: replace single `overall_rating` with a `review_ratings` table (`competency`, `rating`, `comment`) seeded from `org_settings.review_competencies` (new JSON setting with a sensible default — communication, ownership, craft, collaboration, growth).
-- Acknowledgement step: when employee signs, automatically push status to `employee_acknowledged`; manager signature flips to `finalized` and locks the row (DB trigger denies further UPDATEs once finalized except by `hr_admin`).
-- Generate a printable PDF of the finalized review via `print:` CSS and a "Download" button (browser print → save as PDF; no server-side rendering, keeps Worker-safe).
-- Reviewee self-assessment becomes its own step with a separate submit button + lock when submitted.
+1. **EEO-1 / EEO-4 report** (`/reports/eeo`) — pulls headcount by EEO job category × race/ethnicity × gender × full/part-time using `employees`, `positions`, and existing `application_self_id` for current-workforce roll-up. Snapshot-as-of date picker. CSV export.
+2. **FLSA classification audit** (`/reports/flsa`) — lists every position with `flsa_class`, exemption test answers, last-reviewed-by, and a "needs review" flag when annualized base pay falls below the salary threshold or the duties test is blank. HR can mark each row reviewed; entry stored in new `flsa_reviews` table.
+3. **Policy acknowledgment campaigns** (`/policies` upgrade + new `/policies/$id/campaign`) — HR picks a published policy + audience (worker types / departments), launches a campaign that seeds rows in new `policy_campaigns` and `policy_campaign_assignments`. Cron sends weekly nudges to anyone still outstanding; manager dashboard shows their team's compliance %.
+4. **Audit log viewer** (`/audit` upgrade) — filters by actor, entity, action, date range; jump-to-record link; CSV export. Today's `audit.tsx` is a stub.
+5. **Compliance dashboard tile** on `/reports` — pending acknowledgments, expiring certifications (already in `employee_certifications`), training overdue, FLSA items needing review.
 
-### 3. Calibration
-- New page `/_authenticated/review-cycles/$id/calibration` (HR + executives only):
-  - Grid by department × rating distribution.
-  - Inline edit of `overall_rating` with audit row in new `review_rating_changes` table (`review_id`, `from`, `to`, `changed_by`, `reason`, `at`).
-  - "Mark cycle as calibrated" gate before participants can be notified to acknowledge.
+### Tables
 
-### 4. 1:1 Upgrades
-- Pre-meeting prep: surface unresolved action items, recent goal updates, and last 1:1 highlights in `one_on_ones.$id.tsx` sidebar.
-- Recurring schedule: add `cadence_weeks` + `next_scheduled_at` on `one_on_ones`; nightly cron auto-creates the next session 7 days before due.
-- Shared agenda: separate visibility flag on `one_on_one_agenda_notes` already exists — add inline "shared/private" toggle and a "carry over to next" action that copies an item into the next scheduled session.
+- `flsa_reviews` (position_id, reviewed_by, reviewed_at, duties_test_notes, exempt_basis, decision, next_review_date)
+- `policy_campaigns` (policy_id, name, audience_filter jsonb, due_date, status, created_by)
+- `policy_campaign_assignments` (campaign_id, employee_id, acknowledgment_id, status, last_nudged_at)
 
-### 5. Goals — Cascade & Check-ins
-- Add `parent_goal_id uuid` + `weight numeric` on `goals` for parent/child cascading. Computed rollup: parent progress = weighted avg of children (server-side helper).
-- "Cascade from goal" UX on `goals.tsx`: pick a parent goal, pick direct reports, draft child goals in one dialog.
-- Weekly check-in prompt: nightly cron inserts a `notifications` row every Monday for any goal owner with no `goal_updates` in the past 7 days and status `in_progress`.
-- Manager view on dashboard: "Team goals at risk" (status `off_track` or no update >14 days).
+All tables: GRANTs to authenticated + service_role; RLS — HR admin full access, employees read their own assignment rows.
 
-### 6. Manager Dashboard Panel
-- New section "My Team — Performance" on `dashboard.tsx` for users who are managers (has direct reports):
-  - Reviews due this cycle (count + link).
-  - Goals at risk.
-  - Overdue 1:1s (>30 days since last session per report).
-  - Pending acknowledgements.
+### Server logic
 
-### 7. Notifications & Audit
-- Every state transition (cycle open, self submitted, manager submitted, signed, calibrated, finalized, rating changed) emits a `notifications` row to the right party and an `audit_events` row.
+- `compliance-reports.functions.ts` — EEO snapshot builder, FLSA audit list, CSV exporters.
+- `policy-campaigns.functions.ts` — create campaign, refresh assignments when employees join/leave, mark complete on acknowledgment trigger.
+- Trigger `tg_policy_ack_completes_assignment` — when a `policy_acknowledgments` row lands matching an open campaign assignment, mark it complete and emit `audit_events`.
+- Cron extension in `reminders.ts` — daily sweep for overdue campaign assignments + weekly nudge.
 
-### Technical layout
-- Migrations:
-  - `review_cycles`, `review_cycle_participants`, `review_ratings`, `review_rating_changes` tables with `GRANT` + RLS (HR full, manager scoped to direct reports, employee scoped to own).
-  - Triggers: `tg_seed_review_cycle`, `tg_review_lock_when_finalized`, `tg_goal_rollup` (recompute parent progress on update).
-  - Add columns `parent_goal_id`, `weight` on `goals`; `cadence_weeks`, `next_scheduled_at` on `one_on_ones`.
-  - Seed `org_settings.review_competencies` default.
-- Server functions (`src/lib/`):
-  - `review-cycles.functions.ts`: `launchCycle`, `closeCycle`, `markCalibrated`, `sendCycleReminder`.
-  - Extend `reviews.functions.ts`: `submitSelfAssessment`, `submitManagerReview`, `acknowledgeReview`, `updateRatings`, `recalibrateRating`.
-  - Extend `goals.functions.ts` (new file): `cascadeGoal`, `recomputeParent`.
-  - Extend `reminders.ts` cron with the 4 new schedules above.
-- Routes:
-  - New: `_authenticated/review-cycles.index.tsx`, `_authenticated/review-cycles.$id.tsx`, `_authenticated/review-cycles.$id.calibration.tsx`.
-  - Updated: `reviews.$id.tsx` (ratings grid, lock, PDF print), `goals.tsx` (cascade dialog, parent badge), `one-on-ones.$id.tsx` (prep sidebar, carry-over), `dashboard.tsx` (manager panel), `reminders.ts`.
+---
+
+## Module B — Compensation & Pay Bands
+
+Give HR a structured way to define pay grades, compare against market, run a comp review cycle, and tie merit/bonus decisions to performance ratings.
+
+### What's added
+
+1. **Pay grades & bands** (`/comp/grades`) — define `pay_grades` (e.g. P1–P7) with min/mid/max for each band, currency, and FLSA default. Each `positions` row links to a grade (existing `pay_grade` text becomes FK).
+2. **Employee compensation history** (`/employees/$id` → Comp tab, plus `/comp/employee/$id`) — `employee_comp` time-series rows: base salary, hourly rate, target bonus %, target equity, effective date, change reason. Compa-ratio computed against the linked grade midpoint and surfaced everywhere.
+3. **Market ranges** (`/comp/market`) — `market_ranges` table with `job_family`, `level`, `geo`, percentiles (p25/p50/p75). HR uploads CSV; grade list shows market p50 next to band midpoint with variance %.
+4. **Comp review cycles** (`/comp/cycles`, `/comp/cycles/$id`) — HR launches a cycle (period, budget %, eligibility filter). Trigger seeds `comp_review_participants` from current employees + their latest comp. Managers open the cycle and enter proposed merit %, promotion (new grade), and bonus payout for each direct report — capped to budget, with live compa-ratio + new-vs-current diff. Two-step approval (manager → skip-level → HR) reuses the existing `approval_chains` shape. Final approval writes a new `employee_comp` row dated to the cycle's effective date and posts a `personnel_actions` PAF for the audit trail.
+5. **Performance linkage** — when seeding the cycle, each participant row gets the rating from the latest finalized `performance_reviews` row; manager grid shows it and a recommended merit %, but the manager can override with a justification.
+6. **Manager + HR dashboards** — manager tile: "Comp review — N direct reports awaiting your input, $X of $Y budget used." HR tile: cycle progress, outliers (below band, compa-ratio < 0.8 or > 1.2), spend vs budget.
+
+### Tables
+
+- `pay_grades` (code unique, name, currency, min, mid, max, flsa_default, is_active)
+- `employee_comp` (employee_id, effective_date, base_annual, hourly_rate, target_bonus_pct, target_equity, currency, change_reason, source [hire/merit/promotion/adjustment/cycle], cycle_id, created_by)
+- `market_ranges` (job_family, level, geo, currency, p25, p50, p75, source, effective_date)
+- `comp_cycles` (name, period_start, period_end, effective_date, budget_pct, status, eligibility_filter jsonb, created_by)
+- `comp_review_participants` (cycle_id, employee_id, manager_id, current_comp_id, latest_review_id, recommended_merit_pct, proposed_merit_pct, proposed_promotion_grade_id, proposed_bonus_amount, manager_notes, approval_chain_id, status)
+- Add FK `positions.pay_grade_id` → `pay_grades.id` (keep legacy `pay_grade` text as compat for one release).
+
+All tables: GRANTs to authenticated + service_role; RLS — HR admin full, managers read participants where `manager_id = current employee id`, employees read their own `employee_comp` only.
+
+### Server logic / triggers
+
+- `comp.functions.ts` — grade CRUD, comp history read, current-comp fetch, market CSV import, compa-ratio helper.
+- `comp-cycles.functions.ts` — `createCompCycle`, `submitManagerProposals`, `approveProposal`, `finalizeCycle` (writes `employee_comp` rows + PAFs).
+- `tg_seed_comp_cycle` — on status → `open`, seed participants from eligible employees with latest comp + latest review.
+- `tg_employee_comp_audit` — every insert emits an `audit_events` row.
+- Cron in `reminders.ts` — nudge managers with outstanding proposals 7 / 3 / 1 days before cycle close.
+
+### UI files
+
+- `/comp/grades.tsx`, `/comp/market.tsx`, `/comp/cycles.index.tsx`, `/comp/cycles.$id.tsx`, `/comp/employee.$id.tsx`
+- Existing `/employees/$id` gets a Comp tab and `/reports` gets a Comp section (pay equity by department/gender — uses self-ID data, HR-only).
 
 ### Out of scope
-- 360 / peer reviews, compensation planning, succession matrix (9-box), real e-signature provider integration, calibration video calls.
 
-### Acceptance checks
-- HR launches a cycle → every eligible employee has a `performance_reviews` row and gets notified.
-- Self → Manager → Calibration → Acknowledge → Finalize works end-to-end; finalized review cannot be edited.
-- Manager can cascade a goal to 3 reports in one action; parent progress reflects weighted child progress automatically.
-- Manager dashboard surfaces overdue 1:1s, at-risk goals, and pending reviews accurately for direct reports only.
+- Real-time payroll integration, stock grants/refresh modeling, geo-differential automation, multi-currency conversion (currency stored, not converted).
+
+---
+
+### Acceptance
+
+- HR can launch an EEO snapshot, FLSA audit, and policy campaign from `/reports` and see correct counts vs underlying tables.
+- A manager on `/comp/cycles/$id` enters proposals within budget, sends up, and after HR approves the affected employees show a new `employee_comp` row and PAF.
+- Compa-ratio computed correctly: `base_annual / pay_grades.mid` for the linked grade.
+- Finalized comp cycle is locked (no further edits without HR override).

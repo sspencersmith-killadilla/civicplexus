@@ -152,6 +152,54 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
           created++;
         }
 
+        // Policy campaign nudges (weekly cadence)
+        const nowIso2 = new Date().toISOString();
+        const oneWeekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+        const { data: pending } = await supabaseAdmin
+          .from("policy_campaign_assignments")
+          .select("id,campaign_id,employee_id,last_nudged_at,employees(user_id,first_name),policy_campaigns(name,due_date,status,policy_id)")
+          .eq("status", "pending")
+          .limit(500);
+        const campNotifs: typeof notifications = [];
+        for (const a of (pending ?? []) as Array<{ id: string; last_nudged_at: string | null; employees: { user_id: string | null; first_name: string } | null; policy_campaigns: { name: string; due_date: string | null; status: string; policy_id: string } | null }>) {
+          if (a.policy_campaigns?.status !== "active") continue;
+          if (!a.employees?.user_id) continue;
+          if (a.last_nudged_at && a.last_nudged_at > oneWeekAgo) continue;
+          campNotifs.push({
+            user_id: a.employees.user_id,
+            type: "policy_campaign",
+            title: `Acknowledge: ${a.policy_campaigns.name}`,
+            body: a.policy_campaigns.due_date ? `Due ${a.policy_campaigns.due_date}` : "Action required",
+            link: `/policies/${a.policy_campaigns.policy_id}`,
+          });
+          await supabaseAdmin.from("policy_campaign_assignments").update({ last_nudged_at: nowIso2 }).eq("id", a.id);
+        }
+        if (campNotifs.length) await supabaseAdmin.from("notifications").insert(campNotifs);
+
+        // Comp cycle manager nudges (when cycle period_end <= 7d)
+        const { data: openCycles } = await supabaseAdmin
+          .from("comp_cycles").select("id,name,period_end").eq("status", "open");
+        const compNotifs: typeof notifications = [];
+        for (const cyc of openCycles ?? []) {
+          const daysLeft = Math.floor((new Date(cyc.period_end).getTime() - Date.now()) / 86400000);
+          if (![7, 3, 1].includes(daysLeft)) continue;
+          const { data: pendingParts } = await supabaseAdmin
+            .from("comp_review_participants")
+            .select("manager_id,employees!comp_review_participants_manager_id_fkey(user_id)")
+            .eq("cycle_id", cyc.id).eq("status", "pending");
+          const managerIds = new Set<string>();
+          for (const pp of (pendingParts ?? []) as Array<{ employees: { user_id: string | null } | null }>) {
+            const uid = pp.employees?.user_id; if (uid) managerIds.add(uid);
+          }
+          for (const uid of managerIds) compNotifs.push({
+            user_id: uid, type: "comp_cycle",
+            title: `Comp cycle ${cyc.name} — ${daysLeft}d left`,
+            body: "You have proposals to submit",
+            link: `/comp-cycles/${cyc.id}`,
+          });
+        }
+        if (compNotifs.length) await supabaseAdmin.from("notifications").insert(compNotifs);
+
         return Response.json({
           ok: true,
           queued: notifications.length,
@@ -161,6 +209,8 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
           cycle_reminders: cycleNotifs.length,
           goal_checkins: weeklyNotifs.length,
           recurring_one_on_ones: created,
+          policy_campaign_nudges: campNotifs.length,
+          comp_cycle_nudges: compNotifs.length,
         });
       },
     },
