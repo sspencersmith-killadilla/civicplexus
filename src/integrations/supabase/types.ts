@@ -1204,6 +1204,60 @@ export type Database = {
           },
         ]
       }
+      import_jobs: {
+        Row: {
+          created_at: string
+          created_by: string
+          error_message: string | null
+          errors: Json
+          finished_at: string | null
+          id: string
+          inserted: number
+          kind: string
+          processed_rows: number
+          skipped: number
+          started_at: string | null
+          status: string
+          total_rows: number
+          updated: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          error_message?: string | null
+          errors?: Json
+          finished_at?: string | null
+          id?: string
+          inserted?: number
+          kind: string
+          processed_rows?: number
+          skipped?: number
+          started_at?: string | null
+          status?: string
+          total_rows?: number
+          updated?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          error_message?: string | null
+          errors?: Json
+          finished_at?: string | null
+          id?: string
+          inserted?: number
+          kind?: string
+          processed_rows?: number
+          skipped?: number
+          started_at?: string | null
+          status?: string
+          total_rows?: number
+          updated?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       interview_feedback: {
         Row: {
           id: string
