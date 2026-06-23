@@ -22,6 +22,13 @@ const RequisitionInput = z.object({
   internal_only: z.boolean().default(false),
   closes_at: z.string().datetime().optional().nullable(),
   hiring_manager_id: z.string().uuid().optional().nullable(),
+  posting_sections: z.object({
+    essential_functions: z.string().max(10000).optional().nullable(),
+    ksa: z.string().max(10000).optional().nullable(),
+    qualifications: z.string().max(5000).optional().nullable(),
+    physical_demands: z.string().max(5000).optional().nullable(),
+    supplemental: z.string().max(5000).optional().nullable(),
+  }).partial().optional().nullable(),
 });
 
 export const createRequisition = createServerFn({ method: "POST" })
@@ -90,8 +97,21 @@ export const submitRequisitionForApproval = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => z.object({ requisition_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const sb = context.supabase as never;
-    const chain = await defaultApproverChain(sb, context.userId);
-    if (chain.length === 0) throw new Error("No approvers available; ensure an HR admin and supervisor exist.");
+    let chain = await defaultApproverChain(sb, context.userId);
+    // Fallback: try the requisition's hiring manager as a stage-1 approver
+    if (chain.length === 0) {
+      const { data: req } = await context.supabase
+        .from("job_requisitions" as never)
+        .select("hiring_manager_id").eq("id", data.requisition_id).maybeSingle();
+      const hmId = (req as { hiring_manager_id: string | null } | null)?.hiring_manager_id ?? null;
+      if (hmId && hmId !== context.userId) {
+        chain = [{ stage: 1, approver_label: "Hiring Manager", approver_role: "hiring_manager", approver_id: hmId }];
+      }
+    }
+    if (chain.length === 0) {
+      // No approvers configured — surface gracefully so the wizard can offer direct posting
+      return { chain_id: null, skipped: true, reason: "no_approvers" as const };
+    }
     const { data: chainRow, error: cErr } = await context.supabase
       .from("approval_chains" as never)
       .insert({ entity_type: "requisition", entity_id: data.requisition_id, created_by: context.userId } as never)
@@ -111,7 +131,7 @@ export const submitRequisitionForApproval = createServerFn({ method: "POST" })
         link: "/approvals",
       });
     }
-    return { chain_id: chainId };
+    return { chain_id: chainId, skipped: false as const };
   });
 
 export const decideApprovalStep = createServerFn({ method: "POST" })
@@ -408,9 +428,22 @@ export const getPublicRequisition = createServerFn({ method: "GET" })
       auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
     });
     const { data: row, error } = await sb.from("job_requisitions")
-      .select("id, slug, title, department, location, employment_type, summary, description, requirements, benefits, posted_at, closes_at, salary_min, salary_max")
+      .select("id, slug, title, department, location, employment_type, summary, description, requirements, benefits, posting_sections, posted_at, closes_at, salary_min, salary_max")
       .eq("slug", data.slug).eq("status", "posted").eq("internal_only", false).maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Position not found");
     return row;
+  });
+
+/** Authenticated: list active positions (job classifications) for the wizard dropdown. */
+export const listPositionsForRequisition = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("positions")
+      .select("id, title, department, worker_type_id, status")
+      .in("status", ["open", "filled"])
+      .order("title", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Array<{ id: string; title: string; department: string | null; worker_type_id: string | null; status: string }>;
   });

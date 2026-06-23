@@ -2266,6 +2266,7 @@ export type Database = {
           location: string | null
           position_id: string | null
           posted_at: string | null
+          posting_sections: Json
           requested_by: string | null
           requirements: string | null
           salary_max: number | null
@@ -2292,6 +2293,7 @@ export type Database = {
           location?: string | null
           position_id?: string | null
           posted_at?: string | null
+          posting_sections?: Json
           requested_by?: string | null
           requirements?: string | null
           salary_max?: number | null
@@ -2318,6 +2320,7 @@ export type Database = {
           location?: string | null
           position_id?: string | null
           posted_at?: string | null
+          posting_sections?: Json
           requested_by?: string | null
           requirements?: string | null
           salary_max?: number | null

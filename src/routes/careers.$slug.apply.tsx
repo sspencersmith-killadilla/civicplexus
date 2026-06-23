@@ -19,6 +19,16 @@ export const Route = createFileRoute("/careers/$slug/apply")({
   loader: ({ context, params }) => context.queryClient.ensureQueryData(jobQuery(params.slug)),
   errorComponent: ({ error }) => <p className="p-8 text-sm">{error.message}</p>,
   notFoundComponent: () => <p className="p-8 text-sm">Position not found.</p>,
+  pendingComponent: () => (
+    <div className="min-h-screen bg-background">
+      <main className="max-w-2xl mx-auto px-6 py-10">
+        <div className="h-4 w-24 bg-muted rounded animate-pulse mb-6" />
+        <div className="h-8 w-2/3 bg-muted rounded animate-pulse mb-2" />
+        <div className="h-4 w-1/2 bg-muted rounded animate-pulse mb-8" />
+        <div className="h-64 bg-muted rounded animate-pulse" />
+      </main>
+    </div>
+  ),
   component: ApplyPage,
 });
 

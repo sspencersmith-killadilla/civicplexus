@@ -1,48 +1,55 @@
-## What you'll get
+## 1. Fix "submit for approval" error
 
-1. The `one_on_one_templates` table extended so each template carries **separate manager and employee prompt lists** (matching your reference repo's `questions` + `employee_questions` shape), plus the existing title/description.
-2. The **two templates from your repo seeded verbatim** into the DB.
-3. An **HR-admin CRUD page** at `/settings/one-on-one-templates` to create, edit, duplicate, deactivate, and set-default templates.
+Root cause: `submitRequisitionForApproval` throws **"No approvers available; ensure an HR admin and supervisor exist."** when the signed-in user has no supervisor record or no `hr_admin` exists in `user_roles`. The wizard surfaces this as a hard error with no recovery.
 
-## One blocker I need from you
+Fix:
+- In `src/lib/jobs.functions.ts > submitRequisitionForApproval`, when no approvers can be resolved, return `{ chain_id: null, skipped: true, reason: "no_approvers" }` instead of throwing. Still flip status to `pending_approval` only if a chain was created; otherwise leave as `draft` and surface the reason.
+- In the wizard step 2 (`src/routes/_authenticated/jobs.index.tsx`), if the response comes back with `skipped: true`, advance to step 3 with an inline notice ("No approvers configured — you can post directly if your role allows it") instead of toasting an error.
+- Also expand `defaultApproverChain` to fall back to the requisition's `hiring_manager_id` when no supervisor link exists.
 
-In the reference repo the templates aren't in source code — they live in that project's Supabase `templates` table (the code only ships a 3-question fallback). I can't read your other project's database. To seed verbatim I need the rows. Either:
+## 2. Fix the "Apply" button on the public posting page
 
-- Paste the two templates (title + manager questions list + employee questions list) into chat, **or**
-- Run this in your reference project and paste the JSON: `select template_title, questions, employee_questions from templates;`
+Root cause to verify in build mode: the link target exists (`/careers/$slug/apply`), but the current `careers.$slug.tsx` wraps the apply button in a `<Link>` that points to a route whose loader depends on the same query. If the loader is unhydrated or the route hasn't been preloaded, the click can appear to do nothing on a fresh hit while query state warms up.
 
-If you'd rather move forward now, I'll seed with the repo's `DEFAULT_TEMPLATE` ("Standard 1-on-1 Check-in" with the 3 generic prompts) as templates #1 and #2 placeholders, and you can edit them in the admin UI as soon as it lands.
+Fix:
+- Replace the inline `<Link><Button /></Link>` pattern with `<Button asChild><Link …/></Button>` so the button itself is the anchor (no nested interactive elements; resolves accessibility + some pointer issues).
+- Add a `notFoundComponent` and a real `pendingComponent` (small spinner card) on `careers.$slug.apply.tsx` so the navigation always renders something immediately even while the loader runs.
+- Quick repro check in build mode via Playwright on `/careers/patrol-officer` to confirm the click navigates; iterate if the underlying issue is different (e.g. a runtime error in the apply route).
 
-## Schema change
+## 3. Structured job-posting template tied to existing positions
 
-Add two `jsonb` columns to `public.one_on_one_templates`:
+Replace the free-form Details step in the wizard with a two-mode form:
 
-- `manager_prompts jsonb not null default '[]'` — list of strings shown to manager
-- `employee_prompts jsonb not null default '[]'` — list of strings shown to employee
+**Step 0 — Pick a position (job classification)**
+- New dropdown loads from `public.positions` (filterable by `status='open'`, sorted by `title`). Selecting one auto-fills:
+  - `title` ← `positions.title`
+  - `department` ← `positions.department`
+  - `position_id` ← `positions.id`
+  - `worker_type_id` ← `positions.worker_type_id`
+  - `employment_type` ← derived from `worker_type` (full_time / part_time)
+- Keep a "Custom (no classification)" escape hatch that falls back to today's free-text title.
 
-Keep `agenda_prompts` for backward compatibility; backfill it from `manager_prompts` so existing one-on-ones still render. Existing RLS (HR write, authenticated read) and the `updated_at` trigger stay.
+**Step 1 — Compose posting (structured fields)**
+Split the single `description` textarea into named sections that map onto existing columns and a new structured JSON column:
+- `summary` — Position overview (already exists)
+- `description` — "Essential Functions" bullet list (textarea, markdown-friendly)
+- `requirements` — "Knowledge, Skills, Abilities & Behaviors" + "Required Qualifications" (two textareas; concatenated server-side with headings into `requirements`)
+- `benefits` — kept as today
+- New JSON column `posting_sections jsonb` on `job_requisitions` to store the structured pieces (`{ essential_functions, ksa, qualifications, physical_demands, supplemental }`) so the public page can render rich sections without parsing markdown.
 
-## Seed
+A "Use template" button pre-fills the textareas with the Library Aide-style boilerplate the user pasted (essential functions, KSAs, required qualifications, physical demands, supplemental) as starter copy the user edits per position.
 
-Insert two rows (verbatim content from you, or the DEFAULT_TEMPLATE fallback). Mark the first `is_default = true`.
+**Public page rendering (`src/routes/careers.$slug.tsx`)**
+- Render the structured sections in order: Summary → Essential Functions → KSAs & Behaviors → Required Qualifications → Physical Demands → Supplemental → Benefits. Falls back to the legacy `description`/`requirements` text when `posting_sections` is empty so existing seed rows still display.
+- Tighten the visual hierarchy (serif heading already in place; add section headings, subtle dividers, and a sticky "Apply for this role" CTA on desktop) so postings no longer feel bare.
 
-## Admin UI — `/settings/one-on-one-templates`
+### Migration
+- Add `posting_sections jsonb not null default '{}'::jsonb` to `public.job_requisitions`.
+- Update `listPublicRequisitions` / `getPublicRequisition` to project `posting_sections`.
+- Update Zod `RequisitionInput` to accept the structured payload, and `createRequisition` / `updateRequisition` to store it.
+- Backfill the two demo postings with realistic Patrol Officer / Accounting Clerk section content so the public careers page demos well.
 
-Gated under `_authenticated/` and guarded in the component with a `has_role('hr_admin')` check (non-admins see "Access denied"). Built with shadcn primitives already in the project.
-
-- **List view**: table of templates (title, default badge, active toggle, last updated, prompt counts). Buttons: New, Edit, Duplicate, Delete (confirm), Set default.
-- **Editor (dialog or side route)**: fields for title, description, two ordered prompt lists (manager / employee) with add / remove / drag-reorder, active + default toggles. Save = upsert via Supabase client (RLS enforces HR-admin write).
-- Reachable from existing 1:1 module nav.
-
-## Renderer alignment
-
-Where one-on-ones render the agenda today, branch on role: managers see `manager_prompts`, employees see `employee_prompts`. Falls back to `agenda_prompts` when the new columns are empty (covers older templates).
-
-## Technical notes
-
-- Files added: `src/routes/_authenticated/settings/one-on-one-templates.tsx`, `src/components/one-on-one/TemplateEditor.tsx`.
-- Files touched: 1:1 meeting/agenda component(s) for the role-based prompt branch; nav link in settings.
-- Migration: column adds + backfill + seed insert in one approved migration.
-- No new dependencies. Uses existing `dnd-kit` if installed, otherwise simple up/down arrows.
-
-**Please confirm the seed content path** (paste templates, run the export query, or use the placeholder fallback), then I'll switch to build mode and ship it.
+### Out of scope
+- Replacing the approvals workflow itself.
+- Editing the positions catalog UI.
+- Reworking the internal-careers page (it'll inherit the richer detail automatically via the shared query).

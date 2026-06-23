@@ -12,7 +12,42 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Check, ChevronRight, ChevronLeft, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { createRequisition, submitRequisitionForApproval, postRequisition } from "@/lib/jobs.functions";
+import { createRequisition, submitRequisitionForApproval, postRequisition, listPositionsForRequisition } from "@/lib/jobs.functions";
+
+const SAMPLE_TEMPLATE = {
+  summary:
+    "Under direct supervision, the purpose of the position is to assist library patrons by providing service at various desks, and accurately arrange and shelve reading material. Employees in this classification perform clerical level work. Performs related work as required.",
+  essential_functions: [
+    "Arranges library material in alphabetical and numerical order.",
+    "Shelves and retrieves material from the shelves.",
+    "Inspects library shelves for accuracy in shelving.",
+    "Assists in searching for lost or misplaced materials.",
+    "Processes library card application forms.",
+    "Provides service at the various public service desks using the automated library computer system.",
+    "Maintains holds shelves, adding and removing titles per requests and reports.",
+    "Assists patrons with circulation, directional, and informational questions.",
+    "Collects fines and fees.",
+    "Assists in training new employees.",
+    "Maintains information displays.",
+    "Comply with all written City policies and procedures.",
+    "Adhere to assigned work schedule as outlined in City and department attendance policies and procedures.",
+  ].map((s) => `- ${s}`).join("\n"),
+  ksa: [
+    "Requires the ability to calculate, compute, summate, and/or tabulate data and/or information.",
+    "Requires the ability to provide guidance, assistance, and/or interpretation to others on how to apply procedures and standards to specific situations.",
+    "Requires the ability to carry out instructions furnished in written, oral or diagrammatic form.",
+    "Requires the ability to perform skilled coordinated movements, such as operating a computer terminal, photocopier, or cash register.",
+    "The ability to pass a background and drug screen.",
+    "The ability to work in a team environment; contribute as a team member and treat co-workers, subordinates and customers with respect.",
+    "Communicate effectively both orally and in writing.",
+  ].map((s) => `- ${s}`).join("\n"),
+  qualifications:
+    "High School Diploma or GED required, supplemented by little or no previous experience or training; or an equivalent combination of education, training, and experience.\n\nAny work related experience resulting in acceptable proficiency levels in the above Minimum Qualifications is an acceptable substitute for the above specified education and experience requirements.",
+  physical_demands:
+    "Over two-thirds of on-the-job time is spent talking, hearing, standing, reaching and using one's hands.\nBetween one-third and two-thirds of on-the-job time is spent walking, stooping, kneeling, crouching or crawling.\nThe ability to lift and/or exert force up to ten (10) pounds may be required over two-thirds of the time and up to one hundred (100)+ pounds may be required between one-third and two-thirds of the time.",
+  supplemental:
+    "The above statements describe the general nature and level of work being performed. They are not to be construed as an exhaustive list of all responsibilities, duties, and skills required of the position. Employees holding this position will be required to perform any other job-related duties as requested by management. The job description does not constitute an employment agreement and all requirements are subject to possible modification to reasonably accommodate individuals with disabilities.",
+};
 
 export const Route = createFileRoute("/_authenticated/jobs/")({ component: JobsIndex });
 
@@ -77,24 +112,61 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
   const create = useServerFn(createRequisition);
   const submitApproval = useServerFn(submitRequisitionForApproval);
   const post = useServerFn(postRequisition);
+  const listPositions = useServerFn(listPositionsForRequisition);
+
+  const positionsQ = useQuery({
+    queryKey: ["positions_for_req"],
+    queryFn: () => listPositions(),
+  });
 
   const [step, setStep] = useState<WizardStep>(0);
   const [form, setForm] = useState({
+    position_id: "" as string,
     title: "",
     department: "",
     location: "",
     employment_type: "full_time",
     summary: "",
-    description: "",
+    essential_functions: "",
+    ksa: "",
+    qualifications: "",
+    physical_demands: "",
+    supplemental: "",
+    benefits: "",
     internal_only: false,
   });
   const [reqId, setReqId] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
   const [approvalSkipped, setApprovalSkipped] = useState(false);
+  const [approvalNotice, setApprovalNotice] = useState<string | null>(null);
 
   const doDraft = useMutation({
     mutationFn: async () => {
-      const row = (await create({ data: form })) as { id: string; slug: string | null };
+      const payload = {
+        title: form.title,
+        department: form.department || null,
+        position_id: form.position_id || null,
+        location: form.location || null,
+        employment_type: form.employment_type || null,
+        summary: form.summary || null,
+        // Stitch essential functions into `description` for back-compat
+        description: form.essential_functions || null,
+        // Stitch KSA + qualifications into `requirements`
+        requirements: [
+          form.ksa ? `## Knowledge, Skills, Abilities & Behaviors\n${form.ksa}` : "",
+          form.qualifications ? `## Required Qualifications\n${form.qualifications}` : "",
+        ].filter(Boolean).join("\n\n") || null,
+        benefits: form.benefits || null,
+        internal_only: form.internal_only,
+        posting_sections: {
+          essential_functions: form.essential_functions || null,
+          ksa: form.ksa || null,
+          qualifications: form.qualifications || null,
+          physical_demands: form.physical_demands || null,
+          supplemental: form.supplemental || null,
+        },
+      };
+      const row = (await create({ data: payload })) as { id: string; slug: string | null };
       return row;
     },
     onSuccess: (row) => {
@@ -108,8 +180,17 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
 
   const doSubmit = useMutation({
     mutationFn: () => submitApproval({ data: { requisition_id: reqId! } }),
-    onSuccess: () => {
-      toast.success("Submitted — approvers notified");
+    onSuccess: (res) => {
+      const r = res as { skipped?: boolean; reason?: string };
+      if (r.skipped) {
+        setApprovalSkipped(true);
+        setApprovalNotice(
+          "No approvers configured for your account (no supervisor link or HR admin found). You can post directly if your role allows it.",
+        );
+        toast.message("Approval skipped — no approvers configured");
+      } else {
+        toast.success("Submitted — approvers notified");
+      }
       setStep(3);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
@@ -160,8 +241,33 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
       {step === 0 && (
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Fill in the basics. You can refine the description any time from the requisition page.
+            Start from an existing job classification (recommended) — title, department, and worker type auto-fill. You can edit anything after.
           </p>
+          <div>
+            <Label>Job classification</Label>
+            <select
+              className="w-full border rounded h-9 px-2 bg-background text-sm"
+              value={form.position_id}
+              onChange={(e) => {
+                const pid = e.target.value;
+                const pos = (positionsQ.data ?? []).find((p) => p.id === pid);
+                setForm({
+                  ...form,
+                  position_id: pid,
+                  title: pos?.title ?? form.title,
+                  department: pos?.department ?? form.department,
+                });
+              }}
+            >
+              <option value="">— Custom (no classification) —</option>
+              {(positionsQ.data ?? []).map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.title}{p.department ? ` · ${p.department}` : ""}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-muted-foreground mt-1">Manage classifications under Positions.</p>
+          </div>
           <div>
             <Label>Title *</Label>
             <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Patrol Officer" />
@@ -170,18 +276,77 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
             <div><Label>Department</Label><Input value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} /></div>
             <div><Label>Location</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
           </div>
-          <div>
-            <Label>Summary (1–2 sentences)</Label>
-            <Textarea rows={2} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Employment type</Label>
+              <select
+                className="w-full border rounded h-9 px-2 bg-background text-sm"
+                value={form.employment_type}
+                onChange={(e) => setForm({ ...form, employment_type: e.target.value })}
+              >
+                <option value="full_time">Full time</option>
+                <option value="part_time">Part time</option>
+                <option value="temporary">Temporary</option>
+                <option value="seasonal">Seasonal</option>
+                <option value="contract">Contract</option>
+              </select>
+            </div>
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 text-sm pb-2">
+                <input type="checkbox" checked={form.internal_only} onChange={(e) => setForm({ ...form, internal_only: e.target.checked })} />
+                Internal mobility only
+              </label>
+            </div>
           </div>
           <div>
-            <Label>Description (markdown ok)</Label>
-            <Textarea rows={6} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <div className="flex items-center justify-between">
+              <Label>Position summary</Label>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs"
+                onClick={() =>
+                  setForm({
+                    ...form,
+                    summary: form.summary || SAMPLE_TEMPLATE.summary,
+                    essential_functions: form.essential_functions || SAMPLE_TEMPLATE.essential_functions,
+                    ksa: form.ksa || SAMPLE_TEMPLATE.ksa,
+                    qualifications: form.qualifications || SAMPLE_TEMPLATE.qualifications,
+                    physical_demands: form.physical_demands || SAMPLE_TEMPLATE.physical_demands,
+                    supplemental: form.supplemental || SAMPLE_TEMPLATE.supplemental,
+                  })
+                }
+              >
+                Use template
+              </Button>
+            </div>
+            <Textarea rows={3} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} placeholder="1–2 sentence position overview" />
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.internal_only} onChange={(e) => setForm({ ...form, internal_only: e.target.checked })} />
-            Internal mobility only (hidden from public careers page)
-          </label>
+          <div>
+            <Label>Essential functions</Label>
+            <Textarea rows={6} value={form.essential_functions} onChange={(e) => setForm({ ...form, essential_functions: e.target.value })} placeholder="- Arranges material…\n- Shelves and retrieves…" />
+          </div>
+          <div>
+            <Label>Knowledge, skills, abilities &amp; behaviors</Label>
+            <Textarea rows={5} value={form.ksa} onChange={(e) => setForm({ ...form, ksa: e.target.value })} />
+          </div>
+          <div>
+            <Label>Required qualifications</Label>
+            <Textarea rows={4} value={form.qualifications} onChange={(e) => setForm({ ...form, qualifications: e.target.value })} />
+          </div>
+          <div>
+            <Label>Physical demands</Label>
+            <Textarea rows={3} value={form.physical_demands} onChange={(e) => setForm({ ...form, physical_demands: e.target.value })} />
+          </div>
+          <div>
+            <Label>Supplemental</Label>
+            <Textarea rows={3} value={form.supplemental} onChange={(e) => setForm({ ...form, supplemental: e.target.value })} />
+          </div>
+          <div>
+            <Label>Benefits (optional)</Label>
+            <Textarea rows={3} value={form.benefits} onChange={(e) => setForm({ ...form, benefits: e.target.value })} />
+          </div>
           <div className="flex justify-end pt-2">
             <Button disabled={!form.title.trim()} onClick={() => setStep(1)}>
               Next <ChevronRight className="h-4 w-4 ml-1" />
@@ -248,7 +413,9 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
         <div className="space-y-4">
           <Card className="p-4 bg-muted/30">
             {approvalSkipped ? (
-              <p className="text-sm text-muted-foreground">Approval skipped. Posting will work only if your role allows direct posting; otherwise approve the requisition first from <span className="font-mono">/approvals</span>.</p>
+              <p className="text-sm text-muted-foreground">
+                {approvalNotice ?? "Approval skipped."} Posting will work only if your role allows direct posting; otherwise approve the requisition first from <span className="font-mono">/approvals</span>.
+              </p>
             ) : (
               <p className="text-sm">
                 <Check className="inline h-4 w-4 text-primary mr-1" /> Submitted. Once all approvers sign off, the requisition is ready to post.
