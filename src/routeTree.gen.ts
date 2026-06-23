@@ -55,6 +55,7 @@ import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authentica
 import { Route as AuthenticatedGrievancesIndexRouteImport } from './routes/_authenticated/grievances.index'
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
 import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authenticated/employees.index'
+import { Route as AuthenticatedCompCyclesIndexRouteImport } from './routes/_authenticated/comp-cycles.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
@@ -327,6 +328,12 @@ const AuthenticatedEmployeesIndexRoute =
     path: '/employees/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCompCyclesIndexRoute =
+  AuthenticatedCompCyclesIndexRouteImport.update({
+    id: '/comp-cycles/',
+    path: '/comp-cycles/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCascadesIndexRoute =
   AuthenticatedCascadesIndexRouteImport.update({
     id: '/cascades/',
@@ -520,6 +527,7 @@ export interface FileRoutesByFullPath {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
+  '/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
   '/forms/': typeof AuthenticatedFormsIndexRoute
   '/grievances/': typeof AuthenticatedGrievancesIndexRoute
@@ -592,6 +600,7 @@ export interface FileRoutesByTo {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
+  '/comp-cycles': typeof AuthenticatedCompCyclesIndexRoute
   '/employees': typeof AuthenticatedEmployeesIndexRoute
   '/forms': typeof AuthenticatedFormsIndexRoute
   '/grievances': typeof AuthenticatedGrievancesIndexRoute
@@ -666,6 +675,7 @@ export interface FileRoutesById {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
+  '/_authenticated/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
   '/_authenticated/grievances/': typeof AuthenticatedGrievancesIndexRoute
@@ -740,6 +750,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/cascades/'
+    | '/comp-cycles/'
     | '/employees/'
     | '/forms/'
     | '/grievances/'
@@ -812,6 +823,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/cascades'
+    | '/comp-cycles'
     | '/employees'
     | '/forms'
     | '/grievances'
@@ -885,6 +897,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/_authenticated/cascades/'
+    | '/_authenticated/comp-cycles/'
     | '/_authenticated/employees/'
     | '/_authenticated/forms/'
     | '/_authenticated/grievances/'
@@ -1248,6 +1261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/comp-cycles/': {
+      id: '/_authenticated/comp-cycles/'
+      path: '/comp-cycles'
+      fullPath: '/comp-cycles/'
+      preLoaderRoute: typeof AuthenticatedCompCyclesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cascades/': {
       id: '/_authenticated/cascades/'
       path: '/cascades'
@@ -1497,6 +1517,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedTranscriptEmployeeIdRoute: typeof AuthenticatedTranscriptEmployeeIdRoute
   AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
+  AuthenticatedCompCyclesIndexRoute: typeof AuthenticatedCompCyclesIndexRoute
   AuthenticatedEmployeesIndexRoute: typeof AuthenticatedEmployeesIndexRoute
   AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
   AuthenticatedGrievancesIndexRoute: typeof AuthenticatedGrievancesIndexRoute
@@ -1555,6 +1576,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTranscriptEmployeeIdRoute:
     AuthenticatedTranscriptEmployeeIdRoute,
   AuthenticatedCascadesIndexRoute: AuthenticatedCascadesIndexRoute,
+  AuthenticatedCompCyclesIndexRoute: AuthenticatedCompCyclesIndexRoute,
   AuthenticatedEmployeesIndexRoute: AuthenticatedEmployeesIndexRoute,
   AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
   AuthenticatedGrievancesIndexRoute: AuthenticatedGrievancesIndexRoute,
