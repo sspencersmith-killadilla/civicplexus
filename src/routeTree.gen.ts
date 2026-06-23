@@ -71,6 +71,7 @@ import { Route as ApiPublicJobApplicationsSelfIdRouteImport } from './routes/api
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
+import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
 import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
 import { Route as ApiPublicCandidateTokenStatusRouteImport } from './routes/api/public/candidate/$token/status'
@@ -411,6 +412,12 @@ const ApiPublicDocsFileRoute = ApiPublicDocsFileRouteImport.update({
   path: '/api/public/docs/$file',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedReviewCyclesIdCalibrationRoute =
+  AuthenticatedReviewCyclesIdCalibrationRouteImport.update({
+    id: '/calibration',
+    path: '/calibration',
+    getParentRoute: () => AuthenticatedReviewCyclesIdRoute,
+  } as any)
 const ApiPublicOffersTokenViewRoute =
   ApiPublicOffersTokenViewRouteImport.update({
     id: '/api/public/offers/$token/view',
@@ -476,7 +483,7 @@ export interface FileRoutesByFullPath {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
-  '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRoute
+  '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -494,6 +501,7 @@ export interface FileRoutesByFullPath {
   '/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
+  '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -543,7 +551,7 @@ export interface FileRoutesByTo {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
-  '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRoute
+  '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -561,6 +569,7 @@ export interface FileRoutesByTo {
   '/review-cycles': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
+  '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -612,7 +621,7 @@ export interface FileRoutesById {
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/paf/$id': typeof AuthenticatedPafIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
-  '/_authenticated/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRoute
+  '/_authenticated/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -630,6 +639,7 @@ export interface FileRoutesById {
   '/_authenticated/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
+  '/_authenticated/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -699,6 +709,7 @@ export interface FileRouteTypes {
     | '/review-cycles/'
     | '/reviews/'
     | '/templates/'
+    | '/review-cycles/$id/calibration'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
@@ -766,6 +777,7 @@ export interface FileRouteTypes {
     | '/review-cycles'
     | '/reviews'
     | '/templates'
+    | '/review-cycles/$id/calibration'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
@@ -834,6 +846,7 @@ export interface FileRouteTypes {
     | '/_authenticated/review-cycles/'
     | '/_authenticated/reviews/'
     | '/_authenticated/templates/'
+    | '/_authenticated/review-cycles/$id/calibration'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
@@ -1298,6 +1311,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDocsFileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/review-cycles/$id/calibration': {
+      id: '/_authenticated/review-cycles/$id/calibration'
+      path: '/calibration'
+      fullPath: '/review-cycles/$id/calibration'
+      preLoaderRoute: typeof AuthenticatedReviewCyclesIdCalibrationRouteImport
+      parentRoute: typeof AuthenticatedReviewCyclesIdRoute
+    }
     '/api/public/offers/$token/view': {
       id: '/api/public/offers/$token/view'
       path: '/api/public/offers/$token/view'
@@ -1342,6 +1362,21 @@ const AuthenticatedPoliciesRouteWithChildren =
     AuthenticatedPoliciesRouteChildren,
   )
 
+interface AuthenticatedReviewCyclesIdRouteChildren {
+  AuthenticatedReviewCyclesIdCalibrationRoute: typeof AuthenticatedReviewCyclesIdCalibrationRoute
+}
+
+const AuthenticatedReviewCyclesIdRouteChildren: AuthenticatedReviewCyclesIdRouteChildren =
+  {
+    AuthenticatedReviewCyclesIdCalibrationRoute:
+      AuthenticatedReviewCyclesIdCalibrationRoute,
+  }
+
+const AuthenticatedReviewCyclesIdRouteWithChildren =
+  AuthenticatedReviewCyclesIdRoute._addFileChildren(
+    AuthenticatedReviewCyclesIdRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
@@ -1375,7 +1410,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeaveIdRoute: typeof AuthenticatedLeaveIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedPafIdRoute: typeof AuthenticatedPafIdRoute
-  AuthenticatedReviewCyclesIdRoute: typeof AuthenticatedReviewCyclesIdRoute
+  AuthenticatedReviewCyclesIdRoute: typeof AuthenticatedReviewCyclesIdRouteWithChildren
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedTranscriptEmployeeIdRoute: typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -1426,7 +1461,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeaveIdRoute: AuthenticatedLeaveIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedPafIdRoute: AuthenticatedPafIdRoute,
-  AuthenticatedReviewCyclesIdRoute: AuthenticatedReviewCyclesIdRoute,
+  AuthenticatedReviewCyclesIdRoute:
+    AuthenticatedReviewCyclesIdRouteWithChildren,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedTranscriptEmployeeIdRoute:

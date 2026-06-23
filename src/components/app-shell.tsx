@@ -38,6 +38,7 @@ const NAV_GROUPS = [
     { to: "/one-on-ones", label: "1-on-1s", icon: MessagesSquare, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
     { to: "/goals", label: "Goals", icon: Target, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
     { to: "/reviews", label: "Reviews", icon: ClipboardCheck, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
+    { to: "/review-cycles", label: "Review Cycles", icon: CalendarDays, roles: ["hr_admin"] },
     { to: "/cascades", label: "Cascades", icon: Megaphone, roles: ["hr_admin", "hiring_manager", "supervisor"] },
   ]},
   { label: "Compliance", items: [
