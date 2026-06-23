@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import Papa from "papaparse";
+import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, Download, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -66,7 +67,9 @@ function ImportPanel({ specKey, spec }: { specKey: keyof typeof SPECS; spec: typ
   const headers = useMemo(() => [...spec.required, ...spec.optional], [spec]);
   const [rows, setRows] = useState<Record<string, string>[]>([]);
   const [headerErrors, setHeaderErrors] = useState<string[]>([]);
-  const [result, setResult] = useState<{ inserted: number; updated: number; skipped: number; errors: { row: number; column?: string; message: string }[] } | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [job, setJob] = useState<JobRow | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fnMap = {
     employees: useServerFn(importEmployees),
@@ -78,21 +81,44 @@ function ImportPanel({ specKey, spec }: { specKey: keyof typeof SPECS; spec: typ
   } as const;
   const fn = fnMap[specKey];
 
-  const run = useMutation({
-    mutationFn: async () => {
-      const res = await (fn as (args: { data: { rows: Record<string, string>[] } }) => Promise<typeof result>)({ data: { rows } });
-      return res;
-    },
-    onSuccess: (r) => {
-      setResult(r);
-      const summary = `${r?.inserted ?? 0} inserted, ${r?.updated ?? 0} updated, ${r?.skipped ?? 0} skipped`;
-      if ((r?.errors?.length ?? 0) > 0) toast.warning(summary + ` · ${r?.errors.length} errors`); else toast.success(summary);
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
+  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
+
+  async function startImport() {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) { toast.error("Not signed in"); return; }
+    const { data: created, error } = await supabase
+      .from("import_jobs")
+      .insert({ kind: specKey, status: "queued", total_rows: rows.length, created_by: auth.user.id } as never)
+      .select("*").single();
+    if (error || !created) { toast.error(error?.message ?? "Could not create job"); return; }
+    const j = created as unknown as JobRow;
+    setJobId(j.id); setJob(j);
+    // Fire-and-forget — progress is observed via the job row
+    (fn as (args: { data: { rows: Record<string, string>[]; job_id: string } }) => Promise<unknown>)({ data: { rows, job_id: j.id } })
+      .catch(() => { /* errors land in job.error_message */ });
+
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(async () => {
+      const { data } = await supabase.from("import_jobs").select("*").eq("id", j.id).maybeSingle();
+      if (!data) return;
+      const row = data as unknown as JobRow;
+      setJob(row);
+      if (row.status === "completed" || row.status === "failed") {
+        if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+        const summary = `${row.inserted} inserted, ${row.updated} updated, ${row.skipped} skipped`;
+        if (row.status === "failed") toast.error(row.error_message ?? "Import failed");
+        else if ((row.errors?.length ?? 0) > 0) toast.warning(`${summary} · ${row.errors.length} errors`);
+        else toast.success(summary);
+      }
+    }, 1500);
+  }
+
+  const isRunning = job?.status === "queued" || job?.status === "processing";
+  const isDone = job?.status === "completed" || job?.status === "failed";
+  const pct = job && job.total_rows > 0 ? Math.min(100, Math.round((job.processed_rows / job.total_rows) * 100)) : 0;
 
   function onFile(file: File) {
-    setResult(null);
+    setJob(null); setJobId(null);
     Papa.parse<Record<string, string>>(file, {
       header: true, skipEmptyLines: true,
       complete: (parsed) => {
@@ -139,27 +165,47 @@ function ImportPanel({ specKey, spec }: { specKey: keyof typeof SPECS; spec: typ
                 ))}</tbody>
               </table>
             </div>
-            <Button className="mt-4" onClick={() => run.mutate()} disabled={run.isPending}>{run.isPending ? "Importing…" : `Import ${rows.length} row(s)`}</Button>
+            <Button className="mt-4" onClick={startImport} disabled={isRunning}>{isRunning ? "Importing…" : `Import ${rows.length} row(s)`}</Button>
           </div>
         )}
       </Card>
 
-      {result && (
+      {job && (
         <Card className="p-5">
-          <h4 className="font-medium mb-2">Result</h4>
-          <p className="text-sm">Inserted: {result.inserted} · Updated: {result.updated} · Skipped: {result.skipped}</p>
-          {!!result.errors.length && (
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium">
+              Job <span className="text-muted-foreground font-mono text-xs">{job.id.slice(0, 8)}</span>
+            </h4>
+            <span className={
+              "text-xs px-2 py-0.5 rounded " +
+              (job.status === "completed" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" :
+               job.status === "failed" ? "bg-destructive/15 text-destructive" :
+               job.status === "processing" ? "bg-blue-500/15 text-blue-700 dark:text-blue-300" :
+               "bg-muted text-muted-foreground")
+            }>{job.status}</span>
+          </div>
+          {isRunning && (
+            <div className="space-y-2 mb-3">
+              <Progress value={pct} />
+              <p className="text-xs text-muted-foreground">{job.processed_rows} of {job.total_rows} rows · {pct}%</p>
+            </div>
+          )}
+          <p className="text-sm">Inserted: {job.inserted} · Updated: {job.updated} · Skipped: {job.skipped}</p>
+          {job.status === "failed" && job.error_message && (
+            <p className="text-sm text-destructive mt-2">{job.error_message}</p>
+          )}
+          {isDone && (job.errors?.length ?? 0) > 0 && (
             <div className="mt-3">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-destructive">{result.errors.length} errors</p>
-                <Button size="sm" variant="outline" onClick={() => downloadFile(`${specKey}-errors.csv`, "row,column,message\n" + result.errors.map((e) => `${e.row},${e.column ?? ""},"${e.message.replace(/"/g, '""')}"`).join("\n"))}>
+                <p className="text-sm font-medium text-destructive">{job.errors.length} row errors</p>
+                <Button size="sm" variant="outline" onClick={() => downloadFile(`${specKey}-errors.csv`, "row,column,message\n" + job.errors.map((e) => `${e.row},${e.column ?? ""},"${e.message.replace(/"/g, '""')}"`).join("\n"))}>
                   <Download className="h-3 w-3 mr-1" /> Download errors
                 </Button>
               </div>
               <div className="max-h-64 overflow-y-auto border rounded-md text-xs">
                 <table className="w-full">
                   <thead className="bg-muted sticky top-0"><tr><th className="text-left p-2">Row</th><th className="text-left p-2">Column</th><th className="text-left p-2">Message</th></tr></thead>
-                  <tbody>{result.errors.map((e, i) => <tr key={i} className="border-t"><td className="p-2">{e.row}</td><td className="p-2">{e.column ?? ""}</td><td className="p-2">{e.message}</td></tr>)}</tbody>
+                  <tbody>{job.errors.map((e, i) => <tr key={i} className="border-t"><td className="p-2">{e.row}</td><td className="p-2">{e.column ?? ""}</td><td className="p-2">{e.message}</td></tr>)}</tbody>
                 </table>
               </div>
             </div>
@@ -169,3 +215,18 @@ function ImportPanel({ specKey, spec }: { specKey: keyof typeof SPECS; spec: typ
     </div>
   );
 }
+
+type JobRow = {
+  id: string;
+  status: "queued" | "processing" | "completed" | "failed";
+  total_rows: number;
+  processed_rows: number;
+  inserted: number;
+  updated: number;
+  skipped: number;
+  errors: { row: number; column?: string; message: string }[];
+  error_message: string | null;
+};
+
+// silence unused
+void jobId;
