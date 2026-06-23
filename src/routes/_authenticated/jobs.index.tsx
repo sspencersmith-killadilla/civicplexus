@@ -12,7 +12,42 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Check, ChevronRight, ChevronLeft, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { createRequisition, submitRequisitionForApproval, postRequisition } from "@/lib/jobs.functions";
+import { createRequisition, submitRequisitionForApproval, postRequisition, listPositionsForRequisition } from "@/lib/jobs.functions";
+
+const SAMPLE_TEMPLATE = {
+  summary:
+    "Under direct supervision, the purpose of the position is to assist library patrons by providing service at various desks, and accurately arrange and shelve reading material. Employees in this classification perform clerical level work. Performs related work as required.",
+  essential_functions: [
+    "Arranges library material in alphabetical and numerical order.",
+    "Shelves and retrieves material from the shelves.",
+    "Inspects library shelves for accuracy in shelving.",
+    "Assists in searching for lost or misplaced materials.",
+    "Processes library card application forms.",
+    "Provides service at the various public service desks using the automated library computer system.",
+    "Maintains holds shelves, adding and removing titles per requests and reports.",
+    "Assists patrons with circulation, directional, and informational questions.",
+    "Collects fines and fees.",
+    "Assists in training new employees.",
+    "Maintains information displays.",
+    "Comply with all written City policies and procedures.",
+    "Adhere to assigned work schedule as outlined in City and department attendance policies and procedures.",
+  ].map((s) => `- ${s}`).join("\n"),
+  ksa: [
+    "Requires the ability to calculate, compute, summate, and/or tabulate data and/or information.",
+    "Requires the ability to provide guidance, assistance, and/or interpretation to others on how to apply procedures and standards to specific situations.",
+    "Requires the ability to carry out instructions furnished in written, oral or diagrammatic form.",
+    "Requires the ability to perform skilled coordinated movements, such as operating a computer terminal, photocopier, or cash register.",
+    "The ability to pass a background and drug screen.",
+    "The ability to work in a team environment; contribute as a team member and treat co-workers, subordinates and customers with respect.",
+    "Communicate effectively both orally and in writing.",
+  ].map((s) => `- ${s}`).join("\n"),
+  qualifications:
+    "High School Diploma or GED required, supplemented by little or no previous experience or training; or an equivalent combination of education, training, and experience.\n\nAny work related experience resulting in acceptable proficiency levels in the above Minimum Qualifications is an acceptable substitute for the above specified education and experience requirements.",
+  physical_demands:
+    "Over two-thirds of on-the-job time is spent talking, hearing, standing, reaching and using one's hands.\nBetween one-third and two-thirds of on-the-job time is spent walking, stooping, kneeling, crouching or crawling.\nThe ability to lift and/or exert force up to ten (10) pounds may be required over two-thirds of the time and up to one hundred (100)+ pounds may be required between one-third and two-thirds of the time.",
+  supplemental:
+    "The above statements describe the general nature and level of work being performed. They are not to be construed as an exhaustive list of all responsibilities, duties, and skills required of the position. Employees holding this position will be required to perform any other job-related duties as requested by management. The job description does not constitute an employment agreement and all requirements are subject to possible modification to reasonably accommodate individuals with disabilities.",
+};
 
 export const Route = createFileRoute("/_authenticated/jobs/")({ component: JobsIndex });
 
