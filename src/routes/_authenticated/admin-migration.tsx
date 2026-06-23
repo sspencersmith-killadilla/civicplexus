@@ -52,12 +52,12 @@ function MigrationPage() {
 
   const stageFn = useMutation({
     mutationFn: useServerFn(stageMigrationRows),
-    onSuccess: (r) => { setJobId(r.import_job_id); toast.success(`Staged ${r.staged} rows`); qc.invalidateQueries({ queryKey: ["import-jobs"] }); },
+    onSuccess: (r: { import_job_id: string; staged: number }) => { setJobId(r.import_job_id); toast.success(`Staged ${r.staged} rows`); qc.invalidateQueries({ queryKey: ["import-jobs"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
   const commitFn = useMutation({
     mutationFn: useServerFn(commitMigrationStage),
-    onSuccess: (r) => toast.success(`Processed ${r.processed} · created ${r.created} · updated ${r.updated} · failed ${r.failed}`),
+    onSuccess: (r: { processed: number; created: number; updated: number; failed: number }) => toast.success(`Processed ${r.processed} · created ${r.created} · updated ${r.updated} · failed ${r.failed}`),
     onError: (e: Error) => toast.error(e.message),
   });
   const reportFn = useServerFn(reconciliationReport);
