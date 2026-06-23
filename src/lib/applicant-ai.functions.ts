@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { generateText } from "ai";
+import { jsonrepair } from "jsonrepair";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 const MODEL = "google/gemini-3-flash-preview";
@@ -24,17 +25,53 @@ const ScreenPayload = z.object({
 });
 export type ScreenPayload = z.infer<typeof ScreenPayload>;
 
-// Robust JSON extraction — strips markdown fences and isolates the first
-// top-level object even if the model wraps it in prose.
+// Robust JSON extraction — strips markdown fences, isolates the first
+// top-level object, and repairs common model JSON mistakes such as trailing
+// commas, single quotes, or unquoted keys before strict validation.
 function extractJsonObject(raw: string): unknown {
-  let s = raw.replace(/^```(?:json)?\s*/im, "").replace(/```\s*$/im, "").trim();
-  if (!s.startsWith("{")) {
-    const start = s.indexOf("{");
-    const end = s.lastIndexOf("}");
-    if (start === -1 || end <= start) throw new Error("No JSON object found in response");
-    s = s.slice(start, end + 1);
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1] ?? raw;
+  const s = fenced.trim();
+  const start = s.indexOf("{");
+  if (start === -1) throw new Error("No JSON object found in response");
+
+  let end = -1;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = start; i < s.length; i++) {
+    const ch = s[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escaped = inString;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (ch === "{") depth++;
+    if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        end = i;
+        break;
+      }
+    }
   }
-  return JSON.parse(s);
+
+  const candidate = s.slice(start, end === -1 ? s.lastIndexOf("}") + 1 : end + 1).trim();
+  if (!candidate) throw new Error("No complete JSON object found in response");
+
+  try {
+    return JSON.parse(candidate);
+  } catch {
+    return JSON.parse(jsonrepair(candidate));
+  }
 }
 
 function normalize(raw: unknown): ScreenPayload {
@@ -112,15 +149,18 @@ export const screenApplication = createServerFn({ method: "POST" })
 
     const prompt = `You are an HR screening assistant for a municipal employer. Draft a fair, evidence-based screening summary for a recruiter to review. The recruiter — a human — will accept, edit, or reject your suggestion before any action is taken on the candidate. Be conservative, cite concrete evidence from the resume/cover letter only, and never infer protected characteristics. Keep each bullet under 200 characters and the rationale 2-4 sentences.
 
-Return ONLY a single raw JSON object — no markdown fences, no commentary — with this exact shape:
-{
-  "fit_score": <integer 0-100>,
-  "strengths": [<up to 8 short strings>],
-  "gaps": [<up to 8 short strings>],
-  "suggested_status": "advance" | "interview" | "reject" | "hold",
-  "suggested_rejection_reason": <string or null>,
-  "rationale": <string, 2-4 sentences>
-}
+Return ONLY one valid JSON object. Do not include markdown fences, comments, trailing commas, placeholders, or explanatory text. JSON property names and string values must use double quotes.
+
+Required keys:
+- fit_score: integer from 0 to 100
+- strengths: array of up to 8 short strings
+- gaps: array of up to 8 short strings
+- suggested_status: one of "advance", "interview", "reject", or "hold"
+- suggested_rejection_reason: short string when suggested_status is "reject", otherwise null
+- rationale: 2-4 sentence string
+
+Example format only:
+{"fit_score":72,"strengths":["Meets required certification"],"gaps":["No supervisory experience shown"],"suggested_status":"hold","suggested_rejection_reason":null,"rationale":"The application shows partial alignment with the role. A recruiter should verify the missing requirements before deciding."}
 
 REQUISITION CONTEXT:
 ${reqContext}
@@ -133,12 +173,13 @@ ${candidate}`;
       const { text } = await generateText({
         model: gateway()(MODEL),
         prompt,
+        temperature: 0.1,
       });
       payload = normalize(extractJsonObject(text));
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error("[screenApplication] AI call failed", msg);
-      throw new Error(`AI screening failed: ${msg.slice(0, 300)}`);
+      throw new Error(`AI screening failed: Could not read the generated screening response. ${msg.slice(0, 180)}`);
     }
 
     const { data: ins, error: insErr } = await context.supabase
