@@ -67,8 +67,8 @@ export const composeTmrsFile = createServerFn({ method: "POST" })
     const runIds = (runs ?? []).map((r) => r.id);
 
     const { data: lines } = runIds.length
-      ? await supabaseAdmin.from("payroll_run_lines").select("employee_id,gross").in("run_id", runIds)
-      : { data: [] as { employee_id: string; gross: number }[] };
+      ? await supabaseAdmin.from("payroll_run_lines").select("employee_id,gross_pay").in("run_id", runIds)
+      : { data: [] as { employee_id: string; gross_pay: number }[] };
 
     const { data: enrolls } = await supabaseAdmin
       .from("tmrs_enrollments").select("employee_id,member_rate_pct,exited_on");
@@ -79,9 +79,9 @@ export const composeTmrsFile = createServerFn({ method: "POST" })
     }
 
     const grouped = new Map<string, number>();
-    for (const l of lines ?? []) {
+    for (const l of (lines ?? []) as { employee_id: string; gross_pay: number | null }[]) {
       if (!enrollMap.has(l.employee_id)) continue;
-      grouped.set(l.employee_id, (grouped.get(l.employee_id) ?? 0) + Number(l.gross ?? 0));
+      grouped.set(l.employee_id, (grouped.get(l.employee_id) ?? 0) + Number(l.gross_pay ?? 0));
     }
 
     let totalGross = 0, totalMember = 0, totalEmployer = 0;
