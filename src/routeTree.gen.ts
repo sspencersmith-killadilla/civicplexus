@@ -39,6 +39,7 @@ import { Route as AuthenticatedEmailTemplatesRouteImport } from './routes/_authe
 import { Route as AuthenticatedEeoSnapshotRouteImport } from './routes/_authenticated/eeo-snapshot'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCompGradesRouteImport } from './routes/_authenticated/comp-grades'
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
@@ -236,6 +237,11 @@ const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCompGradesRoute = AuthenticatedCompGradesRouteImport.update({
+  id: '/comp-grades',
+  path: '/comp-grades',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBenefitsRoute = AuthenticatedBenefitsRouteImport.update({
@@ -462,6 +468,7 @@ export interface FileRoutesByFullPath {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
+  '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
@@ -532,6 +539,7 @@ export interface FileRoutesByTo {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
+  '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
@@ -604,6 +612,7 @@ export interface FileRoutesById {
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
+  '/_authenticated/comp-grades': typeof AuthenticatedCompGradesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/eeo-snapshot': typeof AuthenticatedEeoSnapshotRoute
@@ -676,6 +685,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/audit'
     | '/benefits'
+    | '/comp-grades'
     | '/dashboard'
     | '/documents'
     | '/eeo-snapshot'
@@ -746,6 +756,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/audit'
     | '/benefits'
+    | '/comp-grades'
     | '/dashboard'
     | '/documents'
     | '/eeo-snapshot'
@@ -817,6 +828,7 @@ export interface FileRouteTypes {
     | '/_authenticated/approvals'
     | '/_authenticated/audit'
     | '/_authenticated/benefits'
+    | '/_authenticated/comp-grades'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
     | '/_authenticated/eeo-snapshot'
@@ -1110,6 +1122,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/comp-grades': {
+      id: '/_authenticated/comp-grades'
+      path: '/comp-grades'
+      fullPath: '/comp-grades'
+      preLoaderRoute: typeof AuthenticatedCompGradesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/benefits': {
@@ -1420,6 +1439,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
+  AuthenticatedCompGradesRoute: typeof AuthenticatedCompGradesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEeoSnapshotRoute: typeof AuthenticatedEeoSnapshotRoute
@@ -1474,6 +1494,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
+  AuthenticatedCompGradesRoute: AuthenticatedCompGradesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEeoSnapshotRoute: AuthenticatedEeoSnapshotRoute,
