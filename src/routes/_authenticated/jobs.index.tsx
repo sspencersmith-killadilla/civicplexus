@@ -112,24 +112,61 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
   const create = useServerFn(createRequisition);
   const submitApproval = useServerFn(submitRequisitionForApproval);
   const post = useServerFn(postRequisition);
+  const listPositions = useServerFn(listPositionsForRequisition);
+
+  const positionsQ = useQuery({
+    queryKey: ["positions_for_req"],
+    queryFn: () => listPositions(),
+  });
 
   const [step, setStep] = useState<WizardStep>(0);
   const [form, setForm] = useState({
+    position_id: "" as string,
     title: "",
     department: "",
     location: "",
     employment_type: "full_time",
     summary: "",
-    description: "",
+    essential_functions: "",
+    ksa: "",
+    qualifications: "",
+    physical_demands: "",
+    supplemental: "",
+    benefits: "",
     internal_only: false,
   });
   const [reqId, setReqId] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
   const [approvalSkipped, setApprovalSkipped] = useState(false);
+  const [approvalNotice, setApprovalNotice] = useState<string | null>(null);
 
   const doDraft = useMutation({
     mutationFn: async () => {
-      const row = (await create({ data: form })) as { id: string; slug: string | null };
+      const payload = {
+        title: form.title,
+        department: form.department || null,
+        position_id: form.position_id || null,
+        location: form.location || null,
+        employment_type: form.employment_type || null,
+        summary: form.summary || null,
+        // Stitch essential functions into `description` for back-compat
+        description: form.essential_functions || null,
+        // Stitch KSA + qualifications into `requirements`
+        requirements: [
+          form.ksa ? `## Knowledge, Skills, Abilities & Behaviors\n${form.ksa}` : "",
+          form.qualifications ? `## Required Qualifications\n${form.qualifications}` : "",
+        ].filter(Boolean).join("\n\n") || null,
+        benefits: form.benefits || null,
+        internal_only: form.internal_only,
+        posting_sections: {
+          essential_functions: form.essential_functions || null,
+          ksa: form.ksa || null,
+          qualifications: form.qualifications || null,
+          physical_demands: form.physical_demands || null,
+          supplemental: form.supplemental || null,
+        },
+      };
+      const row = (await create({ data: payload })) as { id: string; slug: string | null };
       return row;
     },
     onSuccess: (row) => {
@@ -143,8 +180,17 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
 
   const doSubmit = useMutation({
     mutationFn: () => submitApproval({ data: { requisition_id: reqId! } }),
-    onSuccess: () => {
-      toast.success("Submitted — approvers notified");
+    onSuccess: (res) => {
+      const r = res as { skipped?: boolean; reason?: string };
+      if (r.skipped) {
+        setApprovalSkipped(true);
+        setApprovalNotice(
+          "No approvers configured for your account (no supervisor link or HR admin found). You can post directly if your role allows it.",
+        );
+        toast.message("Approval skipped — no approvers configured");
+      } else {
+        toast.success("Submitted — approvers notified");
+      }
       setStep(3);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
