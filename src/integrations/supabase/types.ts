@@ -5097,6 +5097,16 @@ export type Database = {
         }
         Returns: string
       }
+      record_paf_audit: {
+        Args: {
+          _event_type: string
+          _from_status?: string
+          _paf_id: string
+          _payload?: Json
+          _to_status?: string
+        }
+        Returns: string
+      }
       update_my_employee_contact: {
         Args: { _personal_email?: string; _phone?: string }
         Returns: undefined

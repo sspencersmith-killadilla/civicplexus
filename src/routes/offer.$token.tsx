@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import DOMPurify from "isomorphic-dompurify";
 
 export const Route = createFileRoute("/offer/$token")({ component: OfferView });
 
@@ -84,7 +85,7 @@ function OfferView() {
           {o.expires_at && <p className="text-xs text-muted-foreground mt-2">Please respond by {new Date(o.expires_at).toLocaleDateString()}</p>}
         </header>
 
-        <Card className="p-6 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: o.letter_html }} />
+        <Card className="p-6 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(o.letter_html) }} />
 
         <Card className="p-6">
           <h2 className="font-medium mb-3">Accept this offer</h2>

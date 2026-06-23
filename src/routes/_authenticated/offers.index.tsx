@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Send, Ban, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { sendOffer, voidOffer } from "@/lib/offers.functions";
+import DOMPurify from "isomorphic-dompurify";
 
 export const Route = createFileRoute("/_authenticated/offers/")({ component: OffersIndex });
 
@@ -82,7 +83,7 @@ function OffersIndex() {
       <Dialog open={!!previewing} onOpenChange={(v) => !v && setPreviewing(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
           <DialogHeader><DialogTitle>Offer letter preview</DialogTitle></DialogHeader>
-          {previewing && <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: previewing.letter_html }} />}
+          {previewing && <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewing.letter_html) }} />}
         </DialogContent>
       </Dialog>
     </AppShell>

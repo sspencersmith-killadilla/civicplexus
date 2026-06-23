@@ -1,10 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createHmac, timingSafeEqual } from "crypto";
 import { dispatchTrainingReminders } from "@/lib/training.functions";
 
 export const Route = createFileRoute("/api/public/hooks/reminders")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const secret = process.env.REMINDERS_WEBHOOK_SECRET;
+        if (!secret) return new Response("Webhook not configured", { status: 503 });
+        const signature = request.headers.get("x-webhook-signature") ?? "";
+        const body = await request.text();
+        const expected = createHmac("sha256", secret).update(body).digest("hex");
+        const sig = Buffer.from(signature);
+        const exp = Buffer.from(expected);
+        if (sig.length !== exp.length || !timingSafeEqual(sig, exp)) {
+          return new Response("Unauthorized", { status: 401 });
+        }
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         // Overdue task reminders
         const today = new Date().toISOString().slice(0, 10);
