@@ -82,7 +82,7 @@ function OffersIndex() {
       <Dialog open={!!previewing} onOpenChange={(v) => !v && setPreviewing(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
           <DialogHeader><DialogTitle>Offer letter preview</DialogTitle></DialogHeader>
-          {previewing && <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: previewing.letter_html }} />}
+          {previewing && <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewing.letter_html) }} />}
         </DialogContent>
       </Dialog>
     </AppShell>
