@@ -1,89 +1,67 @@
-## Recruiting & Onboarding — completing the loop
+## Performance & Goals — Build Plan
 
-The skeleton (requisitions, careers site, applications, interviews, screenings, hire requests, preboarding tasks) is already in place. The flow breaks down in four spots: there is no formal **offer** step, external candidates have **no portal** after applying, **applicant communications** are barebones, and **onboarding** doesn't automatically advance state or surface progress to managers. This plan closes those four gaps and adds the municipal-grade reporting expected of an HRIS.
+The bones exist (`performance_reviews`, `performance_review_signatures`, `goals`, `goal_updates`, `one_on_ones*`, `cascades`). What's missing is the *cycle* wrapper, calibration, structured 1:1 prep, goal cascading/check-ins, and a single manager view that pulls it together. This plan closes those gaps.
 
-### 1. Offer management (new)
+### 1. Review Cycles (new)
+- New table `review_cycles`: `name`, `period_start`, `period_end`, `kickoff_at`, `self_review_due`, `manager_review_due`, `signoff_due`, `status (draft|open|in_calibration|closed)`, `eligibility_filter (jsonb)`, `template_key`.
+- New table `review_cycle_participants`: `cycle_id`, `employee_id`, `manager_id`, `review_id?`, `status (not_started|self_submitted|manager_submitted|acknowledged|finalized)`.
+- HR launches a cycle → trigger seeds `performance_reviews` rows for every eligible employee (active on `period_end`, optionally filtered by department/worker type) and notifies managers + employees.
+- Daily cron in `reminders.ts`: ping self-review when overdue, escalate to manager 3 days after `manager_review_due`, notify HR for unsigned reviews past `signoff_due`.
+- New UI: `/_authenticated/review-cycles/` (HR list + launcher) and `/_authenticated/review-cycles/$id` (progress bar, per-participant status, "send reminder" / "reopen" actions, CSV export).
 
-```text
-application (finalist) ─► offer (draft → sent → accepted/declined/expired) ─► hire_request
-```
+### 2. Review Detail Upgrades
+- Add structured rating sections: replace single `overall_rating` with a `review_ratings` table (`competency`, `rating`, `comment`) seeded from `org_settings.review_competencies` (new JSON setting with a sensible default — communication, ownership, craft, collaboration, growth).
+- Acknowledgement step: when employee signs, automatically push status to `employee_acknowledged`; manager signature flips to `finalized` and locks the row (DB trigger denies further UPDATEs once finalized except by `hr_admin`).
+- Generate a printable PDF of the finalized review via `print:` CSS and a "Download" button (browser print → save as PDF; no server-side rendering, keeps Worker-safe).
+- Reviewee self-assessment becomes its own step with a separate submit button + lock when submitted.
 
-- New `offers` table: `application_id`, `salary`, `pay_grade`, `start_date`, `expires_at`, `letter_html`, `status`, `sent_at`, `signed_at`, `signature_id`, `decline_reason`.
-- Offer letter generated from a configurable template (org_settings) with variable substitution (name, title, salary, start date, supervisor).
-- Hiring manager drafts → HR approves → emailed to candidate with a secure tokenized accept/decline link (no auth required, signed JWT).
-- Accept captures e-signature (reuse `signatures` table), then auto-calls `convertApplicationToHire`. Decline records reason and reopens the requisition.
-- Reject path also generates a templated rejection email for any application not advanced.
+### 3. Calibration
+- New page `/_authenticated/review-cycles/$id/calibration` (HR + executives only):
+  - Grid by department × rating distribution.
+  - Inline edit of `overall_rating` with audit row in new `review_rating_changes` table (`review_id`, `from`, `to`, `changed_by`, `reason`, `at`).
+  - "Mark cycle as calibrated" gate before participants can be notified to acknowledge.
 
-### 2. Candidate portal (new)
+### 4. 1:1 Upgrades
+- Pre-meeting prep: surface unresolved action items, recent goal updates, and last 1:1 highlights in `one_on_ones.$id.tsx` sidebar.
+- Recurring schedule: add `cadence_weeks` + `next_scheduled_at` on `one_on_ones`; nightly cron auto-creates the next session 7 days before due.
+- Shared agenda: separate visibility flag on `one_on_one_agenda_notes` already exists — add inline "shared/private" toggle and a "carry over to next" action that copies an item into the next scheduled session.
 
-A tokenized public route `/candidate/$token` (no login) where each external applicant can:
+### 5. Goals — Cascade & Check-ins
+- Add `parent_goal_id uuid` + `weight numeric` on `goals` for parent/child cascading. Computed rollup: parent progress = weighted avg of children (server-side helper).
+- "Cascade from goal" UX on `goals.tsx`: pick a parent goal, pick direct reports, draft child goals in one dialog.
+- Weekly check-in prompt: nightly cron inserts a `notifications` row every Monday for any goal owner with no `goal_updates` in the past 7 days and status `in_progress`.
+- Manager view on dashboard: "Team goals at risk" (status `off_track` or no update >14 days).
 
-- See current stage (Submitted / Screening / Interview / Offer / Closed).
-- View scheduled interview details (time, location, interviewer names, video link).
-- Upload requested documents (resume update, references, work samples) into `job-applications` bucket.
-- Accept/decline interview times and offers.
-- Read messages from recruiter and reply (stored in `application_messages` table).
+### 6. Manager Dashboard Panel
+- New section "My Team — Performance" on `dashboard.tsx` for users who are managers (has direct reports):
+  - Reviews due this cycle (count + link).
+  - Goals at risk.
+  - Overdue 1:1s (>30 days since last session per report).
+  - Pending acknowledgements.
 
-Tokens minted per application (HMAC-signed, expirable, revocable), verified in a `/api/public/candidate/*` route family.
+### 7. Notifications & Audit
+- Every state transition (cycle open, self submitted, manager submitted, signed, calibrated, finalized, rating changed) emits a `notifications` row to the right party and an `audit_events` row.
 
-### 3. Applicant communications
+### Technical layout
+- Migrations:
+  - `review_cycles`, `review_cycle_participants`, `review_ratings`, `review_rating_changes` tables with `GRANT` + RLS (HR full, manager scoped to direct reports, employee scoped to own).
+  - Triggers: `tg_seed_review_cycle`, `tg_review_lock_when_finalized`, `tg_goal_rollup` (recompute parent progress on update).
+  - Add columns `parent_goal_id`, `weight` on `goals`; `cadence_weeks`, `next_scheduled_at` on `one_on_ones`.
+  - Seed `org_settings.review_competencies` default.
+- Server functions (`src/lib/`):
+  - `review-cycles.functions.ts`: `launchCycle`, `closeCycle`, `markCalibrated`, `sendCycleReminder`.
+  - Extend `reviews.functions.ts`: `submitSelfAssessment`, `submitManagerReview`, `acknowledgeReview`, `updateRatings`, `recalibrateRating`.
+  - Extend `goals.functions.ts` (new file): `cascadeGoal`, `recomputeParent`.
+  - Extend `reminders.ts` cron with the 4 new schedules above.
+- Routes:
+  - New: `_authenticated/review-cycles.index.tsx`, `_authenticated/review-cycles.$id.tsx`, `_authenticated/review-cycles.$id.calibration.tsx`.
+  - Updated: `reviews.$id.tsx` (ratings grid, lock, PDF print), `goals.tsx` (cascade dialog, parent badge), `one-on-ones.$id.tsx` (prep sidebar, carry-over), `dashboard.tsx` (manager panel), `reminders.ts`.
 
-- `email_templates` table seeded with: application received, screening invite, interview confirmation, interview reminder (24h), offer extended, offer reminder, rejection (with EEO-compliant language), and welcome (post-hire).
-- `applicant-emails.functions.ts` extended with `sendTemplated(template_key, application_id)` that pulls variables from the application/requisition.
-- Auto-triggers: acknowledge on apply, reminder 24h before interview (cron), follow-up if no offer response in 5 days.
-- All sends logged to `job_application_events` so the application timeline shows every touchpoint.
-
-### 4. Onboarding closeout & manager visibility
-
-- Trigger `tg_onboarding_progress`: when all `is_required` task_instances for an instance reach `complete` AND `employees.start_date <= today`, flip `employees.status` from `preboarding` → `active` and emit a notification to the supervisor.
-- "My Team — New Hires" panel on the supervisor dashboard: per-direct-report progress bar, blocked tasks, days-until-start.
-- Welcome day-one schedule auto-generated from a configurable template (org_settings.day_one_agenda): orientation slot, IT pickup, benefits intro — written as `task_instances` with due_at = start_date.
-- Surface provisioning request status (equipment, accounts) inside preboarding so the new hire knows what's coming.
-- Auto-issue PPE sizing form to new hires whose worker_type requires it.
-
-### 5. Municipal compliance reports (Reports tab additions)
-
-- **Applicant flow log** (EEO-4 / EEOC) — applications by job category × gender × race × veteran status × disability with voluntary self-id collected on the public apply form (separate table, never shown to hiring managers).
-- **Time-to-fill** by department and requisition (posted → hired in days).
-- **Source-of-hire** breakdown.
-- **Offer acceptance rate** and **decline reasons**.
-- All exportable as CSV.
-
-### Technical details
-
-**Migrations**
-- `offers` table + RLS (HR + hiring manager + assigned recruiter can manage; candidate accesses via token route only, so no anon policy needed).
-- `application_messages` table (RLS: HR/hiring manager full; candidates by token via server route).
-- `application_self_id` table (RLS: insert-only by candidate token; read restricted to `hr_admin` for aggregate reports; no manager access).
-- `email_templates` table (HR-admin managed).
-- `candidate_tokens` table (`application_id`, `token_hash`, `expires_at`, `revoked_at`).
-- Trigger `tg_onboarding_progress` on `task_instances` AFTER UPDATE.
-- Storage: add `offer-letters` bucket (private, signed URLs).
-
-**Server functions** (`src/lib/`)
-- `offers.functions.ts`: `createOffer`, `sendOffer`, `getOfferByToken`, `respondToOffer`, `voidOffer`.
-- `candidate-portal.functions.ts`: `getApplicationByToken`, `postCandidateMessage`, `uploadCandidateDocument`, `confirmInterviewTime`.
-- `email-templates.functions.ts`: CRUD plus `sendTemplated`.
-- `reports.functions.ts`: `applicantFlowLog`, `timeToFill`, `sourceOfHire`, `offerStats`.
-- Extend `dispatchTrainingReminders` cron route to also dispatch interview reminders, offer expirations, and welcome-day prep.
-
-**Public routes** (`src/routes/api/public/`)
-- `candidate/$token/status.ts`, `candidate/$token/message.ts`, `candidate/$token/document.ts`
-- `offers/$token/view.ts`, `offers/$token/respond.ts`
-
-**UI**
-- `_authenticated/offers.index.tsx`, `_authenticated/offers.$id.tsx`
-- `_authenticated/applications.$id.tsx` — unified application timeline (events + messages + interviews + offers + emails).
-- `_authenticated/email-templates.tsx`
-- Extend `reports.tsx` with the four new municipal reports.
-- Extend `preboarding.tsx` and `dashboard.tsx` with the manager/new-hire panels.
-- Public `/candidate/$token.tsx` and `/offer/$token.tsx` (top-level, no auth).
-- Add voluntary self-id step to `careers.$slug.apply.tsx` (optional, EEO-mandated language).
-
-**Out of scope** (call out, don't build): SMS notifications, video interview hosting, AI resume screening, integration with external job boards (Indeed/LinkedIn), assessment platforms, e-verify automation.
+### Out of scope
+- 360 / peer reviews, compensation planning, succession matrix (9-box), real e-signature provider integration, calibration video calls.
 
 ### Acceptance checks
-- A finalist application can be moved through Offer → Accepted → Hire Request → Active employee with no manual data re-entry.
-- An external candidate can complete the entire journey (apply → schedule → accept offer → first day) without ever creating an account.
-- A new hire's required onboarding tasks completing flips status to `active` and notifies their supervisor.
-- HR can generate an EEO-4 applicant flow log for any date range as a CSV.
+- HR launches a cycle → every eligible employee has a `performance_reviews` row and gets notified.
+- Self → Manager → Calibration → Acknowledge → Finalize works end-to-end; finalized review cannot be edited.
+- Manager can cascade a goal to 3 reports in one action; parent progress reflects weighted child progress automatically.
+- Manager dashboard surfaces overdue 1:1s, at-risk goals, and pending reviews accurately for direct reports only.
