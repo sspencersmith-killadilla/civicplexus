@@ -56,6 +56,7 @@ import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/publi
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
+import { Route as AuthenticatedReviewCyclesIdRouteImport } from './routes/_authenticated/review-cycles.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
 import { Route as AuthenticatedPafIdRouteImport } from './routes/_authenticated/paf.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
@@ -328,6 +329,12 @@ const AuthenticatedReviewsIdRoute = AuthenticatedReviewsIdRouteImport.update({
   path: '/reviews/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReviewCyclesIdRoute =
+  AuthenticatedReviewCyclesIdRouteImport.update({
+    id: '/review-cycles/$id',
+    path: '/review-cycles/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -469,6 +476,7 @@ export interface FileRoutesByFullPath {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
+  '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -535,6 +543,7 @@ export interface FileRoutesByTo {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
+  '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -603,6 +612,7 @@ export interface FileRoutesById {
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/paf/$id': typeof AuthenticatedPafIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
+  '/_authenticated/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRoute
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -671,6 +681,7 @@ export interface FileRouteTypes {
     | '/one-on-ones/$id'
     | '/paf/$id'
     | '/policies/$id'
+    | '/review-cycles/$id'
     | '/reviews/$id'
     | '/templates/$id'
     | '/transcript/$employeeId'
@@ -737,6 +748,7 @@ export interface FileRouteTypes {
     | '/one-on-ones/$id'
     | '/paf/$id'
     | '/policies/$id'
+    | '/review-cycles/$id'
     | '/reviews/$id'
     | '/templates/$id'
     | '/transcript/$employeeId'
@@ -804,6 +816,7 @@ export interface FileRouteTypes {
     | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/paf/$id'
     | '/_authenticated/policies/$id'
+    | '/_authenticated/review-cycles/$id'
     | '/_authenticated/reviews/$id'
     | '/_authenticated/templates/$id'
     | '/_authenticated/transcript/$employeeId'
@@ -1180,6 +1193,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/review-cycles/$id': {
+      id: '/_authenticated/review-cycles/$id'
+      path: '/review-cycles/$id'
+      fullPath: '/review-cycles/$id'
+      preLoaderRoute: typeof AuthenticatedReviewCyclesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/policies/$id': {
       id: '/_authenticated/policies/$id'
       path: '/$id'
@@ -1355,6 +1375,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeaveIdRoute: typeof AuthenticatedLeaveIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedPafIdRoute: typeof AuthenticatedPafIdRoute
+  AuthenticatedReviewCyclesIdRoute: typeof AuthenticatedReviewCyclesIdRoute
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedTranscriptEmployeeIdRoute: typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -1405,6 +1426,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeaveIdRoute: AuthenticatedLeaveIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedPafIdRoute: AuthenticatedPafIdRoute,
+  AuthenticatedReviewCyclesIdRoute: AuthenticatedReviewCyclesIdRoute,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedTranscriptEmployeeIdRoute:
