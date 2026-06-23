@@ -30,7 +30,6 @@ import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authent
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
-import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
@@ -42,6 +41,7 @@ import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authenticated/jobs.index'
 import { Route as AuthenticatedGrievancesIndexRouteImport } from './routes/_authenticated/grievances.index'
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
+import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authenticated/employees.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
@@ -170,11 +170,6 @@ const AuthenticatedEquipmentRoute = AuthenticatedEquipmentRouteImport.update({
   path: '/equipment',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedEmployeesRoute = AuthenticatedEmployeesRouteImport.update({
-  id: '/employees',
-  path: '/employees',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
@@ -234,6 +229,12 @@ const AuthenticatedFormsIndexRoute = AuthenticatedFormsIndexRouteImport.update({
   path: '/forms/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEmployeesIndexRoute =
+  AuthenticatedEmployeesIndexRouteImport.update({
+    id: '/employees/',
+    path: '/employees/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCascadesIndexRoute =
   AuthenticatedCascadesIndexRouteImport.update({
     id: '/cascades/',
@@ -297,9 +298,9 @@ const AuthenticatedFormsKeyRoute = AuthenticatedFormsKeyRouteImport.update({
 } as any)
 const AuthenticatedEmployeesImportRoute =
   AuthenticatedEmployeesImportRouteImport.update({
-    id: '/import',
-    path: '/import',
-    getParentRoute: () => AuthenticatedEmployeesRoute,
+    id: '/employees/import',
+    path: '/employees/import',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
   id: '/cascades/$id',
@@ -331,7 +332,6 @@ export interface FileRoutesByFullPath {
   '/benefits': typeof AuthenticatedBenefitsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
-  '/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
@@ -363,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
+  '/employees/': typeof AuthenticatedEmployeesIndexRoute
   '/forms/': typeof AuthenticatedFormsIndexRoute
   '/grievances/': typeof AuthenticatedGrievancesIndexRoute
   '/jobs/': typeof AuthenticatedJobsIndexRoute
@@ -381,7 +382,6 @@ export interface FileRoutesByTo {
   '/benefits': typeof AuthenticatedBenefitsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
-  '/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/equipment': typeof AuthenticatedEquipmentRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
@@ -413,6 +413,7 @@ export interface FileRoutesByTo {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
+  '/employees': typeof AuthenticatedEmployeesIndexRoute
   '/forms': typeof AuthenticatedFormsIndexRoute
   '/grievances': typeof AuthenticatedGrievancesIndexRoute
   '/jobs': typeof AuthenticatedJobsIndexRoute
@@ -433,7 +434,6 @@ export interface FileRoutesById {
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
-  '/_authenticated/employees': typeof AuthenticatedEmployeesRouteWithChildren
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/help': typeof AuthenticatedHelpRoute
@@ -465,6 +465,7 @@ export interface FileRoutesById {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
+  '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
   '/_authenticated/grievances/': typeof AuthenticatedGrievancesIndexRoute
   '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
@@ -485,7 +486,6 @@ export interface FileRouteTypes {
     | '/benefits'
     | '/dashboard'
     | '/documents'
-    | '/employees'
     | '/equipment'
     | '/goals'
     | '/help'
@@ -517,6 +517,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/cascades/'
+    | '/employees/'
     | '/forms/'
     | '/grievances/'
     | '/jobs/'
@@ -535,7 +536,6 @@ export interface FileRouteTypes {
     | '/benefits'
     | '/dashboard'
     | '/documents'
-    | '/employees'
     | '/equipment'
     | '/goals'
     | '/help'
@@ -567,6 +567,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/cascades'
+    | '/employees'
     | '/forms'
     | '/grievances'
     | '/jobs'
@@ -586,7 +587,6 @@ export interface FileRouteTypes {
     | '/_authenticated/benefits'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
-    | '/_authenticated/employees'
     | '/_authenticated/equipment'
     | '/_authenticated/goals'
     | '/_authenticated/help'
@@ -618,6 +618,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/careers/$slug/apply'
     | '/_authenticated/cascades/'
+    | '/_authenticated/employees/'
     | '/_authenticated/forms/'
     | '/_authenticated/grievances/'
     | '/_authenticated/jobs/'
@@ -790,13 +791,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEquipmentRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/employees': {
-      id: '/_authenticated/employees'
-      path: '/employees'
-      fullPath: '/employees'
-      preLoaderRoute: typeof AuthenticatedEmployeesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/documents': {
       id: '/_authenticated/documents'
       path: '/documents'
@@ -872,6 +866,13 @@ declare module '@tanstack/react-router' {
       path: '/forms'
       fullPath: '/forms/'
       preLoaderRoute: typeof AuthenticatedFormsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/employees/': {
+      id: '/_authenticated/employees/'
+      path: '/employees'
+      fullPath: '/employees/'
+      preLoaderRoute: typeof AuthenticatedEmployeesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cascades/': {
@@ -953,10 +954,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/employees/import': {
       id: '/_authenticated/employees/import'
-      path: '/import'
+      path: '/employees/import'
       fullPath: '/employees/import'
       preLoaderRoute: typeof AuthenticatedEmployeesImportRouteImport
-      parentRoute: typeof AuthenticatedEmployeesRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cascades/$id': {
       id: '/_authenticated/cascades/$id'
@@ -989,20 +990,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedEmployeesRouteChildren {
-  AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
-}
-
-const AuthenticatedEmployeesRouteChildren: AuthenticatedEmployeesRouteChildren =
-  {
-    AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
-  }
-
-const AuthenticatedEmployeesRouteWithChildren =
-  AuthenticatedEmployeesRoute._addFileChildren(
-    AuthenticatedEmployeesRouteChildren,
-  )
-
 interface AuthenticatedPoliciesRouteChildren {
   AuthenticatedPoliciesIdRoute: typeof AuthenticatedPoliciesIdRoute
 }
@@ -1022,7 +1009,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
-  AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRouteWithChildren
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
@@ -1040,6 +1026,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
   AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
+  AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
   AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRoute
@@ -1048,6 +1035,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
+  AuthenticatedEmployeesIndexRoute: typeof AuthenticatedEmployeesIndexRoute
   AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
   AuthenticatedGrievancesIndexRoute: typeof AuthenticatedGrievancesIndexRoute
   AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute
@@ -1062,7 +1050,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
-  AuthenticatedEmployeesRoute: AuthenticatedEmployeesRouteWithChildren,
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
@@ -1080,6 +1067,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
   AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
+  AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
   AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRoute,
@@ -1088,6 +1076,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedCascadesIndexRoute: AuthenticatedCascadesIndexRoute,
+  AuthenticatedEmployeesIndexRoute: AuthenticatedEmployeesIndexRoute,
   AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
   AuthenticatedGrievancesIndexRoute: AuthenticatedGrievancesIndexRoute,
   AuthenticatedJobsIndexRoute: AuthenticatedJobsIndexRoute,
