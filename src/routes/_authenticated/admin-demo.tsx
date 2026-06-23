@@ -74,7 +74,7 @@ function AdminDemoPage() {
               <span className="text-muted-foreground">Email</span>
               <span className="font-mono">{s?.email ?? "demo.purpose@testingaccount.test"}</span>
               <span className="text-muted-foreground">Password</span>
-              <span className="font-mono">Demo, 1234</span>
+              <span className="font-mono">Demo1234</span>
               <span className="text-muted-foreground">Status</span>
               <span>{s?.provisioned ? "Provisioned" : "Not yet created"}</span>
               <span className="text-muted-foreground">Pending changes</span>
@@ -84,7 +84,7 @@ function AdminDemoPage() {
             </div>
             <p className="text-muted-foreground">
               Every insert, update, and delete this account makes is captured. A daily reset reverts
-              every recorded change and resets the password back to <span className="font-mono">Demo, 1234</span>.
+              every recorded change and resets the password back to <span className="font-mono">Demo1234</span>.
             </p>
             <div className="flex gap-2">
               <Button

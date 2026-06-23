@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const DEMO_EMAIL = "demo.purpose@testingaccount.test";
-const DEMO_PASSWORD = "Demo, 1234";
+const DEMO_PASSWORD = "Demo1234";
 
 async function assertHrAdmin(supabase: { from: (t: string) => { select: (c: string) => { eq: (c: string, v: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: unknown; error: { message: string } | null }> } } } } }, userId: string) {
   const { data, error } = await supabase
