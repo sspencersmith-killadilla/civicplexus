@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getPublicRequisition } from "@/lib/jobs.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,9 +39,12 @@ function ApplyPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", cover_letter: "" });
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [ready, setReady] = useState(false);
   const [honey, setHoney] = useState("");
   const [selfId, setSelfId] = useState({ gender: "", race_ethnicity: "", veteran_status: "", disability_status: "", declined: false });
   const [submitted, setSubmitted] = useState<{ id: string; portal_path: string; portal_url: string; portal_expires_at: string } | null>(null);
+
+  useEffect(() => setReady(true), []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -164,7 +167,7 @@ function ApplyPage() {
             </details>
 
             <div className="flex justify-end">
-              <Button type="submit" size="lg" disabled={submitting}>{submitting ? "Submitting…" : "Submit application"}</Button>
+              <Button type="submit" size="lg" disabled={!ready || submitting}>{!ready ? "Loading…" : submitting ? "Submitting…" : "Submit application"}</Button>
             </div>
           </form>
         </Card>
