@@ -30,6 +30,7 @@ function ApplyPage() {
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [honey, setHoney] = useState("");
+  const [selfId, setSelfId] = useState({ gender: "", race_ethnicity: "", veteran_status: "", disability_status: "", declined: false });
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,6 +53,17 @@ function ApplyPage() {
         const t = await res.text();
         throw new Error(t || "Submission failed");
       }
+      // best-effort voluntary self-id (the server route returns the application id in JSON)
+      try {
+        const json = await res.clone().json().catch(() => null);
+        const appId = (json as { id?: string } | null)?.id;
+        if (appId && (selfId.declined || selfId.gender || selfId.race_ethnicity || selfId.veteran_status || selfId.disability_status)) {
+          await fetch("/api/public/job-applications/self-id", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ application_id: appId, ...selfId }),
+          });
+        }
+      } catch { /* ignore */ }
       toast.success("Application submitted!");
       nav({ to: "/careers" });
     } catch (err) {
@@ -79,6 +91,41 @@ function ApplyPage() {
             <div><Label>Phone</Label><Input value={form.phone} onChange={(e)=>setForm({...form, phone: e.target.value})} /></div>
             <div><Label>Resume (PDF, DOC, DOCX)</Label><Input type="file" accept=".pdf,.doc,.docx" onChange={(e)=>setFile(e.target.files?.[0] ?? null)} /></div>
             <div><Label>Cover letter</Label><Textarea rows={6} value={form.cover_letter} onChange={(e)=>setForm({...form, cover_letter: e.target.value})} /></div>
+
+            <details className="border rounded p-4 bg-secondary/30">
+              <summary className="text-sm font-medium cursor-pointer">Voluntary self-identification (optional, EEO-4)</summary>
+              <p className="text-xs text-muted-foreground mt-2 mb-3">
+                As an Equal Opportunity Employer, we invite you to voluntarily self-identify. This information is kept confidential, will not be visible to hiring managers, and is used only for aggregate compliance reporting. Submission is optional and refusal will not subject you to any adverse treatment.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                <div><Label>Gender</Label>
+                  <select className="w-full border rounded h-9 px-2 bg-background" value={selfId.gender} onChange={(e) => setSelfId({ ...selfId, gender: e.target.value })}>
+                    <option value="">—</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Prefer not to say</option>
+                  </select>
+                </div>
+                <div><Label>Race / Ethnicity</Label>
+                  <select className="w-full border rounded h-9 px-2 bg-background" value={selfId.race_ethnicity} onChange={(e) => setSelfId({ ...selfId, race_ethnicity: e.target.value })}>
+                    <option value="">—</option><option>Hispanic or Latino</option><option>White</option><option>Black or African American</option>
+                    <option>Asian</option><option>Native Hawaiian or Pacific Islander</option><option>American Indian or Alaska Native</option>
+                    <option>Two or more races</option><option>Prefer not to say</option>
+                  </select>
+                </div>
+                <div><Label>Veteran status</Label>
+                  <select className="w-full border rounded h-9 px-2 bg-background" value={selfId.veteran_status} onChange={(e) => setSelfId({ ...selfId, veteran_status: e.target.value })}>
+                    <option value="">—</option><option>Protected veteran</option><option>Not a protected veteran</option><option>Prefer not to say</option>
+                  </select>
+                </div>
+                <div><Label>Disability status</Label>
+                  <select className="w-full border rounded h-9 px-2 bg-background" value={selfId.disability_status} onChange={(e) => setSelfId({ ...selfId, disability_status: e.target.value })}>
+                    <option value="">—</option><option>Yes, I have a disability</option><option>No, I do not have a disability</option><option>Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+              <label className="flex items-center gap-2 mt-3 text-sm">
+                <input type="checkbox" checked={selfId.declined} onChange={(e) => setSelfId({ ...selfId, declined: e.target.checked })} /> I decline to self-identify
+              </label>
+            </details>
+
             <div className="flex justify-end">
               <Button type="submit" size="lg" disabled={submitting}>{submitting ? "Submitting…" : "Submit application"}</Button>
             </div>
