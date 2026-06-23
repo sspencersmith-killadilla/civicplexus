@@ -22,6 +22,13 @@ const RequisitionInput = z.object({
   internal_only: z.boolean().default(false),
   closes_at: z.string().datetime().optional().nullable(),
   hiring_manager_id: z.string().uuid().optional().nullable(),
+  posting_sections: z.object({
+    essential_functions: z.string().max(10000).optional().nullable(),
+    ksa: z.string().max(10000).optional().nullable(),
+    qualifications: z.string().max(5000).optional().nullable(),
+    physical_demands: z.string().max(5000).optional().nullable(),
+    supplemental: z.string().max(5000).optional().nullable(),
+  }).partial().optional().nullable(),
 });
 
 export const createRequisition = createServerFn({ method: "POST" })
