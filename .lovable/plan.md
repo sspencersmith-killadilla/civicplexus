@@ -1,105 +1,70 @@
+# Finish the Training Module
 
-# Making Kyberna a complete municipal HR system
+Builds on what already exists (assignments, mark-complete, overdue reminders, cron, supervisor RLS) and fills the remaining gaps that a municipal HR team would expect.
 
-You already have the core HRIS + ATS + performance + coaching + grievance + onboarding stack. To be genuinely *municipal-grade* (vs. a generic mid-market HRIS), the missing pieces fall into seven domains. Each tier below is roughly one release; tier 1 closes the most painful daily gaps a city HR director would hit.
+## What gets added
 
-## Tier 1 — Daily operational must-haves
+### 1. Course content & materials
+- Add `description`, `passing_score`, `materials_url`, `content_md` (rich text / link block), `recurrence_months` (for annual safety etc.), `issues_certification_id` (link a course to a cert type), and `auto_assign_on_hire` to `courses`.
+- Course detail view with description, materials link, and an "Assign" shortcut.
 
-**Time, attendance & leave**
-- Leave plans (vacation, sick, comp time, FMLA, military, jury, bereavement, donation pools) with accrual rules per worker type / bargaining unit and carryover caps.
-- Leave requests + supervisor approval, calendar view, balance display on each employee record.
-- FLSA comp-time bank (1.5× overtime → comp time) and use tracking.
-- FMLA case tracking: eligibility check (12 months / 1,250 hours), 12-week rolling balance, intermittent leave hours, certification dates.
+### 2. Auto-assign on hire
+- When a new employee record is created (or worker_type changes), automatically create assignments for every active course whose `required_for_worker_types` includes that worker type **or** has `auto_assign_on_hire = true`, with a due date of `start_date + 30 days`.
+- Done with a database trigger so it fires no matter how the employee was created (UI, import, hire request).
 
-**Personnel Action Forms (PAFs)**
-- Generic workflow engine: hire, transfer, promotion, demotion, pay change, separation, leave start/return.
-- Routing rules (supervisor → dept head → HR → finance) with effective-dated changes that update employee record on approval.
-- Replaces the ad-hoc hire-request + approval-chain mix with one consistent form.
+### 3. Completion evidence & scoring
+- Mark-complete dialog with optional score and an optional **proof-of-completion file** (PDF/image) uploaded to a new private `training-evidence` storage bucket scoped per employee.
+- If `score < passing_score` the row stays `assigned`; otherwise marked `complete`.
+- If the course is linked to a certification type, completing it inserts/refreshes an `employee_certifications` row with `expires_at = now() + validity_months`.
 
-**Employee self-service portal**
-- Personal info, emergency contacts, beneficiaries, direct deposit, W-4/state withholding, address change (triggers PAF).
-- Pay stub / W-2 download (placeholder until payroll integration).
-- Leave balances + request form, certification renewals, training due dates, policy acknowledgments — all in one "My HR" dashboard.
+### 4. Recurring training
+- After a completion, if `recurrence_months` is set, schedule the next assignment automatically with `due_date = completed_at + recurrence_months`.
+- A small nightly job in the existing reminders cron reopens recurring assignments that have come due.
 
-## Tier 2 — Civil-service & labor-relations (the municipal differentiator)
+### 5. Supervisor / approver view
+- Add a "My Team" toggle to the Assignments tab that filters to direct reports only (uses existing `manager_id`).
+- Bulk actions: re-assign, change due date, cancel.
 
-**Civil service / merit hiring**
-- Eligibility lists (registers) per classification, with score, rank, expiration, and veterans' preference points.
-- Certification of candidates ("Rule of 3 / 5 / N") from a register to a vacancy; tie into existing requisitions.
-- Examination tracking (written/oral/physical/agility) with scoring and banding.
-- Provisional / temporary / acting appointments with auto-expiration alerts.
+### 6. Employee transcript
+- `/my-hr/transcript` route: printable list of all completed training and active certifications with dates, scores, and download links for evidence.
+- HR can open any employee's transcript from the employee detail page.
 
-**Collective bargaining & unions**
-- Bargaining unit table; assign employees and positions.
-- Contract repository with effective dates, key clauses (steps, shift diff, longevity, OT rules).
-- Seniority lists generated per unit / per classification (date-of-hire, classification seniority).
-- Dues deduction status + change forms.
-- Grievance workflow already exists — extend with CBA-step routing (step 1 supervisor → step 2 dept head → step 3 HR → arbitration) and timeline enforcement per contract.
+### 7. Compliance dashboard tab
+- New "Compliance" tab on the Training page with:
+  - % complete overall, by department, by worker type, and by compliance framework (OSHA, CJIS, HIPAA, etc.).
+  - Overdue count and 30/60/90-day expiring certs.
+  - Drill-down list under each tile.
 
-**Pay plans & step progression**
-- Pay table editor: grade × step matrices with effective dates.
-- Auto step increases on anniversary (with supervisor sign-off gate).
-- Longevity pay, shift differentials, certification pay, education incentives — all as additive rules.
-- Comp study tooling: compare position salaries against pay table / benchmarks.
+### 8. CSV export
+- Export buttons on Assignments, Compliance, and Cert Expiry tabs (matches the export pattern used elsewhere in the app).
 
-## Tier 3 — Compliance, safety & risk
+### 9. Email notifications (in-app already exists)
+- Reuse the existing email queue to send: assignment notice, 7-days-before-due, overdue (daily, capped), and cert-expiring (90/60/30/7 days). The cron already runs daily; we add the email side alongside the in-app `notifications` insert.
 
-**EEO-4 reporting** (required biennially for local governments ≥100 employees): job categories, function codes, demographic counts, auto-generated submission file.
-**OSHA recordkeeping**: 300 log, 300A summary, 301 incident form, electronic submission file for OSHA ITA.
-**Workers' compensation**: claim intake, light-duty/return-to-work tracking, lost-time reporting.
-**Drug & alcohol program** (FTA / DOT for transit & CDL holders): random pool selection, test results chain-of-custody, follow-up testing schedules.
-**I-9 / E-Verify**: section 1 employee, section 2 HR, reverification calendar, audit-ready storage.
-**Background checks & fingerprinting**: vendor handoff status (LiveScan, Accurate, etc.), expiration for renewable clearances (CJIS, child-care, etc.).
-**Public records retention**: per-document retention schedule aligned to state records law, scheduled destruction queue with HR approval.
+## Technical notes
 
-## Tier 4 — Public safety & specialized workforces
+- **Migration**:
+  - `courses`: add columns above.
+  - `employee_training`: add `evidence_path text`, `parent_id uuid` (for recurrence chain), `cancelled_at`, `cancelled_by`.
+  - Trigger `tg_employees_autoassign_training` on `INSERT` / `worker_type_id` change on `employees`.
+  - Trigger `tg_training_recurrence_and_cert` on `UPDATE` of `employee_training` when `status` becomes `complete` to (a) insert the cert row when `issues_certification_id` is set and (b) queue the next recurrence row.
+  - New storage bucket `training-evidence` (private) + RLS so employees can upload/read their own and HR can read all.
 
-- Rank structure separate from classification (PD/FD).
-- POST / EMT / paramedic / CDL certification tracking with renewal alerts already partially present — extend with continuing-education-hour ledgers.
-- Promotional exam administration, eligibility band, time-in-grade rules.
-- Shift bidding & rotation calendars; minimum-manning alerts.
-- Body armor, uniform, weapons issuance — extend equipment module with serialized assets & retirement dates.
+- **Server functions** (`src/lib/training.functions.ts`):
+  - Extend `completeTraining` to accept `evidence_path` and `score` and to enforce `passing_score`.
+  - `cancelTrainingAssignment`, `reassignTraining`, `updateTrainingDueDate`.
+  - `getEmployeeTranscript(employee_id)`.
+  - `exportTrainingCsv(filters)`.
 
-## Tier 5 — Discipline & due process
+- **UI**:
+  - `src/routes/_authenticated/training.tsx`: add **Compliance** tab, **My Team** toggle, bulk actions, CSV export buttons.
+  - `src/routes/_authenticated/courses.$id.tsx`: course detail with materials & required-for settings.
+  - `src/routes/_authenticated/transcript.$employeeId.tsx`: printable transcript.
+  - Update `my-hr.tsx` mark-complete to a dialog supporting score + evidence upload.
 
-- Progressive discipline ladder (verbal → written → suspension → termination) per CBA.
-- Loudermill / Skelly pre-disciplinary hearing workflow with notice templates, employee response, decision letter.
-- Appeal routing to civil service commission / arbitration.
-- Sealed-vs-active disciplinary record retention rules.
+- **Cron**: extend `dispatchTrainingReminders` to (a) send pre-due (7-day) reminders, (b) reopen recurring rows whose next-due has arrived, (c) push notifications into the existing email queue alongside the in-app `notifications` table.
 
-## Tier 6 — Integrations & data exchange
-
-- **Payroll outbound**: configurable export to common municipal payroll systems (Tyler Munis / Eden, Workday, ADP, OpenGov, BS&A) — employee master, PAF deltas, leave usage, timecard summaries.
-- **Retirement system**: monthly contribution file for state pension (PERS / TRS / equivalents).
-- **Benefits carriers**: existing benefits-handoff hook → real EDI 834 generation for open enrollment.
-- **SAML / OIDC SSO** for the city's IdP (Azure AD / Okta / Google Workspace) — beyond the current Google broker.
-- **Microsoft Graph / Google Workspace provisioning**: auto-create accounts, group membership, deprovision on separation. Extend existing provisioning module.
-- **IT-asset systems** (Jamf, Intune, SCCM) for laptop/phone lifecycle.
-
-## Tier 7 — Transparency, analytics & polish
-
-- Public-facing **org chart** + **vacant positions** + (opt-in) **salary lookup**, all reading from data you already have.
-- HR analytics dashboard: turnover (voluntary/involuntary), time-to-fill, vacancy rate, diversity by classification, training completion, grievance volume, comp-ratio.
-- Saved reports + scheduled CSV/PDF email delivery.
-- WCAG 2.1 AA pass on public pages (careers, org chart, application portal).
-- Spanish-language toggle for employee self-service and public careers.
-- Mobile-first review of field-worker flows (timecard, leave request, paystub, certifications).
-- API tokens for read access (department heads pulling their own data into Excel/Power BI).
-
-## Cross-cutting hardening
-
-- **Effective-dated history** on every employee field that drives pay/benefits (department, position, pay step). Audit table already exists; promote to first-class "employee history" UI.
-- **Configurable approval chains** as a tenant-level admin screen (you have the engine; expose the UI).
-- **Email/SMS delivery** wired through Resend + Twilio (currently in-app only) — gated by user notification preferences.
-- **Job retry / dead-letter** for the import_jobs pattern; reuse it for any long-running task.
-- **Data exports** for every entity (right-to-data-portability for separations, FOIA requests).
-
-## Sensible build order
-
-1. Tier 1 (time/leave, PAFs, self-service) — biggest daily ROI, unblocks payroll conversations.
-2. Tier 2 civil service + unions — the thing generic HRIS products *don't* do, your moat.
-3. Tier 3 compliance reporting — what gets HR directors fired if missing.
-4. Tier 6 payroll/SSO integrations — the buying decision usually hinges on this.
-5. Tier 4, 5, 7 — vertical expansion (public safety), maturity (discipline), polish.
-
-Want me to break tier 1 into an implementation plan and start building?
+## Out of scope (call out if you want them next)
+- SCORM / xAPI content hosting
+- External LMS sync (Cornerstone, Vector, TargetSolutions)
+- Live instructor-led class rosters with seat limits

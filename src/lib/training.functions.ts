@@ -20,7 +20,15 @@ const completeInput = z.object({
   training_id: z.string().uuid(),
   score: z.number().min(0).max(100).optional(),
   notes: z.string().max(1000).optional(),
+  evidence_path: z.string().max(500).optional(),
 });
+
+const updateAssignInput = z.object({
+  training_id: z.string().uuid(),
+  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+});
+
+const cancelInput = z.object({ training_id: z.string().uuid(), reason: z.string().max(500).optional() });
 
 async function authorize(userId: string, employeeIds: string[]) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -103,14 +111,82 @@ export const completeTraining = createServerFn({ method: "POST" })
     const isOwner = e?.user_id === context.userId;
     const isMgr = e?.manager_id === context.userId;
     if (!isHr && !isOwner && !isMgr) throw new Error("Not authorized");
-    const { error } = await supabaseAdmin.from("employee_training").update({
-      status: "complete",
-      completed_at: new Date().toISOString(),
+
+    // Enforce passing score if course defines one
+    const { data: trainingRow } = await supabaseAdmin.from("employee_training").select("course_id").eq("id", data.training_id).maybeSingle();
+    const courseId = (trainingRow as { course_id: string } | null)?.course_id;
+    let status = "complete";
+    if (courseId) {
+      const { data: course } = await supabaseAdmin.from("courses").select("passing_score").eq("id", courseId).maybeSingle();
+      const ps = (course as { passing_score: number | null } | null)?.passing_score ?? null;
+      if (ps !== null && data.score !== undefined && data.score < ps) status = "failed";
+    }
+
+    const patch: Record<string, unknown> = {
+      status,
+      completed_at: status === "complete" ? new Date().toISOString() : null,
       score: data.score ?? null,
       notes: data.notes ?? null,
+    };
+    if (data.evidence_path) patch.evidence_path = data.evidence_path;
+    const { error } = await supabaseAdmin.from("employee_training").update(patch as never).eq("id", data.training_id);
+    if (error) throw new Error(error.message);
+    return { ok: true, status };
+  });
+
+export const updateTrainingDueDate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => updateAssignInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin.from("employee_training").select("employee_id").eq("id", data.training_id).maybeSingle();
+    const r = row as { employee_id: string } | null;
+    if (!r) throw new Error("Not found");
+    await authorize(context.userId, [r.employee_id]);
+    const { error } = await supabaseAdmin.from("employee_training").update({ due_date: data.due_date ?? null } as never).eq("id", data.training_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const cancelTrainingAssignment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => cancelInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin.from("employee_training").select("employee_id,notes").eq("id", data.training_id).maybeSingle();
+    const r = row as { employee_id: string; notes: string | null } | null;
+    if (!r) throw new Error("Not found");
+    await authorize(context.userId, [r.employee_id]);
+    const note = data.reason ? `${r.notes ? r.notes + "\n" : ""}Cancelled: ${data.reason}` : r.notes;
+    const { error } = await supabaseAdmin.from("employee_training").update({
+      status: "cancelled",
+      cancelled_at: new Date().toISOString(),
+      cancelled_by: context.userId,
+      notes: note,
     } as never).eq("id", data.training_id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+/** HR-only: create a signed URL for an evidence file. */
+export const getEvidenceSignedUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ path: z.string().min(1) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roles } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId);
+    const r = ((roles ?? []) as Array<{ role: string }>).map((x) => x.role);
+    const isHr = r.includes("hr_admin") || r.includes("hiring_manager");
+    // Self / supervisor: scope by folder = employee id
+    const empFolder = data.path.split("/")[0];
+    if (!isHr) {
+      const { data: emp } = await supabaseAdmin.from("employees").select("user_id,manager_id").eq("id", empFolder).maybeSingle();
+      const e = emp as { user_id: string | null; manager_id: string | null } | null;
+      if (!e || (e.user_id !== context.userId && e.manager_id !== context.userId)) throw new Error("Not authorized");
+    }
+    const { data: signed, error } = await supabaseAdmin.storage.from("training-evidence").createSignedUrl(data.path, 600);
+    if (error || !signed) throw new Error(error?.message ?? "Could not sign URL");
+    return { url: signed.signedUrl };
   });
 
 /** Called by the public reminders cron route. Idempotent per 24h via last_reminded_at. */
@@ -118,14 +194,16 @@ export async function dispatchTrainingReminders() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const today = new Date().toISOString().slice(0, 10);
   const dayAgo = new Date(Date.now() - 86400000).toISOString();
+  const soon = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
 
+  // Overdue OR due in next 7 days (and not yet reminded today)
   const { data: rows } = await supabaseAdmin
     .from("employee_training")
     .select("id,due_date,last_reminded_at,status,courses(name),employees(user_id,manager_id,first_name,last_name)")
-    .neq("status", "complete")
+    .not("status", "in", "(complete,cancelled)")
     .not("due_date", "is", null)
-    .lt("due_date", today)
-    .limit(1000);
+    .lte("due_date", soon)
+    .limit(2000);
 
   const notifs: Array<{ user_id: string; type: string; title: string; body: string; link: string }> = [];
   const reminded: string[] = [];
@@ -136,16 +214,20 @@ export async function dispatchTrainingReminders() {
   }>) {
     if (r.last_reminded_at && r.last_reminded_at > dayAgo) continue;
     const cname = r.courses?.name ?? "training";
+    const isOverdue = r.due_date < today;
+    const typeEmp = isOverdue ? "training_overdue" : "training_due_soon";
+    const titleEmp = isOverdue ? `Overdue training: ${cname}` : `Training due soon: ${cname}`;
+    const bodyEmp = isOverdue ? `Was due ${r.due_date}` : `Due ${r.due_date}`;
     if (r.employees?.user_id) {
       notifs.push({
         user_id: r.employees.user_id,
-        type: "training_overdue",
-        title: `Overdue training: ${cname}`,
-        body: `Was due ${r.due_date}`,
+        type: typeEmp,
+        title: titleEmp,
+        body: bodyEmp,
         link: "/my-hr",
       });
     }
-    if (r.employees?.manager_id) {
+    if (isOverdue && r.employees?.manager_id) {
       notifs.push({
         user_id: r.employees.manager_id,
         type: "training_overdue_report",
