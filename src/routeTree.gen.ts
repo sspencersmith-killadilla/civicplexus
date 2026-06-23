@@ -42,6 +42,7 @@ import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
 import { Route as AuthenticatedPafIndexRouteImport } from './routes/_authenticated/paf.index'
 import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
+import { Route as AuthenticatedOffersIndexRouteImport } from './routes/_authenticated/offers.index'
 import { Route as AuthenticatedLeaveIndexRouteImport } from './routes/_authenticated/leave.index'
 import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authenticated/jobs.index'
 import { Route as AuthenticatedGrievancesIndexRouteImport } from './routes/_authenticated/grievances.index'
@@ -243,6 +244,12 @@ const AuthenticatedOneOnOnesIndexRoute =
   AuthenticatedOneOnOnesIndexRouteImport.update({
     id: '/one-on-ones/',
     path: '/one-on-ones/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOffersIndexRoute =
+  AuthenticatedOffersIndexRouteImport.update({
+    id: '/offers/',
+    path: '/offers/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedLeaveIndexRoute = AuthenticatedLeaveIndexRouteImport.update({
@@ -451,6 +458,7 @@ export interface FileRoutesByFullPath {
   '/grievances/': typeof AuthenticatedGrievancesIndexRoute
   '/jobs/': typeof AuthenticatedJobsIndexRoute
   '/leave/': typeof AuthenticatedLeaveIndexRoute
+  '/offers/': typeof AuthenticatedOffersIndexRoute
   '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/paf/': typeof AuthenticatedPafIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
@@ -513,6 +521,7 @@ export interface FileRoutesByTo {
   '/grievances': typeof AuthenticatedGrievancesIndexRoute
   '/jobs': typeof AuthenticatedJobsIndexRoute
   '/leave': typeof AuthenticatedLeaveIndexRoute
+  '/offers': typeof AuthenticatedOffersIndexRoute
   '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
   '/paf': typeof AuthenticatedPafIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
@@ -577,6 +586,7 @@ export interface FileRoutesById {
   '/_authenticated/grievances/': typeof AuthenticatedGrievancesIndexRoute
   '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
   '/_authenticated/leave/': typeof AuthenticatedLeaveIndexRoute
+  '/_authenticated/offers/': typeof AuthenticatedOffersIndexRoute
   '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/_authenticated/paf/': typeof AuthenticatedPafIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
@@ -641,6 +651,7 @@ export interface FileRouteTypes {
     | '/grievances/'
     | '/jobs/'
     | '/leave/'
+    | '/offers/'
     | '/one-on-ones/'
     | '/paf/'
     | '/reviews/'
@@ -703,6 +714,7 @@ export interface FileRouteTypes {
     | '/grievances'
     | '/jobs'
     | '/leave'
+    | '/offers'
     | '/one-on-ones'
     | '/paf'
     | '/reviews'
@@ -766,6 +778,7 @@ export interface FileRouteTypes {
     | '/_authenticated/grievances/'
     | '/_authenticated/jobs/'
     | '/_authenticated/leave/'
+    | '/_authenticated/offers/'
     | '/_authenticated/one-on-ones/'
     | '/_authenticated/paf/'
     | '/_authenticated/reviews/'
@@ -1030,6 +1043,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOneOnOnesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/offers/': {
+      id: '/_authenticated/offers/'
+      path: '/offers'
+      fullPath: '/offers/'
+      preLoaderRoute: typeof AuthenticatedOffersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/leave/': {
       id: '/_authenticated/leave/'
       path: '/leave'
@@ -1283,6 +1303,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGrievancesIndexRoute: typeof AuthenticatedGrievancesIndexRoute
   AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute
   AuthenticatedLeaveIndexRoute: typeof AuthenticatedLeaveIndexRoute
+  AuthenticatedOffersIndexRoute: typeof AuthenticatedOffersIndexRoute
   AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
   AuthenticatedPafIndexRoute: typeof AuthenticatedPafIndexRoute
   AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
@@ -1331,6 +1352,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGrievancesIndexRoute: AuthenticatedGrievancesIndexRoute,
   AuthenticatedJobsIndexRoute: AuthenticatedJobsIndexRoute,
   AuthenticatedLeaveIndexRoute: AuthenticatedLeaveIndexRoute,
+  AuthenticatedOffersIndexRoute: AuthenticatedOffersIndexRoute,
   AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
   AuthenticatedPafIndexRoute: AuthenticatedPafIndexRoute,
   AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
