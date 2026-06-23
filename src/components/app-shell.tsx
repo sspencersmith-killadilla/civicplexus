@@ -41,7 +41,7 @@ const NAV_GROUPS = [
     { to: "/cascades", label: "Cascades", icon: Megaphone, roles: ["hr_admin", "hiring_manager", "supervisor"] },
   ]},
   { label: "Compliance", items: [
-    { to: "/training", label: "Training & Certs", icon: GraduationCap, roles: ["hr_admin", "hiring_manager"] },
+    { to: "/training", label: "Training & Certs", icon: GraduationCap, roles: ["hr_admin", "hiring_manager", "supervisor"] },
     { to: "/screenings", label: "Screenings", icon: ShieldQuestion, roles: ["hr_admin"] },
     { to: "/policies", label: "Policies", icon: ScrollText, roles: ["hr_admin", "hiring_manager", "employee", "candidate"] },
     { to: "/grievances", label: "Grievances", icon: ShieldAlert, roles: ["hr_admin", "hiring_manager", "supervisor", "employee", "candidate"] },
