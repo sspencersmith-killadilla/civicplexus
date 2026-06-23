@@ -293,38 +293,67 @@ export type Database = {
       courses: {
         Row: {
           active: boolean
+          auto_assign_on_hire: boolean
           compliance_framework: string | null
+          content_md: string | null
           created_at: string
+          description: string | null
           duration_minutes: number | null
           id: string
+          issues_certification_id: string | null
+          materials_url: string | null
           name: string
+          passing_score: number | null
           provider: string | null
+          recurrence_months: number | null
           required_for_worker_types: string[] | null
           updated_at: string
         }
         Insert: {
           active?: boolean
+          auto_assign_on_hire?: boolean
           compliance_framework?: string | null
+          content_md?: string | null
           created_at?: string
+          description?: string | null
           duration_minutes?: number | null
           id?: string
+          issues_certification_id?: string | null
+          materials_url?: string | null
           name: string
+          passing_score?: number | null
           provider?: string | null
+          recurrence_months?: number | null
           required_for_worker_types?: string[] | null
           updated_at?: string
         }
         Update: {
           active?: boolean
+          auto_assign_on_hire?: boolean
           compliance_framework?: string | null
+          content_md?: string | null
           created_at?: string
+          description?: string | null
           duration_minutes?: number | null
           id?: string
+          issues_certification_id?: string | null
+          materials_url?: string | null
           name?: string
+          passing_score?: number | null
           provider?: string | null
+          recurrence_months?: number | null
           required_for_worker_types?: string[] | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "courses_issues_certification_id_fkey"
+            columns: ["issues_certification_id"]
+            isOneToOne: false
+            referencedRelation: "certifications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dependents: {
         Row: {
@@ -534,14 +563,18 @@ export type Database = {
         Row: {
           assigned_at: string
           assigned_by: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           completed_at: string | null
           course_id: string
           created_at: string
           due_date: string | null
           employee_id: string
+          evidence_path: string | null
           id: string
           last_reminded_at: string | null
           notes: string | null
+          parent_id: string | null
           score: number | null
           status: string
           updated_at: string
@@ -549,14 +582,18 @@ export type Database = {
         Insert: {
           assigned_at?: string
           assigned_by?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           completed_at?: string | null
           course_id: string
           created_at?: string
           due_date?: string | null
           employee_id: string
+          evidence_path?: string | null
           id?: string
           last_reminded_at?: string | null
           notes?: string | null
+          parent_id?: string | null
           score?: number | null
           status?: string
           updated_at?: string
@@ -564,14 +601,18 @@ export type Database = {
         Update: {
           assigned_at?: string
           assigned_by?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           completed_at?: string | null
           course_id?: string
           created_at?: string
           due_date?: string | null
           employee_id?: string
+          evidence_path?: string | null
           id?: string
           last_reminded_at?: string | null
           notes?: string | null
+          parent_id?: string | null
           score?: number | null
           status?: string
           updated_at?: string
@@ -589,6 +630,13 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_training_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "employee_training"
             referencedColumns: ["id"]
           },
         ]
