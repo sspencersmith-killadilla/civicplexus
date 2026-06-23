@@ -67,7 +67,6 @@ function ImportPanel({ specKey, spec }: { specKey: keyof typeof SPECS; spec: typ
   const headers = useMemo(() => [...spec.required, ...spec.optional], [spec]);
   const [rows, setRows] = useState<Record<string, string>[]>([]);
   const [headerErrors, setHeaderErrors] = useState<string[]>([]);
-  const [jobId, setJobId] = useState<string | null>(null);
   const [job, setJob] = useState<JobRow | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -92,7 +91,7 @@ function ImportPanel({ specKey, spec }: { specKey: keyof typeof SPECS; spec: typ
       .select("*").single();
     if (error || !created) { toast.error(error?.message ?? "Could not create job"); return; }
     const j = created as unknown as JobRow;
-    setJobId(j.id); setJob(j);
+    setJob(j);
     // Fire-and-forget — progress is observed via the job row
     (fn as (args: { data: { rows: Record<string, string>[]; job_id: string } }) => Promise<unknown>)({ data: { rows, job_id: j.id } })
       .catch(() => { /* errors land in job.error_message */ });
@@ -118,7 +117,7 @@ function ImportPanel({ specKey, spec }: { specKey: keyof typeof SPECS; spec: typ
   const pct = job && job.total_rows > 0 ? Math.min(100, Math.round((job.processed_rows / job.total_rows) * 100)) : 0;
 
   function onFile(file: File) {
-    setJob(null); setJobId(null);
+    setJob(null);
     Papa.parse<Record<string, string>>(file, {
       header: true, skipEmptyLines: true,
       complete: (parsed) => {
