@@ -1,78 +1,48 @@
-## Goal
+## What you'll get
 
-Both guides currently describe CivicPlexus as a municipal **onboarding** tool. The app is actually a full local‑government **HRIS + talent suite** (ATS, core HR, payroll, benefits, comp, performance, policies, leave, grievances, FLSA/EEO, TCOLE/TMRS, offboarding, docs, equipment, training, reports). The homepage was already reframed; the docs need to catch up. The user also wants the self‑hosting guide to cover deploying **without Lovable**.
+1. The `one_on_one_templates` table extended so each template carries **separate manager and employee prompt lists** (matching your reference repo's `questions` + `employee_questions` shape), plus the existing title/description.
+2. The **two templates from your repo seeded verbatim** into the DB.
+3. An **HR-admin CRUD page** at `/settings/one-on-one-templates` to create, edit, duplicate, deactivate, and set-default templates.
 
-Only the two markdown files are touched. No app code, schema, or routes change.
+## One blocker I need from you
 
----
+In the reference repo the templates aren't in source code — they live in that project's Supabase `templates` table (the code only ships a 3-question fallback). I can't read your other project's database. To seed verbatim I need the rows. Either:
 
-## 1. `docs/USER_GUIDE.md` — rewrite
+- Paste the two templates (title + manager questions list + employee questions list) into chat, **or**
+- Run this in your reference project and paste the JSON: `select template_title, questions, employee_questions from templates;`
 
-Keep the friendly tone and "no technical background required" framing. Restructure around the actual product pillars instead of just onboarding.
+If you'd rather move forward now, I'll seed with the repo's `DEFAULT_TEMPLATE` ("Standard 1-on-1 Check-in" with the 3 generic prompts) as templates #1 and #2 placeholders, and you can edit them in the admin UI as soon as it lands.
 
-New section outline:
+## Schema change
 
-1. **Concepts at a glance** — expand the glossary: Requisition, Application, Offer, PAF, Pay Grade, Comp Cycle, Review Cycle, Goal, Cascade, 1:1, Policy Campaign, Grievance, FMLA case, TCOLE license, TMRS enrollment, Provisioning Request, Audit Event.
-2. **First‑time setup (Admin)** — claim `hr_admin`, org settings, pay calendars/groups, worker types, departments, retention policy, SSO, email sender, Google auth.
-3. **Recruit & Hire** — hire requests → requisitions → public careers page + internal careers → applications, screenings, interviews + feedback, offers (token portal), candidate messaging.
-4. **Onboard & Provision** — templates, task instances, preboarding portal, forms library + signatures, provisioning kanban, equipment/PPE, new‑hire batches, new‑hire reporting.
-5. **Core HR & Records** — employees, positions, PAFs and approval chains, documents, doc templates and generator, my‑HR self‑service.
-6. **Pay & Benefits** — pay grades, market ranges, comp cycles + calibration, employee comp history, pay calendars/groups/periods, payroll runs + export profiles, benefits hand‑off + dependents.
-7. **Perform & Develop** — goals + cascades + updates, review cycles + calibration, performance reviews + signatures, 1:1s (agenda, notes, action items), training courses, employee training, certifications + expiry, transcripts.
-8. **Comply & Govern** — policies + campaigns + acknowledgments, FLSA audit, EEO snapshot, TCOLE, TMRS, FMLA cases, grievances (intake, tasks, events, resolution), new‑hire reports, audit log, reports.
-9. **Roles & permissions matrix** — table: `hr_admin`, `hiring_manager`, `supervisor`, `it_admin`, `manager`, `employee`, `candidate` × what each can see/do.
-10. **Daily / weekly / monthly cadence** — keep the existing table, extend to cover payroll close, comp cycle gates, review cycle milestones, cert expiry, policy campaigns.
-11. **Notifications**, **Offboarding & rehire**, **Troubleshooting**, **Accessibility / Mobile**, **Glossary** — keep, refresh wording.
+Add two `jsonb` columns to `public.one_on_one_templates`:
 
-Drop wording that implies the product is only onboarding. Keep all existing `INSERT INTO public.user_roles …` snippets but route the user to **Cloud → Database → SQL editor** (Lovable Cloud) **or** Supabase SQL editor (self‑host) — the guide should read the same for both audiences.
+- `manager_prompts jsonb not null default '[]'` — list of strings shown to manager
+- `employee_prompts jsonb not null default '[]'` — list of strings shown to employee
 
----
+Keep `agenda_prompts` for backward compatibility; backfill it from `manager_prompts` so existing one-on-ones still render. Existing RLS (HR write, authenticated read) and the `updated_at` trigger stay.
 
-## 2. `docs/SELF_HOSTING_GUIDE.md` — rewrite
+## Seed
 
-Keep the "non‑developer, ~2 hours, **Did it work?** checks" structure and the cost/architecture diagram. Updates:
+Insert two rows (verbatim content from you, or the DEFAULT_TEMPLATE fallback). Mark the first `is_default = true`.
 
-- §1 architecture diagram and cost: keep, add a note that the app is a full HRIS, not just onboarding.
-- §2 decisions table: add a **Deployment target** row with options: Lovable‑hosted (default), Cloudflare Workers, generic Node host (Render / Fly.io / Railway / VPS), Docker on a VM.
-- §4 prerequisites: keep.
-- §5 Supabase Cloud provisioning: keep, expand storage bucket list to match the real project — `onboarding-documents`, `job-applications`, `training-evidence`, `offer-letters`, `payroll-exports`, `compliance-exports` (all private).
-- §6 self‑hosted Supabase: keep.
-- §7 secrets: refresh `.env.local` to match the real env contract from `<server-functions-modern>` — `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`, server‑side `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `LOVABLE_API_KEY` (AI Gateway, optional — only if AI features used), `BENEFITS_WEBHOOK_SECRET`, `REMINDERS_CRON_SECRET`, `EMAIL_FROM`, `RESEND_API_KEY`.
-- **§8 Deploy the app — rewrite with four paths, all without Lovable:**
-  - **8.A Cloudflare Workers** (current recommended). Keep `wrangler` flow; add note that the app is TanStack Start v1 with the Vite plugin so no `entry-client`/`entry-server` files are needed and `nitro.preset = cloudflare-module` is the build target.
-  - **8.B Generic Node host (Render / Fly.io / Railway).** `bun run build` → `node .output/server/index.mjs`; set the same env vars in the host's dashboard; expose port `3000`; add a `Procfile`/`fly.toml`/`render.yaml` snippet. Note Worker‑runtime caveats only apply to 8.A — Node hosts can use any Node‑only npm package.
-  - **8.C Docker on a VM.** Sample `Dockerfile` (multi‑stage: `oven/bun` build → `node:20-alpine` runtime running `.output/server/index.mjs`) and `docker-compose.yml` pairing it with Caddy for TLS. Cron via host `cron` hitting `/api/public/hooks/reminders` with the shared secret.
-  - **8.D Static + serverless split is NOT supported** — call this out: TanStack Start needs an SSR runtime; do not try to deploy to plain S3/Netlify static hosting.
-- §9 email: keep.
-- §10 cron: expand — list every `/api/public/hooks/*` endpoint that needs to be hit on a schedule (reminders, cert expiry, retention sweep, benefits callback is webhook not cron) with example `pg_cron` SQL and an equivalent generic crontab block for non‑Supabase setups.
-- §11 first admin: keep.
-- §12 security hardening: keep, add bullets — verify `attachSupabaseAuth` is the only auth middleware in `src/start.ts`; verify every public `/api/public/*` route validates a signature or shared secret; verify `user_roles` is read only via `private.has_role`; rotate `SUPABASE_SERVICE_ROLE_KEY` after handoff.
-- §13 compliance: extend to mention TCOLE, TMRS, FLSA exemption audit, EEO‑4 snapshot, new‑hire reporting (state TWC), FMLA tracking — what the app gives you vs what you must still do.
-- §14 updates: keep.
-- §15 monitoring: keep, add note that Workers logs live in Cloudflare; Node hosts use the host's log viewer.
-- §16 DR: keep.
-- §17 troubleshooting: append rows for "build fails citing `src/server/*` import" → import protection; "`createServerFn` 401 in prod" → `attachSupabaseAuth` missing; "`Expected 3 parts in JWT; got 1`" → using `sb_secret_*` key with PostgREST, switch to publishable client for public reads.
-- §18 appendix env‑var table: refresh to match §7.
+## Admin UI — `/settings/one-on-one-templates`
 
----
+Gated under `_authenticated/` and guarded in the component with a `has_role('hr_admin')` check (non-admins see "Access denied"). Built with shadcn primitives already in the project.
 
-## 3. "Is it ready to deploy?" — short answer at end of chat
+- **List view**: table of templates (title, default badge, active toggle, last updated, prompt counts). Buttons: New, Edit, Duplicate, Delete (confirm), Set default.
+- **Editor (dialog or side route)**: fields for title, description, two ordered prompt lists (manager / employee) with add / remove / drag-reorder, active + default toggles. Save = upsert via Supabase client (RLS enforces HR-admin write).
+- Reachable from existing 1:1 module nav.
 
-After the doc edits, give the user a 6‑line pre‑deploy checklist tied to what's actually in the repo:
+## Renderer alignment
 
-1. Migrations applied and `supabase db lint` clean.
-2. `attachSupabaseAuth` registered in `src/start.ts`.
-3. Required secrets present in the target environment (list from §7).
-4. At least one `hr_admin` row in `user_roles`.
-5. Cron endpoints reachable and signed with `REMINDERS_CRON_SECRET`.
-6. `bun run build` succeeds locally and `security--get_scan_results` shows no unresolved critical findings.
+Where one-on-ones render the agenda today, branch on role: managers see `manager_prompts`, employees see `employee_prompts`. Falls back to `agenda_prompts` when the new columns are empty (covers older templates).
 
-This is advisory — actual publish stays a separate user action.
+## Technical notes
 
----
+- Files added: `src/routes/_authenticated/settings/one-on-one-templates.tsx`, `src/components/one-on-one/TemplateEditor.tsx`.
+- Files touched: 1:1 meeting/agenda component(s) for the role-based prompt branch; nav link in settings.
+- Migration: column adds + backfill + seed insert in one approved migration.
+- No new dependencies. Uses existing `dnd-kit` if installed, otherwise simple up/down arrows.
 
-## Out of scope
-
-- No code changes, no migrations, no route changes.
-- No screenshots added (the guide already notes `docs/img/` placeholders).
-- No new doc files beyond the two edited.
+**Please confirm the seed content path** (paste templates, run the export query, or use the placeholder fallback), then I'll switch to build mode and ship it.

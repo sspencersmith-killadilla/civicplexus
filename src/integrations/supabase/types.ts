@@ -3124,9 +3124,11 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          employee_prompts: Json
           id: string
           is_active: boolean
           is_default: boolean
+          manager_prompts: Json
           title: string
           updated_at: string
         }
@@ -3135,9 +3137,11 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          employee_prompts?: Json
           id?: string
           is_active?: boolean
           is_default?: boolean
+          manager_prompts?: Json
           title: string
           updated_at?: string
         }
@@ -3146,9 +3150,11 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          employee_prompts?: Json
           id?: string
           is_active?: boolean
           is_default?: boolean
+          manager_prompts?: Json
           title?: string
           updated_at?: string
         }
