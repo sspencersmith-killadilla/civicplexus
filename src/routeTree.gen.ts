@@ -65,6 +65,7 @@ import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 import { Route as ApiPublicCandidateTokenStatusRouteImport } from './routes/api/public/candidate/$token/status'
+import { Route as ApiPublicCandidateTokenMessageRouteImport } from './routes/api/public/candidate/$token/message'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -367,6 +368,12 @@ const ApiPublicCandidateTokenStatusRoute =
     path: '/api/public/candidate/$token/status',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCandidateTokenMessageRoute =
+  ApiPublicCandidateTokenMessageRouteImport.update({
+    id: '/api/public/candidate/$token/message',
+    path: '/api/public/candidate/$token/message',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -423,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
 }
 export interface FileRoutesByTo {
@@ -480,6 +488,7 @@ export interface FileRoutesByTo {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
 }
 export interface FileRoutesById {
@@ -539,6 +548,7 @@ export interface FileRoutesById {
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
 }
 export interface FileRouteTypes {
@@ -598,6 +608,7 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -655,6 +666,7 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
   id:
     | '__root__'
@@ -713,6 +725,7 @@ export interface FileRouteTypes {
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
+    | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
   fileRoutesById: FileRoutesById
 }
@@ -726,6 +739,7 @@ export interface RootRouteChildren {
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
+  ApiPublicCandidateTokenMessageRoute: typeof ApiPublicCandidateTokenMessageRoute
   ApiPublicCandidateTokenStatusRoute: typeof ApiPublicCandidateTokenStatusRoute
 }
 
@@ -1123,6 +1137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCandidateTokenStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/candidate/$token/message': {
+      id: '/api/public/candidate/$token/message'
+      path: '/api/public/candidate/$token/message'
+      fullPath: '/api/public/candidate/$token/message'
+      preLoaderRoute: typeof ApiPublicCandidateTokenMessageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1259,6 +1280,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
+  ApiPublicCandidateTokenMessageRoute: ApiPublicCandidateTokenMessageRoute,
   ApiPublicCandidateTokenStatusRoute: ApiPublicCandidateTokenStatusRoute,
 }
 export const routeTree = rootRouteImport
