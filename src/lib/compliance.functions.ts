@@ -2,9 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
-async function assertHr(ctx: { supabase: { rpc: (fn: string, args: unknown) => Promise<{ data: unknown }> }; userId: string }) {
-  const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "hr_admin" } as never);
-  if (!data) throw new Error("Forbidden — HR admin only");
+async function assertHr(ctx: { supabase: { from: (t: string) => { select: (c: string) => { eq: (col: string, v: string) => { eq: (col: string, v: string) => Promise<{ data: unknown[] | null }> } } } }; userId: string }) {
+  const { data } = await ctx.supabase.from("user_roles").select("role").eq("user_id", ctx.userId).eq("role", "hr_admin");
+  if (!data?.length) throw new Error("Forbidden — HR admin only");
 }
 
 // ---------- FLSA ----------
