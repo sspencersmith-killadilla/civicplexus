@@ -51,6 +51,7 @@ import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/publi
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
+import { Route as AuthenticatedPafIdRouteImport } from './routes/_authenticated/paf.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
 import { Route as AuthenticatedLeaveIdRouteImport } from './routes/_authenticated/leave.$id'
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
@@ -287,6 +288,11 @@ const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedPoliciesRoute,
 } as any)
+const AuthenticatedPafIdRoute = AuthenticatedPafIdRouteImport.update({
+  id: '/paf/$id',
+  path: '/paf/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOneOnOnesIdRoute =
   AuthenticatedOneOnOnesIdRouteImport.update({
     id: '/one-on-ones/$id',
@@ -383,6 +389,7 @@ export interface FileRoutesByFullPath {
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
+  '/paf/$id': typeof AuthenticatedPafIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -437,6 +444,7 @@ export interface FileRoutesByTo {
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
+  '/paf/$id': typeof AuthenticatedPafIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -493,6 +501,7 @@ export interface FileRoutesById {
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/_authenticated/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
+  '/_authenticated/paf/$id': typeof AuthenticatedPafIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
@@ -549,6 +558,7 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/leave/$id'
     | '/one-on-ones/$id'
+    | '/paf/$id'
     | '/policies/$id'
     | '/reviews/$id'
     | '/templates/$id'
@@ -603,6 +613,7 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/leave/$id'
     | '/one-on-ones/$id'
+    | '/paf/$id'
     | '/policies/$id'
     | '/reviews/$id'
     | '/templates/$id'
@@ -658,6 +669,7 @@ export interface FileRouteTypes {
     | '/_authenticated/jobs/$id'
     | '/_authenticated/leave/$id'
     | '/_authenticated/one-on-ones/$id'
+    | '/_authenticated/paf/$id'
     | '/_authenticated/policies/$id'
     | '/_authenticated/reviews/$id'
     | '/_authenticated/templates/$id'
@@ -986,6 +998,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPoliciesIdRouteImport
       parentRoute: typeof AuthenticatedPoliciesRoute
     }
+    '/_authenticated/paf/$id': {
+      id: '/_authenticated/paf/$id'
+      path: '/paf/$id'
+      fullPath: '/paf/$id'
+      preLoaderRoute: typeof AuthenticatedPafIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/one-on-ones/$id': {
       id: '/_authenticated/one-on-ones/$id'
       path: '/one-on-ones/$id'
@@ -1110,6 +1129,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedJobsIdRoute: typeof AuthenticatedJobsIdRoute
   AuthenticatedLeaveIdRoute: typeof AuthenticatedLeaveIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
+  AuthenticatedPafIdRoute: typeof AuthenticatedPafIdRoute
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
@@ -1155,6 +1175,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedJobsIdRoute: AuthenticatedJobsIdRoute,
   AuthenticatedLeaveIdRoute: AuthenticatedLeaveIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
+  AuthenticatedPafIdRoute: AuthenticatedPafIdRoute,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedCascadesIndexRoute: AuthenticatedCascadesIndexRoute,
