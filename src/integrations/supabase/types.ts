@@ -2495,6 +2495,93 @@ export type Database = {
         }
         Relationships: []
       }
+      migration_sources: {
+        Row: {
+          column_map: Json
+          created_at: string
+          expected_files: Json
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+          vendor: string
+        }
+        Insert: {
+          column_map?: Json
+          created_at?: string
+          expected_files?: Json
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+          vendor: string
+        }
+        Update: {
+          column_map?: Json
+          created_at?: string
+          expected_files?: Json
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          vendor?: string
+        }
+        Relationships: []
+      }
+      migration_stages: {
+        Row: {
+          created_at: string
+          external_key: string
+          id: string
+          import_job_id: string | null
+          outcome: string
+          outcome_message: string | null
+          payload: Json
+          source_id: string | null
+          stage: string
+          target_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          external_key: string
+          id?: string
+          import_job_id?: string | null
+          outcome?: string
+          outcome_message?: string | null
+          payload: Json
+          source_id?: string | null
+          stage: string
+          target_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          external_key?: string
+          id?: string
+          import_job_id?: string | null
+          outcome?: string
+          outcome_message?: string | null
+          payload?: Json
+          source_id?: string | null
+          stage?: string
+          target_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "migration_stages_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "migration_stages_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "migration_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -2950,49 +3037,64 @@ export type Database = {
         Row: {
           accent_color: string | null
           address: string | null
+          cutover_mode: boolean
           ein: string | null
+          fed_employer_id: string | null
           id: string
           logo_url: string | null
           notification_defaults: Json | null
           org_name: string
+          payroll_bureau: string | null
           phone: string | null
           primary_color: string | null
+          require_mfa: boolean
           retention_policy: Json | null
           review_competencies: Json
           singleton: boolean
           sso_metadata_url: string | null
+          sso_only: boolean
           updated_at: string
         }
         Insert: {
           accent_color?: string | null
           address?: string | null
+          cutover_mode?: boolean
           ein?: string | null
+          fed_employer_id?: string | null
           id?: string
           logo_url?: string | null
           notification_defaults?: Json | null
           org_name?: string
+          payroll_bureau?: string | null
           phone?: string | null
           primary_color?: string | null
+          require_mfa?: boolean
           retention_policy?: Json | null
           review_competencies?: Json
           singleton?: boolean
           sso_metadata_url?: string | null
+          sso_only?: boolean
           updated_at?: string
         }
         Update: {
           accent_color?: string | null
           address?: string | null
+          cutover_mode?: boolean
           ein?: string | null
+          fed_employer_id?: string | null
           id?: string
           logo_url?: string | null
           notification_defaults?: Json | null
           org_name?: string
+          payroll_bureau?: string | null
           phone?: string | null
           primary_color?: string | null
+          require_mfa?: boolean
           retention_policy?: Json | null
           review_competencies?: Json
           singleton?: boolean
           sso_metadata_url?: string | null
+          sso_only?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -3041,6 +3143,50 @@ export type Database = {
           },
         ]
       }
+      pay_calendars: {
+        Row: {
+          anchor_period_start: string
+          check_date_offset_days: number
+          created_at: string
+          cutoff_offset_days: number
+          frequency: string
+          id: string
+          is_active: boolean
+          pay_group_id: string
+          updated_at: string
+        }
+        Insert: {
+          anchor_period_start: string
+          check_date_offset_days?: number
+          created_at?: string
+          cutoff_offset_days?: number
+          frequency: string
+          id?: string
+          is_active?: boolean
+          pay_group_id: string
+          updated_at?: string
+        }
+        Update: {
+          anchor_period_start?: string
+          check_date_offset_days?: number
+          created_at?: string
+          cutoff_offset_days?: number
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          pay_group_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pay_calendars_pay_group_id_fkey"
+            columns: ["pay_group_id"]
+            isOneToOne: false
+            referencedRelation: "pay_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pay_grades: {
         Row: {
           code: string
@@ -3085,6 +3231,266 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      pay_groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pay_periods: {
+        Row: {
+          check_date: string
+          created_at: string
+          id: string
+          locked_at: string | null
+          locked_by: string | null
+          pay_group_id: string
+          period_end: string
+          period_start: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          check_date: string
+          created_at?: string
+          id?: string
+          locked_at?: string | null
+          locked_by?: string | null
+          pay_group_id: string
+          period_end: string
+          period_start: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          check_date?: string
+          created_at?: string
+          id?: string
+          locked_at?: string | null
+          locked_by?: string | null
+          pay_group_id?: string
+          period_end?: string
+          period_start?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pay_periods_pay_group_id_fkey"
+            columns: ["pay_group_id"]
+            isOneToOne: false
+            referencedRelation: "pay_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_export_profiles: {
+        Row: {
+          bureau: string
+          column_map: Json
+          created_at: string
+          deduction_codes: Json
+          earnings_codes: Json
+          file_format: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          bureau: string
+          column_map?: Json
+          created_at?: string
+          deduction_codes?: Json
+          earnings_codes?: Json
+          file_format: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bureau?: string
+          column_map?: Json
+          created_at?: string
+          deduction_codes?: Json
+          earnings_codes?: Json
+          file_format?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payroll_run_lines: {
+        Row: {
+          base_annual: number | null
+          created_at: string
+          employee_id: string
+          fmla_hours: number
+          gross_pay: number
+          hourly_rate: number | null
+          id: string
+          one_time_items: Json
+          overtime_hours: number
+          pto_hours: number
+          regular_hours: number
+          run_id: string
+          sick_hours: number
+          warnings: string[]
+        }
+        Insert: {
+          base_annual?: number | null
+          created_at?: string
+          employee_id: string
+          fmla_hours?: number
+          gross_pay?: number
+          hourly_rate?: number | null
+          id?: string
+          one_time_items?: Json
+          overtime_hours?: number
+          pto_hours?: number
+          regular_hours?: number
+          run_id: string
+          sick_hours?: number
+          warnings?: string[]
+        }
+        Update: {
+          base_annual?: number | null
+          created_at?: string
+          employee_id?: string
+          fmla_hours?: number
+          gross_pay?: number
+          hourly_rate?: number | null
+          id?: string
+          one_time_items?: Json
+          overtime_hours?: number
+          pto_hours?: number
+          regular_hours?: number
+          run_id?: string
+          sick_hours?: number
+          warnings?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_run_lines_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_run_lines_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_runs: {
+        Row: {
+          created_at: string
+          file_hash: string | null
+          file_path: string | null
+          headcount: number
+          id: string
+          notes: string | null
+          pay_period_id: string
+          prepared_at: string | null
+          prepared_by: string | null
+          profile_id: string
+          released_at: string | null
+          run_kind: string
+          signed_off_at: string | null
+          signed_off_by: string | null
+          status: string
+          total_gross: number
+          total_hours: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_hash?: string | null
+          file_path?: string | null
+          headcount?: number
+          id?: string
+          notes?: string | null
+          pay_period_id: string
+          prepared_at?: string | null
+          prepared_by?: string | null
+          profile_id: string
+          released_at?: string | null
+          run_kind?: string
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          status?: string
+          total_gross?: number
+          total_hours?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_hash?: string | null
+          file_path?: string | null
+          headcount?: number
+          id?: string
+          notes?: string | null
+          pay_period_id?: string
+          prepared_at?: string | null
+          prepared_by?: string | null
+          profile_id?: string
+          released_at?: string | null
+          run_kind?: string
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          status?: string
+          total_gross?: number
+          total_hours?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_runs_pay_period_id_fkey"
+            columns: ["pay_period_id"]
+            isOneToOne: false
+            referencedRelation: "pay_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_runs_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_export_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       performance_review_signatures: {
         Row: {

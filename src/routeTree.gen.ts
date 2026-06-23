@@ -46,9 +46,11 @@ import { Route as AuthenticatedCompGradesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
+import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
 import { Route as AuthenticatedReviewCyclesIndexRouteImport } from './routes/_authenticated/review-cycles.index'
+import { Route as AuthenticatedPayrollIndexRouteImport } from './routes/_authenticated/payroll.index'
 import { Route as AuthenticatedPafIndexRouteImport } from './routes/_authenticated/paf.index'
 import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
 import { Route as AuthenticatedOffersIndexRouteImport } from './routes/_authenticated/offers.index'
@@ -66,6 +68,7 @@ import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedReviewCyclesIdRouteImport } from './routes/_authenticated/review-cycles.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
+import { Route as AuthenticatedPayrollIdRouteImport } from './routes/_authenticated/payroll.$id'
 import { Route as AuthenticatedPafIdRouteImport } from './routes/_authenticated/paf.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
 import { Route as AuthenticatedLeaveIdRouteImport } from './routes/_authenticated/leave.$id'
@@ -281,6 +284,12 @@ const AuthenticatedApprovalsRoute = AuthenticatedApprovalsRouteImport.update({
   path: '/approvals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminMigrationRoute =
+  AuthenticatedAdminMigrationRouteImport.update({
+    id: '/admin-migration',
+    path: '/admin-migration',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTemplatesIndexRoute =
   AuthenticatedTemplatesIndexRouteImport.update({
     id: '/templates/',
@@ -297,6 +306,12 @@ const AuthenticatedReviewCyclesIndexRoute =
   AuthenticatedReviewCyclesIndexRouteImport.update({
     id: '/review-cycles/',
     path: '/review-cycles/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPayrollIndexRoute =
+  AuthenticatedPayrollIndexRouteImport.update({
+    id: '/payroll/',
+    path: '/payroll/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPafIndexRoute = AuthenticatedPafIndexRouteImport.update({
@@ -393,6 +408,11 @@ const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => AuthenticatedPoliciesRoute,
+} as any)
+const AuthenticatedPayrollIdRoute = AuthenticatedPayrollIdRouteImport.update({
+  id: '/payroll/$id',
+  path: '/payroll/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPafIdRoute = AuthenticatedPafIdRouteImport.update({
   id: '/paf/$id',
@@ -499,6 +519,7 @@ const ApiPublicCandidateTokenMessageRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
@@ -543,6 +564,7 @@ export interface FileRoutesByFullPath {
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
+  '/payroll/$id': typeof AuthenticatedPayrollIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -560,6 +582,7 @@ export interface FileRoutesByFullPath {
   '/offers/': typeof AuthenticatedOffersIndexRoute
   '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/paf/': typeof AuthenticatedPafIndexRoute
+  '/payroll/': typeof AuthenticatedPayrollIndexRoute
   '/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
@@ -575,6 +598,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
@@ -619,6 +643,7 @@ export interface FileRoutesByTo {
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
+  '/payroll/$id': typeof AuthenticatedPayrollIdRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -636,6 +661,7 @@ export interface FileRoutesByTo {
   '/offers': typeof AuthenticatedOffersIndexRoute
   '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
   '/paf': typeof AuthenticatedPafIndexRoute
+  '/payroll': typeof AuthenticatedPayrollIndexRoute
   '/review-cycles': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
@@ -653,6 +679,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
@@ -697,6 +724,7 @@ export interface FileRoutesById {
   '/_authenticated/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/paf/$id': typeof AuthenticatedPafIdRoute
+  '/_authenticated/payroll/$id': typeof AuthenticatedPayrollIdRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -714,6 +742,7 @@ export interface FileRoutesById {
   '/_authenticated/offers/': typeof AuthenticatedOffersIndexRoute
   '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/_authenticated/paf/': typeof AuthenticatedPafIndexRoute
+  '/_authenticated/payroll/': typeof AuthenticatedPayrollIndexRoute
   '/_authenticated/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
@@ -731,6 +760,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/admin-migration'
     | '/approvals'
     | '/audit'
     | '/benefits'
@@ -775,6 +805,7 @@ export interface FileRouteTypes {
     | '/leave/$id'
     | '/one-on-ones/$id'
     | '/paf/$id'
+    | '/payroll/$id'
     | '/policies/$id'
     | '/review-cycles/$id'
     | '/reviews/$id'
@@ -792,6 +823,7 @@ export interface FileRouteTypes {
     | '/offers/'
     | '/one-on-ones/'
     | '/paf/'
+    | '/payroll/'
     | '/review-cycles/'
     | '/reviews/'
     | '/templates/'
@@ -807,6 +839,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/admin-migration'
     | '/approvals'
     | '/audit'
     | '/benefits'
@@ -851,6 +884,7 @@ export interface FileRouteTypes {
     | '/leave/$id'
     | '/one-on-ones/$id'
     | '/paf/$id'
+    | '/payroll/$id'
     | '/policies/$id'
     | '/review-cycles/$id'
     | '/reviews/$id'
@@ -868,6 +902,7 @@ export interface FileRouteTypes {
     | '/offers'
     | '/one-on-ones'
     | '/paf'
+    | '/payroll'
     | '/review-cycles'
     | '/reviews'
     | '/templates'
@@ -884,6 +919,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/admin-migration'
     | '/_authenticated/approvals'
     | '/_authenticated/audit'
     | '/_authenticated/benefits'
@@ -928,6 +964,7 @@ export interface FileRouteTypes {
     | '/_authenticated/leave/$id'
     | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/paf/$id'
+    | '/_authenticated/payroll/$id'
     | '/_authenticated/policies/$id'
     | '/_authenticated/review-cycles/$id'
     | '/_authenticated/reviews/$id'
@@ -945,6 +982,7 @@ export interface FileRouteTypes {
     | '/_authenticated/offers/'
     | '/_authenticated/one-on-ones/'
     | '/_authenticated/paf/'
+    | '/_authenticated/payroll/'
     | '/_authenticated/review-cycles/'
     | '/_authenticated/reviews/'
     | '/_authenticated/templates/'
@@ -1237,6 +1275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedApprovalsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin-migration': {
+      id: '/_authenticated/admin-migration'
+      path: '/admin-migration'
+      fullPath: '/admin-migration'
+      preLoaderRoute: typeof AuthenticatedAdminMigrationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/templates/': {
       id: '/_authenticated/templates/'
       path: '/templates'
@@ -1256,6 +1301,13 @@ declare module '@tanstack/react-router' {
       path: '/review-cycles'
       fullPath: '/review-cycles/'
       preLoaderRoute: typeof AuthenticatedReviewCyclesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payroll/': {
+      id: '/_authenticated/payroll/'
+      path: '/payroll'
+      fullPath: '/payroll/'
+      preLoaderRoute: typeof AuthenticatedPayrollIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/paf/': {
@@ -1376,6 +1428,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/policies/$id'
       preLoaderRoute: typeof AuthenticatedPoliciesIdRouteImport
       parentRoute: typeof AuthenticatedPoliciesRoute
+    }
+    '/_authenticated/payroll/$id': {
+      id: '/_authenticated/payroll/$id'
+      path: '/payroll/$id'
+      fullPath: '/payroll/$id'
+      preLoaderRoute: typeof AuthenticatedPayrollIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/paf/$id': {
       id: '/_authenticated/paf/$id'
@@ -1535,6 +1594,7 @@ const AuthenticatedReviewCyclesIdRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
@@ -1575,6 +1635,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeaveIdRoute: typeof AuthenticatedLeaveIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedPafIdRoute: typeof AuthenticatedPafIdRoute
+  AuthenticatedPayrollIdRoute: typeof AuthenticatedPayrollIdRoute
   AuthenticatedReviewCyclesIdRoute: typeof AuthenticatedReviewCyclesIdRouteWithChildren
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
@@ -1589,12 +1650,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOffersIndexRoute: typeof AuthenticatedOffersIndexRoute
   AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
   AuthenticatedPafIndexRoute: typeof AuthenticatedPafIndexRoute
+  AuthenticatedPayrollIndexRoute: typeof AuthenticatedPayrollIndexRoute
   AuthenticatedReviewCyclesIndexRoute: typeof AuthenticatedReviewCyclesIndexRoute
   AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
@@ -1635,6 +1698,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeaveIdRoute: AuthenticatedLeaveIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedPafIdRoute: AuthenticatedPafIdRoute,
+  AuthenticatedPayrollIdRoute: AuthenticatedPayrollIdRoute,
   AuthenticatedReviewCyclesIdRoute:
     AuthenticatedReviewCyclesIdRouteWithChildren,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
@@ -1651,6 +1715,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOffersIndexRoute: AuthenticatedOffersIndexRoute,
   AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
   AuthenticatedPafIndexRoute: AuthenticatedPafIndexRoute,
+  AuthenticatedPayrollIndexRoute: AuthenticatedPayrollIndexRoute,
   AuthenticatedReviewCyclesIndexRoute: AuthenticatedReviewCyclesIndexRoute,
   AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
