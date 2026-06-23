@@ -228,5 +228,3 @@ type JobRow = {
   error_message: string | null;
 };
 
-// silence unused
-void jobId;
