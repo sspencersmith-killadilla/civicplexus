@@ -49,6 +49,7 @@ import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
 import { Route as AuthenticatedReviewCyclesIndexRouteImport } from './routes/_authenticated/review-cycles.index'
+import { Route as AuthenticatedPayrollIndexRouteImport } from './routes/_authenticated/payroll.index'
 import { Route as AuthenticatedPafIndexRouteImport } from './routes/_authenticated/paf.index'
 import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
 import { Route as AuthenticatedOffersIndexRouteImport } from './routes/_authenticated/offers.index'
@@ -297,6 +298,12 @@ const AuthenticatedReviewCyclesIndexRoute =
   AuthenticatedReviewCyclesIndexRouteImport.update({
     id: '/review-cycles/',
     path: '/review-cycles/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPayrollIndexRoute =
+  AuthenticatedPayrollIndexRouteImport.update({
+    id: '/payroll/',
+    path: '/payroll/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPafIndexRoute = AuthenticatedPafIndexRouteImport.update({
@@ -560,6 +567,7 @@ export interface FileRoutesByFullPath {
   '/offers/': typeof AuthenticatedOffersIndexRoute
   '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/paf/': typeof AuthenticatedPafIndexRoute
+  '/payroll/': typeof AuthenticatedPayrollIndexRoute
   '/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
@@ -636,6 +644,7 @@ export interface FileRoutesByTo {
   '/offers': typeof AuthenticatedOffersIndexRoute
   '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
   '/paf': typeof AuthenticatedPafIndexRoute
+  '/payroll': typeof AuthenticatedPayrollIndexRoute
   '/review-cycles': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
@@ -714,6 +723,7 @@ export interface FileRoutesById {
   '/_authenticated/offers/': typeof AuthenticatedOffersIndexRoute
   '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/_authenticated/paf/': typeof AuthenticatedPafIndexRoute
+  '/_authenticated/payroll/': typeof AuthenticatedPayrollIndexRoute
   '/_authenticated/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
@@ -792,6 +802,7 @@ export interface FileRouteTypes {
     | '/offers/'
     | '/one-on-ones/'
     | '/paf/'
+    | '/payroll/'
     | '/review-cycles/'
     | '/reviews/'
     | '/templates/'
@@ -868,6 +879,7 @@ export interface FileRouteTypes {
     | '/offers'
     | '/one-on-ones'
     | '/paf'
+    | '/payroll'
     | '/review-cycles'
     | '/reviews'
     | '/templates'
@@ -945,6 +957,7 @@ export interface FileRouteTypes {
     | '/_authenticated/offers/'
     | '/_authenticated/one-on-ones/'
     | '/_authenticated/paf/'
+    | '/_authenticated/payroll/'
     | '/_authenticated/review-cycles/'
     | '/_authenticated/reviews/'
     | '/_authenticated/templates/'
@@ -1256,6 +1269,13 @@ declare module '@tanstack/react-router' {
       path: '/review-cycles'
       fullPath: '/review-cycles/'
       preLoaderRoute: typeof AuthenticatedReviewCyclesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payroll/': {
+      id: '/_authenticated/payroll/'
+      path: '/payroll'
+      fullPath: '/payroll/'
+      preLoaderRoute: typeof AuthenticatedPayrollIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/paf/': {
@@ -1589,6 +1609,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOffersIndexRoute: typeof AuthenticatedOffersIndexRoute
   AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
   AuthenticatedPafIndexRoute: typeof AuthenticatedPafIndexRoute
+  AuthenticatedPayrollIndexRoute: typeof AuthenticatedPayrollIndexRoute
   AuthenticatedReviewCyclesIndexRoute: typeof AuthenticatedReviewCyclesIndexRoute
   AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
@@ -1651,6 +1672,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOffersIndexRoute: AuthenticatedOffersIndexRoute,
   AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
   AuthenticatedPafIndexRoute: AuthenticatedPafIndexRoute,
+  AuthenticatedPayrollIndexRoute: AuthenticatedPayrollIndexRoute,
   AuthenticatedReviewCyclesIndexRoute: AuthenticatedReviewCyclesIndexRoute,
   AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
