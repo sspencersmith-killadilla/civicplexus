@@ -7,6 +7,16 @@ const Body = z.object({
   email: z.string().trim().email().max(200),
   phone: z.string().trim().max(40).optional().nullable(),
   cover_letter: z.string().trim().max(20000).optional().nullable(),
+  self_id: z
+    .object({
+      gender: z.string().max(40).optional().nullable(),
+      race_ethnicity: z.string().max(80).optional().nullable(),
+      veteran_status: z.string().max(80).optional().nullable(),
+      disability_status: z.string().max(80).optional().nullable(),
+      declined: z.boolean().optional(),
+    })
+    .optional()
+    .nullable(),
 });
 
 export const Route = createFileRoute("/api/public/job-applications")({
@@ -20,12 +30,18 @@ export const Route = createFileRoute("/api/public/job-applications")({
           let resumeFile: File | null = null;
           if (ct.includes("multipart/form-data")) {
             const fd = await request.formData();
+            const rawSelfId = fd.get("self_id");
+            let selfId: z.infer<typeof Body>["self_id"] = null;
+            if (typeof rawSelfId === "string" && rawSelfId.length > 0) {
+              try { selfId = JSON.parse(rawSelfId); } catch { selfId = null; }
+            }
             parsed = Body.parse({
               requisition_id: fd.get("requisition_id"),
               applicant_name: fd.get("applicant_name"),
               email: fd.get("email"),
               phone: fd.get("phone") || undefined,
               cover_letter: fd.get("cover_letter") || undefined,
+              self_id: selfId,
             });
             const f = fd.get("resume");
             if (f instanceof File && f.size > 0) {
@@ -70,6 +86,22 @@ export const Route = createFileRoute("/api/public/job-applications")({
           await supabaseAdmin.from("job_application_events" as never).insert({
             application_id: a.id, event_type: "submitted",
           } as never);
+
+          // Voluntary self-identification — written atomically with the
+          // application via the trusted server route, so external candidates
+          // never need an anon-callable insert path of their own.
+          if (parsed.self_id && (parsed.self_id.declined
+            || parsed.self_id.gender || parsed.self_id.race_ethnicity
+            || parsed.self_id.veteran_status || parsed.self_id.disability_status)) {
+            await supabaseAdmin.from("application_self_id" as never).upsert({
+              application_id: a.id,
+              gender: parsed.self_id.gender || null,
+              race_ethnicity: parsed.self_id.race_ethnicity || null,
+              veteran_status: parsed.self_id.veteran_status || null,
+              disability_status: parsed.self_id.disability_status || null,
+              declined: parsed.self_id.declined ?? false,
+            } as never, { onConflict: "application_id" });
+          }
 
           // Notify HR
           const { data: hr } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "hr_admin");
