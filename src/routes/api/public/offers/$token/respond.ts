@@ -46,21 +46,10 @@ export const Route = createFileRoute("/api/public/offers/$token/respond")({
           return Response.json({ ok: true, status: "declined" });
         }
 
-        // Accept path
+        // Accept path - typed-name e-signature recorded directly on the offer
         if (!parsed.data.signature_name) return new Response(JSON.stringify({ error: "Signature required" }), { status: 400 });
-        const { data: sig } = await supabaseAdmin.from("signatures").insert({
-          signer_name: parsed.data.signature_name,
-          signer_email: o.job_applications?.email ?? "",
-          signature_text: parsed.data.signature_name,
-          ip_address: request.headers.get("x-forwarded-for") ?? null,
-          user_agent: request.headers.get("user-agent") ?? null,
-          entity_type: "offer",
-          entity_id: o.id,
-        }).select("id").single();
-        const signatureId = (sig as { id: string } | null)?.id ?? null;
-
         await supabaseAdmin.from("offers").update({
-          status: "accepted", signed_at: new Date().toISOString(), signature_id: signatureId,
+          status: "accepted", signed_at: new Date().toISOString(),
         }).eq("id", o.id);
         await supabaseAdmin.from("candidate_tokens").update({ revoked_at: new Date().toISOString() }).eq("token_hash", hashToken(params.token));
 
@@ -82,7 +71,12 @@ export const Route = createFileRoute("/api/public/offers/$token/respond")({
 
         await supabaseAdmin.from("job_application_events").insert({
           application_id: o.application_id, actor_id: null, event_type: "offer_accepted",
-          payload: { hire_request_id: hireId, signature_id: signatureId },
+          payload: {
+            hire_request_id: hireId,
+            signer_name: parsed.data.signature_name,
+            signer_ip: request.headers.get("x-forwarded-for") ?? null,
+            signer_ua: request.headers.get("user-agent") ?? null,
+          },
         });
         await supabaseAdmin.from("job_applications").update({ status: "hired" }).eq("id", o.application_id);
 
