@@ -51,6 +51,8 @@ const NAV_GROUPS = [
   ]},
   { label: "Hiring", items: [
     { to: "/jobs", label: "Requisitions", icon: BriefcaseBusiness, roles: ["hr_admin", "hiring_manager", "supervisor"] },
+    { to: "/offers", label: "Offers", icon: FileSignature, roles: ["hr_admin", "hiring_manager"] },
+    { to: "/email-templates", label: "Email Templates", icon: ScrollText, roles: ["hr_admin"] },
     { to: "/approvals", label: "Approvals", icon: CheckSquare, roles: ["hr_admin", "hiring_manager", "supervisor"] },
     { to: "/internal-careers", label: "Internal Careers", icon: Compass, roles: ["hr_admin", "hiring_manager", "supervisor", "employee"] },
   ]},
