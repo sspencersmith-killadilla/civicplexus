@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import markAsset from "@/assets/kyberna-mark.png.asset.json";
+import markAsset from "@/assets/noopolis-mark.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — Kyberna" }, { name: "description", content: "Sign in or create your Kyberna account." }] }),
+  head: () => ({ meta: [{ title: "Sign in — Noöpolis" }, { name: "description", content: "Sign in or create your Noöpolis account." }] }),
   component: AuthPage,
 });
 
@@ -67,15 +67,15 @@ function AuthPage() {
   return (
     <div className="min-h-screen grid md:grid-cols-2 bg-background">
       <div className="hidden md:flex flex-col justify-between p-10 bg-sidebar text-sidebar-foreground">
-        <Link to="/" className="flex items-center gap-2.5" aria-label="Kyberna home">
+        <Link to="/" className="flex items-center gap-2.5" aria-label="Noöpolis home">
           <img src={markAsset.url} alt="" aria-hidden="true" className="h-10 w-10 object-contain" />
-          <span className="font-serif text-xl tracking-tight">Kyberna</span>
+          <span className="font-serif text-xl tracking-tight">Noöpolis</span>
         </Link>
         <div>
           <p className="font-serif text-3xl leading-tight max-w-md">"Every new hire ready on day zero — from City Hall to the water plant."</p>
           <p className="mt-4 text-sm text-sidebar-foreground/60">Municipal Onboarding Suite</p>
         </div>
-        <p className="text-xs text-sidebar-foreground/50">© {new Date().getFullYear()} Kyberna</p>
+        <p className="text-xs text-sidebar-foreground/50">© {new Date().getFullYear()} Noöpolis</p>
       </div>
 
       <div className="flex items-center justify-center p-6">

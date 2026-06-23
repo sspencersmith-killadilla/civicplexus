@@ -13,7 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
-import markAsset from "@/assets/kyberna-mark.png.asset.json";
+import markAsset from "@/assets/noopolis-mark.png.asset.json";
 
 function NotFoundComponent() {
   return (
@@ -80,15 +80,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Kyberna — Municipal Onboarding Suite" },
+      { title: "Noöpolis — Municipal Onboarding Suite" },
       { name: "description", content: "Modern, flexible onboarding for every kind of municipal worker — office, field, public safety, temporary, and more." },
-      { property: "og:title", content: "Kyberna — Municipal Onboarding Suite" },
+      { property: "og:title", content: "Noöpolis — Municipal Onboarding Suite" },
       { property: "og:description", content: "Modern, flexible onboarding for every kind of municipal worker — office, field, public safety, temporary, and more." },
       { property: "og:type", content: "website" },
       { property: "og:image", content: markAsset.url },
-      { property: "og:site_name", content: "Kyberna" },
+      { property: "og:site_name", content: "Noöpolis" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Kyberna — Municipal Onboarding Suite" },
+      { name: "twitter:title", content: "Noöpolis — Municipal Onboarding Suite" },
       { name: "twitter:description", content: "Modern, flexible onboarding for every kind of municipal worker — office, field, public safety, temporary, and more." },
       { name: "twitter:image", content: markAsset.url },
       { name: "theme-color", content: "#0f172a" },
@@ -102,7 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", type: "image/png", href: markAsset.url },
       { rel: "apple-touch-icon", href: markAsset.url },
-      { rel: "canonical", href: "https://kyberna.lovable.app/" },
+      { rel: "canonical", href: "https://noopolis.lovable.app/" },
     ],
   }),
   shellComponent: RootShell,

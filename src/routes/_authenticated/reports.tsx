@@ -40,7 +40,7 @@ function ReportsPage() {
     const rows = [["Metric", "Value"], ["Total employees", total], ["Active", active], ["Preboarding", preboarding], ["Overdue tasks", overdue], ["I-9 compliance %", i9Pct]];
     const csv = rows.map((r) => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "kyberna-report.csv"; a.click();
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "noopolis-report.csv"; a.click();
   }
 
   return (
