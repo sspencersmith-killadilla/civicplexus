@@ -91,7 +91,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <h1 className="font-serif text-2xl tracking-tight">{title}</h1>
           </header>
         )}
-        <div className="px-6 md:px-10 py-6">{children}</div>
+        <div className="px-6 md:px-10 py-6">
+          <ModuleGate>{children}</ModuleGate>
+        </div>
       </main>
     </div>
   );
