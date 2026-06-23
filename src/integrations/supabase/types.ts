@@ -14,6 +14,88 @@ export type Database = {
   }
   public: {
     Tables: {
+      application_messages: {
+        Row: {
+          application_id: string
+          body: string
+          created_at: string
+          id: string
+          read_by_candidate_at: string | null
+          read_by_recruiter_at: string | null
+          sender: string
+          sender_user_id: string | null
+        }
+        Insert: {
+          application_id: string
+          body: string
+          created_at?: string
+          id?: string
+          read_by_candidate_at?: string | null
+          read_by_recruiter_at?: string | null
+          sender: string
+          sender_user_id?: string | null
+        }
+        Update: {
+          application_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          read_by_candidate_at?: string | null
+          read_by_recruiter_at?: string | null
+          sender?: string
+          sender_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_messages_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      application_self_id: {
+        Row: {
+          application_id: string
+          created_at: string
+          declined: boolean
+          disability_status: string | null
+          gender: string | null
+          id: string
+          race_ethnicity: string | null
+          veteran_status: string | null
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          declined?: boolean
+          disability_status?: string | null
+          gender?: string | null
+          id?: string
+          race_ethnicity?: string | null
+          veteran_status?: string | null
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          declined?: boolean
+          disability_status?: string | null
+          gender?: string | null
+          id?: string
+          race_ethnicity?: string | null
+          veteran_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_self_id_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       approval_chains: {
         Row: {
           created_at: string
@@ -176,6 +258,44 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidate_tokens: {
+        Row: {
+          application_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          purpose: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          purpose?: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          purpose?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_tokens_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
             referencedColumns: ["id"]
           },
         ]
@@ -452,6 +572,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      email_templates: {
+        Row: {
+          active: boolean
+          body: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          subject: string
+          template_key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          subject: string
+          template_key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          subject?: string
+          template_key?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       employee_certifications: {
         Row: {
@@ -1983,6 +2142,98 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      offers: {
+        Row: {
+          application_id: string
+          created_at: string
+          created_by: string
+          decline_reason: string | null
+          expires_at: string | null
+          id: string
+          letter_html: string | null
+          letter_path: string | null
+          pay_grade: string | null
+          requisition_id: string
+          salary: number | null
+          sent_at: string | null
+          signature_id: string | null
+          signed_at: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+          worker_type_id: string | null
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          created_by: string
+          decline_reason?: string | null
+          expires_at?: string | null
+          id?: string
+          letter_html?: string | null
+          letter_path?: string | null
+          pay_grade?: string | null
+          requisition_id: string
+          salary?: number | null
+          sent_at?: string | null
+          signature_id?: string | null
+          signed_at?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          created_by?: string
+          decline_reason?: string | null
+          expires_at?: string | null
+          id?: string
+          letter_html?: string | null
+          letter_path?: string | null
+          pay_grade?: string | null
+          requisition_id?: string
+          salary?: number | null
+          sent_at?: string | null
+          signature_id?: string | null
+          signed_at?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "job_requisitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_signature_id_fkey"
+            columns: ["signature_id"]
+            isOneToOne: false
+            referencedRelation: "signatures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_worker_type_id_fkey"
+            columns: ["worker_type_id"]
+            isOneToOne: false
+            referencedRelation: "worker_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       onboarding_instances: {
         Row: {
