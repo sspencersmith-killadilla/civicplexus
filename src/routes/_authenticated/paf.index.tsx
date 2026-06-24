@@ -47,13 +47,26 @@ function PafIndex() {
 
   const [form, setForm] = useState({
     employee_id: "", action_type: "pay_change" as typeof ACTIONS[number], effective_date: "",
-    reason: "", narrative: "", after_json: "{}",
+    reason: "", narrative: "",
+    // structured fields
+    new_job_title: "", new_department: "", new_manager_id: "",
+    new_base_annual: "", separation_reason: "voluntary", rehire_eligible: true,
   });
 
   const send = useMutation({
     mutationFn: () => {
-      let after: Record<string, unknown> = {};
-      try { after = JSON.parse(form.after_json || "{}"); } catch { throw new Error("Invalid JSON in After values"); }
+      const after: Record<string, unknown> = {};
+      if (form.new_job_title) after.job_title = form.new_job_title;
+      if (form.new_department) after.department = form.new_department;
+      if (form.new_manager_id) after.manager_id = form.new_manager_id;
+      if (form.action_type === "separation") {
+        after.separation_date = form.effective_date;
+        after.separation_reason = form.separation_reason;
+        after.rehire_eligible = form.rehire_eligible;
+      }
+      if (form.action_type === "pay_change" && form.new_base_annual) {
+        after.base_annual = Number(form.new_base_annual);
+      }
       return submit({ data: {
         employee_id: form.employee_id, action_type: form.action_type, effective_date: form.effective_date,
         reason: form.reason || undefined, narrative: form.narrative || undefined, after_values: after,
@@ -93,12 +106,34 @@ function PafIndex() {
               </div>
               <div><Label>Reason</Label><Input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="e.g. promotion to Sr. Engineer" /></div>
               <div><Label>Narrative</Label><Textarea rows={3} value={form.narrative} onChange={(e) => setForm({ ...form, narrative: e.target.value })} /></div>
-              <div>
-                <Label>After values (JSON — fields to update on approval)</Label>
-                <Textarea rows={4} value={form.after_json} onChange={(e) => setForm({ ...form, after_json: e.target.value })}
-                  placeholder='{"job_title":"Sr. Engineer","department":"IT"}' className="font-mono text-xs" />
-                <p className="text-xs text-muted-foreground mt-1">Allowed keys: job_title, department, status, position_id, manager_id, start_date, work_email</p>
-              </div>
+              {(form.action_type === "promotion" || form.action_type === "demotion" || form.action_type === "transfer" || form.action_type === "position_change" || form.action_type === "reclassification") && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>New job title</Label><Input value={form.new_job_title} onChange={(e) => setForm({ ...form, new_job_title: e.target.value })} /></div>
+                  <div><Label>New department</Label><Input value={form.new_department} onChange={(e) => setForm({ ...form, new_department: e.target.value })} /></div>
+                  <div className="col-span-2"><Label>New manager (employee)</Label>
+                    <Select value={form.new_manager_id} onValueChange={(v) => setForm({ ...form, new_manager_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                      <SelectContent>
+                        {(empsQ.data ?? []).map((e) => <SelectItem key={e.id} value={e.id}>{e.last_name}, {e.first_name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+              {form.action_type === "pay_change" && (
+                <div><Label>New annual base ($)</Label><Input type="number" value={form.new_base_annual} onChange={(e) => setForm({ ...form, new_base_annual: e.target.value })} /></div>
+              )}
+              {form.action_type === "separation" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>Reason</Label>
+                    <Select value={form.separation_reason} onValueChange={(v) => setForm({ ...form, separation_reason: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{["voluntary","involuntary","retirement","end_of_term","deceased"].map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm mt-6"><input type="checkbox" checked={form.rehire_eligible} onChange={(e) => setForm({ ...form, rehire_eligible: e.target.checked })} /> Rehire eligible</label>
+                </div>
+              )}
               <div className="flex justify-end">
                 <Button disabled={send.isPending || !form.employee_id || !form.effective_date} onClick={() => send.mutate()}>
                   {send.isPending ? "Submitting…" : "Submit for approval"}
