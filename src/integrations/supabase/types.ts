@@ -3053,7 +3053,7 @@ export type Database = {
           name: string
           template_type: string
           updated_at: string
-          worker_type_id: string
+          worker_type_id: string | null
         }
         Insert: {
           created_at?: string
@@ -3064,7 +3064,7 @@ export type Database = {
           name: string
           template_type?: string
           updated_at?: string
-          worker_type_id: string
+          worker_type_id?: string | null
         }
         Update: {
           created_at?: string
@@ -3075,7 +3075,7 @@ export type Database = {
           name?: string
           template_type?: string
           updated_at?: string
-          worker_type_id?: string
+          worker_type_id?: string | null
         }
         Relationships: [
           {
@@ -3340,6 +3340,7 @@ export type Database = {
           ai_features: Json
           cutover_mode: boolean
           ein: string | null
+          fallback_admin_user_id: string | null
           fed_employer_id: string | null
           id: string
           logo_url: string | null
@@ -3364,6 +3365,7 @@ export type Database = {
           ai_features?: Json
           cutover_mode?: boolean
           ein?: string | null
+          fallback_admin_user_id?: string | null
           fed_employer_id?: string | null
           id?: string
           logo_url?: string | null
@@ -3388,6 +3390,7 @@ export type Database = {
           ai_features?: Json
           cutover_mode?: boolean
           ein?: string | null
+          fallback_admin_user_id?: string | null
           fed_employer_id?: string | null
           id?: string
           logo_url?: string | null
@@ -5182,6 +5185,14 @@ export type Database = {
         Args: { _decision: string; _notes: string; _step_id: string }
         Returns: undefined
       }
+      hr_set_employee_status: {
+        Args: {
+          _employee_id: string
+          _new_status: Database["public"]["Enums"]["employee_status"]
+          _note?: string
+        }
+        Returns: undefined
+      }
       mark_my_training_started: {
         Args: { _training_id: string }
         Returns: undefined
@@ -5205,6 +5216,10 @@ export type Database = {
         }
         Returns: string
       }
+      resolve_approver: {
+        Args: { _manager_user_id?: string; _role: string }
+        Returns: string
+      }
       restore_demo_changes: { Args: never; Returns: Json }
       update_my_employee_contact: {
         Args: { _personal_email?: string; _phone?: string }
@@ -5219,7 +5234,12 @@ export type Database = {
         | "employee"
         | "candidate"
         | "supervisor"
-      employee_status: "candidate" | "preboarding" | "active" | "offboarded"
+      employee_status:
+        | "candidate"
+        | "preboarding"
+        | "active"
+        | "offboarded"
+        | "on_leave"
       task_assignee:
         | "employee"
         | "manager"
@@ -5378,7 +5398,13 @@ export const Constants = {
         "candidate",
         "supervisor",
       ],
-      employee_status: ["candidate", "preboarding", "active", "offboarded"],
+      employee_status: [
+        "candidate",
+        "preboarding",
+        "active",
+        "offboarded",
+        "on_leave",
+      ],
       task_assignee: [
         "employee",
         "manager",
