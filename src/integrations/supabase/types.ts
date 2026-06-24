@@ -208,6 +208,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id: string
+          kind: string | null
           status: string
           updated_at: string
         }
@@ -218,6 +219,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id?: string
+          kind?: string | null
           status?: string
           updated_at?: string
         }
@@ -228,6 +230,7 @@ export type Database = {
           entity_id?: string
           entity_type?: string
           id?: string
+          kind?: string | null
           status?: string
           updated_at?: string
         }
