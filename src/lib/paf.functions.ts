@@ -58,10 +58,10 @@ export const submitPaf = createServerFn({ method: "POST" })
       .select("id").single();
     if (cErr || !chain) throw new Error(cErr?.message ?? "Could not start chain");
 
-    const roles = data.approval_roles ?? ["supervisor","hr_admin"];
-    for (let i = 0; i < roles.length; i++) {
+    const approvalRoles = data.approval_roles ?? ["supervisor","hr_admin"];
+    for (let i = 0; i < approvalRoles.length; i++) {
       await supabaseAdmin.from("approval_steps").insert({
-        chain_id: chain.id, stage: i + 1, approver_role: roles[i], status: "pending",
+        chain_id: chain.id, stage: i + 1, approver_role: approvalRoles[i], status: "pending",
       } as never);
     }
 
