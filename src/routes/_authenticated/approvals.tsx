@@ -28,15 +28,26 @@ function ApprovalsInbox() {
         ...(roles.length ? [`approver_role.in.(${roles.join(",")})`] : []),
       ].join(",");
       const { data: steps } = await supabase.from("approval_steps")
-        .select("id, stage, approver_label, approver_role, approver_id, status, approval_chains:chain_id(id, kind, entity_type, entity_id, status), personnel_actions:chain_id(id, paf_number, action_type, employee_id)")
+        .select("id, stage, approver_label, approver_role, approver_id, status, chain_id, approval_chains:chain_id(id, kind, entity_type, entity_id, status)")
         .eq("status", "pending")
         .or(orFilter)
         .order("created_at");
-      return (steps ?? []) as Array<{
+      const rows = (steps ?? []) as unknown as Array<{
         id: string; stage: number; approver_label: string | null; approver_role: string | null;
-        approval_chains: { id: string; kind: string | null; entity_type: string | null; entity_id: string | null };
-        personnel_actions: Array<{ id: string; paf_number: string; action_type: string; employee_id: string }>;
+        chain_id: string;
+        approval_chains: { id: string; kind: string | null; entity_type: string | null; entity_id: string | null } | null;
       }>;
+      const chainIds = rows.filter((r) => (r.approval_chains?.kind ?? "").startsWith("paf_")).map((r) => r.chain_id);
+      const pafMap: Record<string, { id: string; paf_number: string; action_type: string }> = {};
+      if (chainIds.length) {
+        const { data: pafs } = await supabase.from("personnel_actions")
+          .select("id, paf_number, action_type, approval_chain_id")
+          .in("approval_chain_id", chainIds);
+        for (const p of pafs ?? []) {
+          if (p.approval_chain_id) pafMap[p.approval_chain_id] = { id: p.id, paf_number: p.paf_number, action_type: p.action_type };
+        }
+      }
+      return rows.map((r) => ({ ...r, paf: pafMap[r.chain_id] ?? null }));
     },
     enabled: !!me?.user.id,
   });
@@ -75,14 +86,14 @@ function ApprovalsInbox() {
 function ApprovalRow({ step, onDecide }: {
   step: {
     id: string; stage: number; approver_label: string | null; approver_role: string | null;
-    approval_chains: { kind: string | null; entity_type: string | null; entity_id: string | null };
-    personnel_actions: Array<{ id: string; paf_number: string; action_type: string }>;
+    approval_chains: { kind: string | null; entity_type: string | null; entity_id: string | null } | null;
+    paf: { id: string; paf_number: string; action_type: string } | null;
   };
   onDecide: (d: "approved" | "rejected", notes?: string) => void;
 }) {
   const [notes, setNotes] = useState("");
   const isPaf = (step.approval_chains?.kind ?? "").startsWith("paf_");
-  const paf = step.personnel_actions?.[0];
+  const paf = step.paf;
   const label = step.approver_label || step.approver_role || "Approver";
   return (
     <Card className="p-4 space-y-3">
