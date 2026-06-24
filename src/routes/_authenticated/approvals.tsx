@@ -44,7 +44,7 @@ function ApprovalsInbox() {
           .select("id, paf_number, action_type, approval_chain_id")
           .in("approval_chain_id", chainIds);
         for (const p of pafs ?? []) {
-          if (p.approval_chain_id) pafMap[p.approval_chain_id] = { id: p.id, paf_number: p.paf_number, action_type: p.action_type };
+          if (p.approval_chain_id) pafMap[p.approval_chain_id] = { id: p.id, paf_number: p.paf_number ?? "", action_type: p.action_type };
         }
       }
       return rows.map((r) => ({ ...r, paf: pafMap[r.chain_id] ?? null }));
