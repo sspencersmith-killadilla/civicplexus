@@ -22,6 +22,35 @@ export const submitPaf = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // Authorization: only HR admins, supervisors, or hiring managers can submit PAFs,
+    // and non-HR initiators must be the direct manager of the subject employee.
+    const { data: roleRows } = await supabaseAdmin
+      .from("user_roles").select("role").eq("user_id", context.userId);
+    const roles = (roleRows ?? []).map((r) => r.role as string);
+    const isHrAdmin = roles.includes("hr_admin");
+    const isSupervisor = roles.includes("supervisor");
+    const isHiringMgr = roles.includes("hiring_manager");
+    if (!isHrAdmin && !isSupervisor && !isHiringMgr) {
+      throw new Error("Forbidden: only HR admins, supervisors, or hiring managers can submit PAFs");
+    }
+    if (!isHrAdmin) {
+      const { data: emp } = await supabaseAdmin
+        .from("employees")
+        .select("id, manager_id, user_id")
+        .eq("id", data.employee_id)
+        .maybeSingle();
+      if (!emp) throw new Error("Employee not found");
+      const managerEmpRow = await supabaseAdmin
+        .from("employees").select("user_id").eq("id", emp.manager_id ?? "00000000-0000-0000-0000-000000000000").maybeSingle();
+      const isDirectManager = managerEmpRow.data?.user_id === context.userId;
+      if (!isDirectManager) {
+        throw new Error("Forbidden: you may only submit PAFs for employees you directly manage");
+      }
+      if (emp.user_id === context.userId) {
+        throw new Error("Forbidden: cannot submit a PAF on yourself");
+      }
+    }
+
     const chainKind = `paf_${data.action_type}`;
     const { data: chain, error: cErr } = await supabaseAdmin
       .from("approval_chains")
