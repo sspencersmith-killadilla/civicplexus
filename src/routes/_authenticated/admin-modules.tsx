@@ -11,6 +11,10 @@ import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { useModuleSettings } from "@/hooks/use-module-settings";
 import { MODULE_REGISTRY } from "@/lib/modules";
 import { updateModuleSettings } from "@/lib/module-settings.functions";
+import { setFallbackAdmin } from "@/lib/paf.functions";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/admin-modules")({
   component: AdminModulesPage,
@@ -73,6 +77,7 @@ function AdminModulesPage() {
   return (
     <AppShell title="Modules & Features">
       <div className="max-w-4xl space-y-6">
+        <FallbackAdminCard />
         <div className="flex items-start justify-between gap-4">
           <p className="text-sm text-muted-foreground">
             Toggle entire modules or individual features. Disabled items disappear
@@ -129,5 +134,43 @@ function AdminModulesPage() {
         })}
       </div>
     </AppShell>
+  );
+}
+
+function FallbackAdminCard() {
+  const qc = useQueryClient();
+  const setFb = useServerFn(setFallbackAdmin);
+  const { data: org } = useQuery({
+    queryKey: ["org-fb"],
+    queryFn: async () => (await supabase.from("org_settings").select("fallback_admin_user_id").maybeSingle()).data as { fallback_admin_user_id: string | null } | null,
+  });
+  const { data: admins } = useQuery({
+    queryKey: ["hr-admins"],
+    queryFn: async () => {
+      const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "hr_admin");
+      const ids = (roles ?? []).map((r) => r.user_id);
+      if (!ids.length) return [] as Array<{ id: string; full_name: string | null; email: string | null }>;
+      const { data: profs } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
+      return (profs ?? []) as Array<{ id: string; full_name: string | null; email: string | null }>;
+    },
+  });
+  const m = useMutation({
+    mutationFn: (uid: string | null) => setFb({ data: { user_id: uid } }),
+    onSuccess: () => { toast.success("Fallback admin saved"); qc.invalidateQueries({ queryKey: ["org-fb"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <Card>
+      <CardHeader><CardTitle className="font-serif text-lg">Fallback admin</CardTitle></CardHeader>
+      <CardContent className="space-y-2">
+        <p className="text-sm text-muted-foreground">When an employee has no supervisor, approvals and notifications route here instead of dead-ending.</p>
+        <Select value={org?.fallback_admin_user_id ?? ""} onValueChange={(v) => m.mutate(v || null)}>
+          <SelectTrigger className="max-w-md"><SelectValue placeholder="Select HR admin…" /></SelectTrigger>
+          <SelectContent>
+            {(admins ?? []).map((a) => <SelectItem key={a.id} value={a.id}>{a.full_name ?? a.email ?? a.id.slice(0,8)}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </CardContent>
+    </Card>
   );
 }
