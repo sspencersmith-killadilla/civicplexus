@@ -1,6 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  resolveApprovalChain,
+  computeApplyPatch,
+  computeApplySideEffects,
+  type ApprovalRole,
+  type PafActionType,
+} from "@/lib/paf-logic";
 
 const createInput = z.object({
   employee_id: z.string().uuid(),
@@ -67,41 +74,22 @@ export const submitPaf = createServerFn({ method: "POST" })
       .select("id").single();
     if (cErr || !chain) throw new Error(cErr?.message ?? "Could not start chain");
 
-    // Action-aware default chain
-    const defaultChainsByAction: Record<string, Array<"supervisor"|"hr_admin"|"hiring_manager"|"it_admin">> = {
-      hire: ["hr_admin"],
-      rehire: ["hr_admin"],
-      separation: ["supervisor","hr_admin"],
-      transfer: ["supervisor","hr_admin"],
-      position_change: ["supervisor","hr_admin"],
-      promotion: ["supervisor","hr_admin"],
-      demotion: ["supervisor","hr_admin"],
-      pay_change: ["supervisor","hr_admin"],
-      reclassification: ["supervisor","hr_admin"],
-      status_change: ["supervisor","hr_admin"],
-      leave_start: ["supervisor","hr_admin"],
-      leave_return: ["supervisor","hr_admin"],
-      other: ["supervisor","hr_admin"],
-    };
-    const approvalRoles = data.approval_roles ?? defaultChainsByAction[data.action_type] ?? ["supervisor","hr_admin"];
-
     // Find first hr_admin user id for assignment
     const { data: hrUsers } = await supabaseAdmin
       .from("user_roles").select("user_id").eq("role", "hr_admin" as never);
     const firstHr = (hrUsers ?? [])[0]?.user_id ?? null;
 
-    const resolveApproverId = (role: string): string | null => {
-      if (role === "supervisor") return managerUserId ?? fallbackAdmin;
-      if (role === "hr_admin") return firstHr ?? fallbackAdmin;
-      return fallbackAdmin;
-    };
-
-    for (let i = 0; i < approvalRoles.length; i++) {
-      const role = approvalRoles[i];
-      const approverId = resolveApproverId(role);
+    const steps = resolveApprovalChain({
+      action_type: data.action_type as PafActionType,
+      override_roles: data.approval_roles as ApprovalRole[] | undefined,
+      manager_user_id: managerUserId,
+      first_hr_user_id: firstHr,
+      fallback_admin_user_id: fallbackAdmin,
+    });
+    for (const step of steps) {
       await supabaseAdmin.from("approval_steps").insert({
-        chain_id: chain.id, stage: i + 1, approver_role: role,
-        approver_id: approverId, status: "pending",
+        chain_id: chain.id, stage: step.stage, approver_role: step.role,
+        approver_id: step.approver_id, status: "pending",
       } as never);
     }
 
@@ -155,37 +143,19 @@ export const applyPaf = createServerFn({ method: "POST" })
     if (!paf) throw new Error("PAF not found");
     if (paf.status !== "approved") throw new Error("PAF must be approved before applying");
 
-    const after = (paf.after_values ?? {}) as Record<string, unknown>;
-    const allowed = new Set([
-      "job_title","department","status","position_id","manager_id",
-      "start_date","end_date","work_email",
-      "separation_date","separation_reason","rehire_eligible",
-    ]);
-    const patch: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(after)) if (allowed.has(k)) patch[k] = v;
-
-    // Action-driven side effects
-    if (paf.action_type === "separation") {
-      patch.status = "offboarded";
-      patch.separation_date = patch.separation_date ?? paf.effective_date;
-      if (patch.rehire_eligible === undefined) patch.rehire_eligible = true;
-    } else if (paf.action_type === "leave_start") {
-      patch.status = "on_leave";
-    } else if (paf.action_type === "leave_return") {
-      patch.status = "active";
-    } else if (paf.action_type === "rehire") {
-      patch.status = "active";
-      patch.separation_date = null;
-      patch.separation_reason = null;
-    }
+    const patch = computeApplyPatch({
+      action_type: paf.action_type as PafActionType,
+      after_values: (paf.after_values ?? {}) as Record<string, unknown>,
+      effective_date: paf.effective_date as string,
+    });
+    const sideEffects = computeApplySideEffects(paf.action_type as PafActionType);
 
     if (Object.keys(patch).length > 0) {
       const { error } = await supabaseAdmin.from("employees").update(patch as never).eq("id", paf.employee_id);
       if (error) throw new Error(error.message);
     }
 
-    // Side-effects: separation seeds offboarding instance + cancels future training
-    if (paf.action_type === "separation") {
+    if (sideEffects.seed_offboarding_checklist) {
       const { data: tpl } = await supabaseAdmin
         .from("onboarding_templates").select("id")
         .eq("template_type", "offboarding").eq("is_active", true).limit(1).maybeSingle();
@@ -205,6 +175,8 @@ export const applyPaf = createServerFn({ method: "POST" })
           }
         }
       }
+    }
+    if (sideEffects.cancel_future_training) {
       await supabaseAdmin.from("employee_training")
         .update({ status: "cancelled" } as never)
         .eq("employee_id", paf.employee_id)
