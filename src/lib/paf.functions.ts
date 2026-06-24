@@ -224,32 +224,6 @@ export const applyPaf = createServerFn({ method: "POST" })
   });
 
 // Start an offboarding: creates a separation PAF (auto-resolves approvers + fallback admin)
-export const startOffboarding = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    employee_id: z.string().uuid(),
-    separation_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    separation_reason: z.enum(["voluntary","involuntary","retirement","end_of_term","deceased"]),
-    rehire_eligible: z.boolean().default(true),
-    notes: z.string().max(2000).optional(),
-  }).parse(d))
-  .handler(async ({ data, context }) => {
-    return await submitPaf.handler({
-      data: {
-        employee_id: data.employee_id,
-        action_type: "separation" as const,
-        effective_date: data.separation_date,
-        reason: `Separation: ${data.separation_reason}`,
-        narrative: data.notes,
-        after_values: {
-          separation_date: data.separation_date,
-          separation_reason: data.separation_reason,
-          rehire_eligible: data.rehire_eligible,
-        },
-      },
-      context,
-    } as never);
-  });
 
 // HR-only: change the org's fallback admin
 export const setFallbackAdmin = createServerFn({ method: "POST" })
