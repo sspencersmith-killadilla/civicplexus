@@ -67,13 +67,6 @@ export const submitPaf = createServerFn({ method: "POST" })
     const { data: org } = await supabaseAdmin.from("org_settings").select("fallback_admin_user_id").maybeSingle();
     const fallbackAdmin = (org as { fallback_admin_user_id: string | null } | null)?.fallback_admin_user_id ?? null;
 
-    const chainKind = `paf_${data.action_type}`;
-    const { data: chain, error: cErr } = await supabaseAdmin
-      .from("approval_chains")
-      .insert({ kind: chainKind, created_by: context.userId, status: "pending" } as never)
-      .select("id").single();
-    if (cErr || !chain) throw new Error(cErr?.message ?? "Could not start chain");
-
     // Find first hr_admin user id for assignment
     const { data: hrUsers } = await supabaseAdmin
       .from("user_roles").select("user_id").eq("role", "hr_admin" as never);
@@ -86,12 +79,6 @@ export const submitPaf = createServerFn({ method: "POST" })
       first_hr_user_id: firstHr,
       fallback_admin_user_id: fallbackAdmin,
     });
-    for (const step of steps) {
-      await supabaseAdmin.from("approval_steps").insert({
-        chain_id: chain.id, stage: step.stage, approver_role: step.role,
-        approver_id: step.approver_id, status: "pending",
-      } as never);
-    }
 
     const { data: paf, error: pErr } = await supabaseAdmin
       .from("personnel_actions")
@@ -105,10 +92,32 @@ export const submitPaf = createServerFn({ method: "POST" })
         after_values: data.after_values ?? {},
         status: "pending_approval",
         initiated_by: context.userId,
-        approval_chain_id: chain.id,
       } as never)
       .select("id, paf_number").single();
     if (pErr || !paf) throw new Error(pErr?.message ?? "PAF create failed");
+
+    const chainKind = `paf_${data.action_type}`;
+    const { data: chain, error: cErr } = await supabaseAdmin
+      .from("approval_chains")
+      .insert({
+        kind: chainKind,
+        entity_type: "personnel_action",
+        entity_id: paf.id,
+        created_by: context.userId,
+        status: "pending",
+      } as never)
+      .select("id").single();
+    if (cErr || !chain) throw new Error(cErr?.message ?? "Could not start chain");
+
+    for (const step of steps) {
+      await supabaseAdmin.from("approval_steps").insert({
+        chain_id: chain.id, stage: step.stage, approver_role: step.role,
+        approver_id: step.approver_id, status: "pending",
+      } as never);
+    }
+
+    await supabaseAdmin.from("personnel_actions")
+      .update({ approval_chain_id: chain.id } as never).eq("id", paf.id);
 
     // Notify the specific stage-1 approver if known; else role pool
     const { data: firstStep } = await supabaseAdmin
