@@ -51,7 +51,7 @@ export const TOUR_STOPS: TourStop[] = [
     try: "Select multiple applicants and run a bulk screening pass.",
   },
   {
-    to: "/offers.index",
+    to: "/offers",
     title: "Offers",
     body: "Generated offer letters with signed candidate response tokens.",
     try: "Open a pending offer and preview the candidate-facing page.",
