@@ -10,6 +10,7 @@ import markAsset from "@/assets/civicplexus-mark.png.asset.json";
 import { MODULE_REGISTRY } from "@/lib/modules";
 import { useModuleSettings } from "@/hooks/use-module-settings";
 import { ModuleGate } from "@/components/module-gate";
+import { DemoTour } from "@/components/demo-tour";
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
   const { data } = useCurrentUser();
@@ -86,6 +87,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
         </div>
       </aside>
       <main className="flex-1 min-w-0">
+        <DemoTour />
         {title && (
           <header className="border-b bg-card px-6 md:px-10 py-5">
             <h1 className="font-serif text-2xl tracking-tight">{title}</h1>
