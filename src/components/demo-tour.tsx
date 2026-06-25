@@ -64,12 +64,12 @@ export function DemoTour() {
   function start() {
     setStep(0);
     setOpen(true);
-      navigate({ to: TOUR_STOPS[0].to as string });
+      navigate({ to: TOUR_STOPS[0].to } as never);
   }
   function go(delta: number) {
     const next = Math.max(0, Math.min(TOUR_STOPS.length - 1, step + delta));
     setStep(next);
-    navigate({ to: TOUR_STOPS[next].to as string });
+    navigate({ to: TOUR_STOPS[next].to } as never);
   }
   function close() {
     setOpen(false);
