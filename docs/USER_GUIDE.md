@@ -333,3 +333,37 @@ The app is responsive down to 360px. Field crews and new hires can complete preb
 
 ### Glossary
 See §1.
+
+---
+
+## 15. Demo Walkthrough
+
+Sign in as `demo.purpose@testingaccount.test` (password `Demo, 1234`). A banner appears with a 24-hour countdown and a "Start tour" launcher. Every change you make is reverted automatically when the timer hits zero, or immediately via **Reset now**.
+
+The guided tour mirrors the in-app overlay. Each stop names the route, what to look at, and an optional "Try this" action.
+
+1. **Dashboard** (`/dashboard`) — KPIs, recent activity, and pending approvals. *Try:* scan the cards to see live counts from seeded demo data.
+2. **Employees** (`/employees`) — directory with org, status, and supervisor chain. *Try:* open any employee for their full record, leave, and assignments.
+3. **Hire Requests** (`/hire-requests`) — requisition lifecycle draft → approval → posted. *Try:* the "Use template" wizard spins up a Library Aide req in seconds.
+4. **Approvals Inbox** (`/approvals`) — every PAF, hire request, and offer awaiting sign-off. *Try:* approve, return, or comment on the seeded PAF.
+5. **Personnel Action Forms** (`/paf`) — promotions, transfers, separations with full audit trail. *Try:* click **New PAF** to walk an action through the chain.
+6. **Recruiting — Postings** (`/jobs`) — public and internal postings backed by approved requisitions. *Try:* open a posting and use the public **Apply** link to test the candidate flow.
+7. **AI Applicant Screening** (`/screenings`) — human-in-the-loop: AI drafts a fit score, recruiters Accept / Edit / Dismiss. *Try:* select multiple applicants and run a bulk screening pass.
+8. **Offers** (`/offers`) — generated offer letters with signed candidate response tokens. *Try:* open a pending offer and preview the candidate-facing page.
+9. **Preboarding & Onboarding** (`/preboarding`) — task lists, equipment, and provisioning for new hires.
+10. **Offboarding** (`/offboarding`) — separation checklist with role-aware task templates. *Try:* start an offboarding from any employee to see the generated tasks.
+11. **Performance — Review Cycles** (`/review-cycles`) — configure cycles, participants, and calibration sessions.
+12. **1-on-1s** (`/one-on-ones`) — templates and meeting notes for manager/employee conversations. *Try:* open a meeting to see the role-aware question set.
+13. **Goals & OKRs** (`/goals`) — employee and team goals tied back to review cycles.
+14. **Compensation Cycles** (`/comp-cycles`) — run merit and market adjustment cycles with proposals and FLSA checks.
+15. **Policies & Acknowledgements** (`/policies`) — policy library and acknowledgement campaigns.
+16. **Training & Transcripts** (`/training`) — course catalog, assignments, and individual transcripts.
+17. **Compliance — TCOLE / TMRS** (`/compliance/tcole`) — Texas-specific reporting surfaces.
+18. **Reports & EEO** (`/reports`) — headcount, turnover, comp-ratio, EEO snapshot.
+19. **Module Settings** (`/admin-modules`) — super-admin toggles to turn entire modules on or off per tenant.
+20. **Demo Admin** (`/admin-demo`) — provision the demo account and reset its data on demand. *Try:* click **Reset now** to revert immediately.
+
+### Reset behavior
+- A `pg_cron` job runs hourly and rolls back any rows the demo user inserted, updated, or deleted in the last 24 hours.
+- **Reset now** on `/admin-demo` triggers the same rollback immediately.
+- Module toggles, security settings, and other super-admin surfaces are out of scope for the demo sandbox revert.
