@@ -1,8 +1,10 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "civicplexus",
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "license": "Apache-2.0",
+  "author": "City of McKinney",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
