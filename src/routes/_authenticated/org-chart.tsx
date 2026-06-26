@@ -220,6 +220,22 @@ function OrgChartPage() {
       };
     };
     const roots = (childrenOf.get(null) ?? []).filter((r) => !q || matchSet.has(r.id)).map(build);
+    // Promote the most senior root to be the single top of the chart, and
+    // re-parent any other orphans under them so the org converges.
+    if (roots.length > 1) {
+      const sorted = [...roots].sort((a, b) => {
+        const sa = seniorityScore(a.__emp);
+        const sb = seniorityScore(b.__emp);
+        if (sa !== sb) return sb - sa;
+        return `${a.__emp.last_name} ${a.__emp.first_name}`.localeCompare(
+          `${b.__emp.last_name} ${b.__emp.first_name}`,
+        );
+      });
+      const top = sorted[0];
+      const rest = sorted.slice(1);
+      top.children = [...(top.children ?? []), ...rest];
+      return [top];
+    }
     return roots;
   }, [filtered, search, collapsed]);
 
@@ -300,10 +316,7 @@ function OrgChartPage() {
     }
   }, [tree.length]);
 
-  const rootLabel = (() => {
-    if (deptFilter !== "all") return deptFilter;
-    return orgName ?? "Organization";
-  })();
+  const rootLabel = deptFilter !== "all" ? deptFilter : (orgName ?? "Organization");
 
   const rootData: Node = tree.length === 1
     ? tree[0]
