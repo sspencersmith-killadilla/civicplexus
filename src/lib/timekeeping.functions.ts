@@ -397,7 +397,8 @@ export const getEmployeeShiftContext = createServerFn({ method: "GET" })
     const { data: work_period } = await supabaseAdmin.from("employee_work_periods")
       .select("*").eq("employee_id", emp.id).is("effective_to", null)
       .order("effective_from", { ascending: false }).limit(1).maybeSingle();
-    type Row = Record<string, unknown>;
+    // Use loose JSON-friendly row shape so the framework can serialize the result.
+    type Row = { [k: string]: string | number | boolean | null };
     let pattern: Row | null = null;
     let days: Row[] = [];
     let shifts: Row[] = [];
@@ -407,15 +408,16 @@ export const getEmployeeShiftContext = createServerFn({ method: "GET" })
         supabaseAdmin.from("schedule_patterns").select("*").eq("id", assignment.pattern_id).maybeSingle(),
         supabaseAdmin.from("pattern_days").select("*").eq("pattern_id", assignment.pattern_id).order("day_index"),
       ]);
-      pattern = (p as Row | null) ?? null;
-      days = (d as Row[] | null) ?? [];
+      pattern = (p as unknown as Row | null) ?? null;
+      days = ((d as unknown as Row[] | null) ?? []);
       const shiftIds = Array.from(new Set(((d ?? []).map((r) => r.shift_type_id).filter(Boolean)) as string[]));
       if (shiftIds.length) {
         const [{ data: s }, { data: seg }] = await Promise.all([
           supabaseAdmin.from("shift_types").select("*").in("id", shiftIds),
           supabaseAdmin.from("shift_segments").select("*").in("shift_type_id", shiftIds).order("segment_order"),
         ]);
-        shifts = (s as Row[] | null) ?? []; segments = (seg as Row[] | null) ?? [];
+        shifts = ((s as unknown as Row[] | null) ?? []);
+        segments = ((seg as unknown as Row[] | null) ?? []);
       }
     }
     return { assignment, pattern, days, shifts, segments, work_period };
