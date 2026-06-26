@@ -30,6 +30,7 @@ type Emp = {
   manager_id: string | null;
   user_id: string | null;
   photo_path: string | null;
+  __vacancy?: { position_id: string; title: string };
 };
 
 type Node = {
@@ -86,6 +87,7 @@ function OrgChartPage() {
   const [deptFilter, setDeptFilter] = useState<string>("all");
   const [includeInactive, setIncludeInactive] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [showVacancies, setShowVacancies] = useState(false);
 
   const toggleCollapsed = (id: string) => {
     setCollapsed((prev) => {
@@ -108,6 +110,17 @@ function OrgChartPage() {
     },
   });
 
+  const { data: positions } = useQuery({
+    queryKey: ["org-chart-positions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("positions")
+        .select("id, title, department, status, budgeted_fte, reports_to_position_id");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const { data: orgName } = useQuery({
     queryKey: ["org-chart-org-name"],
     staleTime: 5 * 60 * 1000,
@@ -122,12 +135,80 @@ function OrgChartPage() {
 
   const filtered = useMemo(() => {
     if (!employees) return [];
-    return employees.filter((e) => {
+    const base = employees.filter((e) => {
       if (!includeInactive && e.status !== "active") return false;
       if (deptFilter !== "all" && e.department !== deptFilter) return false;
       return true;
     });
-  }, [employees, includeInactive, deptFilter]);
+    if (!showVacancies || !positions || !employees) return base;
+
+    // Map position_id -> employees filling it (from full employees list, not filtered)
+    const fillersByPosition = new Map<string, Emp[]>();
+    // employees table doesn't include position_id in the select above; re-derive
+    // by matching department+title as a heuristic when position_id is absent.
+    // We do have position_id on the row via SQL but didn't select it — instead
+    // use the count from positions itself: compute filled by matching active
+    // employees whose job_title + department equals the position.
+    const activeByKey = new Map<string, Emp[]>();
+    employees.forEach((e) => {
+      if (e.status !== "active" && e.status !== "on_leave" && e.status !== "preboarding") return;
+      const key = `${(e.department ?? "").toLowerCase()}|${(e.job_title ?? "").toLowerCase()}`;
+      const arr = activeByKey.get(key) ?? [];
+      arr.push(e);
+      activeByKey.set(key, arr);
+    });
+
+    // Resolve "who does this vacancy report to": prefer the employee currently
+    // holding the reports_to position; otherwise the most senior active person
+    // in the same department; otherwise leave null (root).
+    const posById = new Map(positions.map((p) => [p.id, p]));
+    const resolveParent = (p: typeof positions[number]): string | null => {
+      if (p.reports_to_position_id) {
+        const parentPos = posById.get(p.reports_to_position_id);
+        if (parentPos) {
+          const k = `${(parentPos.department ?? "").toLowerCase()}|${(parentPos.title ?? "").toLowerCase()}`;
+          const fillers = activeByKey.get(k) ?? [];
+          if (fillers[0]) return fillers[0].id;
+        }
+      }
+      if (p.department) {
+        const inDept = employees
+          .filter((e) => e.status === "active" && e.department === p.department)
+          .sort((a, b) => seniorityScore(b) - seniorityScore(a));
+        const head = inDept.find((e) => (e.job_title ?? "").toLowerCase() !== (p.title ?? "").toLowerCase());
+        if (head) return head.id;
+      }
+      return null;
+    };
+
+    const vacancyNodes: Emp[] = [];
+    for (const p of positions) {
+      if (deptFilter !== "all" && p.department !== deptFilter) continue;
+      const k = `${(p.department ?? "").toLowerCase()}|${(p.title ?? "").toLowerCase()}`;
+      const filled = (activeByKey.get(k) ?? []).length;
+      const budgeted = Math.max(1, Math.ceil(Number(p.budgeted_fte ?? 1)));
+      let openCount = 0;
+      if (p.status === "open") openCount = Math.max(budgeted - filled, budgeted === filled ? 0 : 1);
+      else if (budgeted > filled) openCount = budgeted - filled;
+      if (openCount <= 0) continue;
+      const parentId = resolveParent(p);
+      for (let i = 0; i < openCount; i++) {
+        vacancyNodes.push({
+          id: `vac:${p.id}:${i}`,
+          first_name: "Vacant",
+          last_name: p.title ?? "Position",
+          job_title: p.title ?? null,
+          department: p.department ?? null,
+          status: "vacant",
+          manager_id: parentId,
+          user_id: null,
+          photo_path: null,
+          __vacancy: { position_id: p.id, title: p.title ?? "" },
+        });
+      }
+    }
+    return [...base, ...vacancyNodes];
+  }, [employees, includeInactive, deptFilter, showVacancies, positions]);
 
   const departments = useMemo(() => {
     const s = new Set<string>();
@@ -377,6 +458,62 @@ function OrgChartPage() {
     const matched = nodeDatum.__match;
     const hasReports = (nodeDatum.children && nodeDatum.children.length > 0) || (nodeDatum.__hiddenCount ?? 0) > 0;
     const isCollapsed = (nodeDatum.__hiddenCount ?? 0) > 0;
+    const isVacancy = e.status === "vacant";
+    if (isVacancy) {
+      return (
+        <g>
+          <foreignObject x={-140} y={4} width={280} height={120}>
+            <div
+              onClick={() => navigate({ to: "/jobs" })}
+              style={{
+                boxSizing: "border-box", width: 280, paddingLeft: 36, position: "relative",
+                fontFamily: "inherit", cursor: "pointer",
+              }}
+            >
+              <div
+                style={{
+                  borderRadius: 999,
+                  background: "hsl(var(--background))",
+                  border: `2px dashed ${color}`,
+                  overflow: "hidden",
+                }}
+              >
+                <div style={{
+                  background: soft, color, padding: "8px 14px 8px 56px",
+                  fontSize: 13, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase",
+                }}>
+                  Vacant
+                </div>
+                <div style={{ padding: "8px 14px 10px 56px", minHeight: 42 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "hsl(var(--foreground))" }}>
+                    {e.job_title || "Open position"}
+                  </div>
+                  {e.department && (
+                    <div style={{
+                      marginTop: 4, display: "inline-block", fontSize: 10,
+                      padding: "1px 8px", borderRadius: 999, background: soft, color, fontWeight: 600,
+                    }}>
+                      {e.department}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div style={{
+                position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)",
+                width: 64, height: 64, borderRadius: "50%",
+                background: "hsl(var(--background))",
+                border: `2px dashed ${color}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color, fontSize: 22, fontWeight: 700,
+                boxShadow: `0 0 0 3px hsl(var(--background))`,
+              }}>
+                +
+              </div>
+            </div>
+          </foreignObject>
+        </g>
+      );
+    }
     return (
       <g>
         <foreignObject x={-140} y={4} width={280} height={120}>
