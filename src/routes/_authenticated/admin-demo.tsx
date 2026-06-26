@@ -34,18 +34,23 @@ function AdminDemoPage() {
     setSeeding(true);
     try {
       let count = 0;
+      let cursor: string | undefined;
       // hard cap to avoid runaway loop
       for (let i = 0; i < 60; i++) {
-        const r = (await seedNext({ data: { regenerate } })) as {
+        const r = (await seedNext({
+          data: { regenerate, after_last_name: cursor },
+        })) as {
           done: boolean;
           remaining: number;
+          cursor: string | null;
           employee?: { name: string };
         };
         if (r.employee) {
           count += 1;
           setSeedMsg(`Generated ${count} • ${r.employee.name} (${r.remaining} left)`);
         }
-        if (r.done) break;
+        cursor = r.cursor ?? undefined;
+        if (r.done || !r.employee) break;
         // small breather between calls
         await new Promise((res) => setTimeout(res, 250));
       }
