@@ -17,6 +17,7 @@ import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import {
   getMyTimeStatus, clockIn, clockOut, getMyTimesheets, submitTimesheet,
   getPendingTimesheets, decideTimesheet, getTimeAdmin, updateTimePolicy,
+  setMyExemptSchedule,
 } from "@/lib/timekeeping.functions";
 
 export const Route = createFileRoute("/_authenticated/timekeeping")({ component: Page });
@@ -201,6 +202,129 @@ function MyTimePanel() {
           </tbody>
         </table>
       </Card>
+
+      {exempt && (
+        <Card className="md:col-span-3 p-6">
+          <MyExemptSchedule schedule={s.schedule as ScheduleRow | null} />
+        </Card>
+      )}
+    </div>
+  );
+}
+
+type ScheduleRow = {
+  expected_weekly_hours: number;
+  mon_start: string | null; mon_end: string | null;
+  tue_start: string | null; tue_end: string | null;
+  wed_start: string | null; wed_end: string | null;
+  thu_start: string | null; thu_end: string | null;
+  fri_start: string | null; fri_end: string | null;
+  sat_start: string | null; sat_end: string | null;
+  sun_start: string | null; sun_end: string | null;
+};
+
+const DAYS = [
+  { key: "mon", label: "Monday" },
+  { key: "tue", label: "Tuesday" },
+  { key: "wed", label: "Wednesday" },
+  { key: "thu", label: "Thursday" },
+  { key: "fri", label: "Friday" },
+  { key: "sat", label: "Saturday" },
+  { key: "sun", label: "Sunday" },
+] as const;
+
+function diffHours(start: string, end: string): number {
+  if (!start || !end) return 0;
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  const mins = (eh * 60 + em) - (sh * 60 + sm);
+  return Math.max(0, mins / 60);
+}
+
+function MyExemptSchedule({ schedule }: { schedule: ScheduleRow | null }) {
+  const qc = useQueryClient();
+  const save = useServerFn(setMyExemptSchedule);
+  type DayKey = (typeof DAYS)[number]["key"];
+  type Row = { start: string; end: string; off: boolean };
+  const init = (k: DayKey): Row => {
+    const s = (schedule?.[`${k}_start` as keyof ScheduleRow] as string | null) ?? "";
+    const e = (schedule?.[`${k}_end` as keyof ScheduleRow] as string | null) ?? "";
+    const isWeekend = k === "sat" || k === "sun";
+    return { start: s || (isWeekend ? "" : "08:00"), end: e || (isWeekend ? "" : "17:00"), off: !(s && e) };
+  };
+  const [days, setDays] = useState<Record<DayKey, Row>>(() => {
+    const o = {} as Record<DayKey, Row>;
+    DAYS.forEach((d) => { o[d.key] = init(d.key); });
+    return o;
+  });
+
+  const totalHours = DAYS.reduce((acc, d) => {
+    const r = days[d.key];
+    return acc + (r.off ? 0 : diffHours(r.start, r.end));
+  }, 0);
+
+  const m = useMutation({
+    mutationFn: () => {
+      const payload: Record<string, unknown> = { expected_weekly_hours: Number(totalHours.toFixed(2)) };
+      DAYS.forEach((d) => {
+        const r = days[d.key];
+        payload[`${d.key}_start`] = r.off ? null : r.start;
+        payload[`${d.key}_end`] = r.off ? null : r.end;
+      });
+      return save({ data: payload as never });
+    },
+    onSuccess: () => {
+      toast.success("Schedule saved. Hours beyond this bank as straight comp time.");
+      qc.invalidateQueries({ queryKey: ["tk-status"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h3 className="font-medium">My weekly schedule</h3>
+          <p className="text-xs text-muted-foreground">
+            Set your static expected hours by day. Anything you clock beyond this baseline banks as straight comp time.
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="text-xs text-muted-foreground">Expected weekly</div>
+          <div className="text-2xl font-semibold tabular-nums">{totalHours.toFixed(2)}h</div>
+        </div>
+      </div>
+      <div className="grid gap-2">
+        {DAYS.map((d) => {
+          const r = days[d.key];
+          const h = r.off ? 0 : diffHours(r.start, r.end);
+          return (
+            <div key={d.key} className="grid grid-cols-12 items-center gap-2 rounded-md border p-2">
+              <div className="col-span-3 text-sm font-medium">{d.label}</div>
+              <div className="col-span-2 flex items-center gap-2">
+                <Switch
+                  id={`${d.key}-off`}
+                  checked={!r.off}
+                  onCheckedChange={(v) => setDays((p) => ({ ...p, [d.key]: { ...p[d.key], off: !v } }))}
+                />
+                <Label htmlFor={`${d.key}-off`} className="text-xs text-muted-foreground">{r.off ? "Off" : "Working"}</Label>
+              </div>
+              <div className="col-span-3">
+                <Input type="time" disabled={r.off} value={r.start}
+                  onChange={(e) => setDays((p) => ({ ...p, [d.key]: { ...p[d.key], start: e.target.value } }))} />
+              </div>
+              <div className="col-span-3">
+                <Input type="time" disabled={r.off} value={r.end}
+                  onChange={(e) => setDays((p) => ({ ...p, [d.key]: { ...p[d.key], end: e.target.value } }))} />
+              </div>
+              <div className="col-span-1 text-right text-xs text-muted-foreground tabular-nums">{h.toFixed(2)}h</div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex justify-end">
+        <Button onClick={() => m.mutate()} disabled={m.isPending}>Save schedule</Button>
+      </div>
     </div>
   );
 }
