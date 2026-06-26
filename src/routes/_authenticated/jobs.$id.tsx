@@ -235,6 +235,7 @@ function JobDetail() {
             {r.summary && <p className="text-sm">{r.summary}</p>}
             {r.description && <pre className="text-sm whitespace-pre-wrap font-sans">{r.description}</pre>}
           </Card>
+          <BrochurePanel requisitionId={r.id} currentUrl={r.brochure_url} />
         </TabsContent>
       </Tabs>
     </AppShell>
