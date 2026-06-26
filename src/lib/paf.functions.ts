@@ -94,7 +94,7 @@ export const submitPaf = createServerFn({ method: "POST" })
       .select("id, paf_number").single();
     if (pErr || !paf) throw new Error(pErr?.message ?? "PAF create failed");
 
-    let chainId: string;
+    let chainId: string | null = null;
     try {
       const chainKind = `paf_${data.action_type}`;
       const { data: chain, error: cErr } = await supabaseAdmin
@@ -127,6 +127,7 @@ export const submitPaf = createServerFn({ method: "POST" })
         .update({ approval_chain_id: chainId } as never).eq("id", paf.id);
       if (linkErr) throw new Error(`Could not link approval chain: ${linkErr.message}`);
     } catch (error) {
+      if (chainId) await supabaseAdmin.from("approval_chains").delete().eq("id", chainId);
       await supabaseAdmin.from("personnel_actions").delete().eq("id", paf.id);
       throw error;
     }
