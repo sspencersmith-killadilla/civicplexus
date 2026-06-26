@@ -15,6 +15,7 @@ import {
   createEmployeePhotoUploadUrl, confirmEmployeePhoto, getEmployeePhotoUrl, clearEmployeePhoto,
 } from "@/lib/employee-photos.functions";
 import { generateBadge, getBadgePdfUrl, revokeBadge } from "@/lib/id-badges.functions";
+import { BadgeWizard } from "@/components/badge-wizard";
 
 export const Route = createFileRoute("/_authenticated/employees/$id")({
   component: EmployeeProfile,
@@ -62,6 +63,7 @@ function EmployeeProfile() {
 
   const [templateId, setTemplateId] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const uploadPhoto = useMutation({
     mutationFn: async (file: File) => {
@@ -80,6 +82,7 @@ function EmployeeProfile() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
+  // Quick "regenerate with default" mutation kept for the toolbar.
   const generate = useMutation({
     mutationFn: async () => await gen({ data: { employee_id: id, template_id: templateId || undefined } }),
     onSuccess: (res) => {
@@ -165,8 +168,11 @@ function EmployeeProfile() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={() => generate.mutate()} disabled={generate.isPending}>
-              <BadgeCheck className="h-4 w-4 mr-2" /> {generate.isPending ? "Generating…" : "Generate badge PDF"}
+            <Button onClick={() => setWizardOpen(true)}>
+              <BadgeCheck className="h-4 w-4 mr-2" /> Start guided wizard
+            </Button>
+            <Button variant="outline" onClick={() => generate.mutate()} disabled={generate.isPending || !emp.photo_path}>
+              {generate.isPending ? "Generating…" : "Quick generate"}
             </Button>
           </div>
           {!badges?.length ? (
@@ -191,6 +197,15 @@ function EmployeeProfile() {
             </div>
           )}
         </Card>
+      )}
+
+      {isHr && (
+        <BadgeWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+          employee={emp}
+          photoUrl={photoUrl}
+        />
       )}
     </AppShell>
   );
