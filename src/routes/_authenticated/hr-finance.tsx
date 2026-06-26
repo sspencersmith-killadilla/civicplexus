@@ -55,7 +55,7 @@ function HrFinancePage() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Budgeted FTE" value={totals.fte.toFixed(2)} icon={<TrendingUp className="h-4 w-4" />} />
         <StatCard label="Filled" value={totals.filled.toString()} icon={<TrendingUp className="h-4 w-4" />} accent="good" />
-        <StatCard label="Vacant" value={totals.vacant.toString()} icon={<TrendingDown className="h-4 w-4"} accent="warn" />
+        <StatCard label="Vacant" value={totals.vacant.toString()} icon={<TrendingDown className="h-4 w-4" />} accent="warn" />
         <StatCard label="Over-budget departments" value={overBudgetDepts.length.toString()} icon={<AlertTriangle className="h-4 w-4" />} accent={overBudgetDepts.length > 0 ? "bad" : undefined} />
       </div>
 
