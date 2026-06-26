@@ -28,11 +28,13 @@ import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
 import { Route as AuthenticatedPolicyCampaignsRouteImport } from './routes/_authenticated/policy-campaigns'
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
+import { Route as AuthenticatedOshaRouteImport } from './routes/_authenticated/osha'
 import { Route as AuthenticatedOrgChartRouteImport } from './routes/_authenticated/org-chart'
 import { Route as AuthenticatedOneOnOneTemplatesRouteImport } from './routes/_authenticated/one-on-one-templates'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
+import { Route as AuthenticatedLmsImportsRouteImport } from './routes/_authenticated/lms-imports'
 import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_authenticated/internal-careers'
 import { Route as AuthenticatedIdBadgeTemplatesRouteImport } from './routes/_authenticated/id-badge-templates'
 import { Route as AuthenticatedHrFinanceRouteImport } from './routes/_authenticated/hr-finance'
@@ -49,6 +51,7 @@ import { Route as AuthenticatedDocTemplatesRouteImport } from './routes/_authent
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCompMarketRouteImport } from './routes/_authenticated/comp-market'
 import { Route as AuthenticatedCompGradesRouteImport } from './routes/_authenticated/comp-grades'
+import { Route as AuthenticatedCbaRouteImport } from './routes/_authenticated/cba'
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
@@ -205,6 +208,11 @@ const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
   path: '/policies',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOshaRoute = AuthenticatedOshaRouteImport.update({
+  id: '/osha',
+  path: '/osha',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOrgChartRoute = AuthenticatedOrgChartRouteImport.update({
   id: '/org-chart',
   path: '/org-chart',
@@ -231,6 +239,11 @@ const AuthenticatedNotificationsRoute =
 const AuthenticatedMyHrRoute = AuthenticatedMyHrRouteImport.update({
   id: '/my-hr',
   path: '/my-hr',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLmsImportsRoute = AuthenticatedLmsImportsRouteImport.update({
+  id: '/lms-imports',
+  path: '/lms-imports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedInternalCareersRoute =
@@ -318,6 +331,11 @@ const AuthenticatedCompMarketRoute = AuthenticatedCompMarketRouteImport.update({
 const AuthenticatedCompGradesRoute = AuthenticatedCompGradesRouteImport.update({
   id: '/comp-grades',
   path: '/comp-grades',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCbaRoute = AuthenticatedCbaRouteImport.update({
+  id: '/cba',
+  path: '/cba',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBenefitsRoute = AuthenticatedBenefitsRouteImport.update({
@@ -639,6 +657,7 @@ export interface FileRoutesByFullPath {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
+  '/cba': typeof AuthenticatedCbaRoute
   '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/comp-market': typeof AuthenticatedCompMarketRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -655,11 +674,13 @@ export interface FileRoutesByFullPath {
   '/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/org-chart': typeof AuthenticatedOrgChartRoute
+  '/osha': typeof AuthenticatedOshaRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
@@ -735,6 +756,7 @@ export interface FileRoutesByTo {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
+  '/cba': typeof AuthenticatedCbaRoute
   '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/comp-market': typeof AuthenticatedCompMarketRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -751,11 +773,13 @@ export interface FileRoutesByTo {
   '/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/org-chart': typeof AuthenticatedOrgChartRoute
+  '/osha': typeof AuthenticatedOshaRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
@@ -832,6 +856,7 @@ export interface FileRoutesById {
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
+  '/_authenticated/cba': typeof AuthenticatedCbaRoute
   '/_authenticated/comp-grades': typeof AuthenticatedCompGradesRoute
   '/_authenticated/comp-market': typeof AuthenticatedCompMarketRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -848,11 +873,13 @@ export interface FileRoutesById {
   '/_authenticated/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/_authenticated/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/_authenticated/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/_authenticated/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
   '/_authenticated/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/_authenticated/org-chart': typeof AuthenticatedOrgChartRoute
+  '/_authenticated/osha': typeof AuthenticatedOshaRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/_authenticated/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
@@ -930,6 +957,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/audit'
     | '/benefits'
+    | '/cba'
     | '/comp-grades'
     | '/comp-market'
     | '/dashboard'
@@ -946,11 +974,13 @@ export interface FileRouteTypes {
     | '/hr-finance'
     | '/id-badge-templates'
     | '/internal-careers'
+    | '/lms-imports'
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
     | '/one-on-one-templates'
     | '/org-chart'
+    | '/osha'
     | '/policies'
     | '/policy-campaigns'
     | '/positions'
@@ -1026,6 +1056,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/audit'
     | '/benefits'
+    | '/cba'
     | '/comp-grades'
     | '/comp-market'
     | '/dashboard'
@@ -1042,11 +1073,13 @@ export interface FileRouteTypes {
     | '/hr-finance'
     | '/id-badge-templates'
     | '/internal-careers'
+    | '/lms-imports'
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
     | '/one-on-one-templates'
     | '/org-chart'
+    | '/osha'
     | '/policies'
     | '/policy-campaigns'
     | '/positions'
@@ -1122,6 +1155,7 @@ export interface FileRouteTypes {
     | '/_authenticated/approvals'
     | '/_authenticated/audit'
     | '/_authenticated/benefits'
+    | '/_authenticated/cba'
     | '/_authenticated/comp-grades'
     | '/_authenticated/comp-market'
     | '/_authenticated/dashboard'
@@ -1138,11 +1172,13 @@ export interface FileRouteTypes {
     | '/_authenticated/hr-finance'
     | '/_authenticated/id-badge-templates'
     | '/_authenticated/internal-careers'
+    | '/_authenticated/lms-imports'
     | '/_authenticated/my-hr'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
     | '/_authenticated/one-on-one-templates'
     | '/_authenticated/org-chart'
+    | '/_authenticated/osha'
     | '/_authenticated/policies'
     | '/_authenticated/policy-campaigns'
     | '/_authenticated/positions'
@@ -1364,6 +1400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPoliciesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/osha': {
+      id: '/_authenticated/osha'
+      path: '/osha'
+      fullPath: '/osha'
+      preLoaderRoute: typeof AuthenticatedOshaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/org-chart': {
       id: '/_authenticated/org-chart'
       path: '/org-chart'
@@ -1397,6 +1440,13 @@ declare module '@tanstack/react-router' {
       path: '/my-hr'
       fullPath: '/my-hr'
       preLoaderRoute: typeof AuthenticatedMyHrRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lms-imports': {
+      id: '/_authenticated/lms-imports'
+      path: '/lms-imports'
+      fullPath: '/lms-imports'
+      preLoaderRoute: typeof AuthenticatedLmsImportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/internal-careers': {
@@ -1509,6 +1559,13 @@ declare module '@tanstack/react-router' {
       path: '/comp-grades'
       fullPath: '/comp-grades'
       preLoaderRoute: typeof AuthenticatedCompGradesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cba': {
+      id: '/_authenticated/cba'
+      path: '/cba'
+      fullPath: '/cba'
+      preLoaderRoute: typeof AuthenticatedCbaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/benefits': {
@@ -1935,6 +1992,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
+  AuthenticatedCbaRoute: typeof AuthenticatedCbaRoute
   AuthenticatedCompGradesRoute: typeof AuthenticatedCompGradesRoute
   AuthenticatedCompMarketRoute: typeof AuthenticatedCompMarketRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1951,11 +2009,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrFinanceRoute: typeof AuthenticatedHrFinanceRoute
   AuthenticatedIdBadgeTemplatesRoute: typeof AuthenticatedIdBadgeTemplatesRoute
   AuthenticatedInternalCareersRoute: typeof AuthenticatedInternalCareersRoute
+  AuthenticatedLmsImportsRoute: typeof AuthenticatedLmsImportsRoute
   AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
   AuthenticatedOneOnOneTemplatesRoute: typeof AuthenticatedOneOnOneTemplatesRoute
   AuthenticatedOrgChartRoute: typeof AuthenticatedOrgChartRoute
+  AuthenticatedOshaRoute: typeof AuthenticatedOshaRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
   AuthenticatedPolicyCampaignsRoute: typeof AuthenticatedPolicyCampaignsRoute
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
@@ -2012,6 +2072,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
+  AuthenticatedCbaRoute: AuthenticatedCbaRoute,
   AuthenticatedCompGradesRoute: AuthenticatedCompGradesRoute,
   AuthenticatedCompMarketRoute: AuthenticatedCompMarketRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -2028,11 +2089,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrFinanceRoute: AuthenticatedHrFinanceRoute,
   AuthenticatedIdBadgeTemplatesRoute: AuthenticatedIdBadgeTemplatesRoute,
   AuthenticatedInternalCareersRoute: AuthenticatedInternalCareersRoute,
+  AuthenticatedLmsImportsRoute: AuthenticatedLmsImportsRoute,
   AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
   AuthenticatedOneOnOneTemplatesRoute: AuthenticatedOneOnOneTemplatesRoute,
   AuthenticatedOrgChartRoute: AuthenticatedOrgChartRoute,
+  AuthenticatedOshaRoute: AuthenticatedOshaRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,
   AuthenticatedPolicyCampaignsRoute: AuthenticatedPolicyCampaignsRoute,
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
