@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Printer, User as UserIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, Download, Printer, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
 
@@ -37,6 +37,7 @@ type Node = {
   children?: Node[];
   __emp: Emp;
   __match?: boolean;
+  __hiddenCount?: number;
 };
 
 function deptColor(dept: string | null): string {
@@ -66,6 +67,16 @@ function OrgChartPage() {
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState<string>("all");
   const [includeInactive, setIncludeInactive] = useState(false);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  const toggleCollapsed = (id: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const { data: employees, isLoading } = useQuery({
     queryKey: ["org-chart-employees"],
@@ -157,21 +168,65 @@ function OrgChartPage() {
       };
       Array.from(matchSet).forEach(addAncestors);
     }
+    const countDescendants = (id: string): number => {
+      const kids = childrenOf.get(id) ?? [];
+      let n = 0;
+      for (const k of kids) {
+        if (q && !matchSet.has(k.id)) continue;
+        n += 1 + countDescendants(k.id);
+      }
+      return n;
+    };
     const build = (e: Emp): Node => {
-      const kids = (childrenOf.get(e.id) ?? [])
-        .filter((c) => !q || matchSet.has(c.id))
-        .map(build);
+      const rawKids = (childrenOf.get(e.id) ?? []).filter((c) => !q || matchSet.has(c.id));
+      const isCollapsed = collapsed.has(e.id) && rawKids.length > 0;
+      const kids = isCollapsed ? [] : rawKids.map(build);
       return {
         name: `${e.first_name} ${e.last_name}`,
         attributes: { title: e.job_title ?? "", dept: e.department ?? "" },
         children: kids.length ? kids : undefined,
         __emp: e,
         __match: q ? matchSet.has(e.id) && `${e.first_name} ${e.last_name} ${e.job_title ?? ""} ${e.department ?? ""}`.toLowerCase().includes(q) : false,
+        __hiddenCount: isCollapsed ? countDescendants(e.id) : 0,
       };
     };
     const roots = (childrenOf.get(null) ?? []).filter((r) => !q || matchSet.has(r.id)).map(build);
     return roots;
-  }, [filtered, search]);
+  }, [filtered, search, collapsed]);
+
+  // Helpers to collapse to a given depth from roots
+  const managerIds = useMemo(() => {
+    if (!filtered.length) return [] as string[];
+    const byId = new Map(filtered.map((e) => [e.id, e]));
+    const has = new Set<string>();
+    filtered.forEach((e) => {
+      if (e.manager_id && byId.has(e.manager_id)) has.add(e.manager_id);
+    });
+    return Array.from(has);
+  }, [filtered]);
+
+  const collapseToDepth = (depth: number) => {
+    if (!filtered.length) return;
+    const byId = new Map(filtered.map((e) => [e.id, e]));
+    const childrenOf = new Map<string | null, string[]>();
+    filtered.forEach((e) => {
+      const k = e.manager_id && byId.has(e.manager_id) ? e.manager_id : null;
+      const arr = childrenOf.get(k) ?? [];
+      arr.push(e.id);
+      childrenOf.set(k, arr);
+    });
+    const next = new Set<string>();
+    const walk = (id: string, d: number) => {
+      const kids = childrenOf.get(id) ?? [];
+      if (d >= depth) {
+        if (kids.length) next.add(id);
+        return;
+      }
+      kids.forEach((k) => walk(k, d + 1));
+    };
+    (childrenOf.get(null) ?? []).forEach((r) => walk(r, 1));
+    setCollapsed(next);
+  };
 
   const orphans = useMemo(() => {
     if (!filtered.length) return [];
@@ -249,10 +304,13 @@ function OrgChartPage() {
     const soft = deptColorSoft(e.department);
     const url = e.photo_path ? photoMap?.get(e.photo_path) : "";
     const matched = nodeDatum.__match;
+    const hasReports = (nodeDatum.children && nodeDatum.children.length > 0) || (nodeDatum.__hiddenCount ?? 0) > 0;
+    const isCollapsed = (nodeDatum.__hiddenCount ?? 0) > 0;
     return (
-      <g style={{ cursor: "pointer" }} onClick={() => navigate({ to: "/employees/$id", params: { id: e.id } })}>
+      <g>
         <foreignObject x={-130} y={10} width={260} height={120}>
           <div
+            onClick={() => navigate({ to: "/employees/$id", params: { id: e.id } })}
             style={{
               boxSizing: "border-box",
               width: 260,
@@ -265,10 +323,32 @@ function OrgChartPage() {
                 : "0 6px 18px -10px rgba(0,0,0,0.18)",
               overflow: "hidden",
               fontFamily: "inherit",
+              position: "relative",
+              cursor: "pointer",
               transition: "transform 120ms ease, box-shadow 120ms ease",
             }}
           >
             <div style={{ height: 6, background: color }} />
+            {hasReports && (
+              <button
+                onClick={(ev) => { ev.stopPropagation(); toggleCollapsed(e.id); }}
+                title={isCollapsed ? `Expand ${nodeDatum.__hiddenCount} reports` : "Collapse reports"}
+                style={{
+                  position: "absolute", top: 14, right: 10, zIndex: 2,
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  background: isCollapsed ? color : "hsl(var(--muted))",
+                  color: isCollapsed ? "white" : "hsl(var(--foreground))",
+                  border: "none", borderRadius: 999, padding: "2px 8px",
+                  fontSize: 11, fontWeight: 600, cursor: "pointer",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                }}
+              >
+                {isCollapsed ? `+${nodeDatum.__hiddenCount}` : ""}
+                {isCollapsed
+                  ? <ChevronRight size={12} />
+                  : <ChevronDown size={12} />}
+              </button>
+            )}
             <div style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 12px" }}>
               <div
                 style={{
@@ -332,6 +412,17 @@ function OrgChartPage() {
             <Label htmlFor="inactive" className="text-sm">Include inactive</Label>
           </div>
           <div className="flex gap-2 ml-auto">
+            <Button size="sm" variant="outline" onClick={() => setCollapsed(new Set())}>Expand all</Button>
+            <Button size="sm" variant="outline" onClick={() => setCollapsed(new Set(managerIds))}>Collapse all</Button>
+            <Select onValueChange={(v) => collapseToDepth(parseInt(v, 10))}>
+              <SelectTrigger className="w-32 h-9"><SelectValue placeholder="Depth…" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Depth 1</SelectItem>
+                <SelectItem value="2">Depth 2</SelectItem>
+                <SelectItem value="3">Depth 3</SelectItem>
+                <SelectItem value="99">Depth all</SelectItem>
+              </SelectContent>
+            </Select>
             <Button size="sm" variant="outline" onClick={() => setZoom((z) => Math.max(0.3, z - 0.1))}>−</Button>
             <Button size="sm" variant="outline" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}>+</Button>
             <Button size="sm" variant="outline" onClick={() => window.print()}><Printer className="h-4 w-4 mr-1" /> Print</Button>
