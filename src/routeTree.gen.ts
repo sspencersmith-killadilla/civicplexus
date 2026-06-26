@@ -54,6 +54,7 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authenticated/admin-modules'
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
+import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authenticated/admin-identity'
 import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin-demo'
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
@@ -98,6 +99,7 @@ import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/badge.$serial'
 import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
+import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim.v2.Users'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
 import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
 import { Route as ApiPublicCandidateTokenStatusRouteImport } from './routes/api/public/candidate/$token/status'
@@ -343,6 +345,12 @@ const AuthenticatedAdminMigrationRoute =
   AuthenticatedAdminMigrationRouteImport.update({
     id: '/admin-migration',
     path: '/admin-migration',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminIdentityRoute =
+  AuthenticatedAdminIdentityRouteImport.update({
+    id: '/admin-identity',
+    path: '/admin-identity',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminDemoRoute = AuthenticatedAdminDemoRouteImport.update({
@@ -591,6 +599,11 @@ const AuthenticatedReviewCyclesIdCalibrationRoute =
     path: '/calibration',
     getParentRoute: () => AuthenticatedReviewCyclesIdRoute,
   } as any)
+const ApiPublicScimV2UsersRoute = ApiPublicScimV2UsersRouteImport.update({
+  id: '/api/public/scim/v2/Users',
+  path: '/api/public/scim/v2/Users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOffersTokenViewRoute =
   ApiPublicOffersTokenViewRouteImport.update({
     id: '/api/public/offers/$token/view',
@@ -620,6 +633,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
+  '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -709,11 +723,13 @@ export interface FileRoutesByFullPath {
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
+  '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
+  '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -802,6 +818,7 @@ export interface FileRoutesByTo {
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
+  '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -809,6 +826,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin-demo': typeof AuthenticatedAdminDemoRoute
+  '/_authenticated/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/_authenticated/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
@@ -898,6 +916,7 @@ export interface FileRoutesById {
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
+  '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -905,6 +924,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin-demo'
+    | '/admin-identity'
     | '/admin-migration'
     | '/admin-modules'
     | '/approvals'
@@ -994,11 +1014,13 @@ export interface FileRouteTypes {
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
+    | '/api/public/scim/v2/Users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/admin-demo'
+    | '/admin-identity'
     | '/admin-migration'
     | '/admin-modules'
     | '/approvals'
@@ -1087,12 +1109,14 @@ export interface FileRouteTypes {
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
+    | '/api/public/scim/v2/Users'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin-demo'
+    | '/_authenticated/admin-identity'
     | '/_authenticated/admin-migration'
     | '/_authenticated/admin-modules'
     | '/_authenticated/approvals'
@@ -1182,6 +1206,7 @@ export interface FileRouteTypes {
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
+    | '/api/public/scim/v2/Users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1201,6 +1226,7 @@ export interface RootRouteChildren {
   ApiPublicCandidateTokenStatusRoute: typeof ApiPublicCandidateTokenStatusRoute
   ApiPublicOffersTokenRespondRoute: typeof ApiPublicOffersTokenRespondRoute
   ApiPublicOffersTokenViewRoute: typeof ApiPublicOffersTokenViewRoute
+  ApiPublicScimV2UsersRoute: typeof ApiPublicScimV2UsersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1520,6 +1546,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminMigrationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin-identity': {
+      id: '/_authenticated/admin-identity'
+      path: '/admin-identity'
+      fullPath: '/admin-identity'
+      preLoaderRoute: typeof AuthenticatedAdminIdentityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin-demo': {
       id: '/_authenticated/admin-demo'
       path: '/admin-demo'
@@ -1828,6 +1861,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewCyclesIdCalibrationRouteImport
       parentRoute: typeof AuthenticatedReviewCyclesIdRoute
     }
+    '/api/public/scim/v2/Users': {
+      id: '/api/public/scim/v2/Users'
+      path: '/api/public/scim/v2/Users'
+      fullPath: '/api/public/scim/v2/Users'
+      preLoaderRoute: typeof ApiPublicScimV2UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/offers/$token/view': {
       id: '/api/public/offers/$token/view'
       path: '/api/public/offers/$token/view'
@@ -1889,6 +1929,7 @@ const AuthenticatedReviewCyclesIdRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminDemoRoute: typeof AuthenticatedAdminDemoRoute
+  AuthenticatedAdminIdentityRoute: typeof AuthenticatedAdminIdentityRoute
   AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
   AuthenticatedAdminModulesRoute: typeof AuthenticatedAdminModulesRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
@@ -1965,6 +2006,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminDemoRoute: AuthenticatedAdminDemoRoute,
+  AuthenticatedAdminIdentityRoute: AuthenticatedAdminIdentityRoute,
   AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
   AuthenticatedAdminModulesRoute: AuthenticatedAdminModulesRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
@@ -2075,6 +2117,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCandidateTokenStatusRoute: ApiPublicCandidateTokenStatusRoute,
   ApiPublicOffersTokenRespondRoute: ApiPublicOffersTokenRespondRoute,
   ApiPublicOffersTokenViewRoute: ApiPublicOffersTokenViewRoute,
+  ApiPublicScimV2UsersRoute: ApiPublicScimV2UsersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
