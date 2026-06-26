@@ -82,6 +82,7 @@ import { Route as AuthenticatedInterviewsIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
+import { Route as AuthenticatedEmployeesIdRouteImport } from './routes/_authenticated/employees.$id'
 import { Route as AuthenticatedComplianceTmrsRouteImport } from './routes/_authenticated/compliance.tmrs'
 import { Route as AuthenticatedComplianceTcoleRouteImport } from './routes/_authenticated/compliance.tcole'
 import { Route as AuthenticatedComplianceNewHireRouteImport } from './routes/_authenticated/compliance.new-hire'
@@ -495,6 +496,12 @@ const AuthenticatedEmployeesImportRoute =
     path: '/employees/import',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEmployeesIdRoute =
+  AuthenticatedEmployeesIdRouteImport.update({
+    id: '/employees/$id',
+    path: '/employees/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedComplianceTmrsRoute =
   AuthenticatedComplianceTmrsRouteImport.update({
     id: '/compliance/tmrs',
@@ -623,6 +630,7 @@ export interface FileRoutesByFullPath {
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
   '/compliance/tcole': typeof AuthenticatedComplianceTcoleRoute
   '/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
+  '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -710,6 +718,7 @@ export interface FileRoutesByTo {
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
   '/compliance/tcole': typeof AuthenticatedComplianceTcoleRoute
   '/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
+  '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -800,6 +809,7 @@ export interface FileRoutesById {
   '/_authenticated/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
   '/_authenticated/compliance/tcole': typeof AuthenticatedComplianceTcoleRoute
   '/_authenticated/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
+  '/_authenticated/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -890,6 +900,7 @@ export interface FileRouteTypes {
     | '/compliance/new-hire'
     | '/compliance/tcole'
     | '/compliance/tmrs'
+    | '/employees/$id'
     | '/employees/import'
     | '/forms/$key'
     | '/grievances/$id'
@@ -977,6 +988,7 @@ export interface FileRouteTypes {
     | '/compliance/new-hire'
     | '/compliance/tcole'
     | '/compliance/tmrs'
+    | '/employees/$id'
     | '/employees/import'
     | '/forms/$key'
     | '/grievances/$id'
@@ -1066,6 +1078,7 @@ export interface FileRouteTypes {
     | '/_authenticated/compliance/new-hire'
     | '/_authenticated/compliance/tcole'
     | '/_authenticated/compliance/tmrs'
+    | '/_authenticated/employees/$id'
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
     | '/_authenticated/grievances/$id'
@@ -1640,6 +1653,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeesImportRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/employees/$id': {
+      id: '/_authenticated/employees/$id'
+      path: '/employees/$id'
+      fullPath: '/employees/$id'
+      preLoaderRoute: typeof AuthenticatedEmployeesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/compliance/tmrs': {
       id: '/_authenticated/compliance/tmrs'
       path: '/compliance/tmrs'
@@ -1810,6 +1830,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedComplianceNewHireRoute: typeof AuthenticatedComplianceNewHireRoute
   AuthenticatedComplianceTcoleRoute: typeof AuthenticatedComplianceTcoleRoute
   AuthenticatedComplianceTmrsRoute: typeof AuthenticatedComplianceTmrsRoute
+  AuthenticatedEmployeesIdRoute: typeof AuthenticatedEmployeesIdRoute
   AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
@@ -1880,6 +1901,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedComplianceNewHireRoute: AuthenticatedComplianceNewHireRoute,
   AuthenticatedComplianceTcoleRoute: AuthenticatedComplianceTcoleRoute,
   AuthenticatedComplianceTmrsRoute: AuthenticatedComplianceTmrsRoute,
+  AuthenticatedEmployeesIdRoute: AuthenticatedEmployeesIdRoute,
   AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,

@@ -54,6 +54,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/offboarding", "Offboarding", DoorOpen, ["hr_admin"]),
     def("/benefits", "Benefits", HeartHandshake, ["hr_admin"]),
     def("/equipment", "Equipment & PPE", Package, ["hr_admin", "hiring_manager"]),
+    def("/id-badge-templates", "ID Badge Templates", BadgeCheck, ["hr_admin"]),
   ]},
   { key: moduleKey("workflow"), label: "Workflow", items: [
     def("/worker-types", "Worker Types", Briefcase, ["hr_admin"]),
