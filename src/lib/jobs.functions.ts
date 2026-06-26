@@ -29,6 +29,7 @@ const RequisitionInput = z.object({
     physical_demands: z.string().max(5000).optional().nullable(),
     supplemental: z.string().max(5000).optional().nullable(),
   }).partial().optional().nullable(),
+  brochure_url: z.string().max(500).optional().nullable(),
 });
 
 export const createRequisition = createServerFn({ method: "POST" })
