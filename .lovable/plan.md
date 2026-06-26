@@ -1,40 +1,33 @@
-# Visual Org Chart
+## 1. Seed AI photos for all 29 demo employees
 
-Build a new authenticated route `/org-chart` that renders the company hierarchy as a tree of employee cards (photo, name, title, department), driven by `employees.manager_id` and grouped/colored by `department`.
+- Add a one-shot server function `seedDemoEmployeePhotos` (HR-admin gated) in `src/lib/employee-photos.functions.ts`:
+  - For each employee missing `photo_path`, generate a professional ID-badge-style headshot via the Lovable AI Gateway (`openai/gpt-image-2`, square, neutral background) with a prompt seeded from first/last name + job title (e.g. *"professional corporate headshot of a person named Maria Lopez, library aide, friendly smile, neutral grey studio background, soft lighting, shoulders up, photorealistic"*).
+  - Upload the resulting PNG to the existing `employee-photos` storage bucket at `employees/{id}/seed.png` using `supabaseAdmin`.
+  - Update `employees.photo_path`.
+  - Run sequentially with a small delay; return per-employee status.
+- Add a "Seed demo photos" button on `/admin-demo` so a single click backfills all missing photos. Idempotent — skips employees that already have a photo unless "Regenerate all" is toggled.
 
-## Scope
+Note: AI portraits are synthetic likenesses; we will not target real people. Prompts use generic descriptors plus the demo name only.
 
-- New page: `src/routes/_authenticated/org-chart.tsx`
-- Module registry entry in `src/lib/modules.ts` (gated, default on) so super admins can toggle it
-- Sidebar link in `src/components/app-shell.tsx`
-- Photo loading via the existing `getEmployeePhotoUrl` server fn (signed URLs, batched + cached by path)
-- No schema changes — uses existing `employees.manager_id`, `department`, `photo_path`, `job_title`, `status`
+## 2. Polish the org chart
 
-## UX
+Rework `src/routes/_authenticated/org-chart.tsx`:
 
-- **Tree view (default)**: top-down hierarchy starting from employees with no manager (CEO/root). Each node = compact card with circular photo (fallback initials), name, title, department chip. Click a card → navigates to `/employees/$id`.
-- **Department view (toggle)**: groups employees by department, then nests by manager within each group. Useful when reporting lines are sparse.
-- **Controls**: search (filters + highlights matches and their ancestors), department filter, expand/collapse all, zoom +/− and fit-to-screen, "Include inactive" toggle (defaults off — only `active` status).
-- **Orphans panel**: collapsible list at the bottom for active employees missing both a manager and reports, so HR can see gaps.
-- **Print / export**: browser print stylesheet (landscape, hides chrome) plus a "Download PNG" using `html-to-image` on the chart container.
-- **Mobile**: switches to vertical stacked tree with horizontal scroll inside each level.
+- **Root label**: replace hardcoded `"Organization"` with `org_settings.org_name` (loaded via a small `getOrgName` server fn or existing org settings query). Fallback to "Organization" only if unset.
+- **Visual cleanup**:
+  - Larger, rounded card nodes (240×96) with subtle gradient header strip in the department color rather than a full border; soft shadow; hover lift.
+  - Circular avatar with white ring; initials fallback uses the same dept color at lower saturation.
+  - Two-line name (semibold, 14px), job title (12px muted), department chip pinned bottom-right.
+  - Replace `pathFunc="step"` with smooth `"diagonal"` connectors, thinner stroke, muted color.
+  - Root node becomes a pill card showing org name + employee count, primary-tinted.
+  - Use `--card`, `--border`, `--muted-foreground` tokens (no hardcoded greys); ensure dark-mode legibility.
+- **Layout**: increase `nodeSize` to `{x: 280, y: 180}`, tighter sibling separation, add a faint dotted background grid via CSS.
+- **Legend**: small department color legend chip row above the canvas.
+- **Controls**: group zoom/print/export into a single rounded toolbar; show current zoom %.
+- Keep all existing filter/search/orphan logic intact.
 
-## Technical Details
+## Technical notes
 
-- Data: single `supabase.from("employees").select("id, first_name, last_name, job_title, department, status, manager_id, photo_path")` query, then build the tree client-side in `useMemo`.
-- Photos: collect distinct `photo_path` values, resolve in parallel via `Promise.all(getEmployeePhotoUrl(...))`, store in a `Map<path, url>` inside React Query (`queryKey: ["org-photo-urls", paths]`, 10 min stale). Avoids N server-fn calls on re-render.
-- Rendering: use [`react-d3-tree`](https://www.npmjs.com/package/react-d3-tree) (pan/zoom + custom node renderer baked in, ~30KB). Custom node renders the card with `<Avatar>` from `@/components/ui/avatar.tsx`. Department color derived from a stable hash → HSL so colors are consistent without configuration.
-- Export: add `html-to-image` for the PNG download.
-- Performance: trees over ~200 nodes auto-collapse below depth 3; expand-on-click reveals more.
-
-## Files
-
-- Add: `src/routes/_authenticated/org-chart.tsx`
-- Edit: `src/lib/modules.ts` (register `org_chart` module + route), `src/components/app-shell.tsx` (sidebar nav entry under People)
-- Add deps: `react-d3-tree`, `html-to-image`
-
-## Out of scope (call out)
-
-- Editing reporting lines from the chart (still done on the employee record / via PAF)
-- Dotted-line / matrixed relationships (single `manager_id` only)
-- Server-rendered SVG/PDF export (browser-side PNG + print is sufficient for v1)
+- Image generation runs server-side only; uses `LOVABLE_API_KEY` (already configured). Non-streaming JSON response is fine here since we just persist the final PNG.
+- Storage writes use `supabaseAdmin` inside the handler (per server-side rules).
+- Org chart changes are presentation-only — no schema or query changes besides reading `org_settings.org_name`.
