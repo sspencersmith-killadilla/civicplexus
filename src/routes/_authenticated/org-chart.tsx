@@ -379,33 +379,110 @@ function OrgChartPage() {
     const isCollapsed = (nodeDatum.__hiddenCount ?? 0) > 0;
     return (
       <g>
-        <foreignObject x={-130} y={10} width={260} height={120}>
+        <foreignObject x={-140} y={4} width={280} height={120}>
           <div
             onClick={() => navigate({ to: "/employees/$id", params: { id: e.id } })}
             style={{
               boxSizing: "border-box",
-              width: 260,
-              borderRadius: 14,
-              border: `1px solid ${matched ? "hsl(var(--primary))" : "hsl(var(--border))"}`,
-              background: "hsl(var(--card))",
-              color: "hsl(var(--card-foreground))",
-              boxShadow: matched
-                ? "0 10px 28px -12px hsl(var(--primary) / 0.45)"
-                : "0 6px 18px -10px rgba(0,0,0,0.18)",
-              overflow: "hidden",
-              fontFamily: "inherit",
+              width: 280,
               position: "relative",
+              paddingLeft: 36,
+              fontFamily: "inherit",
               cursor: "pointer",
-              transition: "transform 120ms ease, box-shadow 120ms ease",
             }}
           >
-            <div style={{ height: 6, background: color }} />
+            {/* Pill body, split into a dark name header and a light title body */}
+            <div
+              style={{
+                borderRadius: 999,
+                background: "hsl(var(--card))",
+                border: `1px solid ${matched ? "hsl(var(--primary))" : "hsl(var(--border))"}`,
+                boxShadow: matched
+                  ? "0 10px 28px -12px hsl(var(--primary) / 0.45)"
+                  : "0 6px 18px -10px rgba(0,0,0,0.22)",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <div
+                style={{
+                  background: color,
+                  color: "white",
+                  padding: "8px 14px 8px 56px",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  letterSpacing: 0.2,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {e.first_name} {e.last_name}
+              </div>
+              <div style={{ padding: "8px 14px 10px 56px", minHeight: 42 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "hsl(var(--muted-foreground))",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {e.job_title || "—"}
+                </div>
+                {e.department && (
+                  <div
+                    style={{
+                      marginTop: 4,
+                      display: "inline-block",
+                      fontSize: 10,
+                      padding: "1px 8px",
+                      borderRadius: 999,
+                      background: soft,
+                      color,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {e.department}
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* Overlapping avatar on the left */}
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                overflow: "hidden",
+                background: soft,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color,
+                fontSize: 18,
+                fontWeight: 700,
+                boxShadow: `0 0 0 3px hsl(var(--background)), 0 0 0 5px ${color}, 0 4px 10px rgba(0,0,0,0.18)`,
+              }}
+            >
+              {url ? (
+                <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                initials(e)
+              )}
+            </div>
             {hasReports && (
               <button
                 onClick={(ev) => { ev.stopPropagation(); toggleCollapsed(e.id); }}
                 title={isCollapsed ? `Expand ${nodeDatum.__hiddenCount} reports` : "Collapse reports"}
                 style={{
-                  position: "absolute", top: 14, right: 10, zIndex: 2,
+                  position: "absolute", top: 6, right: 8, zIndex: 2,
                   display: "inline-flex", alignItems: "center", gap: 4,
                   background: isCollapsed ? color : "hsl(var(--muted))",
                   color: isCollapsed ? "white" : "hsl(var(--foreground))",
@@ -420,40 +497,6 @@ function OrgChartPage() {
                   : <ChevronDown size={12} />}
               </button>
             )}
-            <div style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 12px" }}>
-              <div
-                style={{
-                  width: 52, height: 52, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
-                  background: soft, display: "flex", alignItems: "center", justifyContent: "center",
-                  color: color, fontSize: 16, fontWeight: 700,
-                  boxShadow: `0 0 0 2px hsl(var(--card)), 0 0 0 3px ${color}`,
-                }}
-              >
-                {url ? (
-                  <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                  initials(e)
-                )}
-              </div>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {e.first_name} {e.last_name}
-                </div>
-                <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {e.job_title || "—"}
-                </div>
-                {e.department && (
-                  <div
-                    style={{
-                      marginTop: 6, display: "inline-block", fontSize: 10, padding: "2px 8px",
-                      borderRadius: 999, background: soft, color, fontWeight: 600, letterSpacing: 0.2,
-                    }}
-                  >
-                    {e.department}
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </foreignObject>
       </g>
