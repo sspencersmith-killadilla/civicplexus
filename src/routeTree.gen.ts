@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OfflineShellRouteImport } from './routes/offline-shell'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -108,6 +109,11 @@ import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/pu
 import { Route as ApiPublicCandidateTokenStatusRouteImport } from './routes/api/public/candidate/$token/status'
 import { Route as ApiPublicCandidateTokenMessageRouteImport } from './routes/api/public/candidate/$token/message'
 
+const OfflineShellRoute = OfflineShellRouteImport.update({
+  id: '/offline-shell',
+  path: '/offline-shell',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -650,6 +656,7 @@ const ApiPublicCandidateTokenMessageRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/offline-shell': typeof OfflineShellRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
@@ -749,6 +756,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/offline-shell': typeof OfflineShellRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
@@ -849,6 +857,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/offline-shell': typeof OfflineShellRoute
   '/_authenticated/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/_authenticated/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
@@ -950,6 +959,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/offline-shell'
     | '/admin-demo'
     | '/admin-identity'
     | '/admin-migration'
@@ -1049,6 +1059,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/offline-shell'
     | '/admin-demo'
     | '/admin-identity'
     | '/admin-migration'
@@ -1148,6 +1159,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/offline-shell'
     | '/_authenticated/admin-demo'
     | '/_authenticated/admin-identity'
     | '/_authenticated/admin-migration'
@@ -1249,6 +1261,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  OfflineShellRoute: typeof OfflineShellRoute
   CandidateTokenRoute: typeof CandidateTokenRoute
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
   OfferTokenRoute: typeof OfferTokenRoute
@@ -1267,6 +1280,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/offline-shell': {
+      id: '/offline-shell'
+      path: '/offline-shell'
+      fullPath: '/offline-shell'
+      preLoaderRoute: typeof OfflineShellRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -2167,6 +2187,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  OfflineShellRoute: OfflineShellRoute,
   CandidateTokenRoute: CandidateTokenRoute,
   CareersSlugRoute: CareersSlugRouteWithChildren,
   OfferTokenRoute: OfferTokenRoute,
