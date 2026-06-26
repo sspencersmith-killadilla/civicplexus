@@ -23,8 +23,7 @@ export const previewLmsImport = createServerFn({ method: "POST" })
     z.object({ provider: z.string(), filename: z.string(), csv: z.string().max(2000000) }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: ok } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "hr_admin" });
-    if (!ok) throw new Error("HR admin only");
+    await requireHrAdmin(context.supabase, context.userId);
     const rows = parseCsv(data.csv);
     const matched: Array<Row & { _employee_id?: string; _course_id?: string }> = [];
     const errors: Array<{ row: number; error: string }> = [];
@@ -59,8 +58,7 @@ export const commitLmsImport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: ok } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "hr_admin" });
-    if (!ok) throw new Error("HR admin only");
+    await requireHrAdmin(context.supabase, context.userId);
     const { data: job, error } = await context.supabase.from("lms_credit_imports").select("*").eq("id", data.id).single();
     if (error || !job) throw new Error("Import not found");
     if (job.status !== "preview") throw new Error("Import already processed");

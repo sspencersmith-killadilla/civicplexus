@@ -33,8 +33,7 @@ export const previewPayrollExport = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: ok } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "hr_admin" });
-    if (!ok) throw new Error("HR admin only");
+    await requireHrAdmin(context.supabase, context.userId);
 
     let columnMap: ColumnMapEntry[] = [];
     let earningsCodes: Record<string, string> = {};

@@ -12,8 +12,7 @@ export const mintScimToken = createServerFn({ method: "POST" })
     z.object({ provider_id: z.string().uuid(), label: z.string().min(1), expires_days: z.number().optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: ok } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "hr_admin" });
-    if (!ok) throw new Error("HR admin only");
+    await requireHrAdmin(context.supabase, context.userId);
     const raw = randomBytes(32).toString("base64url");
     const token = `scim_${raw}`;
     const { error } = await context.supabase.from("scim_tokens").insert({

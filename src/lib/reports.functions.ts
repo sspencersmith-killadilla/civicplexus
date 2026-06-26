@@ -7,8 +7,7 @@ export const buildEeo4Report = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { snapshot_date?: string }) => z.object({ snapshot_date: z.string().optional() }).parse(d))
   .handler(async ({ context }) => {
-    const { data: ok } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "hr_admin" });
-    if (!ok) throw new Error("HR admin only");
+    await requireHrAdmin(context.supabase, context.userId);
     const { data: emps, error } = await context.supabase
       .from("employees").select("id,first_name,last_name,department,job_title,gender,ethnicity")
       .eq("status", "active");
