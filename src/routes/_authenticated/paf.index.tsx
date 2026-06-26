@@ -132,7 +132,7 @@ function PafIndex() {
                     <Select value={form.new_manager_id} onValueChange={(v) => setForm({ ...form, new_manager_id: v })}>
                       <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
                       <SelectContent>
-                        {(empsQ.data ?? []).filter((e) => e.user_id).map((e) => <SelectItem key={e.id} value={e.user_id!}>{e.last_name}, {e.first_name}</SelectItem>)}
+                        {(empsQ.data ?? []).map((e) => <SelectItem key={e.id} value={e.user_id ?? e.id}>{e.last_name}, {e.first_name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
