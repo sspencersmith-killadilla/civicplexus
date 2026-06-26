@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireHrAdmin } from "@/lib/role-check.server";
 
 type ColumnMapEntry = { key: string; label: string; format?: string };
 

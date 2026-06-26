@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireHrAdmin } from "@/lib/role-check.server";
 
 export const buildEeo4Report = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -34,7 +35,7 @@ export const saveReportSnapshot = createServerFn({ method: "POST" })
       report_kind: data.report_kind,
       period_label: data.period_label,
       generated_by: context.userId,
-      data: data.data as object,
+      data: data.data as never,
       notes: data.notes ?? null,
     });
     if (error) throw new Error(error.message);

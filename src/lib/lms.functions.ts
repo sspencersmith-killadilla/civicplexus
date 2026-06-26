@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireHrAdmin } from "@/lib/role-check.server";
 
 type Row = Record<string, string>;
 
@@ -47,8 +48,8 @@ export const previewLmsImport = createServerFn({ method: "POST" })
     const { data: job, error } = await context.supabase.from("lms_credit_imports").insert({
       provider: data.provider, filename: data.filename, uploaded_by: context.userId,
       status: "preview", total_rows: rows.length, matched_rows: matched.length,
-      unmatched_rows: rows.length - matched.length, preview: matched.slice(0, 200) as object,
-      errors: errors.slice(0, 200) as object,
+      unmatched_rows: rows.length - matched.length, preview: matched.slice(0, 200) as never,
+      errors: errors.slice(0, 200) as never,
     }).select("id").single();
     if (error) throw new Error(error.message);
     return { id: job!.id, total: rows.length, matched: matched.length, unmatched: rows.length - matched.length, errors: errors.slice(0, 20) };

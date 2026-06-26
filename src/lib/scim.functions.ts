@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireHrAdmin } from "@/lib/role-check.server";
 import { createHash, randomBytes } from "crypto";
 
 function hashToken(t: string) { return createHash("sha256").update(t).digest("hex"); }
