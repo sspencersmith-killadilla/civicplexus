@@ -62,8 +62,13 @@ export const submitPaf = createServerFn({ method: "POST" })
 
     // Find first hr_admin user id for assignment
     const { data: hrUsers } = await supabaseAdmin
-      .from("user_roles").select("user_id").eq("role", "hr_admin" as never);
-    const firstHr = (hrUsers ?? [])[0]?.user_id ?? null;
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "hr_admin" as never)
+      .order("created_at", { ascending: true });
+    const firstHr = isHrAdmin
+      ? context.userId
+      : (hrUsers ?? [])[0]?.user_id ?? null;
 
     const steps = resolveApprovalChain({
       action_type: data.action_type as PafActionType,
