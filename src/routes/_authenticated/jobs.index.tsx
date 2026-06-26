@@ -194,6 +194,7 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
   const submitApproval = useServerFn(submitRequisitionForApproval);
   const post = useServerFn(postRequisition);
   const listPositions = useServerFn(listPositionsForRequisition);
+  const checkBudget = useServerFn(checkPositionBudget);
 
   const positionsQ = useQuery({
     queryKey: ["positions_for_req"],
@@ -220,6 +221,13 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
   const [slug, setSlug] = useState<string | null>(null);
   const [approvalSkipped, setApprovalSkipped] = useState(false);
   const [approvalNotice, setApprovalNotice] = useState<string | null>(null);
+  const [budgetOverride, setBudgetOverride] = useState(false);
+
+  const budgetQ = useQuery({
+    queryKey: ["req-budget", form.department],
+    queryFn: () => checkBudget({ data: { department: form.department, additional_fte: 1 } }),
+    enabled: step === 1 && !!form.department.trim(),
+  });
 
   const doDraft = useMutation({
     mutationFn: async () => {
@@ -446,12 +454,26 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
             </p>
             {form.summary && <p className="text-sm mt-3">{form.summary}</p>}
           </Card>
+          {form.department && budgetQ.data && (
+            <Card className={"p-3 text-xs " + (budgetQ.data.would_exceed ? "border-destructive/40 bg-destructive/5" : "")}>
+              <p className="font-medium">FY{budgetQ.data.fiscal_year} budget — {budgetQ.data.department}</p>
+              <p className="text-muted-foreground mt-1">
+                Budgeted {budgetQ.data.budgeted_fte ?? "—"} FTE · Used {budgetQ.data.used_fte ?? 0} · Requesting {budgetQ.data.requested_fte ?? 1} · Remaining {budgetQ.data.remaining_fte ?? "—"}
+              </p>
+              {budgetQ.data.would_exceed && (
+                <label className="flex items-center gap-2 mt-2 text-destructive">
+                  <input type="checkbox" checked={budgetOverride} onChange={(e) => setBudgetOverride(e.target.checked)} />
+                  This requisition exceeds budgeted FTE — proceed with HR override
+                </label>
+              )}
+            </Card>
+          )}
           <p className="text-xs text-muted-foreground">
             Saving creates the requisition in <span className="font-mono">draft</span> status. It will not be visible to applicants until it is posted.
           </p>
           <div className="flex justify-between pt-2">
             <Button variant="ghost" onClick={() => setStep(0)}><ChevronLeft className="h-4 w-4 mr-1" /> Back</Button>
-            <Button disabled={doDraft.isPending} onClick={() => doDraft.mutate()}>
+            <Button disabled={doDraft.isPending || (budgetQ.data?.would_exceed && !budgetOverride)} onClick={() => doDraft.mutate()}>
               {doDraft.isPending ? "Saving…" : "Save draft"}
             </Button>
           </div>
