@@ -35,6 +35,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
 import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_authenticated/internal-careers'
 import { Route as AuthenticatedIdBadgeTemplatesRouteImport } from './routes/_authenticated/id-badge-templates'
+import { Route as AuthenticatedHrFinanceRouteImport } from './routes/_authenticated/hr-finance'
 import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authenticated/hire-requests'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
@@ -76,6 +77,7 @@ import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedReviewCyclesIdRouteImport } from './routes/_authenticated/review-cycles.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
+import { Route as AuthenticatedPayrollProfilesRouteImport } from './routes/_authenticated/payroll.profiles'
 import { Route as AuthenticatedPayrollIdRouteImport } from './routes/_authenticated/payroll.$id'
 import { Route as AuthenticatedPafIdRouteImport } from './routes/_authenticated/paf.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
@@ -241,6 +243,11 @@ const AuthenticatedIdBadgeTemplatesRoute =
     path: '/id-badge-templates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrFinanceRoute = AuthenticatedHrFinanceRouteImport.update({
+  id: '/hr-finance',
+  path: '/hr-finance',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHireRequestsRoute =
   AuthenticatedHireRequestsRouteImport.update({
     id: '/hire-requests',
@@ -467,6 +474,12 @@ const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedPoliciesRoute,
 } as any)
+const AuthenticatedPayrollProfilesRoute =
+  AuthenticatedPayrollProfilesRouteImport.update({
+    id: '/payroll/profiles',
+    path: '/payroll/profiles',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPayrollIdRoute = AuthenticatedPayrollIdRouteImport.update({
   id: '/payroll/$id',
   path: '/payroll/$id',
@@ -625,6 +638,7 @@ export interface FileRoutesByFullPath {
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
+  '/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
@@ -663,6 +677,7 @@ export interface FileRoutesByFullPath {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/payroll/$id': typeof AuthenticatedPayrollIdRoute
+  '/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -717,6 +732,7 @@ export interface FileRoutesByTo {
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
+  '/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
@@ -754,6 +770,7 @@ export interface FileRoutesByTo {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/payroll/$id': typeof AuthenticatedPayrollIdRoute
+  '/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -810,6 +827,7 @@ export interface FileRoutesById {
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/hire-requests': typeof AuthenticatedHireRequestsRoute
+  '/_authenticated/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/_authenticated/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/_authenticated/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
@@ -848,6 +866,7 @@ export interface FileRoutesById {
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/paf/$id': typeof AuthenticatedPafIdRoute
   '/_authenticated/payroll/$id': typeof AuthenticatedPayrollIdRoute
+  '/_authenticated/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -904,6 +923,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/help'
     | '/hire-requests'
+    | '/hr-finance'
     | '/id-badge-templates'
     | '/internal-careers'
     | '/my-hr'
@@ -942,6 +962,7 @@ export interface FileRouteTypes {
     | '/one-on-ones/$id'
     | '/paf/$id'
     | '/payroll/$id'
+    | '/payroll/profiles'
     | '/policies/$id'
     | '/review-cycles/$id'
     | '/reviews/$id'
@@ -996,6 +1017,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/help'
     | '/hire-requests'
+    | '/hr-finance'
     | '/id-badge-templates'
     | '/internal-careers'
     | '/my-hr'
@@ -1033,6 +1055,7 @@ export interface FileRouteTypes {
     | '/one-on-ones/$id'
     | '/paf/$id'
     | '/payroll/$id'
+    | '/payroll/profiles'
     | '/policies/$id'
     | '/review-cycles/$id'
     | '/reviews/$id'
@@ -1088,6 +1111,7 @@ export interface FileRouteTypes {
     | '/_authenticated/goals'
     | '/_authenticated/help'
     | '/_authenticated/hire-requests'
+    | '/_authenticated/hr-finance'
     | '/_authenticated/id-badge-templates'
     | '/_authenticated/internal-careers'
     | '/_authenticated/my-hr'
@@ -1126,6 +1150,7 @@ export interface FileRouteTypes {
     | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/paf/$id'
     | '/_authenticated/payroll/$id'
+    | '/_authenticated/payroll/profiles'
     | '/_authenticated/policies/$id'
     | '/_authenticated/review-cycles/$id'
     | '/_authenticated/reviews/$id'
@@ -1360,6 +1385,13 @@ declare module '@tanstack/react-router' {
       path: '/id-badge-templates'
       fullPath: '/id-badge-templates'
       preLoaderRoute: typeof AuthenticatedIdBadgeTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr-finance': {
+      id: '/_authenticated/hr-finance'
+      path: '/hr-finance'
+      fullPath: '/hr-finance'
+      preLoaderRoute: typeof AuthenticatedHrFinanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hire-requests': {
@@ -1649,6 +1681,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPoliciesIdRouteImport
       parentRoute: typeof AuthenticatedPoliciesRoute
     }
+    '/_authenticated/payroll/profiles': {
+      id: '/_authenticated/payroll/profiles'
+      path: '/payroll/profiles'
+      fullPath: '/payroll/profiles'
+      preLoaderRoute: typeof AuthenticatedPayrollProfilesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/payroll/$id': {
       id: '/_authenticated/payroll/$id'
       path: '/payroll/$id'
@@ -1868,6 +1907,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedHireRequestsRoute: typeof AuthenticatedHireRequestsRoute
+  AuthenticatedHrFinanceRoute: typeof AuthenticatedHrFinanceRoute
   AuthenticatedIdBadgeTemplatesRoute: typeof AuthenticatedIdBadgeTemplatesRoute
   AuthenticatedInternalCareersRoute: typeof AuthenticatedInternalCareersRoute
   AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
@@ -1902,6 +1942,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedPafIdRoute: typeof AuthenticatedPafIdRoute
   AuthenticatedPayrollIdRoute: typeof AuthenticatedPayrollIdRoute
+  AuthenticatedPayrollProfilesRoute: typeof AuthenticatedPayrollProfilesRoute
   AuthenticatedReviewCyclesIdRoute: typeof AuthenticatedReviewCyclesIdRouteWithChildren
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
@@ -1942,6 +1983,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedHireRequestsRoute: AuthenticatedHireRequestsRoute,
+  AuthenticatedHrFinanceRoute: AuthenticatedHrFinanceRoute,
   AuthenticatedIdBadgeTemplatesRoute: AuthenticatedIdBadgeTemplatesRoute,
   AuthenticatedInternalCareersRoute: AuthenticatedInternalCareersRoute,
   AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
@@ -1976,6 +2018,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedPafIdRoute: AuthenticatedPafIdRoute,
   AuthenticatedPayrollIdRoute: AuthenticatedPayrollIdRoute,
+  AuthenticatedPayrollProfilesRoute: AuthenticatedPayrollProfilesRoute,
   AuthenticatedReviewCyclesIdRoute:
     AuthenticatedReviewCyclesIdRouteWithChildren,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
