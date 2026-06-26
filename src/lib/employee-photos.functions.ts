@@ -72,3 +72,85 @@ export const clearEmployeePhoto = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+/**
+ * Generate an AI portrait for the next demo employee that has no photo,
+ * upload it to storage, and persist photo_path. Returns progress so the
+ * client can loop until done. HR admin only.
+ */
+export const seedNextDemoPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({ regenerate: z.boolean().optional() }).parse(i ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    await assertHrAdmin(context.supabase, context.userId);
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Pick the next employee needing a photo
+    let query = supabaseAdmin
+      .from("employees")
+      .select("id, first_name, last_name, job_title, photo_path")
+      .order("last_name");
+    if (!data.regenerate) query = query.is("photo_path", null);
+    const { data: rows, error } = await query.limit(1);
+    if (error) throw error;
+    const emp = rows?.[0];
+    if (!emp) return { done: true, remaining: 0 };
+
+    // Count remaining (after this one)
+    const { count } = await supabaseAdmin
+      .from("employees")
+      .select("id", { count: "exact", head: true })
+      .is("photo_path", null);
+
+    const prompt =
+      `Professional corporate headshot portrait of a person named ${emp.first_name} ${emp.last_name}, ` +
+      `working as a ${emp.job_title ?? "municipal employee"} for a small city government. ` +
+      `Friendly natural smile, shoulders up, looking at the camera, neutral light grey studio background, ` +
+      `soft even lighting, business casual attire, photorealistic, sharp focus, no text, no logo, no watermark.`;
+
+    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-image-2",
+        prompt,
+        size: "1024x1024",
+        quality: "low",
+        n: 1,
+      }),
+    });
+    if (!aiRes.ok) {
+      const txt = await aiRes.text().catch(() => "");
+      throw new Error(`Image gen failed (${aiRes.status}): ${txt.slice(0, 200)}`);
+    }
+    const json = (await aiRes.json()) as { data?: Array<{ b64_json?: string }> };
+    const b64 = json.data?.[0]?.b64_json;
+    if (!b64) throw new Error("No image returned");
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+
+    const path = `photos/${emp.id}/seed-${Date.now()}.png`;
+    const { error: upErr } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .upload(path, bytes, { contentType: "image/png", upsert: true });
+    if (upErr) throw upErr;
+
+    const { error: updErr } = await supabaseAdmin
+      .from("employees")
+      .update({ photo_path: path })
+      .eq("id", emp.id);
+    if (updErr) throw updErr;
+
+    const remaining = Math.max(0, (count ?? 1) - 1);
+    return {
+      done: remaining === 0,
+      remaining,
+      employee: { id: emp.id, name: `${emp.first_name} ${emp.last_name}` },
+    };
+  });
