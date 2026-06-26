@@ -43,7 +43,14 @@ function deptColor(dept: string | null): string {
   if (!dept) return "hsl(220 10% 60%)";
   let h = 0;
   for (let i = 0; i < dept.length; i++) h = (h * 31 + dept.charCodeAt(i)) >>> 0;
-  return `hsl(${h % 360} 65% 45%)`;
+  return `hsl(${h % 360} 62% 42%)`;
+}
+
+function deptColorSoft(dept: string | null): string {
+  if (!dept) return "hsl(220 10% 90%)";
+  let h = 0;
+  for (let i = 0; i < dept.length; i++) h = (h * 31 + dept.charCodeAt(i)) >>> 0;
+  return `hsl(${h % 360} 60% 94%)`;
 }
 
 function initials(e: Emp) {
@@ -69,6 +76,18 @@ function OrgChartPage() {
         .order("last_name");
       if (error) throw error;
       return (data ?? []) as Emp[];
+    },
+  });
+
+  const { data: orgName } = useQuery({
+    queryKey: ["org-chart-org-name"],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("org_settings")
+        .select("org_name")
+        .maybeSingle();
+      return (data?.org_name as string | undefined) ?? "Organization";
     },
   });
 
@@ -168,10 +187,16 @@ function OrgChartPage() {
     }
   }, [tree.length]);
 
+  const rootLabel = (() => {
+    if (deptFilter !== "all") return deptFilter;
+    return orgName ?? "Organization";
+  })();
+
   const rootData: Node = tree.length === 1
     ? tree[0]
     : {
-        name: "Organization",
+        name: rootLabel,
+        attributes: { title: `${filtered.length} ${filtered.length === 1 ? "person" : "people"}` },
         children: tree,
         __emp: { id: "root", first_name: "", last_name: "", job_title: null, department: null, status: "active", manager_id: null, photo_path: null },
       };
@@ -192,63 +217,91 @@ function OrgChartPage() {
   const renderNode = ({ nodeDatum }: { nodeDatum: Node }) => {
     const e = nodeDatum.__emp;
     if (e.id === "root") {
+      const sub = nodeDatum.attributes?.title ?? "";
       return (
         <g>
-          <circle r={14} fill="hsl(var(--primary))" />
-          <text x={0} y={36} textAnchor="middle" style={{ fontSize: 12, fontFamily: "inherit" }} fill="currentColor">
-            {nodeDatum.name}
-          </text>
+          <foreignObject x={-140} y={-32} width={280} height={68}>
+            <div
+              style={{
+                boxSizing: "border-box",
+                width: 280,
+                padding: "10px 16px",
+                borderRadius: 999,
+                background: "hsl(var(--primary))",
+                color: "hsl(var(--primary-foreground))",
+                boxShadow: "0 8px 24px -10px hsl(var(--primary) / 0.45)",
+                textAlign: "center",
+                fontFamily: "inherit",
+              }}
+            >
+              <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: 0.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {nodeDatum.name}
+              </div>
+              {sub && (
+                <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2 }}>{sub}</div>
+              )}
+            </div>
+          </foreignObject>
         </g>
       );
     }
     const color = deptColor(e.department);
+    const soft = deptColorSoft(e.department);
     const url = e.photo_path ? photoMap?.get(e.photo_path) : "";
     const matched = nodeDatum.__match;
     return (
       <g style={{ cursor: "pointer" }} onClick={() => navigate({ to: "/employees/$id", params: { id: e.id } })}>
-        <foreignObject x={-110} y={-50} width={220} height={120}>
+        <foreignObject x={-130} y={-54} width={260} height={120}>
           <div
             style={{
               boxSizing: "border-box",
-              width: 220,
-              padding: 10,
-              borderRadius: 12,
-              border: `2px solid ${matched ? "hsl(var(--primary))" : color}`,
+              width: 260,
+              borderRadius: 14,
+              border: `1px solid ${matched ? "hsl(var(--primary))" : "hsl(var(--border))"}`,
               background: "hsl(var(--card))",
               color: "hsl(var(--card-foreground))",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-              display: "flex",
-              gap: 10,
-              alignItems: "center",
+              boxShadow: matched
+                ? "0 10px 28px -12px hsl(var(--primary) / 0.45)"
+                : "0 6px 18px -10px rgba(0,0,0,0.18)",
+              overflow: "hidden",
               fontFamily: "inherit",
+              transition: "transform 120ms ease, box-shadow 120ms ease",
             }}
           >
-            <div
-              style={{
-                width: 48, height: 48, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
-                background: color, display: "flex", alignItems: "center", justifyContent: "center",
-                color: "#fff", fontSize: 16, fontWeight: 600,
-              }}
-            >
-              {url ? <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials(e)}
-            </div>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {e.first_name} {e.last_name}
+            <div style={{ height: 6, background: color }} />
+            <div style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 12px" }}>
+              <div
+                style={{
+                  width: 52, height: 52, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
+                  background: soft, display: "flex", alignItems: "center", justifyContent: "center",
+                  color: color, fontSize: 16, fontWeight: 700,
+                  boxShadow: `0 0 0 2px hsl(var(--card)), 0 0 0 3px ${color}`,
+                }}
+              >
+                {url ? (
+                  <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  initials(e)
+                )}
               </div>
-              <div style={{ fontSize: 11, opacity: 0.75, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {e.job_title || "—"}
-              </div>
-              {e.department && (
-                <div
-                  style={{
-                    marginTop: 4, display: "inline-block", fontSize: 10, padding: "1px 6px",
-                    borderRadius: 999, background: color, color: "#fff",
-                  }}
-                >
-                  {e.department}
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {e.first_name} {e.last_name}
                 </div>
-              )}
+                <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {e.job_title || "—"}
+                </div>
+                {e.department && (
+                  <div
+                    style={{
+                      marginTop: 6, display: "inline-block", fontSize: 10, padding: "2px 8px",
+                      borderRadius: 999, background: soft, color, fontWeight: 600, letterSpacing: 0.2,
+                    }}
+                  >
+                    {e.department}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </foreignObject>
@@ -288,7 +341,35 @@ function OrgChartPage() {
       </Card>
 
       <Card className="p-0 overflow-hidden">
-        <div ref={containerRef} style={{ width: "100%", height: "70vh", background: "hsl(var(--background))" }}>
+        {departments.length > 0 && (
+          <div className="flex flex-wrap gap-2 px-4 pt-3 pb-2 border-b print:hidden">
+            {departments.map((d) => (
+              <button
+                key={d}
+                onClick={() => setDeptFilter(deptFilter === d ? "all" : d)}
+                className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-full border hover:bg-muted transition-colors"
+                style={{
+                  borderColor: deptFilter === d ? deptColor(d) : "hsl(var(--border))",
+                  background: deptFilter === d ? deptColorSoft(d) : "transparent",
+                  color: deptFilter === d ? deptColor(d) : "hsl(var(--foreground))",
+                  fontWeight: deptFilter === d ? 600 : 500,
+                }}
+              >
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: deptColor(d) }} />
+                {d}
+              </button>
+            ))}
+          </div>
+        )}
+        <div
+          ref={containerRef}
+          style={{
+            width: "100%",
+            height: "70vh",
+            background:
+              "radial-gradient(circle at 1px 1px, hsl(var(--muted-foreground) / 0.15) 1px, transparent 0) 0 0 / 22px 22px, hsl(var(--background))",
+          }}
+        >
           {isLoading ? (
             <div className="p-6 text-muted-foreground">Loading…</div>
           ) : tree.length === 0 ? (
@@ -301,9 +382,10 @@ function OrgChartPage() {
               zoom={zoom}
               collapsible
               renderCustomNodeElement={renderNode as unknown as never}
-              separation={{ siblings: 1.4, nonSiblings: 1.8 }}
-              nodeSize={{ x: 240, y: 160 }}
-              pathFunc="step"
+              separation={{ siblings: 1.3, nonSiblings: 1.6 }}
+              nodeSize={{ x: 290, y: 180 }}
+              pathFunc="diagonal"
+              pathClassFunc={() => "org-chart-link"}
               zoomable
             />
           )}
