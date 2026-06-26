@@ -146,9 +146,19 @@ function OrgChartPage() {
     if (!filtered.length) return [];
     const q = search.trim().toLowerCase();
     const byId = new Map<string, Emp>(filtered.map((e) => [e.id, e]));
+    // Some records store manager_id as the manager's auth user_id rather than
+    // their employees.id. Build a lookup so either form resolves correctly.
+    const byUserId = new Map<string, Emp>();
+    filtered.forEach((e) => { if (e.user_id) byUserId.set(e.user_id, e); });
+    const resolveManagerEmpId = (m: string | null): string | null => {
+      if (!m) return null;
+      if (byId.has(m)) return m;
+      const viaUser = byUserId.get(m);
+      return viaUser ? viaUser.id : null;
+    };
     const childrenOf = new Map<string | null, Emp[]>();
     filtered.forEach((e) => {
-      const k = e.manager_id && byId.has(e.manager_id) ? e.manager_id : null;
+      const k = resolveManagerEmpId(e.manager_id);
       const arr = childrenOf.get(k) ?? [];
       arr.push(e);
       childrenOf.set(k, arr);
@@ -162,9 +172,10 @@ function OrgChartPage() {
       // include ancestors
       const addAncestors = (id: string) => {
         const e = byId.get(id);
-        if (e?.manager_id && byId.has(e.manager_id) && !matchSet.has(e.manager_id)) {
-          matchSet.add(e.manager_id);
-          addAncestors(e.manager_id);
+        const mgr = resolveManagerEmpId(e?.manager_id ?? null);
+        if (mgr && !matchSet.has(mgr)) {
+          matchSet.add(mgr);
+          addAncestors(mgr);
         }
       };
       Array.from(matchSet).forEach(addAncestors);
