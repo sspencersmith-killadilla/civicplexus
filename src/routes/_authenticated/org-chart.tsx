@@ -28,6 +28,7 @@ type Emp = {
   department: string | null;
   status: string;
   manager_id: string | null;
+  user_id: string | null;
   photo_path: string | null;
 };
 
@@ -83,7 +84,7 @@ function OrgChartPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("employees")
-        .select("id, first_name, last_name, job_title, department, status, manager_id, photo_path")
+        .select("id, first_name, last_name, job_title, department, status, manager_id, user_id, photo_path")
         .order("last_name");
       if (error) throw error;
       return (data ?? []) as Emp[];
@@ -145,9 +146,19 @@ function OrgChartPage() {
     if (!filtered.length) return [];
     const q = search.trim().toLowerCase();
     const byId = new Map<string, Emp>(filtered.map((e) => [e.id, e]));
+    // Some records store manager_id as the manager's auth user_id rather than
+    // their employees.id. Build a lookup so either form resolves correctly.
+    const byUserId = new Map<string, Emp>();
+    filtered.forEach((e) => { if (e.user_id) byUserId.set(e.user_id, e); });
+    const resolveManagerEmpId = (m: string | null): string | null => {
+      if (!m) return null;
+      if (byId.has(m)) return m;
+      const viaUser = byUserId.get(m);
+      return viaUser ? viaUser.id : null;
+    };
     const childrenOf = new Map<string | null, Emp[]>();
     filtered.forEach((e) => {
-      const k = e.manager_id && byId.has(e.manager_id) ? e.manager_id : null;
+      const k = resolveManagerEmpId(e.manager_id);
       const arr = childrenOf.get(k) ?? [];
       arr.push(e);
       childrenOf.set(k, arr);
@@ -161,9 +172,10 @@ function OrgChartPage() {
       // include ancestors
       const addAncestors = (id: string) => {
         const e = byId.get(id);
-        if (e?.manager_id && byId.has(e.manager_id) && !matchSet.has(e.manager_id)) {
-          matchSet.add(e.manager_id);
-          addAncestors(e.manager_id);
+        const mgr = resolveManagerEmpId(e?.manager_id ?? null);
+        if (mgr && !matchSet.has(mgr)) {
+          matchSet.add(mgr);
+          addAncestors(mgr);
         }
       };
       Array.from(matchSet).forEach(addAncestors);
@@ -198,9 +210,16 @@ function OrgChartPage() {
   const managerIds = useMemo(() => {
     if (!filtered.length) return [] as string[];
     const byId = new Map(filtered.map((e) => [e.id, e]));
+    const byUserId = new Map<string, Emp>();
+    filtered.forEach((e) => { if (e.user_id) byUserId.set(e.user_id, e); });
     const has = new Set<string>();
     filtered.forEach((e) => {
-      if (e.manager_id && byId.has(e.manager_id)) has.add(e.manager_id);
+      if (!e.manager_id) return;
+      if (byId.has(e.manager_id)) has.add(e.manager_id);
+      else {
+        const mgr = byUserId.get(e.manager_id);
+        if (mgr) has.add(mgr.id);
+      }
     });
     return Array.from(has);
   }, [filtered]);
@@ -208,9 +227,18 @@ function OrgChartPage() {
   const collapseToDepth = (depth: number) => {
     if (!filtered.length) return;
     const byId = new Map(filtered.map((e) => [e.id, e]));
+    const byUserId = new Map<string, Emp>();
+    filtered.forEach((e) => { if (e.user_id) byUserId.set(e.user_id, e); });
     const childrenOf = new Map<string | null, string[]>();
     filtered.forEach((e) => {
-      const k = e.manager_id && byId.has(e.manager_id) ? e.manager_id : null;
+      let k: string | null = null;
+      if (e.manager_id) {
+        if (byId.has(e.manager_id)) k = e.manager_id;
+        else {
+          const mgr = byUserId.get(e.manager_id);
+          if (mgr) k = mgr.id;
+        }
+      }
       const arr = childrenOf.get(k) ?? [];
       arr.push(e.id);
       childrenOf.set(k, arr);
@@ -230,8 +258,21 @@ function OrgChartPage() {
 
   const orphans = useMemo(() => {
     if (!filtered.length) return [];
-    const hasReports = new Set(filtered.map((e) => e.manager_id).filter(Boolean) as string[]);
-    return filtered.filter((e) => !e.manager_id && !hasReports.has(e.id));
+    const byId = new Map(filtered.map((e) => [e.id, e]));
+    const byUserId = new Map<string, Emp>();
+    filtered.forEach((e) => { if (e.user_id) byUserId.set(e.user_id, e); });
+    const resolved = (m: string | null): string | null => {
+      if (!m) return null;
+      if (byId.has(m)) return m;
+      const v = byUserId.get(m);
+      return v ? v.id : null;
+    };
+    const hasReports = new Set<string>();
+    filtered.forEach((e) => {
+      const r = resolved(e.manager_id);
+      if (r) hasReports.add(r);
+    });
+    return filtered.filter((e) => !resolved(e.manager_id) && !hasReports.has(e.id));
   }, [filtered]);
 
   // Center the tree once the container has a size
@@ -253,7 +294,7 @@ function OrgChartPage() {
         name: rootLabel,
         attributes: { title: `${filtered.length} ${filtered.length === 1 ? "person" : "people"}` },
         children: tree,
-        __emp: { id: "root", first_name: "", last_name: "", job_title: null, department: null, status: "active", manager_id: null, photo_path: null },
+        __emp: { id: "root", first_name: "", last_name: "", job_title: null, department: null, status: "active", manager_id: null, user_id: null, photo_path: null },
       };
 
   async function downloadPng() {
