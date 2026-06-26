@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { saveCareersCustomization } from "@/lib/careers-customization.functions";
 
 export const Route = createFileRoute("/_authenticated/settings")({ component: SettingsPage });
 
@@ -17,6 +19,8 @@ function SettingsPage() {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ["org-settings"], queryFn: async () => (await supabase.from("org_settings").select("*").maybeSingle()).data });
   const [form, setForm] = useState({ org_name: "", ein: "", address: "", phone: "", primary_color: "", accent_color: "", sso_metadata_url: "", retention_policy: "{}", require_mfa: false, sso_only: false, payroll_bureau: "", fed_employer_id: "" });
+  const [careers, setCareers] = useState({ html: "", css: "" });
+  const saveCareers = useServerFn(saveCareersCustomization);
 
   useEffect(() => {
     if (data) setForm({
@@ -25,7 +29,16 @@ function SettingsPage() {
       sso_metadata_url: data.sso_metadata_url ?? "", retention_policy: JSON.stringify(data.retention_policy ?? {}, null, 2),
       require_mfa: !!data.require_mfa, sso_only: !!data.sso_only, payroll_bureau: data.payroll_bureau ?? "", fed_employer_id: data.fed_employer_id ?? "",
     });
+    if (data) setCareers({
+      html: (data as { careers_page_html?: string | null }).careers_page_html ?? "",
+      css: (data as { careers_page_css?: string | null }).careers_page_css ?? "",
+    });
   }, [data]);
+  const saveCareersMut = useMutation({
+    mutationFn: () => saveCareers({ data: { careers_page_html: careers.html || null, careers_page_css: careers.css || null } }),
+    onSuccess: () => { toast.success("Careers page saved"); qc.invalidateQueries({ queryKey: ["org-settings"] }); qc.invalidateQueries({ queryKey: ["public-careers-customization"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const save = useMutation({
     mutationFn: async () => {
@@ -83,6 +96,24 @@ function SettingsPage() {
           </div>
         </Card>
         <Button onClick={() => save.mutate()} disabled={save.isPending} className="w-fit">Save Settings</Button>
+        <Card className="p-6 space-y-4">
+          <div>
+            <h3 className="font-serif text-lg">Public careers page</h3>
+            <p className="text-xs text-muted-foreground">Override the default header with your own HTML and CSS. Leave both blank to use the standard layout. The job listings below the header are always shown.</p>
+          </div>
+          <div>
+            <Label>Custom HTML (replaces the page header)</Label>
+            <Textarea rows={8} className="font-mono text-xs" value={careers.html} onChange={(e) => setCareers({ ...careers, html: e.target.value })} placeholder={'<section class="careers-hero">\n  <h1>Join our team</h1>\n  <p>Public service. Real impact.</p>\n</section>'} />
+          </div>
+          <div>
+            <Label>Custom CSS</Label>
+            <Textarea rows={8} className="font-mono text-xs" value={careers.css} onChange={(e) => setCareers({ ...careers, css: e.target.value })} placeholder={'.careers-hero { background: linear-gradient(120deg, #0f3460, #16213e); color: white; padding: 4rem 1.5rem; text-align: center; }\n.careers-hero h1 { font-size: 2.5rem; }'} />
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => saveCareersMut.mutate()} disabled={saveCareersMut.isPending}>Save careers page</Button>
+            <Button asChild variant="outline"><a href="/careers" target="_blank" rel="noreferrer">Preview</a></Button>
+          </div>
+        </Card>
       </div>
     </AppShell>
   );
