@@ -443,7 +443,7 @@ export const getPublicRequisition = createServerFn({ method: "GET" })
         brochure_signed_url = signed?.signedUrl ?? null;
       } catch { /* ignore */ }
     }
-    return { ...r, brochure_signed_url };
+    return { ...(row as Record<string, unknown>), brochure_signed_url } as typeof row & { brochure_signed_url: string | null };
   });
 
 /** Authenticated: list active positions (job classifications) for the wizard dropdown. */
