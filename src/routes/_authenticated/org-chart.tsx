@@ -59,6 +59,23 @@ function initials(e: Emp) {
   return `${e.first_name?.[0] ?? ""}${e.last_name?.[0] ?? ""}`.toUpperCase();
 }
 
+// Rank by title keywords — higher score = more senior. Used to pick a
+// synthetic root when the data doesn't already converge on one person.
+function seniorityScore(e: Emp): number {
+  const t = (e.job_title ?? "").toLowerCase();
+  if (!t) return 0;
+  if (/(city manager|city administrator|town manager|chief executive|^ceo\b|\bceo$)/.test(t)) return 100;
+  if (/(mayor|county judge|superintendent)/.test(t)) return 95;
+  if (/(assistant city manager|deputy city manager|chief of staff|coo|cfo|cpo|cto)/.test(t)) return 90;
+  if (/(director)/.test(t)) return 80;
+  if (/(chief)/.test(t)) return 75;
+  if (/(department head|head of)/.test(t)) return 70;
+  if (/(manager)/.test(t)) return 60;
+  if (/(supervisor|lead)/.test(t)) return 50;
+  if (/(coordinator|specialist)/.test(t)) return 30;
+  return 10;
+}
+
 function OrgChartPage() {
   const navigate = useNavigate();
   const photoUrlFn = useServerFn(getEmployeePhotoUrl);
