@@ -1,0 +1,13 @@
+{
+  "name": "CivicPlexus — Municipal HR Suite",
+  "short_name": "CivicPlexus",
+  "description": "Municipal HRIS for hiring, onboarding, time, leave, performance, and compliance.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#0F172A",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "any", "type": "image/x-icon" }
+  ]
+}

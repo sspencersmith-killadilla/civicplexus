@@ -1,11 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Plus, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/hr-finance")({ component: HrFinancePage });
 
@@ -18,6 +24,10 @@ type BudgetRow = {
 };
 
 function HrFinancePage() {
+  const qc = useQueryClient();
+  const currentFy = new Date().getMonth() + 1 >= 10 ? new Date().getFullYear() + 1 : new Date().getFullYear();
+  const [fy, setFy] = useState(currentFy);
+
   const headcountQ = useQuery({
     queryKey: ["position_headcount"],
     queryFn: async () => {
@@ -25,6 +35,34 @@ function HrFinancePage() {
       if (error) throw error;
       return (data ?? []) as BudgetRow[];
     },
+  });
+  const budgetsQ = useQuery({
+    queryKey: ["position_budgets", fy],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("position_budgets").select("*").eq("fiscal_year", fy);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const [form, setForm] = useState({ department: "", budgeted_fte: "", budgeted_amount: "", notes: "" });
+  const upsert = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("position_budgets").upsert({
+        department: form.department,
+        fiscal_year: fy,
+        budgeted_fte: Number(form.budgeted_fte || 0),
+        budgeted_amount: form.budgeted_amount ? Number(form.budgeted_amount) : null,
+        notes: form.notes || null,
+      } as never, { onConflict: "department,fiscal_year" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Budget saved");
+      setForm({ department: "", budgeted_fte: "", budgeted_amount: "", notes: "" });
+      qc.invalidateQueries({ queryKey: ["position_budgets", fy] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const rows = headcountQ.data ?? [];
@@ -42,8 +80,10 @@ function HrFinancePage() {
 
   const overBudgetDepts = rows.filter((r) => {
     const filled = r.filled_count ?? 0;
-    const budget = Number(r.budgeted_fte ?? 0);
-    return filled > budget;
+    const dept = r.department ?? "";
+    const budgetRow = (budgetsQ.data ?? []).find((b: { department: string }) => b.department === dept);
+    const budget = budgetRow ? Number(budgetRow.budgeted_fte) : Number(r.budgeted_fte ?? 0);
+    return budget > 0 && filled > budget;
   });
 
   return (
@@ -58,6 +98,43 @@ function HrFinancePage() {
         <StatCard label="Vacant" value={totals.vacant.toString()} icon={<TrendingDown className="h-4 w-4" />} accent="warn" />
         <StatCard label="Over-budget departments" value={overBudgetDepts.length.toString()} icon={<AlertTriangle className="h-4 w-4" />} accent={overBudgetDepts.length > 0 ? "bad" : undefined} />
       </div>
+
+      <Card className="p-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="font-medium">FY {fy} Position budgets</h3>
+            <p className="text-xs text-muted-foreground">Fiscal year cap per department. Requisitions are blocked when departmental headcount would exceed budgeted FTE.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label className="text-xs">FY</Label>
+            <Input type="number" value={fy} onChange={(e) => setFy(Number(e.target.value))} className="w-24" />
+            <Dialog>
+              <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" /> Add budget</Button></DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>FY {fy} budget</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div><Label>Department</Label><Input value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} placeholder="Police" /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>Budgeted FTE</Label><Input type="number" step="0.25" value={form.budgeted_fte} onChange={(e) => setForm({ ...form, budgeted_fte: e.target.value })} /></div>
+                    <div><Label>Budgeted $</Label><Input type="number" value={form.budgeted_amount} onChange={(e) => setForm({ ...form, budgeted_amount: e.target.value })} /></div>
+                  </div>
+                  <div><Label>Notes</Label><Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+                </div>
+                <DialogFooter><Button disabled={!form.department || !form.budgeted_fte || upsert.isPending} onClick={() => upsert.mutate()}><Save className="h-4 w-4 mr-1" />Save</Button></DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+        <Table>
+          <TableHeader><TableRow><TableHead>Department</TableHead><TableHead className="text-right">Budgeted FTE</TableHead><TableHead className="text-right">Budgeted $</TableHead><TableHead>Notes</TableHead></TableRow></TableHeader>
+          <TableBody>
+            {(budgetsQ.data ?? []).map((b: any) => (
+              <TableRow key={b.id}><TableCell className="font-medium">{b.department}</TableCell><TableCell className="text-right">{Number(b.budgeted_fte).toFixed(2)}</TableCell><TableCell className="text-right">{b.budgeted_amount ? `$${Number(b.budgeted_amount).toLocaleString()}` : "—"}</TableCell><TableCell className="text-xs">{b.notes ?? ""}</TableCell></TableRow>
+            ))}
+            {(budgetsQ.data?.length ?? 0) === 0 && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-4">No budgets set for FY {fy}.</TableCell></TableRow>}
+          </TableBody>
+        </Table>
+      </Card>
 
       {overBudgetDepts.length > 0 && (
         <Card className="p-4 mb-6 border-amber-500/30 bg-amber-500/5">

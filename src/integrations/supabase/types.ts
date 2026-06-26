@@ -319,6 +319,36 @@ export type Database = {
         }
         Relationships: []
       }
+      bargaining_units: {
+        Row: {
+          active: boolean
+          code: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       benefits_handoffs: {
         Row: {
           carrier: string
@@ -483,6 +513,129 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      cba_contracts: {
+        Row: {
+          bargaining_unit_id: string
+          created_at: string
+          document_url: string | null
+          effective_from: string
+          effective_to: string | null
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          bargaining_unit_id: string
+          created_at?: string
+          document_url?: string | null
+          effective_from: string
+          effective_to?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bargaining_unit_id?: string
+          created_at?: string
+          document_url?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cba_contracts_bargaining_unit_id_fkey"
+            columns: ["bargaining_unit_id"]
+            isOneToOne: false
+            referencedRelation: "bargaining_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cba_longevity_rules: {
+        Row: {
+          annual_amount: number | null
+          contract_id: string
+          created_at: string
+          id: string
+          monthly_amount: number | null
+          percent_of_base: number | null
+          years_of_service: number
+        }
+        Insert: {
+          annual_amount?: number | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          monthly_amount?: number | null
+          percent_of_base?: number | null
+          years_of_service: number
+        }
+        Update: {
+          annual_amount?: number | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          monthly_amount?: number | null
+          percent_of_base?: number | null
+          years_of_service?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cba_longevity_rules_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "cba_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cba_step_tables: {
+        Row: {
+          annual_rate: number | null
+          contract_id: string
+          created_at: string
+          grade: string
+          hourly_rate: number | null
+          id: string
+          months_to_next_step: number | null
+          step: number
+        }
+        Insert: {
+          annual_rate?: number | null
+          contract_id: string
+          created_at?: string
+          grade: string
+          hourly_rate?: number | null
+          id?: string
+          months_to_next_step?: number | null
+          step: number
+        }
+        Update: {
+          annual_rate?: number | null
+          contract_id?: string
+          created_at?: string
+          grade?: string
+          hourly_rate?: number | null
+          id?: string
+          months_to_next_step?: number | null
+          step?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cba_step_tables_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "cba_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       certifications: {
         Row: {
@@ -771,6 +924,8 @@ export type Database = {
           created_at: string
           description: string | null
           duration_minutes: number | null
+          external_course_id: string | null
+          external_provider: string | null
           id: string
           issues_certification_id: string | null
           materials_url: string | null
@@ -789,6 +944,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_minutes?: number | null
+          external_course_id?: string | null
+          external_provider?: string | null
           id?: string
           issues_certification_id?: string | null
           materials_url?: string | null
@@ -807,6 +964,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_minutes?: number | null
+          external_course_id?: string | null
+          external_provider?: string | null
           id?: string
           issues_certification_id?: string | null
           materials_url?: string | null
@@ -1481,6 +1640,60 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "employee_training"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_union_membership: {
+        Row: {
+          active: boolean
+          bargaining_unit_id: string
+          created_at: string
+          employee_id: string
+          grade: string | null
+          id: string
+          longevity_start_date: string | null
+          step: number | null
+          step_anniversary_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          bargaining_unit_id: string
+          created_at?: string
+          employee_id: string
+          grade?: string | null
+          id?: string
+          longevity_start_date?: string | null
+          step?: number | null
+          step_anniversary_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          bargaining_unit_id?: string
+          created_at?: string
+          employee_id?: string
+          grade?: string | null
+          id?: string
+          longevity_start_date?: string | null
+          step?: number | null
+          step_anniversary_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_union_membership_bargaining_unit_id_fkey"
+            columns: ["bargaining_unit_id"]
+            isOneToOne: false
+            referencedRelation: "bargaining_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_union_membership_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -2436,6 +2649,96 @@ export type Database = {
           },
         ]
       }
+      identity_links: {
+        Row: {
+          active: boolean
+          attributes: Json
+          created_at: string
+          employee_id: string
+          external_email: string | null
+          external_id: string
+          external_user_name: string | null
+          id: string
+          last_synced_at: string | null
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          attributes?: Json
+          created_at?: string
+          employee_id: string
+          external_email?: string | null
+          external_id: string
+          external_user_name?: string | null
+          id?: string
+          last_synced_at?: string | null
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          attributes?: Json
+          created_at?: string
+          employee_id?: string
+          external_email?: string | null
+          external_id?: string
+          external_user_name?: string | null
+          id?: string
+          last_synced_at?: string | null
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_links_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "identity_links_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "identity_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      identity_providers: {
+        Row: {
+          config: Json
+          created_at: string
+          domain: string | null
+          id: string
+          kind: string
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          domain?: string | null
+          id?: string
+          kind: string
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          domain?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       import_jobs: {
         Row: {
           created_at: string
@@ -3015,6 +3318,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lms_credit_imports: {
+        Row: {
+          applied_rows: number
+          committed_at: string | null
+          created_at: string
+          errors: Json
+          filename: string | null
+          id: string
+          matched_rows: number
+          preview: Json
+          provider: string
+          status: string
+          total_rows: number
+          unmatched_rows: number
+          uploaded_by: string | null
+        }
+        Insert: {
+          applied_rows?: number
+          committed_at?: string | null
+          created_at?: string
+          errors?: Json
+          filename?: string | null
+          id?: string
+          matched_rows?: number
+          preview?: Json
+          provider: string
+          status?: string
+          total_rows?: number
+          unmatched_rows?: number
+          uploaded_by?: string | null
+        }
+        Update: {
+          applied_rows?: number
+          committed_at?: string | null
+          created_at?: string
+          errors?: Json
+          filename?: string | null
+          id?: string
+          matched_rows?: number
+          preview?: Json
+          provider?: string
+          status?: string
+          total_rows?: number
+          unmatched_rows?: number
+          uploaded_by?: string | null
+        }
+        Relationships: []
       }
       market_ranges: {
         Row: {
@@ -3816,6 +4167,92 @@ export type Database = {
         }
         Relationships: []
       }
+      osha_incidents: {
+        Row: {
+          attachments: Json | null
+          body_part_affected: string | null
+          case_number: string
+          classification: string | null
+          created_at: string
+          created_by: string | null
+          date_recorded: string
+          days_away: number | null
+          days_restricted: number | null
+          department: string | null
+          description: string
+          employee_id: string | null
+          id: string
+          incident_date: string
+          injury_illness_type: string | null
+          job_title_at_incident: string | null
+          outcome: string | null
+          physician_facility: string | null
+          physician_name: string | null
+          privacy_case: boolean
+          recordable: boolean
+          updated_at: string
+          where_occurred: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          body_part_affected?: string | null
+          case_number: string
+          classification?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_recorded?: string
+          days_away?: number | null
+          days_restricted?: number | null
+          department?: string | null
+          description: string
+          employee_id?: string | null
+          id?: string
+          incident_date: string
+          injury_illness_type?: string | null
+          job_title_at_incident?: string | null
+          outcome?: string | null
+          physician_facility?: string | null
+          physician_name?: string | null
+          privacy_case?: boolean
+          recordable?: boolean
+          updated_at?: string
+          where_occurred?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          body_part_affected?: string | null
+          case_number?: string
+          classification?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_recorded?: string
+          days_away?: number | null
+          days_restricted?: number | null
+          department?: string | null
+          description?: string
+          employee_id?: string | null
+          id?: string
+          incident_date?: string
+          injury_illness_type?: string | null
+          job_title_at_incident?: string | null
+          outcome?: string | null
+          physician_facility?: string | null
+          physician_name?: string | null
+          privacy_case?: boolean
+          recordable?: boolean
+          updated_at?: string
+          where_occurred?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "osha_incidents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       paf_audit: {
         Row: {
           actor_id: string | null
@@ -4101,6 +4538,48 @@ export type Database = {
           name?: string
           notes?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      payroll_export_templates: {
+        Row: {
+          column_map: Json
+          created_at: string
+          deduction_codes: Json
+          delimiter: string | null
+          earnings_codes: Json
+          format: string
+          id: string
+          include_header: boolean
+          name: string
+          notes: string | null
+          vendor: string
+        }
+        Insert: {
+          column_map?: Json
+          created_at?: string
+          deduction_codes?: Json
+          delimiter?: string | null
+          earnings_codes?: Json
+          format: string
+          id?: string
+          include_header?: boolean
+          name: string
+          notes?: string | null
+          vendor: string
+        }
+        Update: {
+          column_map?: Json
+          created_at?: string
+          deduction_codes?: Json
+          delimiter?: string | null
+          earnings_codes?: Json
+          format?: string
+          id?: string
+          include_header?: boolean
+          name?: string
+          notes?: string | null
+          vendor?: string
         }
         Relationships: []
       }
@@ -4619,6 +5098,42 @@ export type Database = {
           },
         ]
       }
+      position_budgets: {
+        Row: {
+          budgeted_amount: number | null
+          budgeted_fte: number
+          created_at: string
+          created_by: string | null
+          department: string
+          fiscal_year: number
+          id: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          budgeted_amount?: number | null
+          budgeted_fte?: number
+          created_at?: string
+          created_by?: string | null
+          department: string
+          fiscal_year: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          budgeted_amount?: number | null
+          budgeted_fte?: number
+          created_at?: string
+          created_by?: string | null
+          department?: string
+          fiscal_year?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       positions: {
         Row: {
           budgeted_fte: number
@@ -4766,6 +5281,63 @@ export type Database = {
         }
         Relationships: []
       }
+      provisioning_events: {
+        Row: {
+          action: string
+          created_at: string
+          direction: string
+          employee_id: string | null
+          error: string | null
+          id: string
+          payload: Json
+          processed_at: string | null
+          provider_id: string | null
+          result: Json | null
+          status: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          direction: string
+          employee_id?: string | null
+          error?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider_id?: string | null
+          result?: Json | null
+          status?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          direction?: string
+          employee_id?: string | null
+          error?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider_id?: string | null
+          result?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provisioning_events_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provisioning_events_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "identity_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provisioning_requests: {
         Row: {
           assignee_user_id: string | null
@@ -4822,6 +5394,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      report_snapshots: {
+        Row: {
+          artifact_url: string | null
+          created_at: string
+          data: Json
+          generated_by: string | null
+          id: string
+          notes: string | null
+          period_label: string
+          report_kind: string
+        }
+        Insert: {
+          artifact_url?: string | null
+          created_at?: string
+          data: Json
+          generated_by?: string | null
+          id?: string
+          notes?: string | null
+          period_label: string
+          report_kind: string
+        }
+        Update: {
+          artifact_url?: string | null
+          created_at?: string
+          data?: Json
+          generated_by?: string | null
+          id?: string
+          notes?: string | null
+          period_label?: string
+          report_kind?: string
+        }
+        Relationships: []
       }
       review_cycle_participants: {
         Row: {
@@ -5050,6 +5655,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      scim_tokens: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          label: string
+          last_used_at: string | null
+          provider_id: string
+          revoked_at: string | null
+          token_hash: string
+          token_prefix: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label: string
+          last_used_at?: string | null
+          provider_id: string
+          revoked_at?: string | null
+          token_hash: string
+          token_prefix: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label?: string
+          last_used_at?: string | null
+          provider_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+          token_prefix?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scim_tokens_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "identity_providers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       screenings: {
         Row: {
@@ -5951,6 +6603,10 @@ export type Database = {
       approve_timesheet: {
         Args: { _decision: string; _notes: string; _ts_id: string }
         Returns: undefined
+      }
+      check_position_budget: {
+        Args: { _additional_fte: number; _department: string }
+        Returns: Json
       }
       clock_in: { Args: { _note?: string }; Returns: string }
       clock_out: { Args: { _note?: string }; Returns: string }

@@ -78,12 +78,14 @@ export const MODULE_REGISTRY: ModuleDef[] = [
   ]},
   { key: moduleKey("compliance"), label: "Compliance", items: [
     def("/training", "Training & Certs", GraduationCap, ["hr_admin", "hiring_manager", "supervisor"]),
+    def("/lms-imports", "LMS Imports", GraduationCap, ["hr_admin"]),
     def("/screenings", "Screenings", ShieldQuestion, ["hr_admin"]),
     def("/policies", "Policies", ScrollText, ["hr_admin", "hiring_manager", "employee", "candidate"]),
     def("/policy-campaigns", "Ack Campaigns", Megaphone, ["hr_admin"]),
     def("/grievances", "Grievances", ShieldAlert, ["hr_admin", "hiring_manager", "supervisor", "employee", "candidate"]),
     def("/documents", "Documents", FolderLock, ["hr_admin", "it_admin", "hiring_manager", "employee", "candidate"]),
     def("/reports", "Reports", BarChart3, ["hr_admin"]),
+    def("/osha", "OSHA 300/300A", ShieldAlert, ["hr_admin"]),
     def("/flsa-audit", "FLSA Audit", Scale, ["hr_admin"]),
     def("/eeo-snapshot", "EEO Snapshot", BarChart2, ["hr_admin"]),
     def("/audit", "Audit Log", History, ["hr_admin"]),
@@ -98,6 +100,8 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/comp-market", "Market Ranges", BarChart2, ["hr_admin"]),
     def("/comp-cycles", "Comp Cycles", CalendarDays, ["hr_admin", "hiring_manager", "supervisor"]),
     def("/payroll", "Payroll", Banknote, ["hr_admin"]),
+    def("/payroll/profiles", "Payroll Export Profiles", FileStack, ["hr_admin"]),
+    def("/cba", "Union Contracts (CBA)", Scale, ["hr_admin"]),
     def("/hr-finance", "HR / Finance", BarChart2, ["hr_admin"]),
   ]},
   { key: moduleKey("hiring"), label: "Hiring", items: [
@@ -111,6 +115,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/settings", "Settings", Settings, ["hr_admin"]),
     def("/admin-migration", "Data Migration", DatabaseBackup, ["hr_admin"]),
     def("/admin-modules", "Modules & Features", ToggleLeft, ["hr_admin"]),
+    def("/admin-identity", "Identity & SSO", ShieldCheck, ["hr_admin"]),
     def("/admin-demo", "Demo Account", UserCog, ["hr_admin"]),
   ]},
 ];

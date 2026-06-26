@@ -103,6 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", href: markAsset.url },
       { rel: "apple-touch-icon", href: markAsset.url },
       { rel: "canonical", href: "https://civicplexus.lovable.app/" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   shellComponent: RootShell,

@@ -28,11 +28,13 @@ import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
 import { Route as AuthenticatedPolicyCampaignsRouteImport } from './routes/_authenticated/policy-campaigns'
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
+import { Route as AuthenticatedOshaRouteImport } from './routes/_authenticated/osha'
 import { Route as AuthenticatedOrgChartRouteImport } from './routes/_authenticated/org-chart'
 import { Route as AuthenticatedOneOnOneTemplatesRouteImport } from './routes/_authenticated/one-on-one-templates'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
+import { Route as AuthenticatedLmsImportsRouteImport } from './routes/_authenticated/lms-imports'
 import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_authenticated/internal-careers'
 import { Route as AuthenticatedIdBadgeTemplatesRouteImport } from './routes/_authenticated/id-badge-templates'
 import { Route as AuthenticatedHrFinanceRouteImport } from './routes/_authenticated/hr-finance'
@@ -49,11 +51,13 @@ import { Route as AuthenticatedDocTemplatesRouteImport } from './routes/_authent
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCompMarketRouteImport } from './routes/_authenticated/comp-market'
 import { Route as AuthenticatedCompGradesRouteImport } from './routes/_authenticated/comp-grades'
+import { Route as AuthenticatedCbaRouteImport } from './routes/_authenticated/cba'
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authenticated/admin-modules'
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
+import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authenticated/admin-identity'
 import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin-demo'
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
@@ -98,6 +102,7 @@ import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/badge.$serial'
 import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
+import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim.v2.Users'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
 import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
 import { Route as ApiPublicCandidateTokenStatusRouteImport } from './routes/api/public/candidate/$token/status'
@@ -203,6 +208,11 @@ const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
   path: '/policies',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOshaRoute = AuthenticatedOshaRouteImport.update({
+  id: '/osha',
+  path: '/osha',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOrgChartRoute = AuthenticatedOrgChartRouteImport.update({
   id: '/org-chart',
   path: '/org-chart',
@@ -229,6 +239,11 @@ const AuthenticatedNotificationsRoute =
 const AuthenticatedMyHrRoute = AuthenticatedMyHrRouteImport.update({
   id: '/my-hr',
   path: '/my-hr',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLmsImportsRoute = AuthenticatedLmsImportsRouteImport.update({
+  id: '/lms-imports',
+  path: '/lms-imports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedInternalCareersRoute =
@@ -318,6 +333,11 @@ const AuthenticatedCompGradesRoute = AuthenticatedCompGradesRouteImport.update({
   path: '/comp-grades',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCbaRoute = AuthenticatedCbaRouteImport.update({
+  id: '/cba',
+  path: '/cba',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBenefitsRoute = AuthenticatedBenefitsRouteImport.update({
   id: '/benefits',
   path: '/benefits',
@@ -343,6 +363,12 @@ const AuthenticatedAdminMigrationRoute =
   AuthenticatedAdminMigrationRouteImport.update({
     id: '/admin-migration',
     path: '/admin-migration',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminIdentityRoute =
+  AuthenticatedAdminIdentityRouteImport.update({
+    id: '/admin-identity',
+    path: '/admin-identity',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminDemoRoute = AuthenticatedAdminDemoRouteImport.update({
@@ -591,6 +617,11 @@ const AuthenticatedReviewCyclesIdCalibrationRoute =
     path: '/calibration',
     getParentRoute: () => AuthenticatedReviewCyclesIdRoute,
   } as any)
+const ApiPublicScimV2UsersRoute = ApiPublicScimV2UsersRouteImport.update({
+  id: '/api/public/scim/v2/Users',
+  path: '/api/public/scim/v2/Users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOffersTokenViewRoute =
   ApiPublicOffersTokenViewRouteImport.update({
     id: '/api/public/offers/$token/view',
@@ -620,11 +651,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
+  '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
+  '/cba': typeof AuthenticatedCbaRoute
   '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/comp-market': typeof AuthenticatedCompMarketRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -641,11 +674,13 @@ export interface FileRoutesByFullPath {
   '/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/org-chart': typeof AuthenticatedOrgChartRoute
+  '/osha': typeof AuthenticatedOshaRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
@@ -709,16 +744,19 @@ export interface FileRoutesByFullPath {
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
+  '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
+  '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
+  '/cba': typeof AuthenticatedCbaRoute
   '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/comp-market': typeof AuthenticatedCompMarketRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -735,11 +773,13 @@ export interface FileRoutesByTo {
   '/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/org-chart': typeof AuthenticatedOrgChartRoute
+  '/osha': typeof AuthenticatedOshaRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
@@ -802,6 +842,7 @@ export interface FileRoutesByTo {
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
+  '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -809,11 +850,13 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin-demo': typeof AuthenticatedAdminDemoRoute
+  '/_authenticated/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/_authenticated/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
+  '/_authenticated/cba': typeof AuthenticatedCbaRoute
   '/_authenticated/comp-grades': typeof AuthenticatedCompGradesRoute
   '/_authenticated/comp-market': typeof AuthenticatedCompMarketRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -830,11 +873,13 @@ export interface FileRoutesById {
   '/_authenticated/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/_authenticated/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/_authenticated/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/_authenticated/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
   '/_authenticated/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/_authenticated/org-chart': typeof AuthenticatedOrgChartRoute
+  '/_authenticated/osha': typeof AuthenticatedOshaRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/_authenticated/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
@@ -898,6 +943,7 @@ export interface FileRoutesById {
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
+  '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -905,11 +951,13 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin-demo'
+    | '/admin-identity'
     | '/admin-migration'
     | '/admin-modules'
     | '/approvals'
     | '/audit'
     | '/benefits'
+    | '/cba'
     | '/comp-grades'
     | '/comp-market'
     | '/dashboard'
@@ -926,11 +974,13 @@ export interface FileRouteTypes {
     | '/hr-finance'
     | '/id-badge-templates'
     | '/internal-careers'
+    | '/lms-imports'
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
     | '/one-on-one-templates'
     | '/org-chart'
+    | '/osha'
     | '/policies'
     | '/policy-campaigns'
     | '/positions'
@@ -994,16 +1044,19 @@ export interface FileRouteTypes {
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
+    | '/api/public/scim/v2/Users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/admin-demo'
+    | '/admin-identity'
     | '/admin-migration'
     | '/admin-modules'
     | '/approvals'
     | '/audit'
     | '/benefits'
+    | '/cba'
     | '/comp-grades'
     | '/comp-market'
     | '/dashboard'
@@ -1020,11 +1073,13 @@ export interface FileRouteTypes {
     | '/hr-finance'
     | '/id-badge-templates'
     | '/internal-careers'
+    | '/lms-imports'
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
     | '/one-on-one-templates'
     | '/org-chart'
+    | '/osha'
     | '/policies'
     | '/policy-campaigns'
     | '/positions'
@@ -1087,17 +1142,20 @@ export interface FileRouteTypes {
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
+    | '/api/public/scim/v2/Users'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin-demo'
+    | '/_authenticated/admin-identity'
     | '/_authenticated/admin-migration'
     | '/_authenticated/admin-modules'
     | '/_authenticated/approvals'
     | '/_authenticated/audit'
     | '/_authenticated/benefits'
+    | '/_authenticated/cba'
     | '/_authenticated/comp-grades'
     | '/_authenticated/comp-market'
     | '/_authenticated/dashboard'
@@ -1114,11 +1172,13 @@ export interface FileRouteTypes {
     | '/_authenticated/hr-finance'
     | '/_authenticated/id-badge-templates'
     | '/_authenticated/internal-careers'
+    | '/_authenticated/lms-imports'
     | '/_authenticated/my-hr'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
     | '/_authenticated/one-on-one-templates'
     | '/_authenticated/org-chart'
+    | '/_authenticated/osha'
     | '/_authenticated/policies'
     | '/_authenticated/policy-campaigns'
     | '/_authenticated/positions'
@@ -1182,6 +1242,7 @@ export interface FileRouteTypes {
     | '/api/public/candidate/$token/status'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
+    | '/api/public/scim/v2/Users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1201,6 +1262,7 @@ export interface RootRouteChildren {
   ApiPublicCandidateTokenStatusRoute: typeof ApiPublicCandidateTokenStatusRoute
   ApiPublicOffersTokenRespondRoute: typeof ApiPublicOffersTokenRespondRoute
   ApiPublicOffersTokenViewRoute: typeof ApiPublicOffersTokenViewRoute
+  ApiPublicScimV2UsersRoute: typeof ApiPublicScimV2UsersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1338,6 +1400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPoliciesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/osha': {
+      id: '/_authenticated/osha'
+      path: '/osha'
+      fullPath: '/osha'
+      preLoaderRoute: typeof AuthenticatedOshaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/org-chart': {
       id: '/_authenticated/org-chart'
       path: '/org-chart'
@@ -1371,6 +1440,13 @@ declare module '@tanstack/react-router' {
       path: '/my-hr'
       fullPath: '/my-hr'
       preLoaderRoute: typeof AuthenticatedMyHrRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lms-imports': {
+      id: '/_authenticated/lms-imports'
+      path: '/lms-imports'
+      fullPath: '/lms-imports'
+      preLoaderRoute: typeof AuthenticatedLmsImportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/internal-careers': {
@@ -1485,6 +1561,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCompGradesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cba': {
+      id: '/_authenticated/cba'
+      path: '/cba'
+      fullPath: '/cba'
+      preLoaderRoute: typeof AuthenticatedCbaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/benefits': {
       id: '/_authenticated/benefits'
       path: '/benefits'
@@ -1518,6 +1601,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-migration'
       fullPath: '/admin-migration'
       preLoaderRoute: typeof AuthenticatedAdminMigrationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin-identity': {
+      id: '/_authenticated/admin-identity'
+      path: '/admin-identity'
+      fullPath: '/admin-identity'
+      preLoaderRoute: typeof AuthenticatedAdminIdentityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin-demo': {
@@ -1828,6 +1918,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewCyclesIdCalibrationRouteImport
       parentRoute: typeof AuthenticatedReviewCyclesIdRoute
     }
+    '/api/public/scim/v2/Users': {
+      id: '/api/public/scim/v2/Users'
+      path: '/api/public/scim/v2/Users'
+      fullPath: '/api/public/scim/v2/Users'
+      preLoaderRoute: typeof ApiPublicScimV2UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/offers/$token/view': {
       id: '/api/public/offers/$token/view'
       path: '/api/public/offers/$token/view'
@@ -1889,11 +1986,13 @@ const AuthenticatedReviewCyclesIdRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminDemoRoute: typeof AuthenticatedAdminDemoRoute
+  AuthenticatedAdminIdentityRoute: typeof AuthenticatedAdminIdentityRoute
   AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
   AuthenticatedAdminModulesRoute: typeof AuthenticatedAdminModulesRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
+  AuthenticatedCbaRoute: typeof AuthenticatedCbaRoute
   AuthenticatedCompGradesRoute: typeof AuthenticatedCompGradesRoute
   AuthenticatedCompMarketRoute: typeof AuthenticatedCompMarketRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1910,11 +2009,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrFinanceRoute: typeof AuthenticatedHrFinanceRoute
   AuthenticatedIdBadgeTemplatesRoute: typeof AuthenticatedIdBadgeTemplatesRoute
   AuthenticatedInternalCareersRoute: typeof AuthenticatedInternalCareersRoute
+  AuthenticatedLmsImportsRoute: typeof AuthenticatedLmsImportsRoute
   AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
   AuthenticatedOneOnOneTemplatesRoute: typeof AuthenticatedOneOnOneTemplatesRoute
   AuthenticatedOrgChartRoute: typeof AuthenticatedOrgChartRoute
+  AuthenticatedOshaRoute: typeof AuthenticatedOshaRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
   AuthenticatedPolicyCampaignsRoute: typeof AuthenticatedPolicyCampaignsRoute
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
@@ -1965,11 +2066,13 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminDemoRoute: AuthenticatedAdminDemoRoute,
+  AuthenticatedAdminIdentityRoute: AuthenticatedAdminIdentityRoute,
   AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
   AuthenticatedAdminModulesRoute: AuthenticatedAdminModulesRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
+  AuthenticatedCbaRoute: AuthenticatedCbaRoute,
   AuthenticatedCompGradesRoute: AuthenticatedCompGradesRoute,
   AuthenticatedCompMarketRoute: AuthenticatedCompMarketRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -1986,11 +2089,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrFinanceRoute: AuthenticatedHrFinanceRoute,
   AuthenticatedIdBadgeTemplatesRoute: AuthenticatedIdBadgeTemplatesRoute,
   AuthenticatedInternalCareersRoute: AuthenticatedInternalCareersRoute,
+  AuthenticatedLmsImportsRoute: AuthenticatedLmsImportsRoute,
   AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
   AuthenticatedOneOnOneTemplatesRoute: AuthenticatedOneOnOneTemplatesRoute,
   AuthenticatedOrgChartRoute: AuthenticatedOrgChartRoute,
+  AuthenticatedOshaRoute: AuthenticatedOshaRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,
   AuthenticatedPolicyCampaignsRoute: AuthenticatedPolicyCampaignsRoute,
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
@@ -2075,6 +2180,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCandidateTokenStatusRoute: ApiPublicCandidateTokenStatusRoute,
   ApiPublicOffersTokenRespondRoute: ApiPublicOffersTokenRespondRoute,
   ApiPublicOffersTokenViewRoute: ApiPublicOffersTokenViewRoute,
+  ApiPublicScimV2UsersRoute: ApiPublicScimV2UsersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
