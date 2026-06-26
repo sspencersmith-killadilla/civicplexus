@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Check, ChevronRight, ChevronLeft, ExternalLink, Briefcase, FileCheck2, Megaphone, ListChecks } from "lucide-react";
 import { toast } from "sonner";
 import { createRequisition, submitRequisitionForApproval, postRequisition, listPositionsForRequisition } from "@/lib/jobs.functions";
+import { checkPositionBudget } from "@/lib/budget.functions";
 
 const SAMPLE_TEMPLATE = {
   summary:
