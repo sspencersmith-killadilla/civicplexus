@@ -77,6 +77,7 @@ import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedReviewCyclesIdRouteImport } from './routes/_authenticated/review-cycles.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
+import { Route as AuthenticatedPayrollProfilesRouteImport } from './routes/_authenticated/payroll.profiles'
 import { Route as AuthenticatedPayrollIdRouteImport } from './routes/_authenticated/payroll.$id'
 import { Route as AuthenticatedPafIdRouteImport } from './routes/_authenticated/paf.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
@@ -473,6 +474,12 @@ const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedPoliciesRoute,
 } as any)
+const AuthenticatedPayrollProfilesRoute =
+  AuthenticatedPayrollProfilesRouteImport.update({
+    id: '/payroll/profiles',
+    path: '/payroll/profiles',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPayrollIdRoute = AuthenticatedPayrollIdRouteImport.update({
   id: '/payroll/$id',
   path: '/payroll/$id',
@@ -670,6 +677,7 @@ export interface FileRoutesByFullPath {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/payroll/$id': typeof AuthenticatedPayrollIdRoute
+  '/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -762,6 +770,7 @@ export interface FileRoutesByTo {
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/payroll/$id': typeof AuthenticatedPayrollIdRoute
+  '/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -857,6 +866,7 @@ export interface FileRoutesById {
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/paf/$id': typeof AuthenticatedPafIdRoute
   '/_authenticated/payroll/$id': typeof AuthenticatedPayrollIdRoute
+  '/_authenticated/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
@@ -952,6 +962,7 @@ export interface FileRouteTypes {
     | '/one-on-ones/$id'
     | '/paf/$id'
     | '/payroll/$id'
+    | '/payroll/profiles'
     | '/policies/$id'
     | '/review-cycles/$id'
     | '/reviews/$id'
@@ -1044,6 +1055,7 @@ export interface FileRouteTypes {
     | '/one-on-ones/$id'
     | '/paf/$id'
     | '/payroll/$id'
+    | '/payroll/profiles'
     | '/policies/$id'
     | '/review-cycles/$id'
     | '/reviews/$id'
@@ -1138,6 +1150,7 @@ export interface FileRouteTypes {
     | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/paf/$id'
     | '/_authenticated/payroll/$id'
+    | '/_authenticated/payroll/profiles'
     | '/_authenticated/policies/$id'
     | '/_authenticated/review-cycles/$id'
     | '/_authenticated/reviews/$id'
@@ -1668,6 +1681,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPoliciesIdRouteImport
       parentRoute: typeof AuthenticatedPoliciesRoute
     }
+    '/_authenticated/payroll/profiles': {
+      id: '/_authenticated/payroll/profiles'
+      path: '/payroll/profiles'
+      fullPath: '/payroll/profiles'
+      preLoaderRoute: typeof AuthenticatedPayrollProfilesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/payroll/$id': {
       id: '/_authenticated/payroll/$id'
       path: '/payroll/$id'
@@ -1922,6 +1942,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedPafIdRoute: typeof AuthenticatedPafIdRoute
   AuthenticatedPayrollIdRoute: typeof AuthenticatedPayrollIdRoute
+  AuthenticatedPayrollProfilesRoute: typeof AuthenticatedPayrollProfilesRoute
   AuthenticatedReviewCyclesIdRoute: typeof AuthenticatedReviewCyclesIdRouteWithChildren
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
@@ -1997,6 +2018,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedPafIdRoute: AuthenticatedPafIdRoute,
   AuthenticatedPayrollIdRoute: AuthenticatedPayrollIdRoute,
+  AuthenticatedPayrollProfilesRoute: AuthenticatedPayrollProfilesRoute,
   AuthenticatedReviewCyclesIdRoute:
     AuthenticatedReviewCyclesIdRouteWithChildren,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
