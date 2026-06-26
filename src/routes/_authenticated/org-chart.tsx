@@ -662,6 +662,10 @@ function OrgChartPage() {
             <Switch id="inactive" checked={includeInactive} onCheckedChange={setIncludeInactive} />
             <Label htmlFor="inactive" className="text-sm">Include inactive</Label>
           </div>
+          <div className="flex items-center gap-2">
+            <Switch id="vacancies" checked={showVacancies} onCheckedChange={setShowVacancies} />
+            <Label htmlFor="vacancies" className="text-sm">Show vacancies</Label>
+          </div>
           <div className="flex gap-2 ml-auto">
             <Button size="sm" variant="outline" onClick={() => setCollapsed(new Set())}>Expand all</Button>
             <Button size="sm" variant="outline" onClick={() => setCollapsed(new Set(managerIds))}>Collapse all</Button>
