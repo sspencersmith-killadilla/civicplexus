@@ -344,24 +344,38 @@ The guided tour mirrors the in-app overlay. Each stop names the route, what to l
 
 1. **Dashboard** (`/dashboard`) — KPIs, recent activity, and pending approvals. *Try:* scan the cards to see live counts from seeded demo data.
 2. **Employees** (`/employees`) — directory with org, status, and supervisor chain. *Try:* open any employee for their full record, leave, and assignments.
-3. **Hire Requests** (`/hire-requests`) — requisition lifecycle draft → approval → posted. *Try:* the "Use template" wizard spins up a Library Aide req in seconds.
-4. **Approvals Inbox** (`/approvals`) — every PAF, hire request, and offer awaiting sign-off. *Try:* approve, return, or comment on the seeded PAF.
-5. **Personnel Action Forms** (`/paf`) — promotions, transfers, separations with full audit trail. *Try:* click **New PAF** to walk an action through the chain.
-6. **Recruiting — Postings** (`/jobs`) — public and internal postings backed by approved requisitions. *Try:* open a posting and use the public **Apply** link to test the candidate flow.
-7. **AI Applicant Screening** (`/screenings`) — human-in-the-loop: AI drafts a fit score, recruiters Accept / Edit / Dismiss. *Try:* select multiple applicants and run a bulk screening pass.
-8. **Offers** (`/offers`) — generated offer letters with signed candidate response tokens. *Try:* open a pending offer and preview the candidate-facing page.
-9. **Preboarding & Onboarding** (`/preboarding`) — task lists, equipment, and provisioning for new hires.
-10. **Offboarding** (`/offboarding`) — separation checklist with role-aware task templates. *Try:* start an offboarding from any employee to see the generated tasks.
-11. **Performance — Review Cycles** (`/review-cycles`) — configure cycles, participants, and calibration sessions.
-12. **1-on-1s** (`/one-on-ones`) — templates and meeting notes for manager/employee conversations. *Try:* open a meeting to see the role-aware question set.
-13. **Goals & OKRs** (`/goals`) — employee and team goals tied back to review cycles.
-14. **Compensation Cycles** (`/comp-cycles`) — run merit and market adjustment cycles with proposals and FLSA checks.
-15. **Policies & Acknowledgements** (`/policies`) — policy library and acknowledgement campaigns.
-16. **Training & Transcripts** (`/training`) — course catalog, assignments, and individual transcripts.
-17. **Compliance — TCOLE / TMRS** (`/compliance/tcole`) — Texas-specific reporting surfaces.
-18. **Reports & EEO** (`/reports`) — headcount, turnover, comp-ratio, EEO snapshot.
-19. **Module Settings** (`/admin-modules`) — super-admin toggles to turn entire modules on or off per tenant.
-20. **Demo Admin** (`/admin-demo`) — provision the demo account and reset its data on demand. *Try:* click **Reset now** to revert immediately.
+3. **Employee profile** (`/employees/{id}`) — full record, contact info, photo, transcript link, and HR-only ID badge controls. *Try:* HR can upload a photo, pick a template, and click **Generate badge PDF** to print a CR80 badge.
+4. **Org Chart** (`/org-chart`) — photo-driven hierarchy from `manager_id`, color-coded by department, with search, zoom, print, and PNG export. *Try:* filter by department and download a PNG.
+5. **Hire Requests** (`/hire-requests`) — requisition lifecycle draft → approval → posted. *Try:* the "Use template" wizard spins up a Library Aide req in seconds.
+6. **Approvals Inbox** (`/approvals`) — every PAF, hire request, and offer awaiting sign-off. *Try:* approve, return, or comment on the seeded PAF.
+7. **Personnel Action Forms** (`/paf`) — promotions, transfers, separations with full audit trail. *Try:* click **New PAF** to walk an action through the chain.
+8. **Recruiting — Postings** (`/jobs`) — public and internal postings backed by approved requisitions. *Try:* open a posting and use the public **Apply** link to test the candidate flow.
+9. **AI Applicant Screening** (`/screenings`) — human-in-the-loop: AI drafts a fit score, recruiters Accept / Edit / Dismiss. *Try:* select multiple applicants and run a bulk screening pass.
+10. **Offers** (`/offers`) — generated offer letters with signed candidate response tokens. *Try:* open a pending offer and preview the candidate-facing page.
+11. **Preboarding & Onboarding** (`/preboarding`) — task lists, equipment, and provisioning for new hires.
+12. **Offboarding** (`/offboarding`) — separation checklist with role-aware task templates. *Try:* start an offboarding from any employee to see the generated tasks.
+13. **Performance — Review Cycles** (`/review-cycles`) — configure cycles, participants, and calibration sessions.
+14. **1-on-1s** (`/one-on-ones`) — templates and meeting notes for manager/employee conversations. *Try:* open a meeting to see the role-aware question set.
+15. **Goals & OKRs** (`/goals`) — employee and team goals tied back to review cycles.
+16. **Compensation Cycles** (`/comp-cycles`) — run merit and market adjustment cycles with proposals and FLSA checks.
+17. **Policies & Acknowledgements** (`/policies`) — policy library and acknowledgement campaigns.
+18. **Training & Transcripts** (`/training`) — course catalog, assignments, and individual transcripts.
+19. **Compliance — TCOLE / TMRS** (`/compliance/tcole`) — Texas-specific reporting surfaces.
+20. **Reports & EEO** (`/reports`) — headcount, turnover, comp-ratio, EEO snapshot.
+21. **ID Badge Templates** (`/id-badge-templates`) — design CR80 badges: fields, colors, default template, public QR verification.
+22. **Module Settings** (`/admin-modules`) — super-admin toggles to turn entire modules on or off per tenant.
+23. **Demo Admin** (`/admin-demo`) — provision the demo account and reset its data on demand. *Try:* click **Reset now** to revert immediately.
+
+### Employee photos & ID badges
+- HR uploads to a private storage bucket; signed URLs render the photo throughout the app (profile, org chart, badge PDF).
+- Employees cannot replace their own photo — HR-only by RLS and server checks.
+- Badge PDFs render at CR80 size (3.375" × 2.125") with a QR code that resolves to `/api/public/badge/{serial}` for at-a-door verification.
+- Revoking a badge flips its public verify page to **Revoked** immediately.
+
+### Org chart
+- Built live from `employees.manager_id`; no separate hierarchy table to maintain.
+- Active employees only by default — toggle **Include inactive** to audit gaps.
+- The **Unassigned** panel lists active employees with no manager and no reports — useful for cleaning up reporting lines.
 
 ### Reset behavior
 - A `pg_cron` job runs hourly and rolls back any rows the demo user inserted, updated, or deleted in the last 24 hours.
