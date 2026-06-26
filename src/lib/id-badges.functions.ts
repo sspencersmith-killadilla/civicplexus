@@ -78,7 +78,7 @@ export const generateBadge = createServerFn({ method: "POST" })
     employee_id: z.string().uuid(),
     template_id: z.string().uuid().optional(),
   }).parse(i))
-  .handler(async ({ data, context, request }) => {
+  .handler(async ({ data, context }) => {
     await assertHrAdmin(context.supabase, context.userId);
     const { renderBadgePdf } = await import("./id-badges-pdf.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -114,7 +114,7 @@ export const generateBadge = createServerFn({ method: "POST" })
     }
 
     const serial = `BDG-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-    const base = appBase(request);
+    const base = appBase((context as { request?: Request }).request);
     const verify_url = `${base}/api/public/badge/${serial}`;
 
     const pdfBytes = await renderBadgePdf({
