@@ -218,6 +218,181 @@ export const applyPaf = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const getPafDetail = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roleRows } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId);
+    const roles = (roleRows ?? []).map((r) => r.role as string);
+    const isHrAdmin = roles.includes("hr_admin");
+
+    const { data: paf, error: pafError } = await supabaseAdmin
+      .from("personnel_actions")
+      .select("*, employees(first_name, last_name, job_title, department, user_id, manager_id)")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (pafError) throw new Error(pafError.message);
+    if (!paf) throw new Error("PAF not found");
+
+    const chainId = paf.approval_chain_id as string | null;
+    const { data: steps, error: stepsError } = chainId
+      ? await supabaseAdmin
+          .from("approval_steps")
+          .select("id, stage, approver_role, approver_label, approver_id, status, decided_at, decision_notes")
+          .eq("chain_id", chainId)
+          .order("stage")
+      : { data: [], error: null };
+    if (stepsError) throw new Error(stepsError.message);
+
+    const employee = paf.employees as { user_id: string | null; manager_id: string | null } | null;
+    const canView =
+      isHrAdmin ||
+      paf.initiated_by === context.userId ||
+      employee?.user_id === context.userId ||
+      employee?.manager_id === context.userId ||
+      (steps ?? []).some((s) => s.approver_id === context.userId || (s.approver_role && roles.includes(s.approver_role)));
+
+    if (!canView) throw new Error("Forbidden");
+
+    const { data: auditRows, error: auditError } = await supabaseAdmin
+      .from("paf_audit")
+      .select("id, event_type, from_status, to_status, notes, payload, created_at, actor_id")
+      .eq("paf_id", data.id)
+      .order("created_at", { ascending: false });
+    if (auditError) throw new Error(auditError.message);
+
+    const actorIds = Array.from(new Set((auditRows ?? []).map((r) => r.actor_id).filter(Boolean) as string[]));
+    const nameMap: Record<string, string> = {};
+    if (actorIds.length) {
+      const { data: profiles } = await supabaseAdmin
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", actorIds);
+      for (const profile of profiles ?? []) {
+        nameMap[profile.id] = profile.full_name || profile.email || profile.id.slice(0, 8);
+      }
+    }
+
+    return {
+      paf: {
+        id: paf.id,
+        paf_number: paf.paf_number,
+        action_type: paf.action_type,
+        effective_date: paf.effective_date,
+        status: paf.status,
+        reason: paf.reason,
+        narrative: paf.narrative,
+        before_values: paf.before_values ?? {},
+        after_values: paf.after_values ?? {},
+        approval_chain_id: chainId,
+        employees: paf.employees,
+      },
+      steps: (steps ?? []).map((s) => ({
+        id: s.id,
+        stage: s.stage,
+        approver_role: s.approver_role,
+        approver_label: s.approver_label,
+        approver_id: s.approver_id,
+        status: s.status,
+        decided_at: s.decided_at,
+        decision_notes: s.decision_notes,
+        can_decide: isHrAdmin || s.approver_id === context.userId || (!!s.approver_role && roles.includes(s.approver_role)),
+      })),
+      audit: (auditRows ?? []).map((r) => ({
+        ...r,
+        actor_name: r.actor_id ? (nameMap[r.actor_id] ?? r.actor_id.slice(0, 8)) : "System",
+      })),
+      viewer: { is_hr_admin: isHrAdmin },
+    };
+  });
+
+export const decidePafStep = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    step_id: z.string().uuid(),
+    decision: z.enum(["approved", "denied"]),
+    notes: z.string().max(4000).nullable().optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.rpc("decide_paf_step" as never, {
+      _step_id: data.step_id,
+      _decision: data.decision,
+      _notes: data.notes ?? null,
+    } as never);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const getApprovalInbox = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roleRows } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId);
+    const roles = (roleRows ?? []).map((r) => r.role as string);
+    const isHrAdmin = roles.includes("hr_admin");
+
+    const { data: stepRows, error: stepError } = await supabaseAdmin
+      .from("approval_steps")
+      .select("id, stage, approver_label, approver_role, approver_id, status, chain_id, created_at")
+      .eq("status", "pending")
+      .order("created_at");
+    if (stepError) throw new Error(stepError.message);
+
+    const visibleSteps = (stepRows ?? []).filter((step) =>
+      isHrAdmin || step.approver_id === context.userId || (!!step.approver_role && roles.includes(step.approver_role)),
+    );
+    const chainIds = Array.from(new Set(visibleSteps.map((step) => step.chain_id).filter(Boolean) as string[]));
+
+    const chainMap: Record<string, { id: string; kind: string | null; entity_type: string | null; entity_id: string | null; status: string | null }> = {};
+    if (chainIds.length) {
+      const { data: chains, error: chainError } = await supabaseAdmin
+        .from("approval_chains")
+        .select("id, kind, entity_type, entity_id, status")
+        .in("id", chainIds);
+      if (chainError) throw new Error(chainError.message);
+      for (const chain of chains ?? []) chainMap[chain.id] = chain;
+    }
+
+    const pafChainIds = chainIds.filter((chainId) => {
+      const chain = chainMap[chainId];
+      return (chain?.kind ?? "").startsWith("paf_") || chain?.entity_type === "personnel_action";
+    });
+    const pafMap: Record<string, { id: string; paf_number: string | null; action_type: string }> = {};
+    if (pafChainIds.length) {
+      const { data: pafs, error: pafError } = await supabaseAdmin
+        .from("personnel_actions")
+        .select("id, paf_number, action_type, approval_chain_id")
+        .in("approval_chain_id", pafChainIds);
+      if (pafError) throw new Error(pafError.message);
+      for (const paf of pafs ?? []) {
+        if (paf.approval_chain_id) {
+          pafMap[paf.approval_chain_id] = {
+            id: paf.id,
+            paf_number: paf.paf_number,
+            action_type: paf.action_type,
+          };
+        }
+      }
+    }
+
+    return visibleSteps.map((step) => ({
+      id: step.id,
+      stage: step.stage,
+      approver_label: step.approver_label,
+      approver_role: step.approver_role,
+      chain_id: step.chain_id,
+      approval_chains: chainMap[step.chain_id] ?? null,
+      paf: pafMap[step.chain_id] ?? null,
+    }));
+  });
+
 // Start an offboarding: creates a separation PAF (auto-resolves approvers + fallback admin)
 
 // HR-only: change the org's fallback admin
