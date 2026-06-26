@@ -665,6 +665,103 @@ export type Database = {
           },
         ]
       }
+      comp_time_balances: {
+        Row: {
+          balance_hours: number
+          employee_id: string
+          pending_hours: number
+          updated_at: string
+        }
+        Insert: {
+          balance_hours?: number
+          employee_id: string
+          pending_hours?: number
+          updated_at?: string
+        }
+        Update: {
+          balance_hours?: number
+          employee_id?: string
+          pending_hours?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comp_time_balances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comp_time_ledger: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          delta_hours: number
+          employee_id: string
+          id: string
+          notes: string | null
+          reason: string
+          source_entry_id: string | null
+          source_leave_request_id: string | null
+          source_timesheet_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          delta_hours: number
+          employee_id: string
+          id?: string
+          notes?: string | null
+          reason: string
+          source_entry_id?: string | null
+          source_leave_request_id?: string | null
+          source_timesheet_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          delta_hours?: number
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          reason?: string
+          source_entry_id?: string | null
+          source_leave_request_id?: string | null
+          source_timesheet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comp_time_ledger_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comp_time_ledger_source_entry_id_fkey"
+            columns: ["source_entry_id"]
+            isOneToOne: false
+            referencedRelation: "time_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comp_time_ledger_source_leave_request_id_fkey"
+            columns: ["source_leave_request_id"]
+            isOneToOne: false
+            referencedRelation: "leave_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comp_time_ledger_source_timesheet_id_fkey"
+            columns: ["source_timesheet_id"]
+            isOneToOne: false
+            referencedRelation: "timesheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           active: boolean
@@ -1165,6 +1262,89 @@ export type Database = {
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "leave_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_schedules: {
+        Row: {
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          employee_id: string
+          expected_weekly_hours: number
+          fri_end: string | null
+          fri_start: string | null
+          id: string
+          mon_end: string | null
+          mon_start: string | null
+          notes: string | null
+          sat_end: string | null
+          sat_start: string | null
+          sun_end: string | null
+          sun_start: string | null
+          thu_end: string | null
+          thu_start: string | null
+          tue_end: string | null
+          tue_start: string | null
+          updated_at: string
+          wed_end: string | null
+          wed_start: string | null
+        }
+        Insert: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          employee_id: string
+          expected_weekly_hours?: number
+          fri_end?: string | null
+          fri_start?: string | null
+          id?: string
+          mon_end?: string | null
+          mon_start?: string | null
+          notes?: string | null
+          sat_end?: string | null
+          sat_start?: string | null
+          sun_end?: string | null
+          sun_start?: string | null
+          thu_end?: string | null
+          thu_start?: string | null
+          tue_end?: string | null
+          tue_start?: string | null
+          updated_at?: string
+          wed_end?: string | null
+          wed_start?: string | null
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          employee_id?: string
+          expected_weekly_hours?: number
+          fri_end?: string | null
+          fri_start?: string | null
+          id?: string
+          mon_end?: string | null
+          mon_start?: string | null
+          notes?: string | null
+          sat_end?: string | null
+          sat_start?: string | null
+          sun_end?: string | null
+          sun_start?: string | null
+          thu_end?: string | null
+          thu_start?: string | null
+          tue_end?: string | null
+          tue_start?: string | null
+          updated_at?: string
+          wed_end?: string | null
+          wed_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_schedules_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -5036,6 +5216,226 @@ export type Database = {
           },
         ]
       }
+      time_breaks: {
+        Row: {
+          break_end: string | null
+          break_start: string
+          created_at: string
+          id: string
+          paid: boolean
+          time_entry_id: string
+        }
+        Insert: {
+          break_end?: string | null
+          break_start?: string
+          created_at?: string
+          id?: string
+          paid?: boolean
+          time_entry_id: string
+        }
+        Update: {
+          break_end?: string | null
+          break_start?: string
+          created_at?: string
+          id?: string
+          paid?: boolean
+          time_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_breaks_time_entry_id_fkey"
+            columns: ["time_entry_id"]
+            isOneToOne: false
+            referencedRelation: "time_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_entries: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          edited_by: string | null
+          employee_id: string
+          id: string
+          notes: string | null
+          pay_period_id: string | null
+          source: string
+          timesheet_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          edited_by?: string | null
+          employee_id: string
+          id?: string
+          notes?: string | null
+          pay_period_id?: string | null
+          source?: string
+          timesheet_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          edited_by?: string | null
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          pay_period_id?: string | null
+          source?: string
+          timesheet_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_pay_period_id_fkey"
+            columns: ["pay_period_id"]
+            isOneToOne: false
+            referencedRelation: "pay_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_policies: {
+        Row: {
+          allow_comp_in_lieu: boolean
+          comp_time_multiplier: number
+          created_at: string
+          daily_ot_threshold: number
+          exempt_comp_multiplier: number
+          id: string
+          is_active: boolean
+          max_comp_bank_hours: number | null
+          name: string
+          ot_multiplier: number
+          rounding_minutes: number
+          updated_at: string
+          weekly_ot_threshold: number
+          workweek_start: number
+        }
+        Insert: {
+          allow_comp_in_lieu?: boolean
+          comp_time_multiplier?: number
+          created_at?: string
+          daily_ot_threshold?: number
+          exempt_comp_multiplier?: number
+          id?: string
+          is_active?: boolean
+          max_comp_bank_hours?: number | null
+          name?: string
+          ot_multiplier?: number
+          rounding_minutes?: number
+          updated_at?: string
+          weekly_ot_threshold?: number
+          workweek_start?: number
+        }
+        Update: {
+          allow_comp_in_lieu?: boolean
+          comp_time_multiplier?: number
+          created_at?: string
+          daily_ot_threshold?: number
+          exempt_comp_multiplier?: number
+          id?: string
+          is_active?: boolean
+          max_comp_bank_hours?: number | null
+          name?: string
+          ot_multiplier?: number
+          rounding_minutes?: number
+          updated_at?: string
+          weekly_ot_threshold?: number
+          workweek_start?: number
+        }
+        Relationships: []
+      }
+      timesheets: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          comp_time_earned: number
+          created_at: string
+          employee_id: string
+          expected_hours: number
+          holiday_hours: number
+          id: string
+          leave_hours: number
+          notes: string | null
+          overtime_hours: number
+          regular_hours: number
+          status: string
+          submitted_at: string | null
+          submitted_by: string | null
+          updated_at: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          comp_time_earned?: number
+          created_at?: string
+          employee_id: string
+          expected_hours?: number
+          holiday_hours?: number
+          id?: string
+          leave_hours?: number
+          notes?: string | null
+          overtime_hours?: number
+          regular_hours?: number
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          comp_time_earned?: number
+          created_at?: string
+          employee_id?: string
+          expected_hours?: number
+          holiday_hours?: number
+          id?: string
+          leave_hours?: number
+          notes?: string | null
+          overtime_hours?: number
+          regular_hours?: number
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheets_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tmrs_enrollments: {
         Row: {
           created_at: string
@@ -5214,6 +5614,7 @@ export type Database = {
           created_at: string
           default_provisioning: Json
           description: string | null
+          flsa_class: string
           icon: string | null
           id: string
           is_active: boolean
@@ -5227,6 +5628,7 @@ export type Database = {
           created_at?: string
           default_provisioning?: Json
           description?: string | null
+          flsa_class?: string
           icon?: string | null
           id?: string
           is_active?: boolean
@@ -5240,6 +5642,7 @@ export type Database = {
           created_at?: string
           default_provisioning?: Json
           description?: string | null
+          flsa_class?: string
           icon?: string | null
           id?: string
           is_active?: boolean
@@ -5274,6 +5677,16 @@ export type Database = {
       }
     }
     Functions: {
+      approve_timesheet: {
+        Args: { _decision: string; _notes: string; _ts_id: string }
+        Returns: undefined
+      }
+      clock_in: { Args: { _note?: string }; Returns: string }
+      clock_out: { Args: { _note?: string }; Returns: string }
+      compute_timesheet: {
+        Args: { _employee_id: string; _week_start: string }
+        Returns: string
+      }
       create_hire_request:
         | {
             Args: {
