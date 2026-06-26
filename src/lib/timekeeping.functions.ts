@@ -154,6 +154,40 @@ export const setEmployeeSchedule = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const ScheduleDays = z.object({
+  expected_weekly_hours: z.number().min(0).max(168),
+  mon_start: z.string().nullable().optional(), mon_end: z.string().nullable().optional(),
+  tue_start: z.string().nullable().optional(), tue_end: z.string().nullable().optional(),
+  wed_start: z.string().nullable().optional(), wed_end: z.string().nullable().optional(),
+  thu_start: z.string().nullable().optional(), thu_end: z.string().nullable().optional(),
+  fri_start: z.string().nullable().optional(), fri_end: z.string().nullable().optional(),
+  sat_start: z.string().nullable().optional(), sat_end: z.string().nullable().optional(),
+  sun_start: z.string().nullable().optional(), sun_end: z.string().nullable().optional(),
+});
+
+export const setMyExemptSchedule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ScheduleDays.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: emp } = await supabaseAdmin
+      .from("employees").select("id, worker_type_id").eq("user_id", context.userId).maybeSingle();
+    if (!emp) throw new Error("No employee record");
+    const { data: wt } = await supabaseAdmin
+      .from("worker_types").select("flsa_class").eq("id", emp.worker_type_id ?? "").maybeSingle();
+    if (wt?.flsa_class !== "exempt") throw new Error("Only exempt employees can edit their own schedule");
+    const today = new Date().toISOString().slice(0, 10);
+    // Close out any open schedule so the new one becomes effective today.
+    await supabaseAdmin.from("employee_schedules")
+      .update({ effective_to: today } as never)
+      .eq("employee_id", emp.id).is("effective_to", null);
+    const { error } = await supabaseAdmin.from("employee_schedules").insert({
+      employee_id: emp.id, effective_from: today, ...data,
+    } as never);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const getTimeAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
