@@ -98,6 +98,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/comp-market", "Market Ranges", BarChart2, ["hr_admin"]),
     def("/comp-cycles", "Comp Cycles", CalendarDays, ["hr_admin", "hiring_manager", "supervisor"]),
     def("/payroll", "Payroll", Banknote, ["hr_admin"]),
+    def("/hr-finance", "HR / Finance", BarChart2, ["hr_admin"]),
   ]},
   { key: moduleKey("hiring"), label: "Hiring", items: [
     def("/jobs", "Requisitions", BriefcaseBusiness, ["hr_admin", "hiring_manager", "supervisor"]),
