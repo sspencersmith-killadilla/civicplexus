@@ -53,7 +53,7 @@ function Index() {
 
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
         <div className="max-w-3xl">
-          <span className="inline-block text-xs uppercase tracking-widest text-accent-foreground bg-accent px-3 py-1 rounded-full">For municipalities of 500 – 5,000 staff</span>
+          <span className="inline-block text-xs uppercase tracking-widest text-accent-foreground bg-accent px-3 py-1 rounded-full">FOR MUNICIPALITIES OF 50 – 5,000 STAFF</span>
           <h1 className="mt-6 font-serif text-5xl md:text-6xl tracking-tight leading-[1.05]">
             The HRIS built for <span className="text-primary">city and county government.</span>
           </h1>
