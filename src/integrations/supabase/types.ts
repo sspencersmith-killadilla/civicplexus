@@ -2436,6 +2436,96 @@ export type Database = {
           },
         ]
       }
+      identity_links: {
+        Row: {
+          active: boolean
+          attributes: Json
+          created_at: string
+          employee_id: string
+          external_email: string | null
+          external_id: string
+          external_user_name: string | null
+          id: string
+          last_synced_at: string | null
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          attributes?: Json
+          created_at?: string
+          employee_id: string
+          external_email?: string | null
+          external_id: string
+          external_user_name?: string | null
+          id?: string
+          last_synced_at?: string | null
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          attributes?: Json
+          created_at?: string
+          employee_id?: string
+          external_email?: string | null
+          external_id?: string
+          external_user_name?: string | null
+          id?: string
+          last_synced_at?: string | null
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_links_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "identity_links_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "identity_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      identity_providers: {
+        Row: {
+          config: Json
+          created_at: string
+          domain: string | null
+          id: string
+          kind: string
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          domain?: string | null
+          id?: string
+          kind: string
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          domain?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       import_jobs: {
         Row: {
           created_at: string
@@ -4104,6 +4194,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payroll_export_templates: {
+        Row: {
+          column_map: Json
+          created_at: string
+          deduction_codes: Json
+          delimiter: string | null
+          earnings_codes: Json
+          format: string
+          id: string
+          include_header: boolean
+          name: string
+          notes: string | null
+          vendor: string
+        }
+        Insert: {
+          column_map?: Json
+          created_at?: string
+          deduction_codes?: Json
+          delimiter?: string | null
+          earnings_codes?: Json
+          format: string
+          id?: string
+          include_header?: boolean
+          name: string
+          notes?: string | null
+          vendor: string
+        }
+        Update: {
+          column_map?: Json
+          created_at?: string
+          deduction_codes?: Json
+          delimiter?: string | null
+          earnings_codes?: Json
+          format?: string
+          id?: string
+          include_header?: boolean
+          name?: string
+          notes?: string | null
+          vendor?: string
+        }
+        Relationships: []
+      }
       payroll_run_lines: {
         Row: {
           base_annual: number | null
@@ -4619,6 +4751,42 @@ export type Database = {
           },
         ]
       }
+      position_budgets: {
+        Row: {
+          budgeted_amount: number | null
+          budgeted_fte: number
+          created_at: string
+          created_by: string | null
+          department: string
+          fiscal_year: number
+          id: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          budgeted_amount?: number | null
+          budgeted_fte?: number
+          created_at?: string
+          created_by?: string | null
+          department: string
+          fiscal_year: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          budgeted_amount?: number | null
+          budgeted_fte?: number
+          created_at?: string
+          created_by?: string | null
+          department?: string
+          fiscal_year?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       positions: {
         Row: {
           budgeted_fte: number
@@ -4765,6 +4933,63 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      provisioning_events: {
+        Row: {
+          action: string
+          created_at: string
+          direction: string
+          employee_id: string | null
+          error: string | null
+          id: string
+          payload: Json
+          processed_at: string | null
+          provider_id: string | null
+          result: Json | null
+          status: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          direction: string
+          employee_id?: string | null
+          error?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider_id?: string | null
+          result?: Json | null
+          status?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          direction?: string
+          employee_id?: string | null
+          error?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider_id?: string | null
+          result?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provisioning_events_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provisioning_events_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "identity_providers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provisioning_requests: {
         Row: {
@@ -5050,6 +5275,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      scim_tokens: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          label: string
+          last_used_at: string | null
+          provider_id: string
+          revoked_at: string | null
+          token_hash: string
+          token_prefix: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label: string
+          last_used_at?: string | null
+          provider_id: string
+          revoked_at?: string | null
+          token_hash: string
+          token_prefix: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label?: string
+          last_used_at?: string | null
+          provider_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+          token_prefix?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scim_tokens_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "identity_providers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       screenings: {
         Row: {
@@ -5951,6 +6223,10 @@ export type Database = {
       approve_timesheet: {
         Args: { _decision: string; _notes: string; _ts_id: string }
         Returns: undefined
+      }
+      check_position_budget: {
+        Args: { _additional_fte: number; _department: string }
+        Returns: Json
       }
       clock_in: { Args: { _note?: string }; Returns: string }
       clock_out: { Args: { _note?: string }; Returns: string }
