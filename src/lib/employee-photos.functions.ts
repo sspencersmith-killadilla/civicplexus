@@ -81,7 +81,10 @@ export const clearEmployeePhoto = createServerFn({ method: "POST" })
 export const seedNextDemoPhoto = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) =>
-    z.object({ regenerate: z.boolean().optional() }).parse(i ?? {}),
+    z.object({
+      regenerate: z.boolean().optional(),
+      after_last_name: z.string().optional(),
+    }).parse(i ?? {}),
   )
   .handler(async ({ data, context }) => {
     await assertHrAdmin(context.supabase, context.userId);
@@ -95,10 +98,13 @@ export const seedNextDemoPhoto = createServerFn({ method: "POST" })
       .select("id, first_name, last_name, job_title, photo_path")
       .order("last_name");
     if (!data.regenerate) query = query.is("photo_path", null);
+    if (data.regenerate && data.after_last_name) {
+      query = query.gt("last_name", data.after_last_name);
+    }
     const { data: rows, error } = await query.limit(1);
     if (error) throw error;
     const emp = rows?.[0];
-    if (!emp) return { done: true, remaining: 0 };
+    if (!emp) return { done: true, remaining: 0, cursor: null as string | null };
 
     // Count remaining (after this one)
     const { count } = await supabaseAdmin
@@ -149,8 +155,9 @@ export const seedNextDemoPhoto = createServerFn({ method: "POST" })
 
     const remaining = Math.max(0, (count ?? 1) - 1);
     return {
-      done: remaining === 0,
+      done: !data.regenerate && remaining === 0,
       remaining,
+      cursor: emp.last_name as string | null,
       employee: { id: emp.id, name: `${emp.first_name} ${emp.last_name}` },
     };
   });
