@@ -5,8 +5,13 @@ import { z } from "zod";
 const BUCKET = "employee-photos";
 
 async function assertHrAdmin(supabase: any, userId: string) {
-  const { data: ok } = await supabase.rpc("has_role" as never, { _user_id: userId, _role: "hr_admin" } as never);
-  if (!ok) throw new Error("HR admin only");
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "hr_admin")
+    .maybeSingle();
+  if (!data) throw new Error("HR admin only");
 }
 
 const ShowFields = z.object({
