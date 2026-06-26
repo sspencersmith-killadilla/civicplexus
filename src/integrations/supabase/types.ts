@@ -1265,6 +1265,7 @@ export type Database = {
           manager_id: string | null
           personal_email: string | null
           phone: string | null
+          photo_path: string | null
           position_id: string | null
           rehire_eligible: boolean
           separation_date: string | null
@@ -1289,6 +1290,7 @@ export type Database = {
           manager_id?: string | null
           personal_email?: string | null
           phone?: string | null
+          photo_path?: string | null
           position_id?: string | null
           rehire_eligible?: boolean
           separation_date?: string | null
@@ -1313,6 +1315,7 @@ export type Database = {
           manager_id?: string | null
           personal_email?: string | null
           phone?: string | null
+          photo_path?: string | null
           position_id?: string | null
           rehire_eligible?: boolean
           separation_date?: string | null
@@ -2036,6 +2039,105 @@ export type Database = {
             columns: ["worker_type_id"]
             isOneToOne: false
             referencedRelation: "worker_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      id_badge_templates: {
+        Row: {
+          accent_color: string
+          back_text: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_default: boolean
+          logo_path: string | null
+          name: string
+          org_name: string
+          orientation: string
+          show_fields: Json
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          back_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_default?: boolean
+          logo_path?: string | null
+          name: string
+          org_name: string
+          orientation?: string
+          show_fields?: Json
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          back_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_default?: boolean
+          logo_path?: string | null
+          name?: string
+          org_name?: string
+          orientation?: string
+          show_fields?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      id_badges: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          issued_at: string
+          issued_by: string | null
+          pdf_path: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          serial: string
+          template_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          pdf_path?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          serial: string
+          template_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          pdf_path?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          serial?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "id_badges_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "id_badges_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "id_badge_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -5142,6 +5244,15 @@ export type Database = {
           filled_count: number | null
           total_positions: number | null
           vacant_count: number | null
+        }
+        Relationships: []
+      }
+      public_badge_verify: {
+        Row: {
+          display_name: string | null
+          issued_at: string | null
+          serial: string | null
+          status: string | null
         }
         Relationships: []
       }
