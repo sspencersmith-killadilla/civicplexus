@@ -18,7 +18,13 @@ export const TOUR_STOPS: TourStop[] = [
     to: "/employees",
     title: "Employees",
     body: "Directory of all employees with org, status, and supervisor chain.",
-    try: "Open any employee to see their full record, leave, and assignments.",
+    try: "Open any employee to see their full record, photo, and ID badge controls.",
+  },
+  {
+    to: "/org-chart",
+    title: "Org Chart",
+    body: "Photo-driven hierarchy built from manager relationships, color-coded by department.",
+    try: "Search a name, then export the visible chart as a PNG or print it.",
   },
   {
     to: "/hire-requests",
@@ -112,6 +118,12 @@ export const TOUR_STOPS: TourStop[] = [
     to: "/admin-modules",
     title: "Module Settings",
     body: "Super-admin toggles to turn entire modules on or off per tenant.",
+  },
+  {
+    to: "/id-badge-templates",
+    title: "ID Badge Templates",
+    body: "Design printable CR80 badges — choose fields, brand colors, and the default template.",
+    try: "Toggle a field on the default template, then generate a badge from any employee profile.",
   },
   {
     to: "/admin-demo",
