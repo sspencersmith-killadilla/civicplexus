@@ -11,6 +11,8 @@ import {
   resetDemoAccount,
   getDemoStatus,
 } from "@/lib/demo-account.functions";
+import { seedNextDemoPhoto } from "@/lib/employee-photos.functions";
+import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/admin-demo")({
   component: AdminDemoPage,
@@ -24,6 +26,37 @@ function AdminDemoPage() {
   const fetchStatus = useServerFn(getDemoStatus);
   const provision = useServerFn(provisionDemoAccount);
   const reset = useServerFn(resetDemoAccount);
+  const seedNext = useServerFn(seedNextDemoPhoto);
+  const [seeding, setSeeding] = useState(false);
+  const [seedMsg, setSeedMsg] = useState<string>("");
+
+  async function runSeed(regenerate: boolean) {
+    setSeeding(true);
+    try {
+      let count = 0;
+      // hard cap to avoid runaway loop
+      for (let i = 0; i < 60; i++) {
+        const r = (await seedNext({ data: { regenerate } })) as {
+          done: boolean;
+          remaining: number;
+          employee?: { name: string };
+        };
+        if (r.employee) {
+          count += 1;
+          setSeedMsg(`Generated ${count} • ${r.employee.name} (${r.remaining} left)`);
+        }
+        if (r.done) break;
+        // small breather between calls
+        await new Promise((res) => setTimeout(res, 250));
+      }
+      toast.success(`Seeded ${count} employee photo${count === 1 ? "" : "s"}`);
+      setSeedMsg("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   const status = useQuery({
     queryKey: ["demo-account-status"],
@@ -103,6 +136,28 @@ function AdminDemoPage() {
                 disabled={resetMut.isPending || !s?.provisioned}
               >
                 {resetMut.isPending ? "Reverting…" : "Revert changes now"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-serif">Demo employee photos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <p className="text-muted-foreground">
+              Generate AI portrait headshots for every demo employee that is missing a photo. Photos
+              are stored in the same private bucket as HR uploads and used by the org chart and ID
+              badge generator. Synthetic likenesses only.
+            </p>
+            {seedMsg && <p className="font-mono text-xs">{seedMsg}</p>}
+            <div className="flex gap-2">
+              <Button onClick={() => runSeed(false)} disabled={seeding}>
+                {seeding ? "Generating…" : "Seed missing photos"}
+              </Button>
+              <Button variant="outline" onClick={() => runSeed(true)} disabled={seeding}>
+                {seeding ? "Working…" : "Regenerate all"}
               </Button>
             </div>
           </CardContent>
