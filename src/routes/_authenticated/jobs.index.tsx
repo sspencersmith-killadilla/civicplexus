@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Check, ChevronRight, ChevronLeft, ExternalLink } from "lucide-react";
+import { Plus, Check, ChevronRight, ChevronLeft, ExternalLink, Briefcase, FileCheck2, Megaphone, ListChecks } from "lucide-react";
 import { toast } from "sonner";
 import { createRequisition, submitRequisitionForApproval, postRequisition, listPositionsForRequisition } from "@/lib/jobs.functions";
 
@@ -66,7 +66,15 @@ function JobsIndex() {
 
   return (
     <AppShell title="Job Requisitions">
-      <div className="flex justify-end mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <a
+          href="/careers"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+        >
+          <ExternalLink className="h-3.5 w-3.5" /> View public careers page
+        </a>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1" /> New requisition</Button></DialogTrigger>
           <DialogContent className="max-w-2xl">
@@ -79,6 +87,7 @@ function JobsIndex() {
           </DialogContent>
         </Dialog>
       </div>
+      <HiringGuide />
       <div className="grid gap-3">
         {(reqsQ.data ?? []).map((r) => (
           <Link key={r.id} to="/jobs/$id" params={{ id: r.id }}>
