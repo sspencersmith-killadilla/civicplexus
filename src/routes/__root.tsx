@@ -14,6 +14,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import markAsset from "@/assets/civicplexus-mark.png.asset.json";
+import { OfflineBanner } from "@/components/offline-shell";
+import { registerPwa } from "@/lib/pwa-register";
+import { installAutoSync } from "@/lib/offline-queue";
 
 function NotFoundComponent() {
   return (
@@ -139,8 +142,14 @@ function RootComponent() {
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
 
+  useEffect(() => {
+    void registerPwa();
+    installAutoSync();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
+      <OfflineBanner />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster richColors position="top-right" />
