@@ -94,39 +94,47 @@ export const submitPaf = createServerFn({ method: "POST" })
       .select("id, paf_number").single();
     if (pErr || !paf) throw new Error(pErr?.message ?? "PAF create failed");
 
-    const chainKind = `paf_${data.action_type}`;
-    const { data: chain, error: cErr } = await supabaseAdmin
-      .from("approval_chains")
-      .insert({
-        kind: chainKind,
-        entity_type: "personnel_action",
-        entity_id: paf.id,
-        created_by: context.userId,
-        status: "pending",
-      } as never)
-      .select("id").single();
-    if (cErr || !chain) throw new Error(cErr?.message ?? "Could not start chain");
+    let chainId: string;
+    try {
+      const chainKind = `paf_${data.action_type}`;
+      const { data: chain, error: cErr } = await supabaseAdmin
+        .from("approval_chains")
+        .insert({
+          kind: chainKind,
+          entity_type: "personnel_action",
+          entity_id: paf.id,
+          created_by: context.userId,
+          status: "pending",
+        } as never)
+        .select("id").single();
+      if (cErr || !chain) throw new Error(cErr?.message ?? "Could not start chain");
+      chainId = chain.id;
 
-    for (const step of steps) {
-      const label = step.role.replace(/_/g, " ");
-      const { error: sErr } = await supabaseAdmin.from("approval_steps").insert({
-        chain_id: chain.id,
-        stage: step.stage,
-        approver_role: step.role,
-        approver_label: label,
-        approver_id: step.approver_id,
-        status: "pending",
-      } as never);
-      if (sErr) throw new Error(`Could not create approval step (stage ${step.stage}): ${sErr.message}`);
+      for (const step of steps) {
+        const label = step.role.replace(/_/g, " ");
+        const { error: sErr } = await supabaseAdmin.from("approval_steps").insert({
+          chain_id: chainId,
+          stage: step.stage,
+          approver_role: step.role,
+          approver_label: label,
+          approver_id: step.approver_id,
+          status: "pending",
+        } as never);
+        if (sErr) throw new Error(`Could not create approval step (stage ${step.stage}): ${sErr.message}`);
+      }
+
+      const { error: linkErr } = await supabaseAdmin.from("personnel_actions")
+        .update({ approval_chain_id: chainId } as never).eq("id", paf.id);
+      if (linkErr) throw new Error(`Could not link approval chain: ${linkErr.message}`);
+    } catch (error) {
+      await supabaseAdmin.from("personnel_actions").delete().eq("id", paf.id);
+      throw error;
     }
-
-    await supabaseAdmin.from("personnel_actions")
-      .update({ approval_chain_id: chain.id } as never).eq("id", paf.id);
 
     // Notify the specific stage-1 approver if known; else role pool
     const { data: firstStep } = await supabaseAdmin
-      .from("approval_steps").select("approver_role, approver_id")
-      .eq("chain_id", chain.id).eq("stage", 1).maybeSingle();
+        .from("approval_steps").select("approver_role, approver_id")
+        .eq("chain_id", chainId).eq("stage", 1).maybeSingle();
     const recipients: string[] = [];
     if (firstStep?.approver_id) recipients.push(firstStep.approver_id as string);
     else if (firstStep?.approver_role) {
