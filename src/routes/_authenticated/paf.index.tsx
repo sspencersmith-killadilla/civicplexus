@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { submitPaf } from "@/lib/paf.functions";
+import { submitPaf, repairPafChains } from "@/lib/paf.functions";
+import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/paf/")({ component: PafIndex });
 
@@ -25,7 +26,18 @@ const ACTIONS = [
 function PafIndex() {
   const qc = useQueryClient();
   const submit = useServerFn(submitPaf);
+  const repair = useServerFn(repairPafChains);
   const [open, setOpen] = useState(false);
+  const { data: me } = useCurrentUser();
+  const isHR = hasRole(me?.roles, "hr_admin");
+  const repairM = useMutation({
+    mutationFn: () => repair({}),
+    onSuccess: (r: { scanned: number; repaired: number; alreadyOk: number; problems: Array<{ paf_id: string; reason: string }> }) => {
+      qc.invalidateQueries({ queryKey: ["pafs"] });
+      toast.success(`Scanned ${r.scanned} · repaired ${r.repaired} · ok ${r.alreadyOk}${r.problems.length ? ` · ${r.problems.length} skipped` : ""}`);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Repair failed"),
+  });
 
   const listQ = useQuery({
     queryKey: ["pafs"],
@@ -80,7 +92,13 @@ function PafIndex() {
     <AppShell title="Personnel Action Forms">
       <div className="flex justify-between items-center mb-4">
         <p className="text-sm text-muted-foreground max-w-2xl">PAFs route through supervisor → HR approval, then HR applies the change to the employee record.</p>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <div className="flex gap-2">
+          {isHR && (
+            <Button variant="outline" onClick={() => repairM.mutate()} disabled={repairM.isPending}>
+              {repairM.isPending ? "Repairing…" : "Repair approval chains"}
+            </Button>
+          )}
+          <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1" /> New PAF</Button></DialogTrigger>
           <DialogContent className="max-w-xl">
             <DialogHeader><DialogTitle>New personnel action</DialogTitle></DialogHeader>
@@ -141,7 +159,8 @@ function PafIndex() {
               </div>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <Card className="divide-y">

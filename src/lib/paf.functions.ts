@@ -232,3 +232,96 @@ export const setFallbackAdmin = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// HR-only: rebuild missing/incomplete approval chains for existing PAFs.
+// Idempotent: scans every PAF in draft/pending_approval status and ensures it
+// has an approval_chains row plus a full set of approval_steps derived from
+// the PAF's action_type, the employee's current manager, and the configured
+// fallback admin. Useful after migrations or partial submit failures left
+// PAFs un-approvable.
+export const repairPafChains = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roles } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId);
+    if (!(roles ?? []).some((r) => r.role === "hr_admin")) throw new Error("HR admin only");
+
+    const { data: org } = await supabaseAdmin.from("org_settings").select("fallback_admin_user_id").maybeSingle();
+    const fallbackAdmin = (org as { fallback_admin_user_id: string | null } | null)?.fallback_admin_user_id ?? null;
+    const { data: hrUsers } = await supabaseAdmin
+      .from("user_roles").select("user_id").eq("role", "hr_admin" as never).order("created_at", { ascending: true });
+    const firstHr = (hrUsers ?? [])[0]?.user_id ?? null;
+
+    const { data: pafs, error } = await supabaseAdmin
+      .from("personnel_actions")
+      .select("id, action_type, employee_id, approval_chain_id, initiated_by, status")
+      .in("status", ["draft", "pending_approval"]);
+    if (error) throw new Error(error.message);
+
+    let repaired = 0;
+    let alreadyOk = 0;
+    const problems: Array<{ paf_id: string; reason: string }> = [];
+
+    for (const paf of pafs ?? []) {
+      // Resolve manager from the employee
+      const { data: emp } = await supabaseAdmin
+        .from("employees").select("manager_id").eq("id", paf.employee_id).maybeSingle();
+      const managerUserId = (emp as { manager_id: string | null } | null)?.manager_id ?? null;
+
+      const steps = resolveApprovalChain({
+        action_type: paf.action_type as PafActionType,
+        manager_user_id: managerUserId,
+        first_hr_user_id: firstHr,
+        fallback_admin_user_id: fallbackAdmin,
+      });
+
+      // Ensure a chain row exists
+      let chainId = paf.approval_chain_id as string | null;
+      if (!chainId) {
+        const { data: chain, error: cErr } = await supabaseAdmin
+          .from("approval_chains").insert({
+            kind: `paf_${paf.action_type}`,
+            entity_type: "personnel_action",
+            entity_id: paf.id,
+            created_by: paf.initiated_by ?? context.userId,
+            status: "pending",
+          } as never).select("id").single();
+        if (cErr || !chain) { problems.push({ paf_id: paf.id, reason: cErr?.message ?? "chain insert failed" }); continue; }
+        chainId = chain.id;
+        await supabaseAdmin.from("personnel_actions").update({ approval_chain_id: chainId } as never).eq("id", paf.id);
+      }
+
+      // Check existing steps; rebuild only when missing or count mismatches expected
+      const { data: existing } = await supabaseAdmin
+        .from("approval_steps").select("id, stage, approver_role, approver_id, status")
+        .eq("chain_id", chainId).order("stage");
+      const need = steps.length;
+      const have = existing ?? [];
+      const decided = have.some((s) => s.status !== "pending");
+      const stageMismatch = have.length !== need;
+      const emptyRoles = have.some((s) => !s.approver_role);
+      const missingApprover = have.some((s) => !s.approver_id);
+
+      if (!stageMismatch && !emptyRoles && !missingApprover) { alreadyOk++; continue; }
+      if (decided) { problems.push({ paf_id: paf.id, reason: "has decided steps; skipped" }); continue; }
+
+      // Wipe pending steps and reinsert clean ones
+      await supabaseAdmin.from("approval_steps").delete().eq("chain_id", chainId);
+      let stepErr: string | null = null;
+      for (const step of steps) {
+        const { error: sErr } = await supabaseAdmin.from("approval_steps").insert({
+          chain_id: chainId,
+          stage: step.stage,
+          approver_role: step.role,
+          approver_label: step.role.replace(/_/g, " "),
+          approver_id: step.approver_id,
+          status: "pending",
+        } as never);
+        if (sErr) { stepErr = sErr.message; break; }
+      }
+      if (stepErr) { problems.push({ paf_id: paf.id, reason: stepErr }); continue; }
+      repaired++;
+    }
+
+    return { scanned: (pafs ?? []).length, repaired, alreadyOk, problems };
+  });
