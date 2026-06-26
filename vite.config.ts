@@ -17,35 +17,15 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: null,
-      strategies: "generateSW",
+      strategies: "injectManifest",
       filename: "sw.js",
+      srcDir: "src",
       devOptions: { enabled: false },
       includeAssets: ["favicon.ico", "manifest.webmanifest"],
       manifest: false,
-      workbox: {
+      injectManifest: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
-        navigateFallback: "/offline-shell",
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/auth/],
-        runtimeCaching: [
-          {
-            urlPattern: ({ request }: { request: Request }) => request.mode === "navigate",
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "pages",
-              networkTimeoutSeconds: 4,
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
-            },
-          },
-          {
-            urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
-              sameOrigin && /\.(?:js|css|woff2?|png|svg|ico)$/i.test(url.pathname),
-            handler: "CacheFirst",
-            options: {
-              cacheName: "static-assets",
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
-            },
-          },
-        ],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),
   ],
