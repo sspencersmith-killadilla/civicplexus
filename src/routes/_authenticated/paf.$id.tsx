@@ -134,6 +134,22 @@ function PafDetail() {
           )}
         </Card>
       </div>
+      <Card className="p-5 mt-4">
+        <h3 className="font-medium mb-3">Audit log</h3>
+        <ol className="space-y-2">
+          {(auditQ.data ?? []).map((a) => (
+            <li key={a.id} className="text-sm border-l-2 border-border pl-3">
+              <div className="flex justify-between gap-2">
+                <span className="capitalize">{a.event_type.replace(/_/g, " ")}{a.from_status && a.to_status ? `: ${a.from_status} → ${a.to_status}` : ""}</span>
+                <span className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString()}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">by {a.actor_name}</p>
+              {a.notes && <p className="text-xs mt-1">{a.notes}</p>}
+            </li>
+          ))}
+          {(auditQ.data?.length ?? 0) === 0 && <p className="text-xs text-muted-foreground">No audit entries yet.</p>}
+        </ol>
+      </Card>
     </AppShell>
   );
 }
