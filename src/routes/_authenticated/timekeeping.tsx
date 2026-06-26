@@ -17,7 +17,7 @@ import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import {
   getMyTimeStatus, clockIn, clockOut, getMyTimesheets, submitTimesheet,
   getPendingTimesheets, decideTimesheet, getTimeAdmin, updateTimePolicy,
-  setMyExemptSchedule,
+  setMyExemptSchedule, getEmployeeShiftContext,
 } from "@/lib/timekeeping.functions";
 
 export const Route = createFileRoute("/_authenticated/timekeeping")({ component: Page });
@@ -62,6 +62,7 @@ function MyTimePanel() {
   const qc = useQueryClient();
   const fetchStatus = useServerFn(getMyTimeStatus);
   const fetchSheets = useServerFn(getMyTimesheets);
+  const fetchShift = useServerFn(getEmployeeShiftContext);
   const cIn = useServerFn(clockIn);
   const cOut = useServerFn(clockOut);
   const submit = useServerFn(submitTimesheet);
@@ -69,6 +70,7 @@ function MyTimePanel() {
 
   const statusQ = useQuery({ queryKey: ["tk-status"], queryFn: () => fetchStatus() });
   const sheetsQ = useQuery({ queryKey: ["tk-mysheets"], queryFn: () => fetchSheets() });
+  const shiftQ = useQuery({ queryKey: ["tk-shift-ctx"], queryFn: () => fetchShift() });
 
   // tick every second when open
   const [now, setNow] = useState(() => Date.now());
@@ -208,6 +210,76 @@ function MyTimePanel() {
           <MyExemptSchedule schedule={s.schedule as ScheduleRow | null} />
         </Card>
       )}
+
+      {shiftQ.data?.assignment && (
+        <Card className="md:col-span-3 p-6">
+          <AssignedRotationCard ctx={shiftQ.data} />
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function AssignedRotationCard({ ctx }: { ctx: NonNullable<Awaited<ReturnType<typeof getEmployeeShiftContext>>> }) {
+  const a = ctx.assignment as { anchor_date: string; pattern_id: string } | null;
+  const p = ctx.pattern as { name: string; cycle_length_days: number; description: string | null } | null;
+  const days = (ctx.days ?? []) as { day_index: number; shift_type_id: string | null }[];
+  const shifts = (ctx.shifts ?? []) as { id: string; name: string; code: string | null; color: string }[];
+  const segs = (ctx.segments ?? []) as { shift_type_id: string; start_time: string; end_time: string; crosses_midnight: boolean }[];
+  const wp = ctx.work_period as { kind: string; period_days: number; ot_threshold_hours: number } | null;
+  if (!a || !p) return null;
+
+  const dayMs = 86400000;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const anchor = new Date(a.anchor_date + "T00:00:00");
+  const diff = Math.floor((today.getTime() - anchor.getTime()) / dayMs);
+  const idxToday = ((diff % p.cycle_length_days) + p.cycle_length_days) % p.cycle_length_days + 1;
+  const todayShift = (() => {
+    const d = days.find((x) => x.day_index === idxToday);
+    return shifts.find((s) => s.id === d?.shift_type_id) ?? null;
+  })();
+  const todaySegs = todayShift ? segs.filter((g) => g.shift_type_id === todayShift.id) : [];
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="font-medium">My rotation · {p.name}</h3>
+          <p className="text-xs text-muted-foreground">{p.description}</p>
+          {wp && wp.kind !== "standard_40" && (
+            <p className="text-xs mt-1"><Badge variant="secondary">FLSA {wp.kind}</Badge> · OT after {wp.ot_threshold_hours}h / {wp.period_days}d</p>
+          )}
+        </div>
+        <div className="text-right">
+          <div className="text-xs text-muted-foreground">Today (day {idxToday}/{p.cycle_length_days})</div>
+          <div className="text-lg font-semibold flex items-center gap-2 justify-end">
+            {todayShift ? <>
+              <span className="inline-block h-3 w-3 rounded-sm" style={{ background: todayShift.color }} />
+              {todayShift.name}
+            </> : "Off"}
+          </div>
+          {todaySegs.length > 0 && (
+            <div className="text-xs text-muted-foreground">
+              {todaySegs.map((g, i) => <span key={i}>{g.start_time.slice(0,5)}–{g.end_time.slice(0,5)}{g.crosses_midnight ? " (+1d)" : ""}{i < todaySegs.length - 1 ? ", " : ""}</span>)}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="grid gap-[2px]" style={{ gridTemplateColumns: "repeat(14, minmax(0, 1fr))" }}>
+        {Array.from({ length: 28 }, (_, i) => {
+          const idx = ((diff - 7 + i) % p.cycle_length_days + p.cycle_length_days) % p.cycle_length_days + 1;
+          const d = days.find((x) => x.day_index === idx);
+          const s = shifts.find((x) => x.id === d?.shift_type_id);
+          const isToday = i === 7;
+          return (
+            <div key={i} className="aspect-square rounded-sm text-[9px] flex items-center justify-center"
+              style={{ background: s?.color ?? "#e5e7eb", color: s ? "#fff" : "#6b7280", outline: isToday ? "2px solid hsl(var(--primary))" : undefined }}
+              title={s?.name ?? "Off"}>
+              {s?.code ?? ""}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
