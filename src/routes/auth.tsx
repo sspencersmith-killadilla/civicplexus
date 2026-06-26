@@ -73,7 +73,7 @@ function AuthPage() {
         </Link>
         <div>
           <p className="font-serif text-3xl leading-tight max-w-md">"Every new hire ready on day zero — from City Hall to the water plant."</p>
-          <p className="mt-4 text-sm text-sidebar-foreground/60">Municipal Onboarding Suite</p>
+          <p className="mt-4 text-sm text-sidebar-foreground/60">Municipal HR Suite</p>
         </div>
         <p className="text-xs text-sidebar-foreground/50">© {new Date().getFullYear()} CivicPlexus</p>
       </div>
