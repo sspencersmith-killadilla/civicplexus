@@ -84,7 +84,7 @@ function OrgChartPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("employees")
-        .select("id, first_name, last_name, job_title, department, status, manager_id, photo_path")
+        .select("id, first_name, last_name, job_title, department, status, manager_id, user_id, photo_path")
         .order("last_name");
       if (error) throw error;
       return (data ?? []) as Emp[];
