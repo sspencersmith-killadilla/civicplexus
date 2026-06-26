@@ -225,3 +225,194 @@ export const updateTimePolicy = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ---------- Shift catalog & rotating patterns ----------
+
+async function requireHrAdmin(userId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", userId);
+  if (!(data ?? []).some((r) => r.role === "hr_admin")) throw new Error("HR admin only");
+}
+
+export const listShiftCatalog = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: shifts }, { data: segs }, { data: patterns }, { data: days }] = await Promise.all([
+      supabaseAdmin.from("shift_types").select("*").eq("is_active", true).order("name"),
+      supabaseAdmin.from("shift_segments").select("*").order("segment_order"),
+      supabaseAdmin.from("schedule_patterns").select("*").eq("is_active", true).order("name"),
+      supabaseAdmin.from("pattern_days").select("*").order("day_index"),
+    ]);
+    return { shifts: shifts ?? [], segments: segs ?? [], patterns: patterns ?? [], days: days ?? [] };
+  });
+
+const SegmentInput = z.object({
+  start_time: z.string(),
+  end_time: z.string(),
+  crosses_midnight: z.boolean().default(false),
+  paid: z.boolean().default(true),
+  unpaid_meal_min: z.number().int().min(0).max(240).default(0),
+});
+
+export const upsertShiftType = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.string().uuid().optional(),
+    name: z.string().min(1),
+    code: z.string().optional().nullable(),
+    color: z.string().default("#3b82f6"),
+    description: z.string().optional().nullable(),
+    is_off: z.boolean().default(false),
+    total_paid_hours: z.number().min(0).max(168).default(0),
+    segments: z.array(SegmentInput).default([]),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireHrAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { segments, id, ...row } = data;
+    let stId = id;
+    if (stId) {
+      const { error } = await supabaseAdmin.from("shift_types").update(row as never).eq("id", stId);
+      if (error) throw new Error(error.message);
+      await supabaseAdmin.from("shift_segments").delete().eq("shift_type_id", stId);
+    } else {
+      const { data: ins, error } = await supabaseAdmin.from("shift_types").insert({ ...row, created_by: context.userId } as never).select("id").single();
+      if (error) throw new Error(error.message);
+      stId = (ins as { id: string }).id;
+    }
+    if (segments.length) {
+      const rows = segments.map((s, i) => ({ ...s, shift_type_id: stId, segment_order: i + 1 }));
+      const { error } = await supabaseAdmin.from("shift_segments").insert(rows as never);
+      if (error) throw new Error(error.message);
+    }
+    return { id: stId };
+  });
+
+export const deleteShiftType = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireHrAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("shift_types").update({ is_active: false } as never).eq("id", data.id);
+    return { ok: true };
+  });
+
+const PatternDayInput = z.object({
+  day_index: z.number().int().min(1).max(56),
+  shift_type_id: z.string().uuid().nullable(),
+  is_off: z.boolean(),
+});
+
+export const upsertSchedulePattern = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.string().uuid().optional(),
+    name: z.string().min(1),
+    description: z.string().optional().nullable(),
+    cycle_length_days: z.number().int().min(1).max(56),
+    category: z.string().optional().nullable(),
+    days: z.array(PatternDayInput),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireHrAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { id, days, ...row } = data;
+    let pId = id;
+    if (pId) {
+      const { error } = await supabaseAdmin.from("schedule_patterns").update(row as never).eq("id", pId);
+      if (error) throw new Error(error.message);
+      await supabaseAdmin.from("pattern_days").delete().eq("pattern_id", pId);
+    } else {
+      const { data: ins, error } = await supabaseAdmin.from("schedule_patterns")
+        .insert({ ...row, created_by: context.userId } as never).select("id").single();
+      if (error) throw new Error(error.message);
+      pId = (ins as { id: string }).id;
+    }
+    const rows = days.map((d) => ({ ...d, pattern_id: pId }));
+    if (rows.length) {
+      const { error } = await supabaseAdmin.from("pattern_days").insert(rows as never);
+      if (error) throw new Error(error.message);
+    }
+    return { id: pId };
+  });
+
+export const assignEmployeePattern = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    employee_id: z.string().uuid(),
+    pattern_id: z.string().uuid(),
+    anchor_date: z.string(),
+    effective_from: z.string().optional(),
+    notes: z.string().optional().nullable(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireHrAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const today = new Date().toISOString().slice(0, 10);
+    await supabaseAdmin.from("employee_pattern_assignments")
+      .update({ effective_to: today } as never)
+      .eq("employee_id", data.employee_id).is("effective_to", null);
+    const { error } = await supabaseAdmin.from("employee_pattern_assignments").insert({
+      ...data, effective_from: data.effective_from ?? today, created_by: context.userId,
+    } as never);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const setEmployeeWorkPeriod = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    employee_id: z.string().uuid(),
+    kind: z.enum(["standard_40", "207k_fire", "207k_law", "custom"]),
+    period_days: z.number().int().min(1).max(28),
+    period_anchor_date: z.string(),
+    ot_threshold_hours: z.number().min(0).max(400),
+    notes: z.string().optional().nullable(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireHrAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const today = new Date().toISOString().slice(0, 10);
+    await supabaseAdmin.from("employee_work_periods")
+      .update({ effective_to: today } as never)
+      .eq("employee_id", data.employee_id).is("effective_to", null);
+    const { error } = await supabaseAdmin.from("employee_work_periods").insert({
+      ...data, effective_from: today, created_by: context.userId,
+    } as never);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const getEmployeeShiftContext = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: emp } = await supabaseAdmin.from("employees").select("id").eq("user_id", context.userId).maybeSingle();
+    if (!emp) return { assignment: null, pattern: null, days: [], shifts: [], segments: [], work_period: null };
+    const { data: assignment } = await supabaseAdmin.from("employee_pattern_assignments")
+      .select("*").eq("employee_id", emp.id).is("effective_to", null)
+      .order("effective_from", { ascending: false }).limit(1).maybeSingle();
+    const { data: work_period } = await supabaseAdmin.from("employee_work_periods")
+      .select("*").eq("employee_id", emp.id).is("effective_to", null)
+      .order("effective_from", { ascending: false }).limit(1).maybeSingle();
+    let pattern = null, days: unknown[] = [], shifts: unknown[] = [], segments: unknown[] = [];
+    if (assignment) {
+      const [{ data: p }, { data: d }] = await Promise.all([
+        supabaseAdmin.from("schedule_patterns").select("*").eq("id", assignment.pattern_id).maybeSingle(),
+        supabaseAdmin.from("pattern_days").select("*").eq("pattern_id", assignment.pattern_id).order("day_index"),
+      ]);
+      pattern = p;
+      days = d ?? [];
+      const shiftIds = Array.from(new Set((d ?? []).map((r) => r.shift_type_id).filter(Boolean)));
+      if (shiftIds.length) {
+        const [{ data: s }, { data: seg }] = await Promise.all([
+          supabaseAdmin.from("shift_types").select("*").in("id", shiftIds),
+          supabaseAdmin.from("shift_segments").select("*").in("shift_type_id", shiftIds).order("segment_order"),
+        ]);
+        shifts = s ?? []; segments = seg ?? [];
+      }
+    }
+    return { assignment, pattern, days, shifts, segments, work_period };
+  });
