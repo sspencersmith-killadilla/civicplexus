@@ -397,21 +397,25 @@ export const getEmployeeShiftContext = createServerFn({ method: "GET" })
     const { data: work_period } = await supabaseAdmin.from("employee_work_periods")
       .select("*").eq("employee_id", emp.id).is("effective_to", null)
       .order("effective_from", { ascending: false }).limit(1).maybeSingle();
-    let pattern = null, days: unknown[] = [], shifts: unknown[] = [], segments: unknown[] = [];
+    type Row = Record<string, unknown>;
+    let pattern: Row | null = null;
+    let days: Row[] = [];
+    let shifts: Row[] = [];
+    let segments: Row[] = [];
     if (assignment) {
       const [{ data: p }, { data: d }] = await Promise.all([
         supabaseAdmin.from("schedule_patterns").select("*").eq("id", assignment.pattern_id).maybeSingle(),
         supabaseAdmin.from("pattern_days").select("*").eq("pattern_id", assignment.pattern_id).order("day_index"),
       ]);
-      pattern = p;
-      days = d ?? [];
-      const shiftIds = Array.from(new Set((d ?? []).map((r) => r.shift_type_id).filter(Boolean)));
+      pattern = (p as Row | null) ?? null;
+      days = (d as Row[] | null) ?? [];
+      const shiftIds = Array.from(new Set(((d ?? []).map((r) => r.shift_type_id).filter(Boolean)) as string[]));
       if (shiftIds.length) {
         const [{ data: s }, { data: seg }] = await Promise.all([
           supabaseAdmin.from("shift_types").select("*").in("id", shiftIds),
           supabaseAdmin.from("shift_segments").select("*").in("shift_type_id", shiftIds).order("segment_order"),
         ]);
-        shifts = s ?? []; segments = seg ?? [];
+        shifts = (s as Row[] | null) ?? []; segments = (seg as Row[] | null) ?? [];
       }
     }
     return { assignment, pattern, days, shifts, segments, work_period };
