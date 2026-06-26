@@ -31,6 +31,7 @@ import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
 import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_authenticated/internal-careers'
+import { Route as AuthenticatedIdBadgeTemplatesRouteImport } from './routes/_authenticated/id-badge-templates'
 import { Route as AuthenticatedHireRequestsRouteImport } from './routes/_authenticated/hire-requests'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
@@ -81,6 +82,7 @@ import { Route as AuthenticatedInterviewsIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
+import { Route as AuthenticatedEmployeesIdRouteImport } from './routes/_authenticated/employees.$id'
 import { Route as AuthenticatedComplianceTmrsRouteImport } from './routes/_authenticated/compliance.tmrs'
 import { Route as AuthenticatedComplianceTcoleRouteImport } from './routes/_authenticated/compliance.tcole'
 import { Route as AuthenticatedComplianceNewHireRouteImport } from './routes/_authenticated/compliance.new-hire'
@@ -89,6 +91,7 @@ import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authentic
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
+import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/badge.$serial'
 import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
 import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
@@ -210,6 +213,12 @@ const AuthenticatedInternalCareersRoute =
   AuthenticatedInternalCareersRouteImport.update({
     id: '/internal-careers',
     path: '/internal-careers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedIdBadgeTemplatesRoute =
+  AuthenticatedIdBadgeTemplatesRouteImport.update({
+    id: '/id-badge-templates',
+    path: '/id-badge-templates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHireRequestsRoute =
@@ -487,6 +496,12 @@ const AuthenticatedEmployeesImportRoute =
     path: '/employees/import',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEmployeesIdRoute =
+  AuthenticatedEmployeesIdRouteImport.update({
+    id: '/employees/$id',
+    path: '/employees/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedComplianceTmrsRoute =
   AuthenticatedComplianceTmrsRouteImport.update({
     id: '/compliance/tmrs',
@@ -530,6 +545,11 @@ const ApiPublicHooksBenefitsCallbackRoute =
 const ApiPublicDocsFileRoute = ApiPublicDocsFileRouteImport.update({
   id: '/api/public/docs/$file',
   path: '/api/public/docs/$file',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBadgeSerialRoute = ApiPublicBadgeSerialRouteImport.update({
+  id: '/api/public/badge/$serial',
+  path: '/api/public/badge/$serial',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedReviewCyclesIdCalibrationRoute =
@@ -585,6 +605,7 @@ export interface FileRoutesByFullPath {
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
+  '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -609,6 +630,7 @@ export interface FileRoutesByFullPath {
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
   '/compliance/tcole': typeof AuthenticatedComplianceTcoleRoute
   '/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
+  '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -641,6 +663,7 @@ export interface FileRoutesByFullPath {
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
+  '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -671,6 +694,7 @@ export interface FileRoutesByTo {
   '/goals': typeof AuthenticatedGoalsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/hire-requests': typeof AuthenticatedHireRequestsRoute
+  '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -694,6 +718,7 @@ export interface FileRoutesByTo {
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
   '/compliance/tcole': typeof AuthenticatedComplianceTcoleRoute
   '/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
+  '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -726,6 +751,7 @@ export interface FileRoutesByTo {
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
+  '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -758,6 +784,7 @@ export interface FileRoutesById {
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/hire-requests': typeof AuthenticatedHireRequestsRoute
+  '/_authenticated/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/_authenticated/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -782,6 +809,7 @@ export interface FileRoutesById {
   '/_authenticated/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
   '/_authenticated/compliance/tcole': typeof AuthenticatedComplianceTcoleRoute
   '/_authenticated/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
+  '/_authenticated/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
@@ -814,6 +842,7 @@ export interface FileRoutesById {
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/_authenticated/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
+  '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -846,6 +875,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/help'
     | '/hire-requests'
+    | '/id-badge-templates'
     | '/internal-careers'
     | '/my-hr'
     | '/notifications'
@@ -870,6 +900,7 @@ export interface FileRouteTypes {
     | '/compliance/new-hire'
     | '/compliance/tcole'
     | '/compliance/tmrs'
+    | '/employees/$id'
     | '/employees/import'
     | '/forms/$key'
     | '/grievances/$id'
@@ -902,6 +933,7 @@ export interface FileRouteTypes {
     | '/templates/'
     | '/careers/$slug/'
     | '/review-cycles/$id/calibration'
+    | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
@@ -932,6 +964,7 @@ export interface FileRouteTypes {
     | '/goals'
     | '/help'
     | '/hire-requests'
+    | '/id-badge-templates'
     | '/internal-careers'
     | '/my-hr'
     | '/notifications'
@@ -955,6 +988,7 @@ export interface FileRouteTypes {
     | '/compliance/new-hire'
     | '/compliance/tcole'
     | '/compliance/tmrs'
+    | '/employees/$id'
     | '/employees/import'
     | '/forms/$key'
     | '/grievances/$id'
@@ -987,6 +1021,7 @@ export interface FileRouteTypes {
     | '/templates'
     | '/careers/$slug'
     | '/review-cycles/$id/calibration'
+    | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
@@ -1018,6 +1053,7 @@ export interface FileRouteTypes {
     | '/_authenticated/goals'
     | '/_authenticated/help'
     | '/_authenticated/hire-requests'
+    | '/_authenticated/id-badge-templates'
     | '/_authenticated/internal-careers'
     | '/_authenticated/my-hr'
     | '/_authenticated/notifications'
@@ -1042,6 +1078,7 @@ export interface FileRouteTypes {
     | '/_authenticated/compliance/new-hire'
     | '/_authenticated/compliance/tcole'
     | '/_authenticated/compliance/tmrs'
+    | '/_authenticated/employees/$id'
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
     | '/_authenticated/grievances/$id'
@@ -1074,6 +1111,7 @@ export interface FileRouteTypes {
     | '/_authenticated/templates/'
     | '/careers/$slug/'
     | '/_authenticated/review-cycles/$id/calibration'
+    | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
@@ -1092,6 +1130,7 @@ export interface RootRouteChildren {
   OfferTokenRoute: typeof OfferTokenRoute
   CareersIndexRoute: typeof CareersIndexRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
+  ApiPublicBadgeSerialRoute: typeof ApiPublicBadgeSerialRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
@@ -1255,6 +1294,13 @@ declare module '@tanstack/react-router' {
       path: '/internal-careers'
       fullPath: '/internal-careers'
       preLoaderRoute: typeof AuthenticatedInternalCareersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/id-badge-templates': {
+      id: '/_authenticated/id-badge-templates'
+      path: '/id-badge-templates'
+      fullPath: '/id-badge-templates'
+      preLoaderRoute: typeof AuthenticatedIdBadgeTemplatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hire-requests': {
@@ -1607,6 +1653,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeesImportRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/employees/$id': {
+      id: '/_authenticated/employees/$id'
+      path: '/employees/$id'
+      fullPath: '/employees/$id'
+      preLoaderRoute: typeof AuthenticatedEmployeesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/compliance/tmrs': {
       id: '/_authenticated/compliance/tmrs'
       path: '/compliance/tmrs'
@@ -1661,6 +1714,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/docs/$file'
       fullPath: '/api/public/docs/$file'
       preLoaderRoute: typeof ApiPublicDocsFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/badge/$serial': {
+      id: '/api/public/badge/$serial'
+      path: '/api/public/badge/$serial'
+      fullPath: '/api/public/badge/$serial'
+      preLoaderRoute: typeof ApiPublicBadgeSerialRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/review-cycles/$id/calibration': {
@@ -1749,6 +1809,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedHireRequestsRoute: typeof AuthenticatedHireRequestsRoute
+  AuthenticatedIdBadgeTemplatesRoute: typeof AuthenticatedIdBadgeTemplatesRoute
   AuthenticatedInternalCareersRoute: typeof AuthenticatedInternalCareersRoute
   AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -1769,6 +1830,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedComplianceNewHireRoute: typeof AuthenticatedComplianceNewHireRoute
   AuthenticatedComplianceTcoleRoute: typeof AuthenticatedComplianceTcoleRoute
   AuthenticatedComplianceTmrsRoute: typeof AuthenticatedComplianceTmrsRoute
+  AuthenticatedEmployeesIdRoute: typeof AuthenticatedEmployeesIdRoute
   AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
@@ -1818,6 +1880,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedHireRequestsRoute: AuthenticatedHireRequestsRoute,
+  AuthenticatedIdBadgeTemplatesRoute: AuthenticatedIdBadgeTemplatesRoute,
   AuthenticatedInternalCareersRoute: AuthenticatedInternalCareersRoute,
   AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
@@ -1838,6 +1901,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedComplianceNewHireRoute: AuthenticatedComplianceNewHireRoute,
   AuthenticatedComplianceTcoleRoute: AuthenticatedComplianceTcoleRoute,
   AuthenticatedComplianceTmrsRoute: AuthenticatedComplianceTmrsRoute,
+  AuthenticatedEmployeesIdRoute: AuthenticatedEmployeesIdRoute,
   AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
@@ -1895,6 +1959,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfferTokenRoute: OfferTokenRoute,
   CareersIndexRoute: CareersIndexRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
+  ApiPublicBadgeSerialRoute: ApiPublicBadgeSerialRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,

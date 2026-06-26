@@ -193,13 +193,14 @@ function EmployeesPage() {
             const w = workerTypes?.find((x) => x.id === e.worker_type_id);
             return (
               <div key={e.id} className="p-4 flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="font-medium">{e.first_name} {e.last_name}</div>
+                <Link to="/employees/$id" params={{ id: e.id }} className="min-w-0 group">
+                  <div className="font-medium group-hover:underline">{e.first_name} {e.last_name}</div>
                   <div className="text-sm text-muted-foreground">{e.job_title || "—"} · {e.department || "—"} · {w?.name || "—"}</div>
-                </div>
+                </Link>
                 <div className="flex items-center gap-3">
                   <span className="text-xs px-2 py-0.5 rounded bg-secondary text-secondary-foreground">{e.status}</span>
                   <span className="text-xs text-muted-foreground">{e.start_date ?? ""}</span>
+                  <Link to="/employees/$id" params={{ id: e.id }} className="text-xs text-primary hover:underline">Profile</Link>
                   <Link to="/transcript/$employeeId" params={{ employeeId: e.id }} className="text-xs text-primary hover:underline">Transcript</Link>
                 </div>
               </div>
