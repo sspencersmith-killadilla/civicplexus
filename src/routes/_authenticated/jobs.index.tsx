@@ -51,6 +51,78 @@ const SAMPLE_TEMPLATE = {
 
 export const Route = createFileRoute("/_authenticated/jobs/")({ component: JobsIndex });
 
+function HiringGuide() {
+  const steps = [
+    {
+      icon: Briefcase,
+      title: "1. Define the classification",
+      body: "Create or pick a job in Positions — title, department, pay grade. The wizard pulls these defaults so you don't retype them.",
+      to: "/positions" as const,
+      cta: "Open Positions",
+    },
+    {
+      icon: Plus,
+      title: "2. Draft a requisition",
+      body: 'Click "New requisition", choose the classification, click "Use template" to autofill summary/duties/KSA, then save the draft.',
+    },
+    {
+      icon: FileCheck2,
+      title: "3. Submit for approval",
+      body: "Routes through Supervisor → HR Admin. Approvers act from the Approvals inbox. HR Admins can self-approve in demos.",
+      to: "/approvals" as const,
+      cta: "Open Approvals",
+    },
+    {
+      icon: Megaphone,
+      title: "4. Post publicly",
+      body: 'Once approved, click "Post publicly" — status flips to posted and the listing appears on the public careers page.',
+      to: "/careers" as const,
+      cta: "View careers page",
+      external: true,
+    },
+    {
+      icon: ListChecks,
+      title: "5. Review applicants",
+      body: "Open the requisition to triage applicants, run AI screening, and move candidates through the pipeline.",
+    },
+  ];
+  return (
+    <Card className="p-4 mb-4 bg-muted/20">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium">From new position → posted job</p>
+          <p className="text-xs text-muted-foreground">Five steps to take a classification all the way to a live posting.</p>
+        </div>
+      </div>
+      <ol className="grid md:grid-cols-5 gap-3 mt-3">
+        {steps.map((s) => {
+          const Icon = s.icon;
+          return (
+            <li key={s.title} className="rounded border bg-background p-3">
+              <div className="flex items-center gap-2">
+                <Icon className="h-4 w-4 text-primary" />
+                <p className="text-xs font-medium leading-tight">{s.title}</p>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">{s.body}</p>
+              {s.to && s.cta && (
+                s.external ? (
+                  <a href={s.to} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline mt-2">
+                    {s.cta} <ExternalLink className="h-3 w-3" />
+                  </a>
+                ) : (
+                  <Link to={s.to} className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline mt-2">
+                    {s.cta} <ChevronRight className="h-3 w-3" />
+                  </Link>
+                )
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </Card>
+  );
+}
+
 function JobsIndex() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
