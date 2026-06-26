@@ -429,11 +429,21 @@ export const getPublicRequisition = createServerFn({ method: "GET" })
       auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
     });
     const { data: row, error } = await sb.from("job_requisitions")
-      .select("id, slug, title, department, location, employment_type, summary, description, requirements, benefits, posting_sections, posted_at, closes_at, salary_min, salary_max")
+      .select("id, slug, title, department, location, employment_type, summary, description, requirements, benefits, posting_sections, posted_at, closes_at, salary_min, salary_max, brochure_url")
       .eq("slug", data.slug).eq("status", "posted").eq("internal_only", false).maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Position not found");
-    return row;
+    const r = row as Record<string, unknown> & { brochure_url?: string | null };
+    let brochure_signed_url: string | null = null;
+    if (r.brochure_url) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: signed } = await supabaseAdmin.storage
+          .from("careers-brochures").createSignedUrl(r.brochure_url, 60 * 60);
+        brochure_signed_url = signed?.signedUrl ?? null;
+      } catch { /* ignore */ }
+    }
+    return { ...r, brochure_signed_url };
   });
 
 /** Authenticated: list active positions (job classifications) for the wizard dropdown. */
