@@ -44,12 +44,30 @@ function PafDetail() {
     },
   });
 
+  const auditQ = useQuery({
+    queryKey: ["paf-audit", id],
+    queryFn: async () => {
+      const { data } = await supabase.from("paf_audit")
+        .select("id, event_type, from_status, to_status, notes, payload, created_at, actor_id")
+        .eq("paf_id", id)
+        .order("created_at", { ascending: false });
+      const rows = (data ?? []) as Array<{ id: string; event_type: string; from_status: string | null; to_status: string | null; notes: string | null; payload: Record<string, unknown> | null; created_at: string; actor_id: string | null }>;
+      const actorIds = Array.from(new Set(rows.map((r) => r.actor_id).filter(Boolean) as string[]));
+      const nameMap: Record<string, string> = {};
+      if (actorIds.length) {
+        const { data: profs } = await supabase.from("profiles").select("id, full_name, email").in("id", actorIds);
+        for (const p of profs ?? []) nameMap[p.id] = p.full_name || p.email || p.id.slice(0, 8);
+      }
+      return rows.map((r) => ({ ...r, actor_name: r.actor_id ? (nameMap[r.actor_id] ?? r.actor_id.slice(0, 8)) : "System" }));
+    },
+  });
+
   const decide = useMutation({
     mutationFn: async ({ stepId, decision }: { stepId: string; decision: "approved" | "denied" }) => {
       const { error } = await supabase.rpc("decide_paf_step" as never, { _step_id: stepId, _decision: decision, _notes: notes || null } as never);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["paf", id] }); qc.invalidateQueries({ queryKey: ["paf-steps"] }); setNotes(""); toast.success("Decision recorded"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["paf", id] }); qc.invalidateQueries({ queryKey: ["paf-steps"] }); qc.invalidateQueries({ queryKey: ["paf-audit", id] }); setNotes(""); toast.success("Decision recorded"); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
