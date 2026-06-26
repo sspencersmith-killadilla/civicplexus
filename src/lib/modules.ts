@@ -6,6 +6,7 @@ import {
   CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon,
   DollarSign, Scale, BarChart2, FileStack, Banknote, DatabaseBackup, Landmark,
   ShieldCheck, BadgeCheck, ToggleLeft, UserCog, Network,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRole } from "@/hooks/use-current-user";
@@ -44,6 +45,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/help", "Help & Docs", BookOpen, ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"]),
   ]},
   { key: moduleKey("time-leave"), label: "Time & Leave", items: [
+    def("/timekeeping", "Time Clock", Clock, ["hr_admin", "hiring_manager", "supervisor", "employee"]),
     def("/leave", "Leave Requests", CalendarDays, ["hr_admin", "hiring_manager", "supervisor", "employee"]),
     def("/paf", "Personnel Actions", PafIcon, ["hr_admin", "hiring_manager", "supervisor"]),
   ]},
