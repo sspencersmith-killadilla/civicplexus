@@ -46,7 +46,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <img src={markAsset.url} alt="" aria-hidden="true" className="h-8 w-8 object-contain" />
             <span className="font-serif text-lg tracking-tight">CivicPlexus</span>
           </Link>
-          <p className="mt-1 text-xs text-sidebar-foreground/60">Municipal Onboarding</p>
+          <p className="mt-1 text-xs text-sidebar-foreground/60">Municipal HRIS</p>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
           {groups.map((g) => (
