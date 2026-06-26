@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2, Sparkles, FileText, Check, Pencil, X } from "lucide-react";
+import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2, Sparkles, FileText, Check, Pencil, X, Upload, FileDown, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { submitRequisitionForApproval, postRequisition, closeRequisition, transitionApplicationStatus, scheduleInterview, convertApplicationToHire } from "@/lib/jobs.functions";
