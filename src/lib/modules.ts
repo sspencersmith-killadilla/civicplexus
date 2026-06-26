@@ -46,6 +46,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
   ]},
   { key: moduleKey("time-leave"), label: "Time & Leave", items: [
     def("/timekeeping", "Time Clock", Clock, ["hr_admin", "hiring_manager", "supervisor", "employee"]),
+    def("/shift-patterns", "Shift Patterns", CalendarDays, ["hr_admin"]),
     def("/leave", "Leave Requests", CalendarDays, ["hr_admin", "hiring_manager", "supervisor", "employee"]),
     def("/paf", "Personnel Actions", PafIcon, ["hr_admin", "hiring_manager", "supervisor"]),
   ]},

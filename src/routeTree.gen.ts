@@ -19,6 +19,7 @@ import { Route as CandidateTokenRouteImport } from './routes/candidate.$token'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedTimekeepingRouteImport } from './routes/_authenticated/timekeeping'
+import { Route as AuthenticatedShiftPatternsRouteImport } from './routes/_authenticated/shift-patterns'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedScreeningsRouteImport } from './routes/_authenticated/screenings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -149,6 +150,12 @@ const AuthenticatedTimekeepingRoute =
   AuthenticatedTimekeepingRouteImport.update({
     id: '/timekeeping',
     path: '/timekeeping',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShiftPatternsRoute =
+  AuthenticatedShiftPatternsRouteImport.update({
+    id: '/shift-patterns',
+    path: '/shift-patterns',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -633,6 +640,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/screenings': typeof AuthenticatedScreeningsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/shift-patterns': typeof AuthenticatedShiftPatternsRoute
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -724,6 +732,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/screenings': typeof AuthenticatedScreeningsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/shift-patterns': typeof AuthenticatedShiftPatternsRoute
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -816,6 +825,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/screenings': typeof AuthenticatedScreeningsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/shift-patterns': typeof AuthenticatedShiftPatternsRoute
   '/_authenticated/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -909,6 +919,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/screenings'
     | '/settings'
+    | '/shift-patterns'
     | '/timekeeping'
     | '/training'
     | '/worker-types'
@@ -1000,6 +1011,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/screenings'
     | '/settings'
+    | '/shift-patterns'
     | '/timekeeping'
     | '/training'
     | '/worker-types'
@@ -1091,6 +1103,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/screenings'
     | '/_authenticated/settings'
+    | '/_authenticated/shift-patterns'
     | '/_authenticated/timekeeping'
     | '/_authenticated/training'
     | '/_authenticated/worker-types'
@@ -1235,6 +1248,13 @@ declare module '@tanstack/react-router' {
       path: '/timekeeping'
       fullPath: '/timekeeping'
       preLoaderRoute: typeof AuthenticatedTimekeepingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shift-patterns': {
+      id: '/_authenticated/shift-patterns'
+      path: '/shift-patterns'
+      fullPath: '/shift-patterns'
+      preLoaderRoute: typeof AuthenticatedShiftPatternsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -1863,6 +1883,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedScreeningsRoute: typeof AuthenticatedScreeningsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedShiftPatternsRoute: typeof AuthenticatedShiftPatternsRoute
   AuthenticatedTimekeepingRoute: typeof AuthenticatedTimekeepingRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
@@ -1936,6 +1957,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedScreeningsRoute: AuthenticatedScreeningsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedShiftPatternsRoute: AuthenticatedShiftPatternsRoute,
   AuthenticatedTimekeepingRoute: AuthenticatedTimekeepingRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
