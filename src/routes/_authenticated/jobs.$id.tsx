@@ -60,7 +60,7 @@ function JobDetail() {
     queryFn: async () => {
       const { data, error } = await supabase.from("job_requisitions" as never).select("*").eq("id", id).single();
       if (error) throw error;
-      return data as never as { id: string; title: string; status: string; slug: string | null; internal_only: boolean; department: string | null; description: string | null; summary: string | null };
+      return data as never as { id: string; title: string; status: string; slug: string | null; internal_only: boolean; department: string | null; description: string | null; summary: string | null; brochure_url: string | null };
     },
   });
 
