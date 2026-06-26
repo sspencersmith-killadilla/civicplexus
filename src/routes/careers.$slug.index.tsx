@@ -3,7 +3,7 @@ import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { getPublicRequisition } from "@/lib/jobs.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Briefcase, MapPin } from "lucide-react";
+import { ArrowLeft, Briefcase, MapPin, FileDown } from "lucide-react";
 
 const jobQuery = (slug: string) => queryOptions({
   queryKey: ["public-careers", slug],
@@ -62,6 +62,18 @@ function JobDetail() {
             <Link to="/careers/$slug/apply" params={{ slug }}>Apply for this role</Link>
           </Button>
         </div>
+        {(j as unknown as { brochure_signed_url?: string | null }).brochure_signed_url && (
+          <div className="mt-4">
+            <a
+              href={(j as unknown as { brochure_signed_url: string }).brochure_signed_url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+            >
+              <FileDown className="h-4 w-4" /> Download position brochure (PDF)
+            </a>
+          </div>
+        )}
       </main>
     </div>
   );
