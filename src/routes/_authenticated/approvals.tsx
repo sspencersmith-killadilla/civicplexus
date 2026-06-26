@@ -23,15 +23,19 @@ function ApprovalsInbox() {
     queryFn: async () => {
       if (!me?.user.id) return [];
       const roles = me.roles ?? [];
-      const orFilter = [
+      const isHrAdmin = roles.includes("hr_admin");
+      const orParts = [
         `approver_id.eq.${me.user.id}`,
         ...(roles.length ? [`approver_role.in.(${roles.join(",")})`] : []),
-      ].join(",");
-      const { data: steps } = await supabase.from("approval_steps")
+      ];
+      let query = supabase.from("approval_steps")
         .select("id, stage, approver_label, approver_role, approver_id, status, chain_id, approval_chains:chain_id(id, kind, entity_type, entity_id, status)")
         .eq("status", "pending")
-        .or(orFilter)
         .order("created_at");
+      if (!isHrAdmin) {
+        query = query.or(orParts.join(","));
+      }
+      const { data: steps } = await query;
       const rows = (steps ?? []) as unknown as Array<{
         id: string; stage: number; approver_label: string | null; approver_role: string | null;
         chain_id: string;
