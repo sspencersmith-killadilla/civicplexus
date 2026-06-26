@@ -238,7 +238,18 @@ export const getPafDetail = createServerFn({ method: "GET" })
     if (pafError) throw new Error(pafError.message);
     if (!paf) throw new Error("PAF not found");
 
-    const chainId = paf.approval_chain_id as string | null;
+    let chainId = paf.approval_chain_id as string | null;
+    if (!chainId) {
+      const { data: chain } = await supabaseAdmin
+        .from("approval_chains")
+        .select("id")
+        .eq("entity_type", "personnel_action")
+        .eq("entity_id", data.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      chainId = chain?.id ?? null;
+    }
     const { data: steps, error: stepsError } = chainId
       ? await supabaseAdmin
           .from("approval_steps")

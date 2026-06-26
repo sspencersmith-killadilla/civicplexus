@@ -31,7 +31,7 @@ function ApprovalsInbox() {
     <AppShell title="Approvals">
       <div className="grid gap-3 max-w-3xl">
         {(q.data ?? []).map((s) => {
-          const isPaf = (s.approval_chains?.kind ?? "").startsWith("paf_");
+          const isPaf = (s.approval_chains?.kind ?? "").startsWith("paf_") || s.approval_chains?.entity_type === "personnel_action";
           return (
             <ApprovalRow
               key={s.id}
@@ -62,7 +62,7 @@ function ApprovalRow({ step, onDecide }: {
   onDecide: (d: "approved" | "rejected", notes?: string) => void;
 }) {
   const [notes, setNotes] = useState("");
-  const isPaf = (step.approval_chains?.kind ?? "").startsWith("paf_");
+  const isPaf = (step.approval_chains?.kind ?? "").startsWith("paf_") || step.approval_chains?.entity_type === "personnel_action";
   const paf = step.paf;
   const label = step.approver_label || step.approver_role || "Approver";
   return (
