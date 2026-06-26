@@ -40,8 +40,8 @@ function PafIndex() {
   const empsQ = useQuery({
     queryKey: ["emps-min"],
     queryFn: async () => {
-      const { data } = await supabase.from("employees").select("id, first_name, last_name, job_title").order("last_name").limit(500);
-      return (data ?? []) as Array<{ id: string; first_name: string; last_name: string; job_title: string | null }>;
+      const { data } = await supabase.from("employees").select("id, user_id, first_name, last_name, job_title").order("last_name").limit(500);
+      return (data ?? []) as Array<{ id: string; user_id: string | null; first_name: string; last_name: string; job_title: string | null }>;
     },
   });
 
@@ -110,11 +110,11 @@ function PafIndex() {
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label>New job title</Label><Input value={form.new_job_title} onChange={(e) => setForm({ ...form, new_job_title: e.target.value })} /></div>
                   <div><Label>New department</Label><Input value={form.new_department} onChange={(e) => setForm({ ...form, new_department: e.target.value })} /></div>
-                  <div className="col-span-2"><Label>New manager (employee)</Label>
+                  <div className="col-span-2"><Label>New manager</Label>
                     <Select value={form.new_manager_id} onValueChange={(v) => setForm({ ...form, new_manager_id: v })}>
                       <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
                       <SelectContent>
-                        {(empsQ.data ?? []).map((e) => <SelectItem key={e.id} value={e.id}>{e.last_name}, {e.first_name}</SelectItem>)}
+                        {(empsQ.data ?? []).filter((e) => e.user_id).map((e) => <SelectItem key={e.id} value={e.user_id!}>{e.last_name}, {e.first_name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
