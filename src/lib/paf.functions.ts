@@ -48,29 +48,27 @@ export const submitPaf = createServerFn({ method: "POST" })
       throw new Error("Cannot submit a PAF on yourself");
     }
     if (!isHrAdmin) {
-      const managerEmpRow = await supabaseAdmin
-        .from("employees").select("user_id").eq("id", emp.manager_id ?? "00000000-0000-0000-0000-000000000000").maybeSingle();
-      const isDirectManager = managerEmpRow.data?.user_id === context.userId;
+      const isDirectManager = emp.manager_id === context.userId;
       if (!isDirectManager) {
         throw new Error("Forbidden: you may only submit PAFs for employees you directly manage");
       }
     }
 
-    // Resolve the subject employee's manager user_id (for stage-1 supervisor step)
-    let managerUserId: string | null = null;
-    if (emp.manager_id) {
-      const { data: m } = await supabaseAdmin
-        .from("employees").select("user_id").eq("id", emp.manager_id).maybeSingle();
-      managerUserId = m?.user_id ?? null;
-    }
+    // employees.manager_id stores the supervisor's auth user id.
+    const managerUserId = emp.manager_id ?? null;
     // Fallback admin from org_settings
     const { data: org } = await supabaseAdmin.from("org_settings").select("fallback_admin_user_id").maybeSingle();
     const fallbackAdmin = (org as { fallback_admin_user_id: string | null } | null)?.fallback_admin_user_id ?? null;
 
     // Find first hr_admin user id for assignment
     const { data: hrUsers } = await supabaseAdmin
-      .from("user_roles").select("user_id").eq("role", "hr_admin" as never);
-    const firstHr = (hrUsers ?? [])[0]?.user_id ?? null;
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "hr_admin" as never)
+      .order("created_at", { ascending: true });
+    const firstHr = isHrAdmin
+      ? context.userId
+      : (hrUsers ?? [])[0]?.user_id ?? null;
 
     const steps = resolveApprovalChain({
       action_type: data.action_type as PafActionType,
