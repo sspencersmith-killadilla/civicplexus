@@ -110,10 +110,16 @@ export const submitPaf = createServerFn({ method: "POST" })
     if (cErr || !chain) throw new Error(cErr?.message ?? "Could not start chain");
 
     for (const step of steps) {
-      await supabaseAdmin.from("approval_steps").insert({
-        chain_id: chain.id, stage: step.stage, approver_role: step.role,
-        approver_id: step.approver_id, status: "pending",
+      const label = step.role.replace(/_/g, " ");
+      const { error: sErr } = await supabaseAdmin.from("approval_steps").insert({
+        chain_id: chain.id,
+        stage: step.stage,
+        approver_role: step.role,
+        approver_label: label,
+        approver_id: step.approver_id,
+        status: "pending",
       } as never);
+      if (sErr) throw new Error(`Could not create approval step (stage ${step.stage}): ${sErr.message}`);
     }
 
     await supabaseAdmin.from("personnel_actions")
