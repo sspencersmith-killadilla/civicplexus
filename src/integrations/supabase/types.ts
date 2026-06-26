@@ -1266,6 +1266,60 @@ export type Database = {
           },
         ]
       }
+      employee_pattern_assignments: {
+        Row: {
+          anchor_date: string
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          effective_to: string | null
+          employee_id: string
+          id: string
+          notes: string | null
+          pattern_id: string
+          updated_at: string
+        }
+        Insert: {
+          anchor_date: string
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          employee_id: string
+          id?: string
+          notes?: string | null
+          pattern_id: string
+          updated_at?: string
+        }
+        Update: {
+          anchor_date?: string
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          pattern_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_pattern_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_pattern_assignments_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_schedules: {
         Row: {
           created_at: string
@@ -1427,6 +1481,59 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "employee_training"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_work_periods: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          effective_to: string | null
+          employee_id: string
+          id: string
+          kind: string
+          notes: string | null
+          ot_threshold_hours: number
+          period_anchor_date: string
+          period_days: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          employee_id: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          ot_threshold_hours?: number
+          period_anchor_date?: string
+          period_days?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          employee_id?: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          ot_threshold_hours?: number
+          period_anchor_date?: string
+          period_days?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_work_periods_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -3753,6 +3860,45 @@ export type Database = {
           },
         ]
       }
+      pattern_days: {
+        Row: {
+          day_index: number
+          id: string
+          is_off: boolean
+          pattern_id: string
+          shift_type_id: string | null
+        }
+        Insert: {
+          day_index: number
+          id?: string
+          is_off?: boolean
+          pattern_id: string
+          shift_type_id?: string | null
+        }
+        Update: {
+          day_index?: number
+          id?: string
+          is_off?: boolean
+          pattern_id?: string
+          shift_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pattern_days_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pattern_days_shift_type_id_fkey"
+            columns: ["shift_type_id"]
+            isOneToOne: false
+            referencedRelation: "shift_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pay_calendars: {
         Row: {
           anchor_period_start: string
@@ -4866,6 +5012,45 @@ export type Database = {
           },
         ]
       }
+      schedule_patterns: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          cycle_length_days: number
+          description: string | null
+          id: string
+          is_active: boolean
+          is_preset: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          cycle_length_days: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_preset?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          cycle_length_days?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_preset?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       screenings: {
         Row: {
           completed_at: string | null
@@ -4925,6 +5110,92 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shift_segments: {
+        Row: {
+          created_at: string
+          crosses_midnight: boolean
+          end_time: string
+          id: string
+          paid: boolean
+          segment_order: number
+          shift_type_id: string
+          start_time: string
+          unpaid_meal_min: number
+        }
+        Insert: {
+          created_at?: string
+          crosses_midnight?: boolean
+          end_time: string
+          id?: string
+          paid?: boolean
+          segment_order?: number
+          shift_type_id: string
+          start_time: string
+          unpaid_meal_min?: number
+        }
+        Update: {
+          created_at?: string
+          crosses_midnight?: boolean
+          end_time?: string
+          id?: string
+          paid?: boolean
+          segment_order?: number
+          shift_type_id?: string
+          start_time?: string
+          unpaid_meal_min?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_segments_shift_type_id_fkey"
+            columns: ["shift_type_id"]
+            isOneToOne: false
+            referencedRelation: "shift_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_types: {
+        Row: {
+          code: string | null
+          color: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          is_off: boolean
+          name: string
+          total_paid_hours: number
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_off?: boolean
+          name: string
+          total_paid_hours?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_off?: boolean
+          name?: string
+          total_paid_hours?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       signatures: {
         Row: {
