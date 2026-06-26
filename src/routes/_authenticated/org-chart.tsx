@@ -220,7 +220,7 @@ function OrgChartPage() {
       const sub = nodeDatum.attributes?.title ?? "";
       return (
         <g>
-          <foreignObject x={-140} y={-32} width={280} height={68}>
+          <foreignObject x={-140} y={10} width={280} height={64}>
             <div
               style={{
                 boxSizing: "border-box",
@@ -251,7 +251,7 @@ function OrgChartPage() {
     const matched = nodeDatum.__match;
     return (
       <g style={{ cursor: "pointer" }} onClick={() => navigate({ to: "/employees/$id", params: { id: e.id } })}>
-        <foreignObject x={-130} y={-54} width={260} height={120}>
+        <foreignObject x={-130} y={10} width={260} height={120}>
           <div
             style={{
               boxSizing: "border-box",
@@ -383,8 +383,8 @@ function OrgChartPage() {
               collapsible
               renderCustomNodeElement={renderNode as unknown as never}
               separation={{ siblings: 1.3, nonSiblings: 1.6 }}
-              nodeSize={{ x: 290, y: 180 }}
-              pathFunc="diagonal"
+              nodeSize={{ x: 300, y: 220 }}
+              pathFunc="step"
               pathClassFunc={() => "org-chart-link"}
               zoomable
             />
