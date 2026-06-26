@@ -255,8 +255,19 @@ function AdminPanel() {
   const fetchAdmin = useServerFn(getTimeAdmin);
   const updatePol = useServerFn(updateTimePolicy);
   const q = useQuery({ queryKey: ["tk-admin"], queryFn: () => fetchAdmin() });
+  type PolicyInput = {
+    id: string;
+    daily_ot_threshold: number;
+    weekly_ot_threshold: number;
+    ot_multiplier: number;
+    comp_time_multiplier: number;
+    exempt_comp_multiplier: number;
+    rounding_minutes: number;
+    allow_comp_in_lieu: boolean;
+    max_comp_bank_hours: number | null;
+  };
   const polM = useMutation({
-    mutationFn: (v: Parameters<typeof updateTimePolicy>[0]["data"]) => updatePol({ data: v }),
+    mutationFn: (v: PolicyInput) => updatePol({ data: v }),
     onSuccess: () => { toast.success("Policy saved"); qc.invalidateQueries({ queryKey: ["tk-admin"] }); },
     onError: (e: Error) => toast.error(e.message),
   });

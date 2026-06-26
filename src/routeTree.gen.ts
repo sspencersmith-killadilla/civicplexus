@@ -18,6 +18,7 @@ import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
 import { Route as CandidateTokenRouteImport } from './routes/candidate.$token'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
+import { Route as AuthenticatedTimekeepingRouteImport } from './routes/_authenticated/timekeeping'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedScreeningsRouteImport } from './routes/_authenticated/screenings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -144,6 +145,12 @@ const AuthenticatedTrainingRoute = AuthenticatedTrainingRouteImport.update({
   path: '/training',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTimekeepingRoute =
+  AuthenticatedTimekeepingRouteImport.update({
+    id: '/timekeeping',
+    path: '/timekeeping',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -626,6 +633,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/screenings': typeof AuthenticatedScreeningsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/candidate/$token': typeof CandidateTokenRoute
@@ -716,6 +724,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/screenings': typeof AuthenticatedScreeningsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/candidate/$token': typeof CandidateTokenRoute
@@ -807,6 +816,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/screenings': typeof AuthenticatedScreeningsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/candidate/$token': typeof CandidateTokenRoute
@@ -899,6 +909,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/screenings'
     | '/settings'
+    | '/timekeeping'
     | '/training'
     | '/worker-types'
     | '/candidate/$token'
@@ -989,6 +1000,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/screenings'
     | '/settings'
+    | '/timekeeping'
     | '/training'
     | '/worker-types'
     | '/candidate/$token'
@@ -1079,6 +1091,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/screenings'
     | '/_authenticated/settings'
+    | '/_authenticated/timekeeping'
     | '/_authenticated/training'
     | '/_authenticated/worker-types'
     | '/candidate/$token'
@@ -1215,6 +1228,13 @@ declare module '@tanstack/react-router' {
       path: '/training'
       fullPath: '/training'
       preLoaderRoute: typeof AuthenticatedTrainingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/timekeeping': {
+      id: '/_authenticated/timekeeping'
+      path: '/timekeeping'
+      fullPath: '/timekeeping'
+      preLoaderRoute: typeof AuthenticatedTimekeepingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -1843,6 +1863,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedScreeningsRoute: typeof AuthenticatedScreeningsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTimekeepingRoute: typeof AuthenticatedTimekeepingRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
   AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
@@ -1915,6 +1936,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedScreeningsRoute: AuthenticatedScreeningsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTimekeepingRoute: AuthenticatedTimekeepingRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
   AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
