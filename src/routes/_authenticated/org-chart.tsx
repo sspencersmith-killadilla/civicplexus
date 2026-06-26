@@ -28,6 +28,7 @@ type Emp = {
   department: string | null;
   status: string;
   manager_id: string | null;
+  user_id: string | null;
   photo_path: string | null;
 };
 
