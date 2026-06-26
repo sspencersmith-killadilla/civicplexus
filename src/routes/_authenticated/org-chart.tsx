@@ -210,9 +210,16 @@ function OrgChartPage() {
   const managerIds = useMemo(() => {
     if (!filtered.length) return [] as string[];
     const byId = new Map(filtered.map((e) => [e.id, e]));
+    const byUserId = new Map<string, Emp>();
+    filtered.forEach((e) => { if (e.user_id) byUserId.set(e.user_id, e); });
     const has = new Set<string>();
     filtered.forEach((e) => {
-      if (e.manager_id && byId.has(e.manager_id)) has.add(e.manager_id);
+      if (!e.manager_id) return;
+      if (byId.has(e.manager_id)) has.add(e.manager_id);
+      else {
+        const mgr = byUserId.get(e.manager_id);
+        if (mgr) has.add(mgr.id);
+      }
     });
     return Array.from(has);
   }, [filtered]);
@@ -220,9 +227,18 @@ function OrgChartPage() {
   const collapseToDepth = (depth: number) => {
     if (!filtered.length) return;
     const byId = new Map(filtered.map((e) => [e.id, e]));
+    const byUserId = new Map<string, Emp>();
+    filtered.forEach((e) => { if (e.user_id) byUserId.set(e.user_id, e); });
     const childrenOf = new Map<string | null, string[]>();
     filtered.forEach((e) => {
-      const k = e.manager_id && byId.has(e.manager_id) ? e.manager_id : null;
+      let k: string | null = null;
+      if (e.manager_id) {
+        if (byId.has(e.manager_id)) k = e.manager_id;
+        else {
+          const mgr = byUserId.get(e.manager_id);
+          if (mgr) k = mgr.id;
+        }
+      }
       const arr = childrenOf.get(k) ?? [];
       arr.push(e.id);
       childrenOf.set(k, arr);
@@ -242,8 +258,21 @@ function OrgChartPage() {
 
   const orphans = useMemo(() => {
     if (!filtered.length) return [];
-    const hasReports = new Set(filtered.map((e) => e.manager_id).filter(Boolean) as string[]);
-    return filtered.filter((e) => !e.manager_id && !hasReports.has(e.id));
+    const byId = new Map(filtered.map((e) => [e.id, e]));
+    const byUserId = new Map<string, Emp>();
+    filtered.forEach((e) => { if (e.user_id) byUserId.set(e.user_id, e); });
+    const resolved = (m: string | null): string | null => {
+      if (!m) return null;
+      if (byId.has(m)) return m;
+      const v = byUserId.get(m);
+      return v ? v.id : null;
+    };
+    const hasReports = new Set<string>();
+    filtered.forEach((e) => {
+      const r = resolved(e.manager_id);
+      if (r) hasReports.add(r);
+    });
+    return filtered.filter((e) => !resolved(e.manager_id) && !hasReports.has(e.id));
   }, [filtered]);
 
   // Center the tree once the container has a size
