@@ -1,33 +1,64 @@
-## 1. Seed AI photos for all 29 demo employees
+# Timekeeping Module
 
-- Add a one-shot server function `seedDemoEmployeePhotos` (HR-admin gated) in `src/lib/employee-photos.functions.ts`:
-  - For each employee missing `photo_path`, generate a professional ID-badge-style headshot via the Lovable AI Gateway (`openai/gpt-image-2`, square, neutral background) with a prompt seeded from first/last name + job title (e.g. *"professional corporate headshot of a person named Maria Lopez, library aide, friendly smile, neutral grey studio background, soft lighting, shoulders up, photorealistic"*).
-  - Upload the resulting PNG to the existing `employee-photos` storage bucket at `employees/{id}/seed.png` using `supabaseAdmin`.
-  - Update `employees.photo_path`.
-  - Run sequentially with a small delay; return per-employee status.
-- Add a "Seed demo photos" button on `/admin-demo` so a single click backfills all missing photos. Idempotent — skips employees that already have a photo unless "Regenerate all" is toggled.
+A new module that ties into the existing Leave system. Hourly staff clock in/out from the portal; the system computes overtime and (optionally) comp time. Exempt staff get a static weekly schedule (default 40h) and can log extra hours that bank as straight comp time.
 
-Note: AI portraits are synthetic likenesses; we will not target real people. Prompts use generic descriptors plus the demo name only.
+## Classification
 
-## 2. Polish the org chart
+Add `flsa_class` to `worker_types` (`exempt` | `non_exempt`), defaulting existing types based on `is_peace_officer` / name (HR admin can edit). This is the single source of truth for which clocking flow an employee sees.
 
-Rework `src/routes/_authenticated/org-chart.tsx`:
+## New tables (all RLS-protected, GRANTed)
 
-- **Root label**: replace hardcoded `"Organization"` with `org_settings.org_name` (loaded via a small `getOrgName` server fn or existing org settings query). Fallback to "Organization" only if unset.
-- **Visual cleanup**:
-  - Larger, rounded card nodes (240×96) with subtle gradient header strip in the department color rather than a full border; soft shadow; hover lift.
-  - Circular avatar with white ring; initials fallback uses the same dept color at lower saturation.
-  - Two-line name (semibold, 14px), job title (12px muted), department chip pinned bottom-right.
-  - Replace `pathFunc="step"` with smooth `"diagonal"` connectors, thinner stroke, muted color.
-  - Root node becomes a pill card showing org name + employee count, primary-tinted.
-  - Use `--card`, `--border`, `--muted-foreground` tokens (no hardcoded greys); ensure dark-mode legibility.
-- **Layout**: increase `nodeSize` to `{x: 280, y: 180}`, tighter sibling separation, add a faint dotted background grid via CSS.
-- **Legend**: small department color legend chip row above the canvas.
-- **Controls**: group zoom/print/export into a single rounded toolbar; show current zoom %.
-- Keep all existing filter/search/orphan logic intact.
+- `time_policies` — org-wide defaults: workweek start day, daily OT threshold (default 8), weekly OT threshold (default 40), OT multiplier (1.5), comp-time multiplier (1.5 for non-exempt, 1.0 for exempt), max comp-time bank, rounding rule (none / nearest 5/15 min), allow comp time in lieu of OT (bool), pay period source (`pay_calendars`).
+- `employee_schedules` — per-employee weekly template: `mon_start, mon_end … sun_start, sun_end`, expected weekly hours (default 40 exempt), effective_from/to. HR can edit; employee can view.
+- `time_entries` — `employee_id, clock_in, clock_out (nullable while open), source ('web'|'kiosk'|'manual'), notes, edited_by, approved_by, approved_at, pay_period_id`. One open entry per employee enforced by partial unique index.
+- `time_breaks` — optional unpaid breaks tied to a `time_entry` (start/end).
+- `timesheets` — weekly rollup per employee per pay period: `regular_hours, overtime_hours, comp_time_earned, holiday_hours, leave_hours, status ('open'|'submitted'|'approved'|'locked'), submitted_at, approved_by`.
+- `comp_time_balances` — `employee_id, balance_hours, updated_at` (single row per employee, mirrors `leave_balances` pattern).
+- `comp_time_ledger` — `employee_id, delta_hours, reason ('earned'|'used'|'cashed_out'|'adjustment'), source_entry_id, source_leave_request_id, created_by`.
 
-## Technical notes
+Comp time as a leave type: insert a built-in `Comp Time` row into `leave_plans` so existing `leave_requests` flow handles using it. The leave-request approval trigger debits `comp_time_ledger` instead of (or in addition to) `leave_balances` based on plan type.
 
-- Image generation runs server-side only; uses `LOVABLE_API_KEY` (already configured). Non-streaming JSON response is fine here since we just persist the final PNG.
-- Storage writes use `supabaseAdmin` inside the handler (per server-side rules).
-- Org chart changes are presentation-only — no schema or query changes besides reading `org_settings.org_name`.
+## Server functions (`src/lib/timekeeping.functions.ts`)
+
+- `clockIn({ note? })` — refuses if open entry exists or employee inactive.
+- `clockOut({ entryId, note? })` — closes entry, recomputes the day/week rollup.
+- `startBreak` / `endBreak`.
+- `getMyOpenEntry`, `getMyTimesheet({ periodId })`, `getMyCompBalance`.
+- `submitTimesheet({ periodId })` — employee submits for supervisor approval.
+- `approveTimesheet({ timesheetId, decision, notes })` — supervisor/HR; on approve, posts OT/comp-time deltas to `comp_time_ledger` + `comp_time_balances`.
+- `editTimeEntry` (HR/supervisor with audit row in `audit_events`).
+- `setEmployeeSchedule`, `setTimePolicy` (HR admin).
+
+Calculation rules (run server-side on clock-out and on approve):
+- **Non-exempt:** sum worked minutes per day; daily > daily OT threshold → OT. Weekly remainder > weekly threshold → OT. If `allow_comp_in_lieu` and employee opt-in, OT hours convert to comp time at 1.5×; else paid OT.
+- **Exempt:** expected = schedule total (default 40). Worked − expected, if positive, banks as straight comp time at 1.0×. No OT.
+- Apply rounding rule before calculation.
+
+## UI
+
+New `/timekeeping` route (gated by `ModuleGate('timekeeping')`):
+
+- **Employee tab (default):** big Clock In/Out card showing live elapsed time, today's hours, week-to-date, comp-time balance, current schedule. Recent entries list with edit-request button. Submit-timesheet button at period end.
+- **Supervisor tab** (visible to managers): pending timesheets for direct reports, approve/deny with notes, drill into daily entries.
+- **HR admin tab:** time policies editor, per-employee schedule editor, all timesheets, manual entry/correction tool, comp-time ledger view, export CSV per pay period.
+
+Add a small "Clock In" widget on `/my-hr` and `/dashboard`. Surface comp-time balance alongside leave balances on `/leave`.
+
+## Leave integration
+
+- New built-in `Comp Time` leave plan; requests against it deduct `comp_time_balances` via the existing approval flow (extend `tg_leave_request_approved` to branch on plan).
+- Leave-request form shows comp-time balance when that plan is selected.
+- Approved leave hours show on the timesheet as `leave_hours` (read-only) so the weekly totals reconcile.
+
+## Module registry + docs
+
+- Register `timekeeping` in `src/lib/modules.ts` so super-admins can toggle it from `/admin-modules`.
+- Add a Timekeeping section to `docs/USER_GUIDE.md` and a tour step in `src/lib/demo-tour.ts`.
+- Seed demo data: schedules for every demo employee, ~2 weeks of clock entries for a few hourly staff, one pending timesheet for a supervisor to approve, a positive comp-time balance on the demo HR user.
+
+## Out of scope (call out for confirmation if you'd rather include)
+
+- Geofencing / IP restrictions on clock-in
+- Mobile kiosk / shared-device PIN mode
+- Holiday-pay rules (federal/state holiday auto-credit) — currently treated as a manual leave plan
+- Push to actual payroll export (we'll surface CSV; wiring into `payroll_exports` can be a follow-up)
