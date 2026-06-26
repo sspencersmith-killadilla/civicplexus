@@ -381,3 +381,57 @@ The guided tour mirrors the in-app overlay. Each stop names the route, what to l
 - A `pg_cron` job runs hourly and rolls back any rows the demo user inserted, updated, or deleted in the last 24 hours.
 - **Reset now** on `/admin-demo` triggers the same rollback immediately.
 - Module toggles, security settings, and other super-admin surfaces are out of scope for the demo sandbox revert.
+
+---
+
+## 16. HR Manager Onboarding Checklist
+
+Use this checklist the first time you set up employee photos, ID badges, and the org chart. Complete it in order — each step depends on the one before it.
+
+- [ ] **1. Open an employee profile**
+  1. Go to **Employees** (`/employees`).
+  2. Click any employee row to open `/employees/{id}`.
+  3. Confirm you see the **Profile**, **Photo**, and **ID Badge** tabs.
+
+- [ ] **2. Upload a photo**
+  1. On the employee profile, select the **Photo** tab.
+  2. Click **Upload photo** and choose a headshot (PNG or JPG under 5 MB).
+  3. Crop if needed, then click **Save**.
+  4. *Result:* The photo appears on the profile card and in the org chart. Employees cannot replace their own photo — only HR can.
+
+- [ ] **3. Verify the photo in the org chart**
+  1. Go to **Org Chart** (`/org-chart`).
+  2. Find the employee in the tree. Their photo should render on the card.
+  3. *Try:* use the search box or filter by department to narrow the view.
+
+- [ ] **4. Review or create a badge template**
+  1. Go to **ID Badge Templates** (`/id-badge-templates`).
+  2. Open the **Default** template, or click **New template** to design your own.
+  3. Pick which fields to show (name, title, department, employee ID, QR code), set primary/accent colors, and upload an org logo.
+  4. Click **Save template**.
+
+- [ ] **5. Generate a CR80 badge**
+  1. Return to the employee profile (`/employees/{id}`) and select the **ID Badge** tab.
+  2. Pick the template you just reviewed.
+  3. Click **Generate badge PDF**.
+  4. *Result:* A CR80-size PDF (3.375" × 2.125") downloads with the employee photo, fields, and a verification QR code.
+  5. *Try:* print on a CR80 PVC card or laminate sheet.
+
+- [ ] **6. Test the QR verification**
+  1. Scan the QR code on the printed badge with any phone camera.
+  2. It resolves to `/api/public/badge/{serial}`.
+  3. Confirm the public page shows the employee name, photo, and **Valid** status.
+  4. *Try:* click **Revoke** in the app, then refresh the public page. It should now show **Revoked**.
+
+- [ ] **7. Explore the org chart for reporting gaps**
+  1. Return to **Org Chart** (`/org-chart`).
+  2. Click **Include inactive** if you want to audit the full hierarchy.
+  3. Scroll to the **Unassigned** panel at the bottom — it lists employees with no manager and no direct reports.
+  4. *Try:* use zoom controls, print the chart, or click **Export PNG** to save a snapshot.
+
+- [ ] **8. Batch-photo multiple employees (optional)**
+  1. Back in **Employees** (`/employees`), open each new hire's profile in turn.
+  2. Repeat step 2 for each photo.
+  3. Refresh the org chart to see the full tree populate with faces.
+
+> **Tip:** If a photo upload fails, check that the file is under 5 MB and that you have the `hr_admin` or `supervisor` role. Only HR roles can write to the private `employee-photos` bucket.
