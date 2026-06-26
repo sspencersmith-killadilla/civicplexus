@@ -57,7 +57,7 @@ export const clockIn = createServerFn({ method: "POST" })
     const sb = context.supabase as unknown as { rpc: (n: string, a: AnyRow) => Promise<{ data: unknown; error: { message: string } | null }> };
     const { data: id, error } = await sb.rpc("clock_in", { _note: data.note ?? null });
     if (error) throw new Error(error.message);
-    return { id };
+    return { id: String(id ?? "") };
   });
 
 export const clockOut = createServerFn({ method: "POST" })
@@ -67,7 +67,7 @@ export const clockOut = createServerFn({ method: "POST" })
     const sb = context.supabase as unknown as { rpc: (n: string, a: AnyRow) => Promise<{ data: unknown; error: { message: string } | null }> };
     const { data: id, error } = await sb.rpc("clock_out", { _note: data.note ?? null });
     if (error) throw new Error(error.message);
-    return { id };
+    return { id: String(id ?? "") };
   });
 
 export const getMyTimesheets = createServerFn({ method: "GET" })
