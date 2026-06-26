@@ -2,15 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Check, X, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
-import { applyPaf } from "@/lib/paf.functions";
-import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
+import { applyPaf, decidePafStep, getPafDetail } from "@/lib/paf.functions";
 
 export const Route = createFileRoute("/_authenticated/paf/$id")({ component: PafDetail });
 
@@ -18,56 +16,20 @@ function PafDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
   const apply = useServerFn(applyPaf);
-  const { data: me } = useCurrentUser();
-  const isHR = hasRole(me?.roles, "hr_admin");
+  const getDetail = useServerFn(getPafDetail);
+  const decideStep = useServerFn(decidePafStep);
   const [notes, setNotes] = useState("");
 
   const q = useQuery({
     queryKey: ["paf", id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("personnel_actions")
-        .select("*, employees(first_name, last_name, job_title, department)")
-        .eq("id", id).single();
-      if (error) throw error;
-      return data as never as { id: string; paf_number: string; action_type: string; effective_date: string; status: string; reason: string | null; narrative: string | null; before_values: Record<string, unknown>; after_values: Record<string, unknown>; approval_chain_id: string | null; employees: { first_name: string; last_name: string; job_title: string | null; department: string | null } };
-    },
-  });
-
-  const stepsQ = useQuery({
-    queryKey: ["paf-steps", q.data?.approval_chain_id],
-    enabled: !!q.data?.approval_chain_id,
-    queryFn: async () => {
-      const { data } = await supabase.from("approval_steps")
-        .select("id, stage, approver_role, status, decided_at, decision_notes")
-        .eq("chain_id", q.data!.approval_chain_id!).order("stage");
-      return (data ?? []) as Array<{ id: string; stage: number; approver_role: string | null; status: string; decided_at: string | null; decision_notes: string | null }>;
-    },
-  });
-
-  const auditQ = useQuery({
-    queryKey: ["paf-audit", id],
-    queryFn: async () => {
-      const { data } = await supabase.from("paf_audit")
-        .select("id, event_type, from_status, to_status, notes, payload, created_at, actor_id")
-        .eq("paf_id", id)
-        .order("created_at", { ascending: false });
-      const rows = (data ?? []) as Array<{ id: string; event_type: string; from_status: string | null; to_status: string | null; notes: string | null; payload: Record<string, unknown> | null; created_at: string; actor_id: string | null }>;
-      const actorIds = Array.from(new Set(rows.map((r) => r.actor_id).filter(Boolean) as string[]));
-      const nameMap: Record<string, string> = {};
-      if (actorIds.length) {
-        const { data: profs } = await supabase.from("profiles").select("id, full_name, email").in("id", actorIds);
-        for (const p of profs ?? []) nameMap[p.id] = p.full_name || p.email || p.id.slice(0, 8);
-      }
-      return rows.map((r) => ({ ...r, actor_name: r.actor_id ? (nameMap[r.actor_id] ?? r.actor_id.slice(0, 8)) : "System" }));
-    },
+    queryFn: () => getDetail({ data: { id } }),
   });
 
   const decide = useMutation({
     mutationFn: async ({ stepId, decision }: { stepId: string; decision: "approved" | "denied" }) => {
-      const { error } = await supabase.rpc("decide_paf_step" as never, { _step_id: stepId, _decision: decision, _notes: notes || null } as never);
-      if (error) throw error;
+      await decideStep({ data: { step_id: stepId, decision, notes: notes || null } });
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["paf", id] }); qc.invalidateQueries({ queryKey: ["paf-steps"] }); qc.invalidateQueries({ queryKey: ["paf-audit", id] }); setNotes(""); toast.success("Decision recorded"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["paf", id] }); setNotes(""); toast.success("Decision recorded"); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
@@ -80,31 +42,34 @@ function PafDetail() {
   if (q.isLoading) return <AppShell title="PAF"><p className="text-muted-foreground">Loading…</p></AppShell>;
   if (!q.data) return <AppShell title="PAF"><p className="text-muted-foreground">Not found.</p></AppShell>;
 
-  const nextStep = stepsQ.data?.find((s) => s.status === "pending");
+  const paf = q.data.paf;
+  const steps = q.data.steps;
+  const audit = q.data.audit;
+  const nextStep = steps.find((s) => s.status === "pending" && s.can_decide);
 
   return (
-    <AppShell title={q.data.paf_number}>
+    <AppShell title={paf.paf_number ?? "PAF"}>
       <Link to="/paf" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Link>
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="p-5 lg:col-span-2 space-y-4">
           <div className="flex justify-between">
             <div>
-              <h2 className="font-medium text-lg">{q.data.employees.first_name} {q.data.employees.last_name}</h2>
-              <p className="text-sm text-muted-foreground">{q.data.employees.job_title ?? "—"} · {q.data.employees.department ?? "—"}</p>
+              <h2 className="font-medium text-lg">{paf.employees.first_name} {paf.employees.last_name}</h2>
+              <p className="text-sm text-muted-foreground">{paf.employees.job_title ?? "—"} · {paf.employees.department ?? "—"}</p>
             </div>
-            <span className="text-xs px-2 py-0.5 rounded bg-muted">{q.data.status}</span>
+            <span className="text-xs px-2 py-0.5 rounded bg-muted">{paf.status}</span>
           </div>
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><div className="text-xs text-muted-foreground">Action</div>{q.data.action_type.replace(/_/g, " ")}</div>
-            <div><div className="text-xs text-muted-foreground">Effective</div>{q.data.effective_date}</div>
+            <div><div className="text-xs text-muted-foreground">Action</div>{paf.action_type.replace(/_/g, " ")}</div>
+            <div><div className="text-xs text-muted-foreground">Effective</div>{paf.effective_date}</div>
           </div>
-          {q.data.reason && <div><div className="text-xs text-muted-foreground mb-1">Reason</div><p className="text-sm">{q.data.reason}</p></div>}
-          {q.data.narrative && <div><div className="text-xs text-muted-foreground mb-1">Narrative</div><p className="text-sm whitespace-pre-wrap">{q.data.narrative}</p></div>}
+          {paf.reason && <div><div className="text-xs text-muted-foreground mb-1">Reason</div><p className="text-sm">{paf.reason}</p></div>}
+          {paf.narrative && <div><div className="text-xs text-muted-foreground mb-1">Narrative</div><p className="text-sm whitespace-pre-wrap">{paf.narrative}</p></div>}
           <div>
             <div className="text-xs text-muted-foreground mb-1">After values</div>
-            <pre className="text-xs bg-muted rounded p-2 overflow-x-auto">{JSON.stringify(q.data.after_values, null, 2)}</pre>
+            <pre className="text-xs bg-muted rounded p-2 overflow-x-auto">{JSON.stringify(paf.after_values, null, 2)}</pre>
           </div>
-          {q.data.status === "approved" && isHR && (
+          {paf.status === "approved" && q.data.viewer.is_hr_admin && (
             <Button onClick={() => applyM.mutate()} disabled={applyM.isPending}>
               <PlayCircle className="h-4 w-4 mr-1" /> {applyM.isPending ? "Applying…" : "Apply to employee record"}
             </Button>
@@ -113,15 +78,16 @@ function PafDetail() {
         <Card className="p-5">
           <h3 className="font-medium mb-3">Approval chain</h3>
           <ol className="space-y-3">
-            {(stepsQ.data ?? []).map((s) => (
+            {steps.map((s) => (
               <li key={s.id} className="text-sm border-l-2 pl-3" style={{ borderColor: s.status === "approved" ? "rgb(16 185 129)" : s.status === "denied" ? "rgb(239 68 68)" : "var(--border)" }}>
                 <div className="flex justify-between">
-                  <span>Stage {s.stage} · {s.approver_role}</span>
+                  <span>Stage {s.stage} · {s.approver_label || s.approver_role}</span>
                   <span className="text-xs px-2 py-0.5 rounded bg-muted">{s.status}</span>
                 </div>
                 {s.decision_notes && <p className="text-xs text-muted-foreground mt-1">{s.decision_notes}</p>}
               </li>
             ))}
+            {steps.length === 0 && <p className="text-xs text-muted-foreground">No approval steps found. Run Repair approval chains from the PAF list.</p>}
           </ol>
           {nextStep && (
             <div className="mt-4 pt-4 border-t space-y-2">
@@ -137,7 +103,7 @@ function PafDetail() {
       <Card className="p-5 mt-4">
         <h3 className="font-medium mb-3">Audit log</h3>
         <ol className="space-y-2">
-          {(auditQ.data ?? []).map((a) => (
+          {audit.map((a) => (
             <li key={a.id} className="text-sm border-l-2 border-border pl-3">
               <div className="flex justify-between gap-2">
                 <span className="capitalize">{a.event_type.replace(/_/g, " ")}{a.from_status && a.to_status ? `: ${a.from_status} → ${a.to_status}` : ""}</span>
@@ -147,7 +113,7 @@ function PafDetail() {
               {a.notes && <p className="text-xs mt-1">{a.notes}</p>}
             </li>
           ))}
-          {(auditQ.data?.length ?? 0) === 0 && <p className="text-xs text-muted-foreground">No audit entries yet.</p>}
+          {audit.length === 0 && <p className="text-xs text-muted-foreground">No audit entries yet.</p>}
         </ol>
       </Card>
     </AppShell>
