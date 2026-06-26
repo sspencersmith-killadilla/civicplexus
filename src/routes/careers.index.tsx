@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { listPublicRequisitions } from "@/lib/jobs.functions";
+import { getCareersCustomization } from "@/lib/careers-customization.functions";
 import { Card } from "@/components/ui/card";
 import { Briefcase, MapPin } from "lucide-react";
 
@@ -8,9 +9,16 @@ const careersQuery = queryOptions({
   queryKey: ["public-careers"],
   queryFn: () => listPublicRequisitions(),
 });
+const customizationQuery = queryOptions({
+  queryKey: ["public-careers-customization"],
+  queryFn: () => getCareersCustomization(),
+});
 
 export const Route = createFileRoute("/careers/")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(careersQuery),
+  loader: ({ context }) => Promise.all([
+    context.queryClient.ensureQueryData(careersQuery),
+    context.queryClient.ensureQueryData(customizationQuery),
+  ]),
   head: () => ({
     meta: [
       { title: "Careers — open positions" },
@@ -24,14 +32,22 @@ export const Route = createFileRoute("/careers/")({
 
 function CareersIndex() {
   const { data } = useSuspenseQuery(careersQuery);
+  const { data: custom } = useSuspenseQuery(customizationQuery);
+  const customHtml = custom?.careers_page_html?.trim() || "";
+  const customCss = custom?.careers_page_css?.trim() || "";
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="max-w-5xl mx-auto px-6 py-10">
-          <h1 className="font-serif text-3xl tracking-tight">Careers</h1>
-          <p className="text-muted-foreground mt-1">Build a meaningful career with us.</p>
-        </div>
-      </header>
+      {customCss && <style dangerouslySetInnerHTML={{ __html: `.careers-custom-scope{}\n${customCss}` }} />}
+      {customHtml ? (
+        <div className="careers-custom-scope" dangerouslySetInnerHTML={{ __html: customHtml }} />
+      ) : (
+        <header className="border-b bg-card">
+          <div className="max-w-5xl mx-auto px-6 py-10">
+            <h1 className="font-serif text-3xl tracking-tight">Careers{custom?.org_name ? ` at ${custom.org_name}` : ""}</h1>
+            <p className="text-muted-foreground mt-1">Build a meaningful career with us.</p>
+          </div>
+        </header>
+      )}
       <main className="max-w-5xl mx-auto px-6 py-10">
         {data.length === 0 ? (
           <p className="text-muted-foreground text-sm">No open positions right now. Check back soon.</p>
