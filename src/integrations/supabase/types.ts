@@ -2420,6 +2420,7 @@ export type Database = {
         Row: {
           ai_rubric: Json
           benefits: string | null
+          brochure_url: string | null
           closes_at: string | null
           created_at: string
           department: string | null
@@ -2447,6 +2448,7 @@ export type Database = {
         Insert: {
           ai_rubric?: Json
           benefits?: string | null
+          brochure_url?: string | null
           closes_at?: string | null
           created_at?: string
           department?: string | null
@@ -2474,6 +2476,7 @@ export type Database = {
         Update: {
           ai_rubric?: Json
           benefits?: string | null
+          brochure_url?: string | null
           closes_at?: string | null
           created_at?: string
           department?: string | null
@@ -3447,6 +3450,8 @@ export type Database = {
           accent_color: string | null
           address: string | null
           ai_features: Json
+          careers_page_css: string | null
+          careers_page_html: string | null
           cutover_mode: boolean
           ein: string | null
           fallback_admin_user_id: string | null
@@ -3472,6 +3477,8 @@ export type Database = {
           accent_color?: string | null
           address?: string | null
           ai_features?: Json
+          careers_page_css?: string | null
+          careers_page_html?: string | null
           cutover_mode?: boolean
           ein?: string | null
           fallback_admin_user_id?: string | null
@@ -3497,6 +3504,8 @@ export type Database = {
           accent_color?: string | null
           address?: string | null
           ai_features?: Json
+          careers_page_css?: string | null
+          careers_page_html?: string | null
           cutover_mode?: boolean
           ein?: string | null
           fallback_admin_user_id?: string | null
