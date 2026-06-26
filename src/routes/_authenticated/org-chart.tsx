@@ -254,7 +254,7 @@ function OrgChartPage() {
         name: rootLabel,
         attributes: { title: `${filtered.length} ${filtered.length === 1 ? "person" : "people"}` },
         children: tree,
-        __emp: { id: "root", first_name: "", last_name: "", job_title: null, department: null, status: "active", manager_id: null, photo_path: null },
+        __emp: { id: "root", first_name: "", last_name: "", job_title: null, department: null, status: "active", manager_id: null, user_id: null, photo_path: null },
       };
 
   async function downloadPng() {
