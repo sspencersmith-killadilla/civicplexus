@@ -89,6 +89,7 @@ import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authentic
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
+import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/badge.$serial'
 import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
 import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
@@ -532,6 +533,11 @@ const ApiPublicDocsFileRoute = ApiPublicDocsFileRouteImport.update({
   path: '/api/public/docs/$file',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBadgeSerialRoute = ApiPublicBadgeSerialRouteImport.update({
+  id: '/api/public/badge/$serial',
+  path: '/api/public/badge/$serial',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedReviewCyclesIdCalibrationRoute =
   AuthenticatedReviewCyclesIdCalibrationRouteImport.update({
     id: '/calibration',
@@ -641,6 +647,7 @@ export interface FileRoutesByFullPath {
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
+  '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -726,6 +733,7 @@ export interface FileRoutesByTo {
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
+  '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -814,6 +822,7 @@ export interface FileRoutesById {
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/_authenticated/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
+  '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -902,6 +911,7 @@ export interface FileRouteTypes {
     | '/templates/'
     | '/careers/$slug/'
     | '/review-cycles/$id/calibration'
+    | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
@@ -987,6 +997,7 @@ export interface FileRouteTypes {
     | '/templates'
     | '/careers/$slug'
     | '/review-cycles/$id/calibration'
+    | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
@@ -1074,6 +1085,7 @@ export interface FileRouteTypes {
     | '/_authenticated/templates/'
     | '/careers/$slug/'
     | '/_authenticated/review-cycles/$id/calibration'
+    | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
     | '/api/public/hooks/reminders'
@@ -1092,6 +1104,7 @@ export interface RootRouteChildren {
   OfferTokenRoute: typeof OfferTokenRoute
   CareersIndexRoute: typeof CareersIndexRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
+  ApiPublicBadgeSerialRoute: typeof ApiPublicBadgeSerialRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
@@ -1663,6 +1676,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDocsFileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/badge/$serial': {
+      id: '/api/public/badge/$serial'
+      path: '/api/public/badge/$serial'
+      fullPath: '/api/public/badge/$serial'
+      preLoaderRoute: typeof ApiPublicBadgeSerialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/review-cycles/$id/calibration': {
       id: '/_authenticated/review-cycles/$id/calibration'
       path: '/calibration'
@@ -1895,6 +1915,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfferTokenRoute: OfferTokenRoute,
   CareersIndexRoute: CareersIndexRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
+  ApiPublicBadgeSerialRoute: ApiPublicBadgeSerialRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
