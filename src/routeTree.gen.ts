@@ -26,6 +26,7 @@ import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
 import { Route as AuthenticatedPolicyCampaignsRouteImport } from './routes/_authenticated/policy-campaigns'
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
+import { Route as AuthenticatedOrgChartRouteImport } from './routes/_authenticated/org-chart'
 import { Route as AuthenticatedOneOnOneTemplatesRouteImport } from './routes/_authenticated/one-on-one-templates'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -184,6 +185,11 @@ const AuthenticatedPolicyCampaignsRoute =
 const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
   id: '/policies',
   path: '/policies',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOrgChartRoute = AuthenticatedOrgChartRouteImport.update({
+  id: '/org-chart',
+  path: '/org-chart',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOneOnOneTemplatesRoute =
@@ -611,6 +617,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
+  '/org-chart': typeof AuthenticatedOrgChartRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
@@ -700,6 +707,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
+  '/org-chart': typeof AuthenticatedOrgChartRoute
   '/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
@@ -790,6 +798,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
   '/_authenticated/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
+  '/_authenticated/org-chart': typeof AuthenticatedOrgChartRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/_authenticated/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
@@ -881,6 +890,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/offboarding'
     | '/one-on-one-templates'
+    | '/org-chart'
     | '/policies'
     | '/policy-campaigns'
     | '/positions'
@@ -970,6 +980,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/offboarding'
     | '/one-on-one-templates'
+    | '/org-chart'
     | '/policies'
     | '/policy-campaigns'
     | '/positions'
@@ -1059,6 +1070,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
     | '/_authenticated/one-on-one-templates'
+    | '/_authenticated/org-chart'
     | '/_authenticated/policies'
     | '/_authenticated/policy-campaigns'
     | '/_authenticated/positions'
@@ -1259,6 +1271,13 @@ declare module '@tanstack/react-router' {
       path: '/policies'
       fullPath: '/policies'
       preLoaderRoute: typeof AuthenticatedPoliciesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/org-chart': {
+      id: '/_authenticated/org-chart'
+      path: '/org-chart'
+      fullPath: '/org-chart'
+      preLoaderRoute: typeof AuthenticatedOrgChartRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/one-on-one-templates': {
@@ -1815,6 +1834,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
   AuthenticatedOneOnOneTemplatesRoute: typeof AuthenticatedOneOnOneTemplatesRoute
+  AuthenticatedOrgChartRoute: typeof AuthenticatedOrgChartRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
   AuthenticatedPolicyCampaignsRoute: typeof AuthenticatedPolicyCampaignsRoute
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
@@ -1886,6 +1906,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
   AuthenticatedOneOnOneTemplatesRoute: AuthenticatedOneOnOneTemplatesRoute,
+  AuthenticatedOrgChartRoute: AuthenticatedOrgChartRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,
   AuthenticatedPolicyCampaignsRoute: AuthenticatedPolicyCampaignsRoute,
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
