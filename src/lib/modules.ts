@@ -5,7 +5,7 @@ import {
   MessagesSquare, Target, Megaphone, ClipboardCheck, ShieldAlert, BriefcaseBusiness,
   CheckSquare, Compass, CalendarDays, FileSignature as PafIcon, User as MeIcon,
   DollarSign, Scale, BarChart2, FileStack, Banknote, DatabaseBackup, Landmark,
-  ShieldCheck, BadgeCheck, ToggleLeft, UserCog,
+  ShieldCheck, BadgeCheck, ToggleLeft, UserCog, Network,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRole } from "@/hooks/use-current-user";
@@ -55,6 +55,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/benefits", "Benefits", HeartHandshake, ["hr_admin"]),
     def("/equipment", "Equipment & PPE", Package, ["hr_admin", "hiring_manager"]),
     def("/id-badge-templates", "ID Badge Templates", BadgeCheck, ["hr_admin"]),
+      def("/org-chart", "Org Chart", Network, ["hr_admin", "hiring_manager", "supervisor", "it_admin", "employee"]),
   ]},
   { key: moduleKey("workflow"), label: "Workflow", items: [
     def("/worker-types", "Worker Types", Briefcase, ["hr_admin"]),
