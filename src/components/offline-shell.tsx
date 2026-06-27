@@ -12,12 +12,12 @@ import {
 function useOnlineStatus() {
   // navigator.onLine is notoriously unreliable — many browsers (and embedded
   // webviews / preview iframes) report `false` even with a working connection.
-  // We treat it as a hint only, and confirm with a tiny same-origin probe
-  // before declaring the user offline.
-  const [online, setOnline] = useState(
-    typeof navigator !== "undefined" ? navigator.onLine : true,
-  );
+  // We treat it as a hint only, and confirm against the current same-origin
+  // app shell before declaring the user offline. Default to online so a failed
+  // probe cannot flash an offline banner on first paint.
+  const [online, setOnline] = useState(true);
   const probing = useRef(false);
+  const failedProbes = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -27,15 +27,16 @@ function useOnlineStatus() {
       probing.current = true;
       try {
         const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 3500);
-        // Cache-busted HEAD to a tiny same-origin asset that always exists.
-        const res = await fetch(`/favicon.ico?_=${Date.now()}`, {
+        const t = window.setTimeout(() => ctrl.abort(), 5000);
+        // Cache-busted HEAD to the current origin. `/favicon.ico` is not a
+        // reliable probe in this app because it can legitimately return 404.
+        const res = await fetch(`/?_connectivity=${Date.now()}`, {
           method: "HEAD",
           cache: "no-store",
           signal: ctrl.signal,
         });
-        clearTimeout(t);
-        return res.ok || res.status < 500;
+        window.clearTimeout(t);
+        return res.ok || (res.status >= 200 && res.status < 500);
       } catch {
         return false;
       } finally {
@@ -45,20 +46,33 @@ function useOnlineStatus() {
 
     async function recheck() {
       const ok = await probe();
-      if (!cancelled) setOnline(ok);
+      if (cancelled) return;
+      if (ok) {
+        failedProbes.current = 0;
+        setOnline(true);
+        return;
+      }
+      failedProbes.current += 1;
+      // Only show offline after repeated confirmed failures. This prevents
+      // transient preview/network quirks from incorrectly showing offline.
+      if (failedProbes.current >= 2) setOnline(false);
     }
 
-    const up = () => setOnline(true);
+    const up = () => {
+      failedProbes.current = 0;
+      setOnline(true);
+      void recheck();
+    };
     const down = () => void recheck(); // confirm before flipping to offline
     window.addEventListener("online", up);
     window.addEventListener("offline", down);
 
-    // Initial confirmation: if the browser claims offline, double-check.
-    if (!navigator.onLine) void recheck();
+    // Initial confirmation. Never trust the browser's offline flag by itself.
+    void recheck();
 
     // Periodic light recheck so a false-offline state self-heals.
     const iv = window.setInterval(() => {
-      if (!online) void recheck();
+      void recheck();
     }, 15000);
 
     return () => {
