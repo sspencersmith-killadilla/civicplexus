@@ -9,7 +9,7 @@ import {
   type QueuedAction,
 } from "@/lib/offline-queue";
 
-function useOnlineStatus() {
+export function useOnlineStatus() {
   // navigator.onLine is notoriously unreliable — many browsers (and embedded
   // webviews / preview iframes) report `false` even with a working connection.
   // We treat it as a hint only, and confirm against the current same-origin

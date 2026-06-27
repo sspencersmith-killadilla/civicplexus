@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { enqueue, syncQueue } from "@/lib/offline-queue";
-import { QueueList } from "@/components/offline-shell";
+import { QueueList, useOnlineStatus } from "@/components/offline-shell";
 
 export const Route = createFileRoute("/offline-shell")({
   ssr: false,
@@ -27,25 +27,8 @@ export const Route = createFileRoute("/offline-shell")({
   component: OfflineShellPage,
 });
 
-function useOnline() {
-  const [online, setOnline] = useState(
-    typeof navigator !== "undefined" ? navigator.onLine : true,
-  );
-  useEffect(() => {
-    const up = () => setOnline(true);
-    const down = () => setOnline(false);
-    window.addEventListener("online", up);
-    window.addEventListener("offline", down);
-    return () => {
-      window.removeEventListener("online", up);
-      window.removeEventListener("offline", down);
-    };
-  }, []);
-  return online;
-}
-
 function OfflineShellPage() {
-  const online = useOnline();
+  const online = useOnlineStatus();
   const [employeeId, setEmployeeId] = useState<string>("");
   const [planId, setPlanId] = useState<string>("");
 
@@ -55,7 +38,7 @@ function OfflineShellPage() {
     setPlanId(localStorage.getItem("cp.cached.leavePlanId") ?? "");
 
     // Best-effort refresh when online — read the signed-in user's employee row.
-    if (!navigator.onLine) return;
+    if (!online) return;
     (async () => {
       const { data } = await supabase.auth.getSession();
       const uid = data.session?.user.id;
@@ -79,7 +62,7 @@ function OfflineShellPage() {
         }
       }
     })();
-  }, []);
+  }, [online]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 md:p-8">

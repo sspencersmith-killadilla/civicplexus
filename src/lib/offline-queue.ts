@@ -67,9 +67,7 @@ export async function enqueue(
   // Request a Background Sync so the SW can drain even after this tab closes.
   await requestBackgroundSync();
   // Best-effort sync attempt immediately if online.
-  if (typeof navigator !== "undefined" && navigator.onLine) {
-    void syncQueue();
-  }
+  void syncQueue();
   return action;
 }
 
@@ -112,7 +110,6 @@ async function runAction(a: QueuedAction): Promise<void> {
 
 export async function syncQueue(): Promise<{ ok: number; failed: number }> {
   if (syncing) return { ok: 0, failed: 0 };
-  if (typeof navigator !== "undefined" && !navigator.onLine) return { ok: 0, failed: 0 };
   syncing = true;
   let ok = 0;
   let failed = 0;
@@ -153,7 +150,7 @@ export function installAutoSync() {
   window.addEventListener("online", () => void syncQueue());
   // Also try when the tab regains focus.
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && navigator.onLine) {
+    if (document.visibilityState === "visible") {
       void syncQueue();
     }
   });
@@ -166,7 +163,7 @@ export function installAutoSync() {
     });
   }
   // Initial drain.
-  if (navigator.onLine) void syncQueue();
+  void syncQueue();
 }
 
 // --- Background Sync registration ------------------------------------------
