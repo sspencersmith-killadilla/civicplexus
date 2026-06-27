@@ -480,3 +480,27 @@ Use this checklist the first time you set up employee photos, ID badges, and the
   3. Refresh the org chart to see the full tree populate with faces.
 
 > **Tip:** If a photo upload fails, check that the file is under 5 MB and that you have the `hr_admin` or `supervisor` role. Only HR roles can write to the private `employee-photos` bucket.
+---
+
+## 17. Offline-first PWA
+
+CivicPlexus ships as an installable Progressive Web App with an offline-first shell at **`/offline-shell`** for the three highest-volume actions: clock in/out, leave requests, and PAF approvals.
+
+### Install
+1. Open the app in Chrome, Edge, or Safari and tap **Install** (Address bar → Install app, or **Share → Add to Home Screen** on iOS).
+2. Visit `/offline-shell` once while online so the service worker caches the shell and stores your employee context.
+
+### How it works offline
+- Actions queue to IndexedDB in FIFO order with your captured Supabase bearer token.
+- When the device reconnects, **Background Sync** (`civicplexus-offline-sync` tag) drains the queue against `/api/public/hooks/offline-replay` — even if every tab is closed.
+- Safari (no `SyncManager`) falls back to a `drain-queue` `postMessage` when any tab is open.
+- The sticky **Offline banner** shows online/offline state, queued action count, and a **Sync now** button.
+
+### Modules covered
+| Action | Module |
+| --- | --- |
+| Clock in / Clock out | Timekeeping |
+| Submit leave request | Leave |
+| Approve / deny PAF step | Approvals |
+
+Everything else falls back to a network-first cached navigation; static assets are CacheFirst.
