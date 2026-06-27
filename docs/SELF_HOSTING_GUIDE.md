@@ -486,6 +486,28 @@ All six buckets in §5.8 are private. RLS lets a user read/write only their own 
 - `civicplexus-reminders` — hourly
 - `civicplexus-cert-expiry` — daily 07:00 local
 - `civicplexus-retention-sweep` — daily 02:00 local
+- `civicplexus-demo-reset` — hourly (rolls back demo-user changes older than 24 hours)
+
+### Modules added since 1.0
+These ship enabled by default and can be toggled per tenant from `/admin-modules`:
+- **Timekeeping** — clock-in/out, OT, comp-time, exempt schedules
+- **Public Safety Shifts** — 207(k) work periods, Kelly/Pitman/24-48 rotations
+- **HR + Finance** — department FTE budgets and requisition headroom checks
+- **Payroll Profiles** — Tyler Munis, BS&A, ADP, Paycom export templates
+- **Identity / SCIM** — Entra/Okta SAML + SCIM v2 (`/api/public/scim.v2.Users`)
+- **CBA** — union contract registry
+- **OSHA** — 300/300A incident log and summary
+- **LMS Imports** — external training ingest → TCOLE mapping
+- **Cascades** — org-wide directives with AI rollup
+- **1-on-1 Templates** — HR-managed question sets
+- **ID Badges + QR Verify** — CR80 PDFs, public `/api/public/badge/{serial}`
+- **Offline PWA** — service worker (`/sw.js`) with Background Sync against `/api/public/hooks/offline-replay`
+
+### PWA / Background Sync deployment notes
+- The build emits `/sw.js` via `vite-plugin-pwa` in `injectManifest` mode (source: `src/sw.ts`).
+- `/api/public/hooks/offline-replay` verifies the user's Supabase bearer token before executing queued RPCs — do not place it behind additional auth middleware.
+- iOS Safari does not implement Background Sync; the worker falls back to a `drain-queue` `postMessage` while at least one tab is open. Plan field training accordingly.
+- `vite.config.ts` denylists `/~oauth`, `/api/`, and `/auth` from the service worker navigation handler. Add any additional auth callback paths to the denylist if you extend the auth flow.
 
 ### Cost worksheet
 | Item | Monthly |
