@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { enqueue, syncQueue } from "@/lib/offline-queue";
-import { QueueList } from "@/components/offline-shell";
+import { QueueList, useOnlineStatus } from "@/components/offline-shell";
 
 export const Route = createFileRoute("/offline-shell")({
   ssr: false,
@@ -27,25 +27,8 @@ export const Route = createFileRoute("/offline-shell")({
   component: OfflineShellPage,
 });
 
-function useOnline() {
-  const [online, setOnline] = useState(
-    typeof navigator !== "undefined" ? navigator.onLine : true,
-  );
-  useEffect(() => {
-    const up = () => setOnline(true);
-    const down = () => setOnline(false);
-    window.addEventListener("online", up);
-    window.addEventListener("offline", down);
-    return () => {
-      window.removeEventListener("online", up);
-      window.removeEventListener("offline", down);
-    };
-  }, []);
-  return online;
-}
-
 function OfflineShellPage() {
-  const online = useOnline();
+  const online = useOnlineStatus();
   const [employeeId, setEmployeeId] = useState<string>("");
   const [planId, setPlanId] = useState<string>("");
 
@@ -55,7 +38,7 @@ function OfflineShellPage() {
     setPlanId(localStorage.getItem("cp.cached.leavePlanId") ?? "");
 
     // Best-effort refresh when online — read the signed-in user's employee row.
-    if (!navigator.onLine) return;
+    if (!online) return;
     (async () => {
       const { data } = await supabase.auth.getSession();
       const uid = data.session?.user.id;
@@ -79,7 +62,7 @@ function OfflineShellPage() {
         }
       }
     })();
-  }, []);
+  }, [online]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 md:p-8">
@@ -102,9 +85,9 @@ function OfflineShellPage() {
         </span>
       </header>
 
-      <ClockCard />
-      <LeaveCard employeeId={employeeId} planId={planId} />
-      <ApprovalsCard />
+      <ClockCard online={online} />
+      <LeaveCard employeeId={employeeId} planId={planId} online={online} />
+      <ApprovalsCard online={online} />
 
       <Card>
         <CardHeader>
@@ -134,14 +117,14 @@ function OfflineShellPage() {
   );
 }
 
-function ClockCard() {
+function ClockCard({ online }: { online: boolean }) {
   const [busy, setBusy] = useState(false);
   const punch = async (kind: "clock_in" | "clock_out") => {
     setBusy(true);
     try {
       await enqueue(kind, { at: new Date().toISOString() });
       toast.success(
-        navigator.onLine
+        online
           ? `${kind === "clock_in" ? "Clocked in" : "Clocked out"} — syncing`
           : `${kind === "clock_in" ? "Clock-in" : "Clock-out"} queued offline`,
       );
@@ -166,7 +149,7 @@ function ClockCard() {
   );
 }
 
-function LeaveCard({ employeeId, planId }: { employeeId: string; planId: string }) {
+function LeaveCard({ employeeId, planId, online }: { employeeId: string; planId: string; online: boolean }) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [hours, setHours] = useState("8");
@@ -189,7 +172,7 @@ function LeaveCard({ employeeId, planId }: { employeeId: string; planId: string 
       total_hours: Number(hours) || 0,
       reason: reason || undefined,
     });
-    toast.success(navigator.onLine ? "Leave request submitted" : "Leave request queued offline");
+    toast.success(online ? "Leave request submitted" : "Leave request queued offline");
     setReason("");
   };
 
@@ -225,7 +208,7 @@ function LeaveCard({ employeeId, planId }: { employeeId: string; planId: string 
   );
 }
 
-function ApprovalsCard() {
+function ApprovalsCard({ online }: { online: boolean }) {
   const [stepId, setStepId] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -235,7 +218,7 @@ function ApprovalsCard() {
       return;
     }
     await enqueue("decide_paf", { step_id: stepId, decision, notes: notes || undefined });
-    toast.success(navigator.onLine ? `${decision} sent` : `${decision} queued offline`);
+    toast.success(online ? `${decision} sent` : `${decision} queued offline`);
     setStepId("");
     setNotes("");
   };
