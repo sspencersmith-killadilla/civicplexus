@@ -184,13 +184,33 @@ Employees see their own profile, paystubs, documents, time-off balance, assigned
 - Mark eligibility, set enrollment window, attach **Dependents** (DOB, SSN, relationship).
 - Generate a hand-off packet for the carrier; carrier callbacks land at `/api/public/hooks/benefits-callback` (HMAC-signed).
 
+### 6.4 Timekeeping
+- **Timekeeping** (`/timekeeping`) is the daily clock-in/out surface. Non-exempt employees punch in and out; weekly totals show straight, overtime, and comp-time hours.
+- **Exempt employees** set a static weekly schedule (the "My weekly schedule" editor); hours logged beyond that schedule bank as 1.0× straight **comp time**.
+- **Time policies** (HR admin) control OT multipliers, comp-time caps, and rounding.
+- Managers approve timesheets from the same page; approvals flow into the payroll run.
+- Works offline through the **PWA shell** (§16) — punches queue locally and sync when the device reconnects.
+
+### 6.5 Public safety shift patterns
+- **Shift Patterns** (`/shift-patterns`) defines multi-week rotations: 24/48, Kelly, Pitman, Berkeley, custom.
+- Each pattern carries an **FLSA 207(k) work period** (e.g., 28 days / 212 hours for fire; 7 days / 53 hours weekly equivalent) so `compute_timesheet` calculates OT against the right threshold, not the 40-hour default.
+- Assign patterns to fire/police/EMT employees; their timesheets and comp-time accruals follow the rotation automatically.
+
+### 6.6 Payroll export profiles
+- **Payroll → Profiles** (`/payroll/profiles`) holds vendor-specific export templates: Tyler Munis, BS&A, ADP, Paycom, generic CSV.
+- Map your payroll fields once; every locked run can be previewed and exported using the chosen profile.
+
+### 6.7 FTE budget control
+- **HR + Finance** (`/hr-finance`) tracks department FTE budgets per fiscal year.
+- The requisition wizard calls `checkPositionBudget` before saving and blocks any draft that exceeds remaining headroom unless an HR admin checks the override box (logged to the audit trail).
+
 ---
 
 ## 7. Perform & Develop
 
 ### 7.1 Goals and cascades
 - **Goals**: individual objectives with progress, weight, due date, and optional parent goal. Progress on children rolls up to the parent automatically.
-- **Cascades**: top-down objective trees (e.g., City Manager → Department → Division → Individual).
+- **Cascades** (`/cascades`): org-wide directives published from leadership; teams respond with status updates, and an AI rollup summarizes department-level themes for HR. See the dedicated **Cascades** user manual PDF for full workflow.
 
 ### 7.2 Review cycles
 1. **Review Cycles → New**: period, eligibility, template, due dates for self / manager / signature.
@@ -199,13 +219,16 @@ Employees see their own profile, paystubs, documents, time-off balance, assigned
 4. Both parties sign; finalized reviews lock and feed the next comp cycle.
 
 ### 7.3 1:1s
-Manager and report share an agenda template, take running notes (private and shared), and capture action items that surface on each other's home pages until done.
+Manager and report share an agenda template, take running notes (private to the manager + shared), and capture action items that surface on each other's home pages until done. AI session summaries feed directly into the employee's next annual review draft. See the dedicated **1-on-1** user manual PDF for full workflow.
+
+**HR admins** edit the manager + employee question sets in **1-on-1 Templates** (`/one-on-one-templates`): clone, edit prompts, publish. Live meetings pick up the next published version.
 
 ### 7.4 Training & certifications
 - Assign **Courses** (one-off or recurring) to employees or to whole worker types.
 - **Employee Training** tracks status, score, evidence upload, and completion.
 - Completing a course can issue a **Certification** with an expiry; **Expiry tracker** color-codes 30/60/90 days out.
 - **Transcript** prints a full per-employee training history.
+- **LMS Imports** (`/lms-imports`) ingests completions from external LMSs and maps eligible courses into TCOLE continuing-education credits.
 
 ---
 
@@ -238,6 +261,14 @@ Track each leave-of-absence case: dates, hours used vs entitlement, certificatio
 - **Grievances → New**: intake form captures complainant, respondent, category, narrative, and confidentiality preference.
 - HR assigns an investigator; **Grievance Tasks** drive the investigation; **Grievance Events** are a full audit timeline.
 - Resolution sets the outcome and notifies the parties.
+
+### 8.8 OSHA 300 / 300A
+- **OSHA** (`/osha`) logs workplace incidents, classifies outcomes (death, days away, restricted/transfer, other recordable), and tracks days away / restricted.
+- The **300A summary** is generated per calendar year for posting and electronic submission.
+
+### 8.9 Union contracts (CBA)
+- **CBA** (`/cba`) stores collective bargaining agreements, effective dates, and key terms.
+- Surface relevant clauses on PAFs and comp cycles so HR enforces step-and-grade rules correctly.
 
 ### 8.8 Audit log
 Filter by actor, entity, date range. Read-only. Retain forever; never delete.
@@ -306,6 +337,9 @@ Roles live in `public.user_roles`. The `private.has_role(uid, role)` security-de
 | Comp cycle shows nobody | Eligibility filter excludes everyone | Loosen the filter, re-open the cycle |
 | Review cycle didn't seed | No active employees in scope, or cycle never moved to `open` | Activate employees, set status `open` |
 | `permission denied for table X` | Missing GRANT in a migration | `GRANT SELECT, INSERT, UPDATE, DELETE ON public.X TO authenticated;` |
+| Firefighter OT looks wrong | No 207(k) shift pattern assigned | Assign a Kelly/24-48 pattern in `/shift-patterns` |
+| Offline punches not syncing | Service worker not installed or `SyncManager` unavailable | Open `/offline-shell` once online; on Safari the queue flushes via `postMessage` when a tab is open |
+| Requisition save blocked by budget | Department FTE budget exhausted | Adjust budget in `/hr-finance` or use the HR override checkbox |
 
 ### Support escalation template
 ```
@@ -356,15 +390,26 @@ The guided tour mirrors the in-app overlay. Each stop names the route, what to l
 12. **Offboarding** (`/offboarding`) — separation checklist with role-aware task templates. *Try:* start an offboarding from any employee to see the generated tasks.
 13. **Performance — Review Cycles** (`/review-cycles`) — configure cycles, participants, and calibration sessions.
 14. **1-on-1s** (`/one-on-ones`) — templates and meeting notes for manager/employee conversations. *Try:* open a meeting to see the role-aware question set.
-15. **Goals & OKRs** (`/goals`) — employee and team goals tied back to review cycles.
-16. **Compensation Cycles** (`/comp-cycles`) — run merit and market adjustment cycles with proposals and FLSA checks.
-17. **Policies & Acknowledgements** (`/policies`) — policy library and acknowledgement campaigns.
-18. **Training & Transcripts** (`/training`) — course catalog, assignments, and individual transcripts.
-19. **Compliance — TCOLE / TMRS** (`/compliance/tcole`) — Texas-specific reporting surfaces.
-20. **Reports & EEO** (`/reports`) — headcount, turnover, comp-ratio, EEO snapshot.
-21. **ID Badge Templates** (`/id-badge-templates`) — design CR80 badges: fields, colors, default template, public QR verification.
-22. **Module Settings** (`/admin-modules`) — super-admin toggles to turn entire modules on or off per tenant.
-23. **Demo Admin** (`/admin-demo`) — provision the demo account and reset its data on demand. *Try:* click **Reset now** to revert immediately.
+15. **1-on-1 Templates** (`/one-on-one-templates`) — HR admins clone, edit, and publish the manager + employee prompt sets.
+16. **Cascades** (`/cascades`) — org-wide directives with team responses and an AI rollup summary.
+17. **Goals & OKRs** (`/goals`) — employee and team goals tied back to review cycles.
+18. **Timekeeping** (`/timekeeping`) — clock in/out, weekly totals, OT and comp-time. *Try:* edit your exempt weekly schedule or approve a non-exempt timesheet.
+19. **Public Safety Shift Patterns** (`/shift-patterns`) — multi-week rotations with 207(k) thresholds.
+20. **Compensation Cycles** (`/comp-cycles`) — run merit and market adjustment cycles with proposals and FLSA checks.
+21. **HR + Finance — FTE Budget** (`/hr-finance`) — department FTE budgets per fiscal year; powers the requisition budget check.
+22. **Payroll Export Profiles** (`/payroll/profiles`) — Tyler Munis, BS&A, ADP, Paycom field maps.
+23. **Policies & Acknowledgements** (`/policies`) — policy library and acknowledgement campaigns.
+24. **Union Contracts** (`/cba`) — CBAs, terms, effective dates.
+25. **OSHA 300 / 300A** (`/osha`) — incident log and annual summary.
+26. **LMS Imports** (`/lms-imports`) — external training completions; maps to TCOLE credits.
+27. **Training & Transcripts** (`/training`) — course catalog, assignments, and individual transcripts.
+28. **Compliance — TCOLE / TMRS** (`/compliance/tcole`) — Texas-specific reporting surfaces.
+29. **Reports & EEO** (`/reports`) — headcount, turnover, comp-ratio, EEO snapshot.
+30. **Identity & SSO** (`/admin-identity`) — Entra/Okta SAML and SCIM provisioning.
+31. **Module Settings** (`/admin-modules`) — super-admin toggles to turn entire modules on or off per tenant.
+32. **Offline PWA Shell** (`/offline-shell`) — installable shell for clock, leave, and approvals; queues actions and syncs in the background when reconnected.
+33. **ID Badge Templates** (`/id-badge-templates`) — design CR80 badges: fields, colors, default template, public QR verification.
+34. **Demo Admin** (`/admin-demo`) — provision the demo account and reset its data on demand. *Try:* click **Reset now** to revert immediately.
 
 ### Employee photos & ID badges
 - HR uploads to a private storage bucket; signed URLs render the photo throughout the app (profile, org chart, badge PDF).
@@ -435,3 +480,27 @@ Use this checklist the first time you set up employee photos, ID badges, and the
   3. Refresh the org chart to see the full tree populate with faces.
 
 > **Tip:** If a photo upload fails, check that the file is under 5 MB and that you have the `hr_admin` or `supervisor` role. Only HR roles can write to the private `employee-photos` bucket.
+---
+
+## 17. Offline-first PWA
+
+CivicPlexus ships as an installable Progressive Web App with an offline-first shell at **`/offline-shell`** for the three highest-volume actions: clock in/out, leave requests, and PAF approvals.
+
+### Install
+1. Open the app in Chrome, Edge, or Safari and tap **Install** (Address bar → Install app, or **Share → Add to Home Screen** on iOS).
+2. Visit `/offline-shell` once while online so the service worker caches the shell and stores your employee context.
+
+### How it works offline
+- Actions queue to IndexedDB in FIFO order with your captured Supabase bearer token.
+- When the device reconnects, **Background Sync** (`civicplexus-offline-sync` tag) drains the queue against `/api/public/hooks/offline-replay` — even if every tab is closed.
+- Safari (no `SyncManager`) falls back to a `drain-queue` `postMessage` when any tab is open.
+- The sticky **Offline banner** shows online/offline state, queued action count, and a **Sync now** button.
+
+### Modules covered
+| Action | Module |
+| --- | --- |
+| Clock in / Clock out | Timekeeping |
+| Submit leave request | Leave |
+| Approve / deny PAF step | Approvals |
+
+Everything else falls back to a network-first cached navigation; static assets are CacheFirst.

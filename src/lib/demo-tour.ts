@@ -85,9 +85,33 @@ export const TOUR_STOPS: TourStop[] = [
     try: "Open a meeting to see the role-aware question set.",
   },
   {
+    to: "/one-on-one-templates",
+    title: "1-on-1 Templates (HR Admin)",
+    body: "Create, clone, and publish the manager + employee question sets used by every 1:1.",
+    try: "Clone a template, edit a prompt, and publish — the next meeting picks it up.",
+  },
+  {
+    to: "/cascades",
+    title: "Cascades",
+    body: "Org-wide directives that flow from leadership to teams with AI-rollup of responses.",
+    try: "Open a cascade to see the Responses panel and the AI rollup card.",
+  },
+  {
     to: "/goals",
     title: "Goals & OKRs",
     body: "Employee + team goals tied back to review cycles.",
+  },
+  {
+    to: "/timekeeping",
+    title: "Timekeeping",
+    body: "Clock in/out, weekly totals, overtime and comp-time accruals — works offline.",
+    try: "Exempt? Edit your weekly schedule. Non-exempt? Clock in, then approve from the manager view.",
+  },
+  {
+    to: "/shift-patterns",
+    title: "Public Safety Shift Patterns",
+    body: "Multi-week rotations (24/48, Kelly, Pitman) with FLSA 207(k) overtime thresholds.",
+    try: "Assign a Kelly pattern to a firefighter and watch the timesheet honor the 53-hour threshold.",
   },
   {
     to: "/comp-cycles",
@@ -95,9 +119,35 @@ export const TOUR_STOPS: TourStop[] = [
     body: "Run merit + market adjustment cycles with proposals and FLSA checks.",
   },
   {
+    to: "/hr-finance",
+    title: "HR + Finance — FTE Budget",
+    body: "Department FTE budgets per fiscal year; requisitions check headroom before saving.",
+    try: "Edit a department budget, then open a new requisition to see the live headroom check.",
+  },
+  {
+    to: "/payroll/profiles",
+    title: "Payroll Export Profiles",
+    body: "Vendor templates for Tyler Munis, BS&A, ADP, Paycom — map fields once, export every run.",
+  },
+  {
     to: "/policies",
     title: "Policies & Acknowledgements",
     body: "Policy library and acknowledgement campaigns.",
+  },
+  {
+    to: "/cba",
+    title: "Union Contracts (CBA)",
+    body: "Track collective bargaining agreements, terms, and effective dates.",
+  },
+  {
+    to: "/osha",
+    title: "OSHA 300 / 300A",
+    body: "Log workplace incidents, classify outcomes, and generate the 300A summary.",
+  },
+  {
+    to: "/lms-imports",
+    title: "LMS Imports (TCOLE)",
+    body: "Ingest external training completions and map to TCOLE continuing-education credits.",
   },
   {
     to: "/training",
@@ -115,9 +165,20 @@ export const TOUR_STOPS: TourStop[] = [
     body: "Headcount, turnover, comp-ratio, EEO snapshot.",
   },
   {
+    to: "/admin-identity",
+    title: "Identity & SSO (SCIM)",
+    body: "Wire up Entra/Okta SAML and SCIM provisioning for hands-free account lifecycle.",
+  },
+  {
     to: "/admin-modules",
     title: "Module Settings",
     body: "Super-admin toggles to turn entire modules on or off per tenant.",
+  },
+  {
+    to: "/offline-shell",
+    title: "Offline PWA Shell",
+    body: "Installable shell for clock in/out, leave requests, and approvals that keep working offline.",
+    try: "Install to home screen, go airplane mode, clock out — it syncs in the background when you reconnect.",
   },
   {
     to: "/id-badge-templates",
