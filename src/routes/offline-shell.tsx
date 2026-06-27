@@ -85,9 +85,9 @@ function OfflineShellPage() {
         </span>
       </header>
 
-      <ClockCard />
-      <LeaveCard employeeId={employeeId} planId={planId} />
-      <ApprovalsCard />
+      <ClockCard online={online} />
+      <LeaveCard employeeId={employeeId} planId={planId} online={online} />
+      <ApprovalsCard online={online} />
 
       <Card>
         <CardHeader>
@@ -117,14 +117,14 @@ function OfflineShellPage() {
   );
 }
 
-function ClockCard() {
+function ClockCard({ online }: { online: boolean }) {
   const [busy, setBusy] = useState(false);
   const punch = async (kind: "clock_in" | "clock_out") => {
     setBusy(true);
     try {
       await enqueue(kind, { at: new Date().toISOString() });
       toast.success(
-        navigator.onLine
+        online
           ? `${kind === "clock_in" ? "Clocked in" : "Clocked out"} — syncing`
           : `${kind === "clock_in" ? "Clock-in" : "Clock-out"} queued offline`,
       );
@@ -149,7 +149,7 @@ function ClockCard() {
   );
 }
 
-function LeaveCard({ employeeId, planId }: { employeeId: string; planId: string }) {
+function LeaveCard({ employeeId, planId, online }: { employeeId: string; planId: string; online: boolean }) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [hours, setHours] = useState("8");
@@ -172,7 +172,7 @@ function LeaveCard({ employeeId, planId }: { employeeId: string; planId: string 
       total_hours: Number(hours) || 0,
       reason: reason || undefined,
     });
-    toast.success(navigator.onLine ? "Leave request submitted" : "Leave request queued offline");
+    toast.success(online ? "Leave request submitted" : "Leave request queued offline");
     setReason("");
   };
 
@@ -208,7 +208,7 @@ function LeaveCard({ employeeId, planId }: { employeeId: string; planId: string 
   );
 }
 
-function ApprovalsCard() {
+function ApprovalsCard({ online }: { online: boolean }) {
   const [stepId, setStepId] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -218,7 +218,7 @@ function ApprovalsCard() {
       return;
     }
     await enqueue("decide_paf", { step_id: stepId, decision, notes: notes || undefined });
-    toast.success(navigator.onLine ? `${decision} sent` : `${decision} queued offline`);
+    toast.success(online ? `${decision} sent` : `${decision} queued offline`);
     setStepId("");
     setNotes("");
   };
