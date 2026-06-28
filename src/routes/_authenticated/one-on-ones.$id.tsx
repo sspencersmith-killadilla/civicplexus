@@ -16,7 +16,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { summarizeOneOnOne, extractOneOnOneActionItems } from "@/lib/coaching-ai.functions";
 import { reassignOneOnOneManager, listManagerCandidates } from "@/lib/one-on-one-transfer.functions";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserCog } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/one-on-ones/$id")({
