@@ -14,6 +14,9 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useServerFn } from "@tanstack/react-start";
 import { summarizeOneOnOne, extractOneOnOneActionItems } from "@/lib/coaching-ai.functions";
+import { reassignOneOnOneManager, listManagerCandidates } from "@/lib/one-on-one-transfer.functions";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { UserCog } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/one-on-ones/$id")({
   component: OneOnOneDetail,
@@ -52,8 +55,11 @@ function OneOnOneDetail() {
   const qc = useQueryClient();
   const { data: me } = useCurrentUser();
   const uid = me?.user.id;
+  const isHrAdmin = !!me?.roles?.includes("hr_admin");
   const summarize = useServerFn(summarizeOneOnOne);
   const extract = useServerFn(extractOneOnOneActionItems);
+  const reassign = useServerFn(reassignOneOnOneManager);
+  const listCandidates = useServerFn(listManagerCandidates);
 
   const sessionQ = useQuery({
     queryKey: ["one_on_one", id],
@@ -216,6 +222,28 @@ function OneOnOneDetail() {
     ? rolePrompts
     : (tpl?.agenda_prompts ?? []);
 
+  const candidatesQ = useQuery({
+    queryKey: ["one_on_one_manager_candidates"],
+    queryFn: async () => listCandidates({}),
+    enabled: isHrAdmin,
+  });
+  const [reassignOpen, setReassignOpen] = useState(false);
+  const [newMgrUserId, setNewMgrUserId] = useState("");
+  const [reassignReason, setReassignReason] = useState("");
+  const doReassign = useMutation({
+    mutationFn: async () => {
+      if (!newMgrUserId) throw new Error("Select a supervisor");
+      return reassign({ data: { session_id: id, new_manager_user_id: newMgrUserId, reason: reassignReason || "manual_override" } });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["one_on_one", id] });
+      qc.invalidateQueries({ queryKey: ["one_on_ones"] });
+      toast.success("Manager reassigned");
+      setReassignOpen(false); setNewMgrUserId(""); setReassignReason("");
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Reassign failed"),
+  });
+
   return (
     <AppShell title={s?.title ?? "1-on-1"}>
       <Link to="/one-on-ones" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
@@ -248,6 +276,48 @@ function OneOnOneDetail() {
                   </SelectContent>
                 </Select>
               </div>
+              {isHrAdmin && (
+                <div className="mt-3 pt-3 border-t flex items-center justify-between gap-3 flex-wrap">
+                  <p className="text-xs text-muted-foreground">
+                    Assigned manager auto-transfers when the employee changes supervisors. HR can override or revert here.
+                  </p>
+                  <Dialog open={reassignOpen} onOpenChange={setReassignOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" variant="outline"><UserCog className="h-3 w-3 mr-1" /> Reassign manager</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader><DialogTitle>Reassign 1-on-1 manager</DialogTitle></DialogHeader>
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <Label>New supervisor</Label>
+                          <Select value={newMgrUserId} onValueChange={setNewMgrUserId}>
+                            <SelectTrigger><SelectValue placeholder="Pick a supervisor" /></SelectTrigger>
+                            <SelectContent>
+                              {(candidatesQ.data ?? []).map((c) => (
+                                <SelectItem key={c.user_id!} value={c.user_id!}>
+                                  {c.first_name} {c.last_name}{c.department ? ` · ${c.department}` : ""}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Reason (optional)</Label>
+                          <Input value={reassignReason} onChange={(e) => setReassignReason(e.target.value)} placeholder="e.g. revert incorrect auto-transfer" />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Logged to the audit trail. Notes and action items stay attached to this session.
+                        </p>
+                      </div>
+                      <DialogFooter>
+                        <Button disabled={doReassign.isPending} onClick={() => doReassign.mutate()}>
+                          {doReassign.isPending ? "Saving…" : "Reassign"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              )}
             </Card>
 
             {agenda.length > 0 && (
