@@ -48,14 +48,21 @@ export const submitPaf = createServerFn({ method: "POST" })
       throw new Error("Cannot submit a PAF on yourself");
     }
     if (!isHrAdmin) {
-      const isDirectManager = emp.manager_id === context.userId;
+      const { data: meEmp } = await supabaseAdmin
+        .from("employees").select("id").eq("user_id", context.userId).maybeSingle();
+      const isDirectManager = !!meEmp && emp.manager_id === (meEmp as { id: string }).id;
       if (!isDirectManager) {
         throw new Error("Forbidden: you may only submit PAFs for employees you directly manage");
       }
     }
 
-    // employees.manager_id stores the supervisor's auth user id.
-    const managerUserId = emp.manager_id ?? null;
+    // employees.manager_id references public.employees(id) — resolve to the supervisor's auth user_id.
+    let managerUserId: string | null = null;
+    if (emp.manager_id) {
+      const { data: mgr } = await supabaseAdmin
+        .from("employees").select("user_id").eq("id", emp.manager_id).maybeSingle();
+      managerUserId = (mgr as { user_id: string | null } | null)?.user_id ?? null;
+    }
     // Fallback admin from org_settings
     const { data: org } = await supabaseAdmin.from("org_settings").select("fallback_admin_user_id").maybeSingle();
     const fallbackAdmin = (org as { fallback_admin_user_id: string | null } | null)?.fallback_admin_user_id ?? null;
