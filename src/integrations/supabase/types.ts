@@ -4088,12 +4088,16 @@ export type Database = {
           accent_color: string | null
           address: string | null
           ai_features: Json
+          ai_model: string | null
+          ai_provider: string
           careers_page_css: string | null
           careers_page_html: string | null
           cutover_mode: boolean
           ein: string | null
           fallback_admin_user_id: string | null
           fed_employer_id: string | null
+          first_run_complete: boolean
+          first_run_completed_at: string | null
           id: string
           logo_url: string | null
           notification_defaults: Json | null
@@ -4115,12 +4119,16 @@ export type Database = {
           accent_color?: string | null
           address?: string | null
           ai_features?: Json
+          ai_model?: string | null
+          ai_provider?: string
           careers_page_css?: string | null
           careers_page_html?: string | null
           cutover_mode?: boolean
           ein?: string | null
           fallback_admin_user_id?: string | null
           fed_employer_id?: string | null
+          first_run_complete?: boolean
+          first_run_completed_at?: string | null
           id?: string
           logo_url?: string | null
           notification_defaults?: Json | null
@@ -4142,12 +4150,16 @@ export type Database = {
           accent_color?: string | null
           address?: string | null
           ai_features?: Json
+          ai_model?: string | null
+          ai_provider?: string
           careers_page_css?: string | null
           careers_page_html?: string | null
           cutover_mode?: boolean
           ein?: string | null
           fallback_admin_user_id?: string | null
           fed_employer_id?: string | null
+          first_run_complete?: boolean
+          first_run_completed_at?: string | null
           id?: string
           logo_url?: string | null
           notification_defaults?: Json | null
@@ -6651,6 +6663,13 @@ export type Database = {
       decide_paf_step: {
         Args: { _decision: string; _notes: string; _step_id: string }
         Returns: undefined
+      }
+      first_run_status: {
+        Args: never
+        Returns: {
+          complete: boolean
+          org_name: string
+        }[]
       }
       hr_set_employee_status: {
         Args: {
