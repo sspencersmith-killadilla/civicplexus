@@ -88,7 +88,42 @@ export const grantRole = createServerFn({ method: "POST" })
       entity_id: data.user_id,
       diff: { role: data.role },
     });
-    return { ok: true };
+
+    let linkedEmployeeId: string | null = null;
+    if (data.role === "employee") {
+      const { data: profile } = await context.supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", data.user_id)
+        .maybeSingle();
+      const email = profile?.email?.trim().toLowerCase();
+      if (email) {
+        const { data: employee } = await context.supabase
+          .from("employees")
+          .select("id, user_id")
+          .or(`work_email.ilike.${email},personal_email.ilike.${email}`)
+          .limit(1)
+          .maybeSingle();
+        if (employee && !employee.user_id) {
+          const { error: linkErr } = await context.supabase
+            .from("employees")
+            .update({ user_id: data.user_id })
+            .eq("id", employee.id)
+            .is("user_id", null);
+          if (linkErr) throw linkErr;
+          linkedEmployeeId = employee.id;
+          await context.supabase.from("audit_events").insert({
+            actor_id: context.userId,
+            action: "employee_user_auto_link",
+            entity: "employee",
+            entity_id: employee.id,
+            diff: { user_id: data.user_id, email, source: "employee_role_grant" },
+          });
+        }
+      }
+    }
+
+    return { ok: true, linked_employee_id: linkedEmployeeId };
   });
 
 export const revokeRole = createServerFn({ method: "POST" })
