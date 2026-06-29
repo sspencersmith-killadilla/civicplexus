@@ -80,7 +80,7 @@ export const listSetupAdminCandidates = createServerFn({ method: "GET" })
     const { data } = await context.supabase
       .from("user_roles")
       .select("user_id, role")
-      .in("role", ["hr_admin", "super_admin"]);
+      .in("role", ["hr_admin"]);
     const ids = Array.from(new Set((data ?? []).map((r) => r.user_id)));
     if (!ids.length) return [];
     const { data: profiles } = await context.supabase
