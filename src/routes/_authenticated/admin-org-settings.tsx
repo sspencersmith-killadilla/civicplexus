@@ -134,7 +134,9 @@ function OrgSettingsPage() {
             <div>Organization: <strong>{status.data?.org_name || "—"}</strong></div>
             <div>
               Fallback admin:{" "}
-              <strong>{status.data?.fallback_admin?.full_name ?? status.data?.fallback_admin?.email ?? "Not set"}</strong>
+              <strong>{(status.data?.fallback_admin as { full_name?: string | null; email?: string | null } | null)?.full_name
+                ?? (status.data?.fallback_admin as { email?: string | null } | null)?.email
+                ?? "Not set"}</strong>
             </div>
             <div>
               First-run setup:{" "}
