@@ -521,3 +521,81 @@ These ship enabled by default and can be toggled per tenant from `/admin-modules
 ---
 
 You're done. Welcome new hires — and run payroll — with confidence.
+---
+
+## Appendix — Installer, Health, Backup, Restore (v1.1)
+
+CivicPlexus ships first-class shell scripts so a non-developer can install,
+back up, and restore without writing SQL or Bash.
+
+### One-command install
+
+```bash
+cp .env.example .env        # fill in SUPABASE_* and AI_PROVIDER
+./scripts/install.sh        # verifies prereqs, applies migrations, builds
+```
+
+`install.sh` requires `bun`, `psql`, and the Supabase CLI (`npm i -g supabase`).
+Re-running it is safe — migrations are idempotent.
+
+### First HR admin
+
+```bash
+psql "$SUPABASE_DB_URL" -f scripts/seed-first-admin.sql -v email=you@city.gov
+```
+
+The target user must have already signed up once (so an `auth.users` row exists).
+
+### Health probe
+
+`GET /api/public/health` returns JSON with database + AI status; 200 when
+healthy, 503 when degraded. Point your uptime monitor at it.
+
+```bash
+curl https://hr.yourcity.gov/api/public/health
+```
+
+### Nightly backup
+
+```bash
+BACKUP_DIR=/var/backups/civicplexus ./scripts/backup.sh
+```
+
+Produces `db.sql.gz`, `schema.sql`, storage bucket copies, and `SHA256SUMS`.
+Retains the last 30 nightly runs. Schedule via cron:
+
+```
+15 2 * * *  cd /opt/civicplexus && BACKUP_DIR=/var/backups/civicplexus ./scripts/backup.sh >> /var/log/civicplexus-backup.log 2>&1
+```
+
+### Restore
+
+```bash
+./scripts/restore.sh /var/backups/civicplexus/20260101T021500Z
+```
+
+Verifies SHA-256 checksums, asks for explicit confirmation, then restores.
+Run a smoke test (`/api/public/health` + sign-in) before reopening to users.
+
+### RLS guardrail (CI)
+
+```bash
+psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f scripts/check-rls.sql
+```
+
+Fails if any `public.*` table lacks RLS or has zero policies — wire it into
+your CI pipeline so a future migration cannot ship a table without policies.
+
+### AI provider pluggability
+
+Set `AI_PROVIDER` in `.env`:
+
+| Value     | Required vars                                     |
+|-----------|---------------------------------------------------|
+| `lovable` | `LOVABLE_API_KEY` (default for Lovable-hosted)    |
+| `openai`  | `OPENAI_API_KEY`                                  |
+| `azure`   | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`   |
+| `none`    | Disables AI features (screening, summaries, etc.) |
+
+The health endpoint reports `ai_not_configured` when the chosen provider is
+missing credentials, so misconfiguration surfaces immediately.
