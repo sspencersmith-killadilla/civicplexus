@@ -16,6 +16,8 @@ import {
 } from "@/lib/employee-photos.functions";
 import { generateBadge, getBadgePdfUrl, revokeBadge } from "@/lib/id-badges.functions";
 import { BadgeWizard } from "@/components/badge-wizard";
+import { Input } from "@/components/ui/input";
+import { linkUserToEmployee, unlinkEmployeeUser } from "@/lib/employee-account.functions";
 
 export const Route = createFileRoute("/_authenticated/employees/$id")({
   component: EmployeeProfile,
@@ -24,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/employees/$id")({
 type Emp = {
   id: string; first_name: string; last_name: string; job_title: string | null; department: string | null;
   status: string; start_date: string | null; personal_email: string | null; work_email: string | null;
-  phone: string | null; photo_path: string | null; manager_id: string | null;
+  phone: string | null; photo_path: string | null; manager_id: string | null; user_id: string | null;
 };
 type Tpl = { id: string; name: string; is_default: boolean };
 type Badge = { id: string; serial: string; issued_at: string; revoked_at: string | null; pdf_path: string | null };
@@ -42,10 +44,12 @@ function EmployeeProfile() {
   const gen = useServerFn(generateBadge);
   const badgeUrlFn = useServerFn(getBadgePdfUrl);
   const revoke = useServerFn(revokeBadge);
+  const linkFn = useServerFn(linkUserToEmployee);
+  const unlinkFn = useServerFn(unlinkEmployeeUser);
 
   const { data: emp, isLoading } = useQuery({
     queryKey: ["employee", id],
-    queryFn: async () => (await supabase.from("employees").select("id, first_name, last_name, job_title, department, status, start_date, personal_email, work_email, phone, photo_path, manager_id").eq("id", id).single()).data as Emp | null,
+    queryFn: async () => (await supabase.from("employees").select("id, first_name, last_name, job_title, department, status, start_date, personal_email, work_email, phone, photo_path, manager_id, user_id").eq("id", id).single()).data as Emp | null,
   });
   const { data: photoUrl } = useQuery({
     queryKey: ["employee-photo", emp?.photo_path],
@@ -64,6 +68,19 @@ function EmployeeProfile() {
   const [templateId, setTemplateId] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [linkEmail, setLinkEmail] = useState("");
+  const [linkRole, setLinkRole] = useState<string>("employee");
+
+  const linkAccount = useMutation({
+    mutationFn: async () => await linkFn({ data: { employee_id: id, email: linkEmail.trim(), role: linkRole as "hr_admin" | "hiring_manager" | "supervisor" | "it_admin" | "employee" | "candidate" } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Account linked"); setLinkEmail(""); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Link failed"),
+  });
+  const unlinkAccount = useMutation({
+    mutationFn: async () => { await unlinkFn({ data: { employee_id: id } }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Account unlinked"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Unlink failed"),
+  });
 
   const uploadPhoto = useMutation({
     mutationFn: async (file: File) => {
@@ -206,6 +223,43 @@ function EmployeeProfile() {
           employee={emp}
           photoUrl={photoUrl}
         />
+      )}
+
+      {isHr && (
+        <Card className="p-5 mt-6">
+          <h2 className="font-medium flex items-center gap-2 mb-1"><UserIcon className="h-4 w-4" /> Login account</h2>
+          <p className="text-xs text-muted-foreground mb-3">Link this employee record to an existing auth user (sign-up account) and optionally grant a role.</p>
+          {emp.user_id ? (
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <div>
+                <div>Linked to auth user</div>
+                <div className="font-mono text-xs text-muted-foreground">{emp.user_id}</div>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => { if (confirm("Unlink this account?")) unlinkAccount.mutate(); }} disabled={unlinkAccount.isPending}>
+                Unlink
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="space-y-1 flex-1 min-w-[220px]">
+                <Label className="text-xs">Auth user email</Label>
+                <Input type="email" placeholder="user@example.com" value={linkEmail} onChange={(e) => setLinkEmail(e.target.value)} />
+              </div>
+              <div className="space-y-1 w-48">
+                <Label className="text-xs">Grant role</Label>
+                <Select value={linkRole} onValueChange={setLinkRole}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["hr_admin","hiring_manager","supervisor","it_admin","employee","candidate"].map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={() => linkAccount.mutate()} disabled={!linkEmail.trim() || linkAccount.isPending}>
+                {linkAccount.isPending ? "Linking…" : "Link account"}
+              </Button>
+            </div>
+          )}
+        </Card>
       )}
     </AppShell>
   );
