@@ -113,6 +113,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
   ]},
   { key: moduleKey("admin"), label: "Admin", items: [
     def("/settings", "Settings", Settings, ["hr_admin"]),
+    def("/admin-org-settings", "Roles & AI", ShieldCheck, ["hr_admin"]),
     def("/admin-migration", "Data Migration", DatabaseBackup, ["hr_admin"]),
     def("/admin-modules", "Modules & Features", ToggleLeft, ["hr_admin"]),
     def("/admin-identity", "Identity & SSO", ShieldCheck, ["hr_admin"]),
