@@ -1,0 +1,1 @@
+UPDATE employees SET user_id = NULL WHERE id = '71a2e77b-8529-4a79-9b91-8e5eddc58e69';
