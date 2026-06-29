@@ -19,6 +19,23 @@ import { getDirectReportTaskCounts } from "@/lib/my-team.functions";
 
 export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR });
 
+function PersonAvatar({ photoPath, name, size, fetchUrl }: { photoPath: string | null; name: string; size: number; fetchUrl: (args: { data: { path: string } }) => Promise<{ url: string }> }) {
+  const { data: url } = useQuery({
+    queryKey: ["emp-photo-url", photoPath],
+    enabled: !!photoPath,
+    queryFn: async () => (await fetchUrl({ data: { path: photoPath! } })).url,
+    staleTime: 5 * 60_000,
+  });
+  const initials = name.split(" ").filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("");
+  return (
+    <div className="rounded-full bg-muted overflow-hidden flex items-center justify-center border shrink-0" style={{ width: size, height: size }}>
+      {url ? <img src={url} alt={name} className="w-full h-full object-cover" /> : (
+        initials ? <span className="text-xs font-medium text-muted-foreground">{initials}</span> : <UserIcon className="h-1/2 w-1/2 text-muted-foreground" />
+      )}
+    </div>
+  );
+}
+
 function MyHR() {
   const { data: me } = useCurrentUser();
   const qc = useQueryClient();
