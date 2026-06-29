@@ -12,8 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText } from "lucide-react";
+import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
+import { getDirectReportTaskCounts } from "@/lib/my-team.functions";
 
 export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR });
 
@@ -21,6 +23,8 @@ function MyHR() {
   const { data: me } = useCurrentUser();
   const qc = useQueryClient();
   const completeFn = useServerFn(completeTraining);
+  const photoUrlFn = useServerFn(getEmployeePhotoUrl);
+  const reportCountsFn = useServerFn(getDirectReportTaskCounts);
   const [completeFor, setCompleteFor] = useState<{ id: string; name: string; employee_id: string } | null>(null);
   const [completeForm, setCompleteForm] = useState<{ score: string; notes: string; file: File | null }>({ score: "", notes: "", file: null });
   const complete = useMutation({
@@ -50,10 +54,40 @@ function MyHR() {
     enabled: !!me?.user?.id,
     queryFn: async () => {
       const { data } = await supabase.from("employees")
-        .select("id, first_name, last_name, job_title, department, start_date, status")
+        .select("id, first_name, last_name, job_title, department, start_date, status, photo_path, manager_id")
         .eq("user_id", me!.user!.id).maybeSingle();
-      return data;
+      return data as { id: string; first_name: string; last_name: string; job_title: string | null; department: string | null; start_date: string | null; status: string; photo_path: string | null; manager_id: string | null } | null;
     },
+  });
+
+  const supervisorQ = useQuery({
+    queryKey: ["my-supervisor", empQ.data?.manager_id],
+    enabled: !!empQ.data?.manager_id,
+    queryFn: async () => {
+      const { data } = await supabase.from("employees")
+        .select("id, first_name, last_name, job_title, department, photo_path")
+        .eq("id", empQ.data!.manager_id!).maybeSingle();
+      return data as { id: string; first_name: string; last_name: string; job_title: string | null; department: string | null; photo_path: string | null } | null;
+    },
+  });
+
+  const reportsQ = useQuery({
+    queryKey: ["my-direct-reports", empQ.data?.id],
+    enabled: !!empQ.data?.id,
+    queryFn: async () => {
+      const { data } = await supabase.from("employees")
+        .select("id, first_name, last_name, job_title, photo_path, status")
+        .eq("manager_id", empQ.data!.id)
+        .eq("status", "active")
+        .order("last_name");
+      return (data ?? []) as Array<{ id: string; first_name: string; last_name: string; job_title: string | null; photo_path: string | null; status: string }>;
+    },
+  });
+
+  const reportCountsQ = useQuery({
+    queryKey: ["my-report-counts", (reportsQ.data ?? []).map((r) => r.id).join(",")],
+    enabled: !!reportsQ.data && reportsQ.data.length > 0,
+    queryFn: async () => (await reportCountsFn({ data: { employee_ids: reportsQ.data!.map((r) => r.id) } })).counts,
   });
 
   const balancesQ = useQuery({
@@ -105,11 +139,70 @@ function MyHR() {
     <AppShell title="My HR">
       <div className="space-y-6">
         <Card className="p-5">
-          <h2 className="text-lg font-medium">Welcome{empQ.data ? `, ${empQ.data.first_name}` : ""}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {empQ.data ? `${empQ.data.job_title ?? "—"} · ${empQ.data.department ?? "—"}` : "Loading your profile…"}
-          </p>
+          <div className="flex items-center gap-4">
+            <PersonAvatar photoPath={empQ.data?.photo_path ?? null} name={empQ.data ? `${empQ.data.first_name} ${empQ.data.last_name}` : ""} size={64} fetchUrl={photoUrlFn} />
+            <div className="min-w-0">
+              <h2 className="text-lg font-medium truncate">Welcome{empQ.data ? `, ${empQ.data.first_name}` : ""}</h2>
+              <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                {empQ.data ? `${empQ.data.job_title ?? "—"} · ${empQ.data.department ?? "—"}` : "Loading your profile…"}
+              </p>
+              {empQ.data?.id && (
+                <Link to="/employees/$id" params={{ id: empQ.data.id }} className="text-xs text-primary hover:underline">View my profile →</Link>
+              )}
+            </div>
+          </div>
         </Card>
+
+        {empQ.data && (
+          <section>
+            <h3 className="font-medium mb-3 flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> My team</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1 mb-2"><ChevronUp className="h-3 w-3" /> Reports to</div>
+                {supervisorQ.data ? (
+                  <Link to="/employees/$id" params={{ id: supervisorQ.data.id }} className="flex items-center gap-3 hover:bg-muted/40 -m-1 p-1 rounded">
+                    <PersonAvatar photoPath={supervisorQ.data.photo_path} name={`${supervisorQ.data.first_name} ${supervisorQ.data.last_name}`} size={44} fetchUrl={photoUrlFn} />
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">{supervisorQ.data.first_name} {supervisorQ.data.last_name}</div>
+                      <div className="text-xs text-muted-foreground truncate">{supervisorQ.data.job_title ?? "—"}{supervisorQ.data.department ? ` · ${supervisorQ.data.department}` : ""}</div>
+                    </div>
+                  </Link>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{empQ.data.manager_id ? "Loading…" : "No supervisor on file."}</p>
+                )}
+              </Card>
+              <Card className="p-4">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2 flex items-center justify-between">
+                  <span>Direct reports</span>
+                  <span>{reportsQ.data?.length ?? 0}</span>
+                </div>
+                {(reportsQ.data?.length ?? 0) === 0 ? (
+                  <p className="text-sm text-muted-foreground">No direct reports.</p>
+                ) : (
+                  <div className="space-y-1">
+                    {reportsQ.data!.map((r) => {
+                      const c = reportCountsQ.data?.[r.id];
+                      const total = c ? c.onboarding + c.training + c.leave : 0;
+                      const tip = c ? [c.onboarding && `${c.onboarding} onboarding`, c.training && `${c.training} training`, c.leave && `${c.leave} leave to review`].filter(Boolean).join(" · ") : "";
+                      return (
+                        <Link key={r.id} to="/employees/$id" params={{ id: r.id }} className="flex items-center gap-3 hover:bg-muted/40 -m-1 p-1 rounded">
+                          <PersonAvatar photoPath={r.photo_path} name={`${r.first_name} ${r.last_name}`} size={36} fetchUrl={photoUrlFn} />
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm truncate">{r.first_name} {r.last_name}</div>
+                            <div className="text-xs text-muted-foreground truncate">{r.job_title ?? "—"}</div>
+                          </div>
+                          {total > 0 && (
+                            <span title={tip} className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary whitespace-nowrap">{total} to review</span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
+            </div>
+          </section>
+        )}
 
         <section>
           <div className="flex items-center justify-between mb-3">
