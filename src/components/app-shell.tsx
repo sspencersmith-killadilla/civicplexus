@@ -25,10 +25,10 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   });
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set<string>();
     try {
-      const raw = window.localStorage.getItem("cp:sidebar:expanded");
+      const raw = window.localStorage.getItem("cp:sidebar:collapsed-groups");
       if (raw) return new Set(JSON.parse(raw));
     } catch { /* ignore */ }
     return new Set<string>();
@@ -37,12 +37,12 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem("cp:sidebar:collapsed", collapsed ? "1" : "0");
-      window.localStorage.setItem("cp:sidebar:expanded", JSON.stringify([...expandedGroups]));
+      window.localStorage.setItem("cp:sidebar:collapsed-groups", JSON.stringify([...collapsedGroups]));
     }
-  }, [collapsed, expandedGroups]);
+  }, [collapsed, collapsedGroups]);
 
   function toggleGroup(label: string) {
-    setExpandedGroups((prev) => {
+    setCollapsedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(label)) next.delete(label);
       else next.add(label);
