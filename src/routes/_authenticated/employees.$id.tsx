@@ -31,6 +31,7 @@ type Emp = {
   id: string; first_name: string; last_name: string; job_title: string | null; department: string | null;
   status: string; start_date: string | null; personal_email: string | null; work_email: string | null;
   phone: string | null; photo_path: string | null; manager_id: string | null; user_id: string | null;
+  date_of_birth: string | null;
 };
 type Tpl = { id: string; name: string; is_default: boolean };
 type Badge = { id: string; serial: string; issued_at: string; revoked_at: string | null; pdf_path: string | null };
@@ -54,7 +55,7 @@ function EmployeeProfile() {
 
   const { data: emp, isLoading } = useQuery({
     queryKey: ["employee", id],
-    queryFn: async () => (await supabase.from("employees").select("id, first_name, last_name, job_title, department, status, start_date, personal_email, work_email, phone, photo_path, manager_id, user_id").eq("id", id).single()).data as Emp | null,
+    queryFn: async () => (await supabase.from("employees").select("id, first_name, last_name, job_title, department, status, start_date, personal_email, work_email, phone, photo_path, manager_id, user_id, date_of_birth").eq("id", id).single()).data as Emp | null,
   });
   const { data: photoUrl } = useQuery({
     queryKey: ["employee-photo", emp?.photo_path],
@@ -76,6 +77,30 @@ function EmployeeProfile() {
   const [linkEmail, setLinkEmail] = useState("");
   const [linkRole, setLinkRole] = useState<string>("employee");
   const [historyFilter, setHistoryFilter] = useState<string>("all");
+  const [editOpen, setEditOpen] = useState(false);
+  const [editDob, setEditDob] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editPersonalEmail, setEditPersonalEmail] = useState("");
+
+  const saveProfile = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("employees").update({
+        date_of_birth: editDob || null,
+        phone: editPhone || null,
+        personal_email: editPersonalEmail || null,
+      }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Saved"); setEditOpen(false); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
+  });
+
+  function openEdit() {
+    setEditDob(emp?.date_of_birth ?? "");
+    setEditPhone(emp?.phone ?? "");
+    setEditPersonalEmail(emp?.personal_email ?? "");
+    setEditOpen(true);
+  }
 
   const { data: history } = useQuery({
     queryKey: ["employee-history", id],
@@ -189,11 +214,36 @@ function EmployeeProfile() {
             <div><Label className="text-xs text-muted-foreground">Work email</Label><div>{emp.work_email ?? "—"}</div></div>
             <div><Label className="text-xs text-muted-foreground">Personal email</Label><div>{emp.personal_email ?? "—"}</div></div>
             <div><Label className="text-xs text-muted-foreground">Phone</Label><div>{emp.phone ?? "—"}</div></div>
+            <div><Label className="text-xs text-muted-foreground">Date of birth</Label><div>{emp.date_of_birth ?? "—"}</div></div>
             <div><Label className="text-xs text-muted-foreground">Employee ID</Label><div className="font-mono text-xs">{emp.id.slice(0, 8).toUpperCase()}</div></div>
           </div>
           <div className="pt-2 flex gap-2">
             <Button asChild variant="outline" size="sm"><Link to="/transcript/$employeeId" params={{ employeeId: emp.id }}>Transcript</Link></Button>
+            {isHr && <Button size="sm" variant="outline" onClick={openEdit}>Edit profile</Button>}
           </div>
+          {isHr && editOpen && (
+            <div className="mt-4 border-t pt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Date of birth</Label>
+                  <Input type="date" value={editDob} onChange={(e) => setEditDob(e.target.value)} />
+                </div>
+                <div>
+                  <Label className="text-xs">Phone</Label>
+                  <Input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="555-555-1234" />
+                </div>
+                <div className="col-span-2">
+                  <Label className="text-xs">Personal email</Label>
+                  <Input type="email" value={editPersonalEmail} onChange={(e) => setEditPersonalEmail(e.target.value)} />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">Birthdays appear in supervisors' "Upcoming celebrations" within 60 days. Sensitive HR fields (job, status, manager) are edited via a PAF.</p>
+              <div className="flex gap-2 justify-end">
+                <Button size="sm" variant="ghost" onClick={() => setEditOpen(false)}>Cancel</Button>
+                <Button size="sm" onClick={() => saveProfile.mutate()} disabled={saveProfile.isPending}>{saveProfile.isPending ? "Saving…" : "Save"}</Button>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
 
