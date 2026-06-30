@@ -21,6 +21,7 @@ import { getEmployeeHistory, type HistoryEvent } from "@/lib/employee-history.fu
 import { HistoryAttachments } from "@/components/history-attachments";
 import { Badge } from "@/components/ui/badge";
 import { Download, History as HistoryIcon } from "lucide-react";
+import { getMyHrContext } from "@/lib/employee-directory.functions";
 
 export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR });
 
@@ -48,6 +49,7 @@ function MyHR() {
   const photoUrlFn = useServerFn(getEmployeePhotoUrl);
   const reportCountsFn = useServerFn(getDirectReportTaskCounts);
   const historyFn = useServerFn(getEmployeeHistory);
+  const myHrFn = useServerFn(getMyHrContext);
   const [completeFor, setCompleteFor] = useState<{ id: string; name: string; employee_id: string } | null>(null);
   const [completeForm, setCompleteForm] = useState<{ score: string; notes: string; file: File | null }>({ score: "", notes: "", file: null });
   const [historyFilter, setHistoryFilter] = useState<string>("all");
@@ -73,40 +75,14 @@ function MyHR() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const empQ = useQuery({
-    queryKey: ["me-employee", me?.user?.id],
+  const myHrQ = useQuery({
+    queryKey: ["my-hr-context", me?.user?.id],
     enabled: !!me?.user?.id,
-    queryFn: async () => {
-      const { data } = await supabase.from("employees")
-        .select("id, first_name, last_name, job_title, department, start_date, status, photo_path, manager_id")
-        .eq("user_id", me!.user!.id).maybeSingle();
-      return data as { id: string; first_name: string; last_name: string; job_title: string | null; department: string | null; start_date: string | null; status: string; photo_path: string | null; manager_id: string | null } | null;
-    },
+    queryFn: () => myHrFn({ data: {} }),
   });
-
-  const supervisorQ = useQuery({
-    queryKey: ["my-supervisor", empQ.data?.manager_id],
-    enabled: !!empQ.data?.manager_id,
-    queryFn: async () => {
-      const { data } = await supabase.from("employees")
-        .select("id, first_name, last_name, job_title, department, photo_path")
-        .eq("id", empQ.data!.manager_id!).maybeSingle();
-      return data as { id: string; first_name: string; last_name: string; job_title: string | null; department: string | null; photo_path: string | null } | null;
-    },
-  });
-
-  const reportsQ = useQuery({
-    queryKey: ["my-direct-reports", empQ.data?.id],
-    enabled: !!empQ.data?.id,
-    queryFn: async () => {
-      const { data } = await supabase.from("employees")
-        .select("id, first_name, last_name, job_title, photo_path, status, date_of_birth, start_date")
-        .eq("manager_id", empQ.data!.id)
-        .eq("status", "active")
-        .order("last_name");
-      return (data ?? []) as Array<{ id: string; first_name: string; last_name: string; job_title: string | null; photo_path: string | null; status: string; date_of_birth: string | null; start_date: string | null }>;
-    },
-  });
+  const empQ = { data: myHrQ.data?.employee ?? null };
+  const supervisorQ = { data: myHrQ.data?.supervisor ?? null };
+  const reportsQ = { data: myHrQ.data?.reports ?? [] };
 
   const reportCountsQ = useQuery({
     queryKey: ["my-report-counts", (reportsQ.data ?? []).map((r) => r.id).join(",")],
