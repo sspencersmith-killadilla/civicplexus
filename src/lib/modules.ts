@@ -108,6 +108,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
   ]},
   { key: moduleKey("hiring"), label: "Hiring", items: [
     def("/jobs", "Requisitions", BriefcaseBusiness, ["hr_admin", "hiring_manager", "supervisor"]),
+    def("/interviews", "Interviews", Video, ["hr_admin", "hiring_manager", "supervisor"]),
     def("/offers", "Offers", FileSignature, ["hr_admin", "hiring_manager"]),
     def("/email-templates", "Email Templates", ScrollText, ["hr_admin"]),
     def("/approvals", "Approvals", CheckSquare, ["hr_admin", "hiring_manager", "supervisor"]),
