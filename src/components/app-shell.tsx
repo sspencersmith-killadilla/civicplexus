@@ -24,11 +24,31 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     return window.localStorage.getItem("cp:sidebar:collapsed") === "1";
   });
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set<string>();
+    try {
+      const raw = window.localStorage.getItem("cp:sidebar:expanded");
+      if (raw) return new Set(JSON.parse(raw));
+    } catch { /* ignore */ }
+    return new Set<string>();
+  });
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem("cp:sidebar:collapsed", collapsed ? "1" : "0");
+      window.localStorage.setItem("cp:sidebar:expanded", JSON.stringify([...expandedGroups]));
     }
-  }, [collapsed]);
+  }, [collapsed, expandedGroups]);
+
+  function toggleGroup(label: string) {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  }
 
   async function signOut() {
     await qc.cancelQueries();
