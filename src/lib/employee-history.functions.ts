@@ -26,8 +26,14 @@ export const getEmployeeHistory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ employee_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }): Promise<HistoryEvent[]> => {
-    await requireHrAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Allow access if HR admin OR the employee themselves
+    const { data: hr } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId).eq("role", "hr_admin").maybeSingle();
+    const isHr = !!hr;
+    if (!isHr) {
+      const { data: own } = await supabaseAdmin.from("employees").select("id").eq("id", data.employee_id).eq("user_id", context.userId).maybeSingle();
+      if (!own) throw new Error("Forbidden");
+    }
     const empId = data.employee_id;
     const events: HistoryEvent[] = [];
 
