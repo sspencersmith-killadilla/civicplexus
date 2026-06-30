@@ -243,6 +243,56 @@ function MyHR() {
           </section>
         )}
 
+        {empQ.data && (reportsQ.data?.length ?? 0) > 0 && (() => {
+          type Celeb = { id: string; name: string; kind: "birthday" | "anniversary"; date: Date; years: number | null; daysAway: number };
+          const today = new Date(); today.setHours(0, 0, 0, 0);
+          const horizon = 60;
+          const items: Celeb[] = [];
+          for (const r of reportsQ.data!) {
+            const name = `${r.first_name} ${r.last_name}`;
+            const push = (src: string | null, kind: Celeb["kind"]) => {
+              if (!src) return;
+              const d = new Date(src + "T00:00:00");
+              if (Number.isNaN(d.getTime())) return;
+              const next = new Date(today.getFullYear(), d.getMonth(), d.getDate());
+              if (next < today) next.setFullYear(today.getFullYear() + 1);
+              const daysAway = Math.round((next.getTime() - today.getTime()) / 86400000);
+              if (daysAway > horizon) return;
+              const years = kind === "anniversary" ? next.getFullYear() - d.getFullYear() : null;
+              items.push({ id: r.id, name, kind, date: next, years, daysAway });
+            };
+            push(r.date_of_birth, "birthday");
+            push(r.start_date, "anniversary");
+          }
+          items.sort((a, b) => a.daysAway - b.daysAway);
+          if (!items.length) return null;
+          const fmt = (d: Date) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+          const label = (n: number) => (n === 0 ? "today" : n === 1 ? "tomorrow" : `in ${n} days`);
+          return (
+            <section>
+              <h3 className="font-medium mb-3 flex items-center gap-2"><PartyPopper className="h-4 w-4 text-primary" /> Upcoming celebrations</h3>
+              <Card className="divide-y">
+                {items.map((it, i) => (
+                  <Link key={i} to="/employees/$id" params={{ id: it.id }} className="flex items-center gap-3 p-3 hover:bg-muted/40">
+                    {it.kind === "birthday" ? <Cake className="h-4 w-4 text-primary shrink-0" /> : <PartyPopper className="h-4 w-4 text-primary shrink-0" />}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm truncate">
+                        <span className="font-medium">{it.name}</span>
+                        <span className="text-muted-foreground"> · {it.kind === "birthday" ? "Birthday" : `${it.years}-year work anniversary`}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">{fmt(it.date)} · {label(it.daysAway)}</div>
+                    </div>
+                    {it.daysAway <= 7 && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary whitespace-nowrap">This week</span>
+                    )}
+                  </Link>
+                ))}
+              </Card>
+              <p className="text-xs text-muted-foreground mt-2">Showing the next {horizon} days. Birthdays come from each employee's date of birth on file; HR can edit it on the employee record.</p>
+            </section>
+          );
+        })()}
+
         <section>
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-medium flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /> Leave balances</h3>
