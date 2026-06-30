@@ -145,14 +145,61 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           </Button>
         </div>
       </aside>
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="p-0 bg-sidebar text-sidebar-foreground w-[260px] sm:w-[300px]">
+          <div className="flex flex-col h-full">
+            <div className="px-5 py-5 border-b border-sidebar-border flex items-center justify-between gap-2">
+              <Link to="/" className="flex items-center gap-2.5 min-w-0" aria-label="CivicPlexus home">
+                <img src={markAsset.url} alt="" aria-hidden="true" className="h-8 w-8 object-contain shrink-0" />
+                <span className="font-serif text-lg tracking-tight truncate">CivicPlexus</span>
+              </Link>
+            </div>
+            {sidebarNav}
+            <div className="p-3 border-t border-sidebar-border">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={signOut}
+                aria-label="Sign out"
+                className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign out
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
       <main className="flex-1 min-w-0">
         <DemoTour />
         {title && (
-          <header className="border-b bg-card px-6 md:px-10 py-5">
-            <h1 className="font-serif text-2xl tracking-tight">{title}</h1>
+          <header className="border-b bg-card px-4 md:px-10 py-4 md:py-5 flex items-center gap-3">
+            <SheetTrigger asChild>
+              <button
+                type="button"
+                aria-label="Open menu"
+                className="md:hidden p-2 rounded-md text-foreground/70 hover:bg-accent hover:text-accent-foreground"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <h1 className="font-serif text-xl md:text-2xl tracking-tight">{title}</h1>
           </header>
         )}
-        <div className="px-6 md:px-10 py-6">
+        {!title && (
+          <div className="md:hidden px-4 pt-4">
+            <SheetTrigger asChild>
+              <button
+                type="button"
+                aria-label="Open menu"
+                className="p-2 rounded-md text-foreground/70 hover:bg-accent hover:text-accent-foreground"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+          </div>
+        )}
+        <div className="px-4 md:px-10 py-6">
           <ModuleGate>{children}</ModuleGate>
         </div>
       </main>
