@@ -7,6 +7,7 @@ import {
   DollarSign, Scale, BarChart2, FileStack, Banknote, DatabaseBackup, Landmark,
   ShieldCheck, BadgeCheck, ToggleLeft, UserCog, Network,
   Clock,
+  Video,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRole } from "@/hooks/use-current-user";
