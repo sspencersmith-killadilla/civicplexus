@@ -109,6 +109,7 @@ import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/badge.$serial'
 import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
+import { Route as AuthenticatedInterviewsIdRoomRouteImport } from './routes/_authenticated/interviews.$id.room'
 import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim.v2.Users'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
 import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
@@ -669,6 +670,12 @@ const AuthenticatedReviewCyclesIdCalibrationRoute =
     path: '/calibration',
     getParentRoute: () => AuthenticatedReviewCyclesIdRoute,
   } as any)
+const AuthenticatedInterviewsIdRoomRoute =
+  AuthenticatedInterviewsIdRoomRouteImport.update({
+    id: '/room',
+    path: '/room',
+    getParentRoute: () => AuthenticatedInterviewsIdRoute,
+  } as any)
 const ApiPublicScimV2UsersRoute = ApiPublicScimV2UsersRouteImport.update({
   id: '/api/public/scim/v2/Users',
   path: '/api/public/scim/v2/Users',
@@ -804,7 +811,7 @@ export interface FileRoutesByFullPath {
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
-  '/interviews/$id': typeof AuthenticatedInterviewsIdRoute
+  '/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -835,6 +842,7 @@ export interface FileRoutesByFullPath {
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
+  '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -916,7 +924,7 @@ export interface FileRoutesByTo {
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
-  '/interviews/$id': typeof AuthenticatedInterviewsIdRoute
+  '/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -947,6 +955,7 @@ export interface FileRoutesByTo {
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
+  '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -1031,7 +1040,7 @@ export interface FileRoutesById {
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
-  '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRoute
+  '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/_authenticated/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -1062,6 +1071,7 @@ export interface FileRoutesById {
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
+  '/_authenticated/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/_authenticated/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -1177,6 +1187,7 @@ export interface FileRouteTypes {
     | '/reviews/'
     | '/templates/'
     | '/careers/$slug/'
+    | '/interviews/$id/room'
     | '/review-cycles/$id/calibration'
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
@@ -1289,6 +1300,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/templates'
     | '/careers/$slug'
+    | '/interviews/$id/room'
     | '/review-cycles/$id/calibration'
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
@@ -1403,6 +1415,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reviews/'
     | '/_authenticated/templates/'
     | '/careers/$slug/'
+    | '/_authenticated/interviews/$id/room'
     | '/_authenticated/review-cycles/$id/calibration'
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
@@ -2155,6 +2168,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewCyclesIdCalibrationRouteImport
       parentRoute: typeof AuthenticatedReviewCyclesIdRoute
     }
+    '/_authenticated/interviews/$id/room': {
+      id: '/_authenticated/interviews/$id/room'
+      path: '/room'
+      fullPath: '/interviews/$id/room'
+      preLoaderRoute: typeof AuthenticatedInterviewsIdRoomRouteImport
+      parentRoute: typeof AuthenticatedInterviewsIdRoute
+    }
     '/api/public/scim/v2/Users': {
       id: '/api/public/scim/v2/Users'
       path: '/api/public/scim/v2/Users'
@@ -2255,6 +2275,20 @@ const AuthenticatedPoliciesRouteWithChildren =
     AuthenticatedPoliciesRouteChildren,
   )
 
+interface AuthenticatedInterviewsIdRouteChildren {
+  AuthenticatedInterviewsIdRoomRoute: typeof AuthenticatedInterviewsIdRoomRoute
+}
+
+const AuthenticatedInterviewsIdRouteChildren: AuthenticatedInterviewsIdRouteChildren =
+  {
+    AuthenticatedInterviewsIdRoomRoute: AuthenticatedInterviewsIdRoomRoute,
+  }
+
+const AuthenticatedInterviewsIdRouteWithChildren =
+  AuthenticatedInterviewsIdRoute._addFileChildren(
+    AuthenticatedInterviewsIdRouteChildren,
+  )
+
 interface AuthenticatedReviewCyclesIdRouteChildren {
   AuthenticatedReviewCyclesIdCalibrationRoute: typeof AuthenticatedReviewCyclesIdCalibrationRoute
 }
@@ -2326,7 +2360,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
-  AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRoute
+  AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRouteWithChildren
   AuthenticatedJobsIdRoute: typeof AuthenticatedJobsIdRoute
   AuthenticatedLeaveIdRoute: typeof AuthenticatedLeaveIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
@@ -2409,7 +2443,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
-  AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRoute,
+  AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRouteWithChildren,
   AuthenticatedJobsIdRoute: AuthenticatedJobsIdRoute,
   AuthenticatedLeaveIdRoute: AuthenticatedLeaveIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
