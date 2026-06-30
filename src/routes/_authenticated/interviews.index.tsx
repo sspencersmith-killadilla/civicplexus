@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays, Video, MapPin, ArrowRight } from "lucide-react";
+import { CalendarDays, Video, MapPin, ArrowRight, Play, Clock } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/interviews/")({ component: InterviewsIndex });
 
@@ -25,11 +26,13 @@ type InterviewRow = {
 };
 
 function InterviewsIndex() {
+  const [tab, setTab] = useState<"live" | "async">("live");
   const [scope, setScope] = useState<"upcoming" | "past" | "all">("upcoming");
   const [q, setQ] = useState("");
 
   const ivQ = useQuery({
     queryKey: ["interviews", "index", scope],
+    enabled: tab === "live",
     queryFn: async () => {
       const nowIso = new Date().toISOString();
       let qb = supabase
@@ -41,6 +44,21 @@ function InterviewsIndex() {
       const { data, error } = await qb.limit(200);
       if (error) throw error;
       return (data ?? []) as unknown as InterviewRow[];
+    },
+  });
+
+  const asyncQ = useQuery({
+    queryKey: ["interview_invitations_index"],
+    enabled: tab === "async",
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("interview_invitations" as never)
+        .select("id, kind, status, expires_at, submitted_at, created_at, kit:kit_id(name), job_applications:application_id(applicant_name, email, requisition_id)")
+        .eq("kind", "one_way")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []) as unknown as Array<{ id: string; status: string; expires_at: string; submitted_at: string | null; created_at: string; kit: { name: string } | null; job_applications: { applicant_name: string; email: string | null; requisition_id: string | null } | null }>;
     },
   });
 
@@ -57,6 +75,12 @@ function InterviewsIndex() {
 
   return (
     <AppShell title="Interviews">
+      <div className="flex gap-2 mb-3">
+        <Button size="sm" variant={tab === "live" ? "default" : "outline"} onClick={() => setTab("live")}>Live / scheduled</Button>
+        <Button size="sm" variant={tab === "async" ? "default" : "outline"} onClick={() => setTab("async")}>Async (one-way)</Button>
+      </div>
+      {tab === "live" ? (
+      <>
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <Select value={scope} onValueChange={(v) => setScope(v as typeof scope)}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
@@ -111,6 +135,39 @@ function InterviewsIndex() {
                   )}
                   <Button asChild size="sm">
                     <Link to="/interviews/$id" params={{ id: iv.id }}>Open<ArrowRight className="h-3 w-3 ml-1" /></Link>
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+      </>
+      ) : (
+        <div className="space-y-2">
+          {asyncQ.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : (asyncQ.data ?? []).length === 0 ? (
+            <Card className="p-8 text-center text-sm text-muted-foreground">
+              No async invitations yet. Send one from an applicant card in <Link to="/jobs" className="underline">Requisitions</Link>.
+            </Card>
+          ) : (asyncQ.data ?? []).map((inv) => {
+            const submitted = !!inv.submitted_at;
+            const expired = !submitted && new Date(inv.expires_at) < new Date();
+            return (
+              <Card key={inv.id} className="p-4 flex flex-wrap items-center gap-4">
+                <div className="flex-1 min-w-[200px]">
+                  <div className="font-medium">{inv.job_applications?.applicant_name ?? "Candidate"}</div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                    <Badge variant="secondary">{inv.kit?.name ?? "Kit"}</Badge>
+                    <Badge variant={submitted ? "default" : expired ? "destructive" : "outline"} className="capitalize">{submitted ? "submitted" : expired ? "expired" : inv.status}</Badge>
+                    <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />Sent {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true })}</span>
+                    {!submitted && !expired && <span>· expires {new Date(inv.expires_at).toLocaleDateString()}</span>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button asChild size="sm" variant={submitted ? "default" : "outline"}>
+                    <Link to="/interviews/$id" params={{ id: inv.id }}>{submitted ? <><Play className="h-3 w-3 mr-1" />Review takes</> : <>Open<ArrowRight className="h-3 w-3 ml-1" /></>}</Link>
                   </Button>
                 </div>
               </Card>
