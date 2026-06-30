@@ -78,6 +78,7 @@ import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedCompCyclesIndexRouteImport } from './routes/_authenticated/comp-cycles.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
+import { Route as CandidateTokenInterviewRouteImport } from './routes/candidate.$token.interview'
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
@@ -494,6 +495,11 @@ const CareersSlugApplyRoute = CareersSlugApplyRouteImport.update({
   path: '/apply',
   getParentRoute: () => CareersSlugRoute,
 } as any)
+const CandidateTokenInterviewRoute = CandidateTokenInterviewRouteImport.update({
+  id: '/interview',
+  path: '/interview',
+  getParentRoute: () => CandidateTokenRoute,
+} as any)
 const ApiPublicJobApplicationsRoute =
   ApiPublicJobApplicationsRouteImport.update({
     id: '/api/public/job-applications',
@@ -777,7 +783,7 @@ export interface FileRoutesByFullPath {
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
-  '/candidate/$token': typeof CandidateTokenRoute
+  '/candidate/$token': typeof CandidateTokenRouteWithChildren
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
   '/careers/': typeof CareersIndexRoute
@@ -804,6 +810,7 @@ export interface FileRoutesByFullPath {
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
@@ -888,7 +895,7 @@ export interface FileRoutesByTo {
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
-  '/candidate/$token': typeof CandidateTokenRoute
+  '/candidate/$token': typeof CandidateTokenRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
   '/careers': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
@@ -914,6 +921,7 @@ export interface FileRoutesByTo {
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles': typeof AuthenticatedCompCyclesIndexRoute
@@ -1000,7 +1008,7 @@ export interface FileRoutesById {
   '/_authenticated/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
-  '/candidate/$token': typeof CandidateTokenRoute
+  '/candidate/$token': typeof CandidateTokenRouteWithChildren
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
   '/careers/': typeof CareersIndexRoute
@@ -1027,6 +1035,7 @@ export interface FileRoutesById {
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
@@ -1140,6 +1149,7 @@ export interface FileRouteTypes {
     | '/transcript/$employeeId'
     | '/api/public/health'
     | '/api/public/job-applications'
+    | '/candidate/$token/interview'
     | '/careers/$slug/apply'
     | '/cascades/'
     | '/comp-cycles/'
@@ -1250,6 +1260,7 @@ export interface FileRouteTypes {
     | '/transcript/$employeeId'
     | '/api/public/health'
     | '/api/public/job-applications'
+    | '/candidate/$token/interview'
     | '/careers/$slug/apply'
     | '/cascades'
     | '/comp-cycles'
@@ -1362,6 +1373,7 @@ export interface FileRouteTypes {
     | '/_authenticated/transcript/$employeeId'
     | '/api/public/health'
     | '/api/public/job-applications'
+    | '/candidate/$token/interview'
     | '/careers/$slug/apply'
     | '/_authenticated/cascades/'
     | '/_authenticated/comp-cycles/'
@@ -1403,7 +1415,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   OfflineShellRoute: typeof OfflineShellRoute
-  CandidateTokenRoute: typeof CandidateTokenRoute
+  CandidateTokenRoute: typeof CandidateTokenRouteWithChildren
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
   OfferTokenRoute: typeof OfferTokenRoute
   CareersIndexRoute: typeof CareersIndexRoute
@@ -1913,6 +1925,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CareersSlugApplyRouteImport
       parentRoute: typeof CareersSlugRoute
     }
+    '/candidate/$token/interview': {
+      id: '/candidate/$token/interview'
+      path: '/interview'
+      fullPath: '/candidate/$token/interview'
+      preLoaderRoute: typeof CandidateTokenInterviewRouteImport
+      parentRoute: typeof CandidateTokenRoute
+    }
     '/api/public/job-applications': {
       id: '/api/public/job-applications'
       path: '/api/public/job-applications'
@@ -2400,6 +2419,18 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CandidateTokenRouteChildren {
+  CandidateTokenInterviewRoute: typeof CandidateTokenInterviewRoute
+}
+
+const CandidateTokenRouteChildren: CandidateTokenRouteChildren = {
+  CandidateTokenInterviewRoute: CandidateTokenInterviewRoute,
+}
+
+const CandidateTokenRouteWithChildren = CandidateTokenRoute._addFileChildren(
+  CandidateTokenRouteChildren,
+)
+
 interface CareersSlugRouteChildren {
   CareersSlugApplyRoute: typeof CareersSlugApplyRoute
   CareersSlugIndexRoute: typeof CareersSlugIndexRoute
@@ -2419,7 +2450,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   OfflineShellRoute: OfflineShellRoute,
-  CandidateTokenRoute: CandidateTokenRoute,
+  CandidateTokenRoute: CandidateTokenRouteWithChildren,
   CareersSlugRoute: CareersSlugRouteWithChildren,
   OfferTokenRoute: OfferTokenRoute,
   CareersIndexRoute: CareersIndexRoute,
