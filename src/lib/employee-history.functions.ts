@@ -20,6 +20,17 @@ export type HistoryEvent = {
   actor?: string | null;
   ref?: { kind: string; id: string } | null;
   meta?: Record<string, string | number | boolean | null> | null;
+  attachments?: HistoryAttachment[];
+};
+
+export type HistoryAttachment = {
+  id: string;
+  bucket: string;
+  path: string;
+  title: string;
+  mime?: string | null;
+  size?: number | null;
+  sensitive?: boolean;
 };
 
 export const getEmployeeHistory = createServerFn({ method: "POST" })
@@ -58,6 +69,18 @@ export const getEmployeeHistory = createServerFn({ method: "POST" })
 
     const pafById = new Map((pafs.data ?? []).map((p) => [p.id, p]));
 
+    // Fetch employee documents + certification doc joins for attachment surfacing
+    const [docs, certs] = await Promise.all([
+      supabaseAdmin.from("documents").select("id,kind,title,storage_path,mime_type,size_bytes,task_instance_id,is_sensitive,created_at").eq("employee_id", empId),
+      supabaseAdmin.from("employee_certifications").select("id,document_id,documents:documents!employee_certifications_document_id_fkey(id,title,storage_path,mime_type,size_bytes,is_sensitive)").eq("employee_id", empId),
+    ]);
+    type DocRow = { id: string; kind: string | null; title: string | null; storage_path: string; mime_type: string | null; size_bytes: number | null; task_instance_id: string | null; is_sensitive: boolean | null };
+    const docRows: DocRow[] = (docs.data ?? []) as DocRow[];
+    const toAttachment = (d: { id: string; title: string | null; storage_path: string; mime_type: string | null; size_bytes: number | null; is_sensitive?: boolean | null }, bucket = "onboarding-documents"): HistoryAttachment => ({
+      id: d.id, bucket, path: d.storage_path, title: d.title ?? d.storage_path.split("/").pop() ?? "document",
+      mime: d.mime_type, size: d.size_bytes, sensitive: !!d.is_sensitive,
+    });
+
     if (emp.data) {
       collect(emp.data.created_by);
       events.push({
@@ -88,6 +111,10 @@ export const getEmployeeHistory = createServerFn({ method: "POST" })
 
     (pafs.data ?? []).forEach((p) => {
       collect(p.initiated_by);
+      const number = p.paf_number ?? "";
+      const pafDocs = docRows.filter((d) =>
+        (d.kind && /paf/i.test(d.kind)) || (number && d.title && d.title.includes(number))
+      ).map((d) => toAttachment(d));
       events.push({
         at: p.created_at,
         category: "paf",
@@ -95,6 +122,7 @@ export const getEmployeeHistory = createServerFn({ method: "POST" })
         detail: `Effective ${p.effective_date}${p.reason ? ` — ${p.reason}` : ""}`,
         actor: p.initiated_by,
         ref: { kind: "paf", id: p.id },
+        attachments: pafDocs.length ? pafDocs : undefined,
       });
     });
     (pafAudit.data ?? []).forEach((a) => {
@@ -136,6 +164,10 @@ export const getEmployeeHistory = createServerFn({ method: "POST" })
       collect(t.assigned_by);
       const course = (t as unknown as { courses?: { name?: string; code?: string } }).courses;
       const label = course?.name ?? course?.code ?? "Course";
+      const evidence = (t as unknown as { evidence_path?: string | null }).evidence_path;
+      const trainingAtt: HistoryAttachment[] = evidence
+        ? [{ id: `training-${t.id}`, bucket: "onboarding-documents", path: evidence, title: `${label} — evidence`, mime: null, size: null }]
+        : [];
       events.push({
         at: t.assigned_at,
         category: "training",
@@ -150,8 +182,23 @@ export const getEmployeeHistory = createServerFn({ method: "POST" })
           category: "training",
           title: `Training completed: ${label}`,
           ref: { kind: "training", id: t.id },
+          attachments: trainingAtt.length ? trainingAtt : undefined,
         });
       }
+    });
+
+    // Surface certification documents as separate training-category attachments
+    (certs.data ?? []).forEach((ec) => {
+      const d = (ec as unknown as { documents?: { id: string; title: string | null; storage_path: string; mime_type: string | null; size_bytes: number | null; is_sensitive: boolean | null } | null }).documents;
+      if (!d) return;
+      events.push({
+        at: (ec as unknown as { created_at: string }).created_at ?? new Date().toISOString(),
+        category: "training",
+        title: `Certification document on file`,
+        detail: d.title,
+        ref: { kind: "certification", id: (ec as { id: string }).id },
+        attachments: [toAttachment(d)],
+      });
     });
 
     (prov.data ?? []).forEach((p) => {
@@ -223,4 +270,30 @@ export const getEmployeeHistory = createServerFn({ method: "POST" })
 
     events.sort((a, b) => (a.at < b.at ? 1 : -1));
     return events;
+  });
+
+export const getHistoryAttachmentUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({
+    employee_id: z.string().uuid(),
+    bucket: z.string().min(1),
+    path: z.string().min(1),
+  }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Authorize: HR admin or the employee
+    const { data: hr } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId).eq("role", "hr_admin").maybeSingle();
+    if (!hr) {
+      const { data: own } = await supabaseAdmin.from("employees").select("id").eq("id", data.employee_id).eq("user_id", context.userId).maybeSingle();
+      if (!own) throw new Error("Forbidden");
+    }
+    // Verify the requested path actually belongs to this employee (documents.employee_id or evidence_path on their training)
+    const [{ data: docMatch }, { data: trMatch }] = await Promise.all([
+      supabaseAdmin.from("documents").select("id").eq("employee_id", data.employee_id).eq("storage_path", data.path).maybeSingle(),
+      supabaseAdmin.from("employee_training").select("id").eq("employee_id", data.employee_id).eq("evidence_path", data.path).maybeSingle(),
+    ]);
+    if (!docMatch && !trMatch) throw new Error("Attachment not found for this employee");
+    const { data: signed, error } = await supabaseAdmin.storage.from(data.bucket).createSignedUrl(data.path, 300);
+    if (error || !signed) throw new Error(error?.message ?? "Could not sign URL");
+    return { url: signed.signedUrl, expires_in: 300 };
   });
