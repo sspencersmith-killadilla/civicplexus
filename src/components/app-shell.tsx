@@ -11,7 +11,7 @@ import { MODULE_REGISTRY } from "@/lib/modules";
 import { useModuleSettings } from "@/hooks/use-module-settings";
 import { ModuleGate } from "@/components/module-gate";
 import { DemoTour } from "@/components/demo-tour";
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
   const { data } = useCurrentUser();
