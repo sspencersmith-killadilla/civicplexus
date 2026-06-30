@@ -104,6 +104,7 @@ Supervisors and hiring managers file a **Hire Request** with proposed name, titl
 ### 3.3 Screenings, interviews, offers
 - **Screenings** — order background / fingerprint / drug / MVR / credit checks, attach results when they come back.
 - **Interviews** — schedule, capture **Interview Feedback** from each panelist with a structured rubric.
+- **Live panel rooms** — when LiveKit is configured (see Self-Hosting Guide → *LiveKit*), the interview detail page exposes a **Join room** action that opens a recorded, watermarked, two-party-consent video room for the hiring panel. Async candidate "two-take" video responses always work; live rooms are an optional add-on and the page shows an in-app setup banner to HR when credentials are missing.
 - **Offers** — generate from a doc template, send via the tokenized **Offer Portal** (`/offer/<token>`). Candidate accepts or declines online; HR is notified.
 - **Candidate messaging** — send and receive messages from the candidate portal (`/candidate/<token>`) without sharing email threads.
 
