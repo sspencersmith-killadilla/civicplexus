@@ -292,7 +292,7 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
     onSuccess: (r: { url: string; expires_at: string }) => {
       navigator.clipboard?.writeText(r.url).catch(() => {});
       toast.success("Async interview link copied — emailing candidate…");
-      sendEmail({ data: { application_id: app.id, template_key: "async_interview_invitation", overrides: { interview_url: r.url, expires_at: r.expires_at } } }).catch(() => {});
+      sendEmail({ data: { application_id: app.id, template_key: "async_interview_invitation", extra_vars: { interview_url: r.url, expires_at: new Date(r.expires_at).toLocaleDateString() } } }).catch(() => {});
       setOpenAsync(false);
       set.mutate("interview");
     },
