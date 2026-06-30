@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
@@ -134,6 +135,21 @@ function MyHR() {
       return (data ?? []) as Array<{ id: string; start_date: string; end_date: string; total_hours: number; status: string; leave_plans: { name: string } }>;
     },
   });
+
+  const historyQ = useQuery({
+    queryKey: ["my-history", empQ.data?.id],
+    enabled: !!empQ.data?.id,
+    queryFn: () => historyFn({ data: { employee_id: empQ.data!.id } }),
+  });
+  const filteredHistory = (historyQ.data ?? []).filter((e: HistoryEvent) => historyFilter === "all" || e.category === historyFilter);
+  function exportMyHistoryCsv() {
+    const rows: (string | number)[][] = [["When", "Category", "Title", "Detail", "Actor"]];
+    filteredHistory.forEach((e: HistoryEvent) => rows.push([new Date(e.at).toISOString(), e.category, e.title, e.detail ?? "", e.actor ?? ""]));
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `my-personnel-history.csv`; a.click();
+  }
 
   const trainingQ = useQuery({
     queryKey: ["my-training", empQ.data?.id],
