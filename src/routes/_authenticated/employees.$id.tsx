@@ -21,6 +21,7 @@ import { linkUserToEmployee, unlinkEmployeeUser } from "@/lib/employee-account.f
 import { getEmployeeHistory, type HistoryEvent } from "@/lib/employee-history.functions";
 import { Badge } from "@/components/ui/badge";
 import { Download, History as HistoryIcon } from "lucide-react";
+import { HistoryAttachments } from "@/components/history-attachments";
 
 export const Route = createFileRoute("/_authenticated/employees/$id")({
   component: EmployeeProfile,
@@ -334,6 +335,7 @@ function EmployeeProfile() {
                     {e.actor && <span className="text-xs text-muted-foreground">by {e.actor}</span>}
                   </div>
                   {e.detail && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{e.detail}</p>}
+                  <HistoryAttachments employeeId={id} attachments={e.attachments} />
                 </li>
               ))}
             </ol>

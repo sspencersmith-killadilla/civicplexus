@@ -165,6 +165,14 @@ Budgeted seats with title, department, grade, FLSA class, reports-to. Vacancies 
 ### 5.4 My HR (self-service)
 Employees see their own profile, paystubs, documents, time-off balance, assigned training, pending policies, and PAFs that affect them.
 
+### 5.5 Personnel record history (timeline)
+Every employee profile has a unified **Personnel record history** tab that merges hires, status changes, compensation, PAF activity, reviews, training, provisioning, grievances, and audit events into one chronological view.
+
+- **Filter** by category, **export** the visible rows to CSV.
+- **Attachments** for an event — PAF supporting documents, training proof of completion, certification PDFs — appear as paperclip chips beneath the event. Click a chip to open the file in a new tab via a short-lived signed URL (5-minute expiry, scoped to that employee).
+- Files marked **sensitive** show a lock icon. Access is limited to HR admins and the employee themselves; every open is auditable.
+- Employees see the same timeline for their own record under **My HR → Personnel history**.
+
 ---
 
 ## 6. Pay & Benefits

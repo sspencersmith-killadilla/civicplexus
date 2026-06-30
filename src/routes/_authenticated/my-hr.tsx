@@ -18,6 +18,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
 import { getDirectReportTaskCounts } from "@/lib/my-team.functions";
 import { getEmployeeHistory, type HistoryEvent } from "@/lib/employee-history.functions";
+import { HistoryAttachments } from "@/components/history-attachments";
 import { Badge } from "@/components/ui/badge";
 import { Download, History as HistoryIcon } from "lucide-react";
 
@@ -377,6 +378,7 @@ function MyHR() {
                     {e.actor && <span className="text-xs text-muted-foreground">by {e.actor}</span>}
                   </div>
                   {e.detail && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{e.detail}</p>}
+                  <HistoryAttachments employeeId={empQ.data!.id} attachments={e.attachments} />
                 </li>
               ))}
             </ol>
