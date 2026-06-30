@@ -54,6 +54,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/employees", "Employees", Users, ["hr_admin", "hiring_manager"]),
     def("/positions", "Positions", ClipboardList, ["hr_admin", "hiring_manager", "supervisor"]),
     def("/hire-requests", "Hire Requests", UserPlus, ["hr_admin", "supervisor", "hiring_manager"]),
+    def("/interview-kits", "Interview Kits", Video, ["hr_admin", "hiring_manager"]),
     def("/offboarding", "Offboarding", DoorOpen, ["hr_admin"]),
     def("/benefits", "Benefits", HeartHandshake, ["hr_admin"]),
     def("/equipment", "Equipment & PPE", Package, ["hr_admin", "hiring_manager"]),
