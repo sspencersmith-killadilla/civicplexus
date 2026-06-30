@@ -240,7 +240,7 @@ export const searchEmployeeDirectory = createServerFn({ method: "POST" })
       .order("last_name")
       .limit(limit);
     if (data?.department) query = query.eq("department", data.department);
-    if (data?.status) query = query.eq("status", data.status);
+    if (data?.status) query = query.eq("status", data.status as "active");
     if (q) {
       const safe = q.replace(/[%,]/g, " ");
       query = query.or(
