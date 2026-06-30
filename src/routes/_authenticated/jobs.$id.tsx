@@ -20,6 +20,7 @@ import { createOffer } from "@/lib/offers.functions";
 import { mintCandidatePortalToken, postRecruiterMessage } from "@/lib/candidate-portal.functions";
 import { sendTemplatedToApplicant } from "@/lib/email-templates.functions";
 import { screenApplication, recordScreenDecision } from "@/lib/applicant-ai.functions";
+import { createInterviewInvitation } from "@/lib/interview-invitations.functions";
 import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/jobs/$id")({ component: JobDetail });
@@ -251,8 +252,11 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
   const mintPortal = useServerFn(mintCandidatePortalToken);
   const sendMsg = useServerFn(postRecruiterMessage);
   const sendEmail = useServerFn(sendTemplatedToApplicant);
+  const mintAsync = useServerFn(createInterviewInvitation);
   const [iv, setIv] = useState({ scheduled_at: "", interviewer_emails: "", location: "", duration_minutes: 45, stage: "first_round" as const, use_inapp_room: true });
   const [openIv, setOpenIv] = useState(false);
+  const [openAsync, setOpenAsync] = useState(false);
+  const [asyncForm, setAsyncForm] = useState({ kit_id: "", days_valid: 14 });
   const [openHire, setOpenHire] = useState(false);
   const [openOffer, setOpenOffer] = useState(false);
   const [openMsg, setOpenMsg] = useState(false);
@@ -267,6 +271,32 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
       return (data ?? []) as Array<{ id: string; name: string }>;
     },
     enabled: openHire || openOffer,
+  });
+
+  const kitsQ = useQuery({
+    queryKey: ["interview_kits_oneway_pick"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("interview_kits" as never)
+        .select("id, name, kind, is_active")
+        .eq("kind", "one_way")
+        .eq("is_active", true)
+        .order("name");
+      return (data ?? []) as unknown as Array<{ id: string; name: string }>;
+    },
+    enabled: openAsync,
+  });
+
+  const doAsync = useMutation({
+    mutationFn: () => mintAsync({ data: { application_id: app.id, kit_id: asyncForm.kit_id, days_valid: asyncForm.days_valid } }),
+    onSuccess: (r: { url: string; expires_at: string }) => {
+      navigator.clipboard?.writeText(r.url).catch(() => {});
+      toast.success("Async interview link copied — emailing candidate…");
+      sendEmail({ data: { application_id: app.id, template_key: "async_interview_invitation", overrides: { interview_url: r.url, expires_at: r.expires_at } } }).catch(() => {});
+      setOpenAsync(false);
+      set.mutate("interview");
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const set = useMutation({
