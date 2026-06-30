@@ -2793,6 +2793,60 @@ export type Database = {
         }
         Relationships: []
       }
+      interview_dsr_requests: {
+        Row: {
+          application_id: string | null
+          created_at: string
+          id: string
+          invitation_id: string | null
+          kind: Database["public"]["Enums"]["interview_dsr_kind"]
+          notes: string | null
+          processed_at: string | null
+          processed_by: string | null
+          requested_email: string | null
+          status: Database["public"]["Enums"]["interview_dsr_status"]
+        }
+        Insert: {
+          application_id?: string | null
+          created_at?: string
+          id?: string
+          invitation_id?: string | null
+          kind: Database["public"]["Enums"]["interview_dsr_kind"]
+          notes?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_email?: string | null
+          status?: Database["public"]["Enums"]["interview_dsr_status"]
+        }
+        Update: {
+          application_id?: string | null
+          created_at?: string
+          id?: string
+          invitation_id?: string | null
+          kind?: Database["public"]["Enums"]["interview_dsr_kind"]
+          notes?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_email?: string | null
+          status?: Database["public"]["Enums"]["interview_dsr_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_dsr_requests_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interview_dsr_requests_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "interview_invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interview_feedback: {
         Row: {
           id: string
@@ -2831,6 +2885,290 @@ export type Database = {
           },
         ]
       }
+      interview_invitations: {
+        Row: {
+          accommodation_approved_at: string | null
+          accommodation_request: Json | null
+          aivi_disclosure_ack_at: string | null
+          application_id: string
+          consent_at: string | null
+          consent_ip: string | null
+          consent_user_agent: string | null
+          created_at: string
+          created_by: string | null
+          device_check: Json | null
+          expires_at: string
+          id: string
+          kind: Database["public"]["Enums"]["interview_kit_kind"]
+          kit_id: string | null
+          requisition_id: string | null
+          retention_days: number
+          status: Database["public"]["Enums"]["interview_invitation_status"]
+          submitted_at: string | null
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accommodation_approved_at?: string | null
+          accommodation_request?: Json | null
+          aivi_disclosure_ack_at?: string | null
+          application_id: string
+          consent_at?: string | null
+          consent_ip?: string | null
+          consent_user_agent?: string | null
+          created_at?: string
+          created_by?: string | null
+          device_check?: Json | null
+          expires_at: string
+          id?: string
+          kind: Database["public"]["Enums"]["interview_kit_kind"]
+          kit_id?: string | null
+          requisition_id?: string | null
+          retention_days?: number
+          status?: Database["public"]["Enums"]["interview_invitation_status"]
+          submitted_at?: string | null
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accommodation_approved_at?: string | null
+          accommodation_request?: Json | null
+          aivi_disclosure_ack_at?: string | null
+          application_id?: string
+          consent_at?: string | null
+          consent_ip?: string | null
+          consent_user_agent?: string | null
+          created_at?: string
+          created_by?: string | null
+          device_check?: Json | null
+          expires_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["interview_kit_kind"]
+          kit_id?: string | null
+          requisition_id?: string | null
+          retention_days?: number
+          status?: Database["public"]["Enums"]["interview_invitation_status"]
+          submitted_at?: string | null
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_invitations_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interview_invitations_kit_id_fkey"
+            columns: ["kit_id"]
+            isOneToOne: false
+            referencedRelation: "interview_kits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interview_invitations_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "job_requisitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interview_kits: {
+        Row: {
+          ai_assist_default: boolean
+          created_at: string
+          created_by: string | null
+          default_retention_days: number
+          description: string | null
+          id: string
+          is_active: boolean
+          kind: Database["public"]["Enums"]["interview_kit_kind"]
+          name: string
+          questions: Json
+          rubric: Json
+          updated_at: string
+        }
+        Insert: {
+          ai_assist_default?: boolean
+          created_at?: string
+          created_by?: string | null
+          default_retention_days?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind: Database["public"]["Enums"]["interview_kit_kind"]
+          name: string
+          questions?: Json
+          rubric?: Json
+          updated_at?: string
+        }
+        Update: {
+          ai_assist_default?: boolean
+          created_at?: string
+          created_by?: string | null
+          default_retention_days?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["interview_kit_kind"]
+          name?: string
+          questions?: Json
+          rubric?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      interview_recording_access: {
+        Row: {
+          context: string
+          context_id: string | null
+          id: string
+          ip: string | null
+          recording_object_path: string
+          signed_url_expires_at: string | null
+          user_agent: string | null
+          viewed_at: string
+          viewed_by: string | null
+        }
+        Insert: {
+          context: string
+          context_id?: string | null
+          id?: string
+          ip?: string | null
+          recording_object_path: string
+          signed_url_expires_at?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+          viewed_by?: string | null
+        }
+        Update: {
+          context?: string
+          context_id?: string | null
+          id?: string
+          ip?: string | null
+          recording_object_path?: string
+          signed_url_expires_at?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+          viewed_by?: string | null
+        }
+        Relationships: []
+      }
+      interview_responses: {
+        Row: {
+          captions_vtt_path: string | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          invitation_id: string
+          is_final: boolean
+          media_mime: string | null
+          media_object_path: string | null
+          question_id: string
+          take_number: number
+          transcript: string | null
+        }
+        Insert: {
+          captions_vtt_path?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          invitation_id: string
+          is_final?: boolean
+          media_mime?: string | null
+          media_object_path?: string | null
+          question_id: string
+          take_number: number
+          transcript?: string | null
+        }
+        Update: {
+          captions_vtt_path?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          invitation_id?: string
+          is_final?: boolean
+          media_mime?: string | null
+          media_object_path?: string | null
+          question_id?: string
+          take_number?: number
+          transcript?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_responses_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "interview_invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interview_rooms: {
+        Row: {
+          ai_captions_enabled: boolean
+          consent_log: Json
+          created_at: string
+          egress_id: string | null
+          ended_at: string | null
+          id: string
+          interview_id: string
+          livekit_room_name: string
+          livekit_sid: string | null
+          recording_duration_seconds: number | null
+          recording_object_path: string | null
+          retention_days: number
+          started_at: string | null
+          updated_at: string
+          watermark_text: string | null
+        }
+        Insert: {
+          ai_captions_enabled?: boolean
+          consent_log?: Json
+          created_at?: string
+          egress_id?: string | null
+          ended_at?: string | null
+          id?: string
+          interview_id: string
+          livekit_room_name: string
+          livekit_sid?: string | null
+          recording_duration_seconds?: number | null
+          recording_object_path?: string | null
+          retention_days?: number
+          started_at?: string | null
+          updated_at?: string
+          watermark_text?: string | null
+        }
+        Update: {
+          ai_captions_enabled?: boolean
+          consent_log?: Json
+          created_at?: string
+          egress_id?: string | null
+          ended_at?: string | null
+          id?: string
+          interview_id?: string
+          livekit_room_name?: string
+          livekit_sid?: string | null
+          recording_duration_seconds?: number | null
+          recording_object_path?: string | null
+          retention_days?: number
+          started_at?: string | null
+          updated_at?: string
+          watermark_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_rooms_interview_id_fkey"
+            columns: ["interview_id"]
+            isOneToOne: false
+            referencedRelation: "interviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interviews: {
         Row: {
           application_id: string
@@ -2840,6 +3178,8 @@ export type Database = {
           duration_minutes: number
           id: string
           interviewer_ids: string[]
+          invitation_id: string | null
+          kind: string | null
           location: string | null
           notes: string | null
           scheduled_at: string
@@ -2855,6 +3195,8 @@ export type Database = {
           duration_minutes?: number
           id?: string
           interviewer_ids?: string[]
+          invitation_id?: string | null
+          kind?: string | null
           location?: string | null
           notes?: string | null
           scheduled_at: string
@@ -2870,6 +3212,8 @@ export type Database = {
           duration_minutes?: number
           id?: string
           interviewer_ids?: string[]
+          invitation_id?: string | null
+          kind?: string | null
           location?: string | null
           notes?: string | null
           scheduled_at?: string
@@ -2883,6 +3227,13 @@ export type Database = {
             columns: ["application_id"]
             isOneToOne: false
             referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interviews_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "interview_invitations"
             referencedColumns: ["id"]
           },
         ]
@@ -3020,6 +3371,8 @@ export type Database = {
           hiring_manager_id: string | null
           id: string
           internal_only: boolean
+          interview_ai_assist_enabled: boolean
+          interview_retention_days: number
           location: string | null
           position_id: string | null
           posted_at: string | null
@@ -3048,6 +3401,8 @@ export type Database = {
           hiring_manager_id?: string | null
           id?: string
           internal_only?: boolean
+          interview_ai_assist_enabled?: boolean
+          interview_retention_days?: number
           location?: string | null
           position_id?: string | null
           posted_at?: string | null
@@ -3076,6 +3431,8 @@ export type Database = {
           hiring_manager_id?: string | null
           id?: string
           internal_only?: boolean
+          interview_ai_assist_enabled?: boolean
+          interview_retention_days?: number
           location?: string | null
           position_id?: string | null
           posted_at?: string | null
@@ -6679,6 +7036,11 @@ export type Database = {
         }
         Returns: undefined
       }
+      is_iv_manager: { Args: { _uid: string }; Returns: boolean }
+      is_panelist_for_interview: {
+        Args: { _interview: string; _user: string }
+        Returns: boolean
+      }
       mark_my_training_started: {
         Args: { _training_id: string }
         Returns: undefined
@@ -6726,6 +7088,15 @@ export type Database = {
         | "active"
         | "offboarded"
         | "on_leave"
+      interview_dsr_kind: "export" | "delete"
+      interview_dsr_status: "pending" | "processing" | "completed" | "rejected"
+      interview_invitation_status:
+        | "pending"
+        | "in_progress"
+        | "submitted"
+        | "expired"
+        | "revoked"
+      interview_kit_kind: "one_way" | "live"
       task_assignee:
         | "employee"
         | "manager"
@@ -6891,6 +7262,16 @@ export const Constants = {
         "offboarded",
         "on_leave",
       ],
+      interview_dsr_kind: ["export", "delete"],
+      interview_dsr_status: ["pending", "processing", "completed", "rejected"],
+      interview_invitation_status: [
+        "pending",
+        "in_progress",
+        "submitted",
+        "expired",
+        "revoked",
+      ],
+      interview_kit_kind: ["one_way", "live"],
       task_assignee: [
         "employee",
         "manager",

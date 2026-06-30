@@ -110,6 +110,13 @@ import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './ro
 import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim.v2.Users'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
 import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
+import { Route as ApiPublicInterviewTokenUploadUrlRouteImport } from './routes/api/public/interview/$token/upload-url'
+import { Route as ApiPublicInterviewTokenSubmitTakeRouteImport } from './routes/api/public/interview/$token/submit-take'
+import { Route as ApiPublicInterviewTokenStatusRouteImport } from './routes/api/public/interview/$token/status'
+import { Route as ApiPublicInterviewTokenFinalizeRouteImport } from './routes/api/public/interview/$token/finalize'
+import { Route as ApiPublicInterviewTokenDsrRouteImport } from './routes/api/public/interview/$token/dsr'
+import { Route as ApiPublicInterviewTokenConsentRouteImport } from './routes/api/public/interview/$token/consent'
+import { Route as ApiPublicInterviewTokenAccommodationRouteImport } from './routes/api/public/interview/$token/accommodation'
 import { Route as ApiPublicCandidateTokenStatusRouteImport } from './routes/api/public/candidate/$token/status'
 import { Route as ApiPublicCandidateTokenMessageRouteImport } from './routes/api/public/candidate/$token/message'
 
@@ -666,6 +673,48 @@ const ApiPublicOffersTokenRespondRoute =
     path: '/api/public/offers/$token/respond',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicInterviewTokenUploadUrlRoute =
+  ApiPublicInterviewTokenUploadUrlRouteImport.update({
+    id: '/api/public/interview/$token/upload-url',
+    path: '/api/public/interview/$token/upload-url',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenSubmitTakeRoute =
+  ApiPublicInterviewTokenSubmitTakeRouteImport.update({
+    id: '/api/public/interview/$token/submit-take',
+    path: '/api/public/interview/$token/submit-take',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenStatusRoute =
+  ApiPublicInterviewTokenStatusRouteImport.update({
+    id: '/api/public/interview/$token/status',
+    path: '/api/public/interview/$token/status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenFinalizeRoute =
+  ApiPublicInterviewTokenFinalizeRouteImport.update({
+    id: '/api/public/interview/$token/finalize',
+    path: '/api/public/interview/$token/finalize',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenDsrRoute =
+  ApiPublicInterviewTokenDsrRouteImport.update({
+    id: '/api/public/interview/$token/dsr',
+    path: '/api/public/interview/$token/dsr',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenConsentRoute =
+  ApiPublicInterviewTokenConsentRouteImport.update({
+    id: '/api/public/interview/$token/consent',
+    path: '/api/public/interview/$token/consent',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenAccommodationRoute =
+  ApiPublicInterviewTokenAccommodationRouteImport.update({
+    id: '/api/public/interview/$token/accommodation',
+    path: '/api/public/interview/$token/accommodation',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCandidateTokenStatusRoute =
   ApiPublicCandidateTokenStatusRouteImport.update({
     id: '/api/public/candidate/$token/status',
@@ -779,6 +828,13 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
+  '/api/public/interview/$token/consent': typeof ApiPublicInterviewTokenConsentRoute
+  '/api/public/interview/$token/dsr': typeof ApiPublicInterviewTokenDsrRoute
+  '/api/public/interview/$token/finalize': typeof ApiPublicInterviewTokenFinalizeRoute
+  '/api/public/interview/$token/status': typeof ApiPublicInterviewTokenStatusRoute
+  '/api/public/interview/$token/submit-take': typeof ApiPublicInterviewTokenSubmitTakeRoute
+  '/api/public/interview/$token/upload-url': typeof ApiPublicInterviewTokenUploadUrlRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
   '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
@@ -882,6 +938,13 @@ export interface FileRoutesByTo {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
+  '/api/public/interview/$token/consent': typeof ApiPublicInterviewTokenConsentRoute
+  '/api/public/interview/$token/dsr': typeof ApiPublicInterviewTokenDsrRoute
+  '/api/public/interview/$token/finalize': typeof ApiPublicInterviewTokenFinalizeRoute
+  '/api/public/interview/$token/status': typeof ApiPublicInterviewTokenStatusRoute
+  '/api/public/interview/$token/submit-take': typeof ApiPublicInterviewTokenSubmitTakeRoute
+  '/api/public/interview/$token/upload-url': typeof ApiPublicInterviewTokenUploadUrlRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
   '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
@@ -988,6 +1051,13 @@ export interface FileRoutesById {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
+  '/api/public/interview/$token/consent': typeof ApiPublicInterviewTokenConsentRoute
+  '/api/public/interview/$token/dsr': typeof ApiPublicInterviewTokenDsrRoute
+  '/api/public/interview/$token/finalize': typeof ApiPublicInterviewTokenFinalizeRoute
+  '/api/public/interview/$token/status': typeof ApiPublicInterviewTokenStatusRoute
+  '/api/public/interview/$token/submit-take': typeof ApiPublicInterviewTokenSubmitTakeRoute
+  '/api/public/interview/$token/upload-url': typeof ApiPublicInterviewTokenUploadUrlRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
   '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
@@ -1094,6 +1164,13 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
+    | '/api/public/interview/$token/accommodation'
+    | '/api/public/interview/$token/consent'
+    | '/api/public/interview/$token/dsr'
+    | '/api/public/interview/$token/finalize'
+    | '/api/public/interview/$token/status'
+    | '/api/public/interview/$token/submit-take'
+    | '/api/public/interview/$token/upload-url'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
     | '/api/public/scim/v2/Users'
@@ -1197,6 +1274,13 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
+    | '/api/public/interview/$token/accommodation'
+    | '/api/public/interview/$token/consent'
+    | '/api/public/interview/$token/dsr'
+    | '/api/public/interview/$token/finalize'
+    | '/api/public/interview/$token/status'
+    | '/api/public/interview/$token/submit-take'
+    | '/api/public/interview/$token/upload-url'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
     | '/api/public/scim/v2/Users'
@@ -1302,6 +1386,13 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
+    | '/api/public/interview/$token/accommodation'
+    | '/api/public/interview/$token/consent'
+    | '/api/public/interview/$token/dsr'
+    | '/api/public/interview/$token/finalize'
+    | '/api/public/interview/$token/status'
+    | '/api/public/interview/$token/submit-take'
+    | '/api/public/interview/$token/upload-url'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
     | '/api/public/scim/v2/Users'
@@ -1325,6 +1416,13 @@ export interface RootRouteChildren {
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
   ApiPublicCandidateTokenMessageRoute: typeof ApiPublicCandidateTokenMessageRoute
   ApiPublicCandidateTokenStatusRoute: typeof ApiPublicCandidateTokenStatusRoute
+  ApiPublicInterviewTokenAccommodationRoute: typeof ApiPublicInterviewTokenAccommodationRoute
+  ApiPublicInterviewTokenConsentRoute: typeof ApiPublicInterviewTokenConsentRoute
+  ApiPublicInterviewTokenDsrRoute: typeof ApiPublicInterviewTokenDsrRoute
+  ApiPublicInterviewTokenFinalizeRoute: typeof ApiPublicInterviewTokenFinalizeRoute
+  ApiPublicInterviewTokenStatusRoute: typeof ApiPublicInterviewTokenStatusRoute
+  ApiPublicInterviewTokenSubmitTakeRoute: typeof ApiPublicInterviewTokenSubmitTakeRoute
+  ApiPublicInterviewTokenUploadUrlRoute: typeof ApiPublicInterviewTokenUploadUrlRoute
   ApiPublicOffersTokenRespondRoute: typeof ApiPublicOffersTokenRespondRoute
   ApiPublicOffersTokenViewRoute: typeof ApiPublicOffersTokenViewRoute
   ApiPublicScimV2UsersRoute: typeof ApiPublicScimV2UsersRoute
@@ -2039,6 +2137,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicOffersTokenRespondRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/interview/$token/upload-url': {
+      id: '/api/public/interview/$token/upload-url'
+      path: '/api/public/interview/$token/upload-url'
+      fullPath: '/api/public/interview/$token/upload-url'
+      preLoaderRoute: typeof ApiPublicInterviewTokenUploadUrlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/submit-take': {
+      id: '/api/public/interview/$token/submit-take'
+      path: '/api/public/interview/$token/submit-take'
+      fullPath: '/api/public/interview/$token/submit-take'
+      preLoaderRoute: typeof ApiPublicInterviewTokenSubmitTakeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/status': {
+      id: '/api/public/interview/$token/status'
+      path: '/api/public/interview/$token/status'
+      fullPath: '/api/public/interview/$token/status'
+      preLoaderRoute: typeof ApiPublicInterviewTokenStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/finalize': {
+      id: '/api/public/interview/$token/finalize'
+      path: '/api/public/interview/$token/finalize'
+      fullPath: '/api/public/interview/$token/finalize'
+      preLoaderRoute: typeof ApiPublicInterviewTokenFinalizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/dsr': {
+      id: '/api/public/interview/$token/dsr'
+      path: '/api/public/interview/$token/dsr'
+      fullPath: '/api/public/interview/$token/dsr'
+      preLoaderRoute: typeof ApiPublicInterviewTokenDsrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/consent': {
+      id: '/api/public/interview/$token/consent'
+      path: '/api/public/interview/$token/consent'
+      fullPath: '/api/public/interview/$token/consent'
+      preLoaderRoute: typeof ApiPublicInterviewTokenConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/accommodation': {
+      id: '/api/public/interview/$token/accommodation'
+      path: '/api/public/interview/$token/accommodation'
+      fullPath: '/api/public/interview/$token/accommodation'
+      preLoaderRoute: typeof ApiPublicInterviewTokenAccommodationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/candidate/$token/status': {
       id: '/api/public/candidate/$token/status'
       path: '/api/public/candidate/$token/status'
@@ -2285,6 +2432,15 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
   ApiPublicCandidateTokenMessageRoute: ApiPublicCandidateTokenMessageRoute,
   ApiPublicCandidateTokenStatusRoute: ApiPublicCandidateTokenStatusRoute,
+  ApiPublicInterviewTokenAccommodationRoute:
+    ApiPublicInterviewTokenAccommodationRoute,
+  ApiPublicInterviewTokenConsentRoute: ApiPublicInterviewTokenConsentRoute,
+  ApiPublicInterviewTokenDsrRoute: ApiPublicInterviewTokenDsrRoute,
+  ApiPublicInterviewTokenFinalizeRoute: ApiPublicInterviewTokenFinalizeRoute,
+  ApiPublicInterviewTokenStatusRoute: ApiPublicInterviewTokenStatusRoute,
+  ApiPublicInterviewTokenSubmitTakeRoute:
+    ApiPublicInterviewTokenSubmitTakeRoute,
+  ApiPublicInterviewTokenUploadUrlRoute: ApiPublicInterviewTokenUploadUrlRoute,
   ApiPublicOffersTokenRespondRoute: ApiPublicOffersTokenRespondRoute,
   ApiPublicOffersTokenViewRoute: ApiPublicOffersTokenViewRoute,
   ApiPublicScimV2UsersRoute: ApiPublicScimV2UsersRoute,
