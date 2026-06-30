@@ -2901,6 +2901,7 @@ export type Database = {
           id: string
           kind: Database["public"]["Enums"]["interview_kit_kind"]
           kit_id: string | null
+          purge_at: string | null
           requisition_id: string | null
           retention_days: number
           status: Database["public"]["Enums"]["interview_invitation_status"]
@@ -2923,6 +2924,7 @@ export type Database = {
           id?: string
           kind: Database["public"]["Enums"]["interview_kit_kind"]
           kit_id?: string | null
+          purge_at?: string | null
           requisition_id?: string | null
           retention_days?: number
           status?: Database["public"]["Enums"]["interview_invitation_status"]
@@ -2945,6 +2947,7 @@ export type Database = {
           id?: string
           kind?: Database["public"]["Enums"]["interview_kit_kind"]
           kit_id?: string | null
+          purge_at?: string | null
           requisition_id?: string | null
           retention_days?: number
           status?: Database["public"]["Enums"]["interview_invitation_status"]
@@ -7045,6 +7048,7 @@ export type Database = {
         Args: { _training_id: string }
         Returns: undefined
       }
+      purge_expired_interview_media: { Args: never; Returns: number }
       record_audit_event: {
         Args: {
           _action: string
