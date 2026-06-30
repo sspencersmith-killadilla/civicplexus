@@ -256,7 +256,7 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
   const [iv, setIv] = useState({ scheduled_at: "", interviewer_emails: "", location: "", duration_minutes: 45, stage: "first_round" as const, use_inapp_room: true });
   const [openIv, setOpenIv] = useState(false);
   const [openAsync, setOpenAsync] = useState(false);
-  const [asyncForm, setAsyncForm] = useState({ kit_id: "", days_valid: 14 });
+  const [asyncForm, setAsyncForm] = useState({ kit_id: "", days_valid: 14, delivery: "copy" as "copy" | "email" });
   const [openHire, setOpenHire] = useState(false);
   const [openOffer, setOpenOffer] = useState(false);
   const [openMsg, setOpenMsg] = useState(false);
@@ -289,10 +289,16 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
 
   const doAsync = useMutation({
     mutationFn: () => mintAsync({ data: { application_id: app.id, kit_id: asyncForm.kit_id, days_valid: asyncForm.days_valid } }),
-    onSuccess: (r: { url: string; expires_at: string }) => {
-      navigator.clipboard?.writeText(r.url).catch(() => {});
-      toast.success("Async interview link copied — emailing candidate…");
-      sendEmail({ data: { application_id: app.id, template_key: "async_interview_invitation", extra_vars: { interview_url: r.url, expires_at: new Date(r.expires_at).toLocaleDateString() } } }).catch(() => {});
+    onSuccess: async (r: { url: string; expires_at: string }) => {
+      await navigator.clipboard?.writeText(r.url).catch(() => {});
+      if (asyncForm.delivery === "email") {
+        toast.success("Link copied — sending email to candidate…");
+        sendEmail({ data: { application_id: app.id, template_key: "async_interview_invitation", extra_vars: { interview_url: r.url, expires_at: new Date(r.expires_at).toLocaleDateString() } } })
+          .then(() => toast.success("Email sent"))
+          .catch(() => toast.error("Email failed — share the copied link manually"));
+      } else {
+        toast.success("Invitation link copied to clipboard — share it with the candidate");
+      }
       setOpenAsync(false);
       set.mutate("interview");
     },
@@ -427,8 +433,19 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
                   <Label>Link valid for (days)</Label>
                   <Input type="number" min={1} max={60} value={asyncForm.days_valid} onChange={(e)=>setAsyncForm({...asyncForm, days_valid: parseInt(e.target.value) || 14})} />
                 </div>
+                <div>
+                  <Label>Delivery</Label>
+                  <Select value={asyncForm.delivery} onValueChange={(v)=>setAsyncForm({...asyncForm, delivery: v as "copy" | "email"})}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="copy">Copy link to clipboard (share manually)</SelectItem>
+                      <SelectItem value="email">Copy link and email candidate</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">Email requires a configured email provider; copy-link always works.</p>
+                </div>
                 <div className="flex justify-end">
-                  <Button disabled={!asyncForm.kit_id || doAsync.isPending} onClick={()=>doAsync.mutate()}>{doAsync.isPending ? "Sending…" : "Send invitation"}</Button>
+                  <Button disabled={!asyncForm.kit_id || doAsync.isPending} onClick={()=>doAsync.mutate()}>{doAsync.isPending ? "Working…" : asyncForm.delivery === "email" ? "Send invitation" : "Generate & copy link"}</Button>
                 </div>
               </div>
             </DialogContent>
