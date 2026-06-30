@@ -18,6 +18,9 @@ import { generateBadge, getBadgePdfUrl, revokeBadge } from "@/lib/id-badges.func
 import { BadgeWizard } from "@/components/badge-wizard";
 import { Input } from "@/components/ui/input";
 import { linkUserToEmployee, unlinkEmployeeUser } from "@/lib/employee-account.functions";
+import { getEmployeeHistory, type HistoryEvent } from "@/lib/employee-history.functions";
+import { Badge } from "@/components/ui/badge";
+import { Download, History as HistoryIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/employees/$id")({
   component: EmployeeProfile,
@@ -46,6 +49,7 @@ function EmployeeProfile() {
   const revoke = useServerFn(revokeBadge);
   const linkFn = useServerFn(linkUserToEmployee);
   const unlinkFn = useServerFn(unlinkEmployeeUser);
+  const historyFn = useServerFn(getEmployeeHistory);
 
   const { data: emp, isLoading } = useQuery({
     queryKey: ["employee", id],
@@ -70,6 +74,29 @@ function EmployeeProfile() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [linkEmail, setLinkEmail] = useState("");
   const [linkRole, setLinkRole] = useState<string>("employee");
+  const [historyFilter, setHistoryFilter] = useState<string>("all");
+
+  const { data: history } = useQuery({
+    queryKey: ["employee-history", id],
+    enabled: isHr,
+    queryFn: () => historyFn({ data: { employee_id: id } }),
+  });
+
+  const filteredHistory = (history ?? []).filter((e) => historyFilter === "all" || e.category === historyFilter);
+
+  function exportHistoryCsv() {
+    const rows: (string | number)[][] = [["When", "Category", "Title", "Detail", "Actor", "Ref"]];
+    filteredHistory.forEach((e: HistoryEvent) => rows.push([
+      new Date(e.at).toISOString(), e.category, e.title, e.detail ?? "", e.actor ?? "",
+      e.ref ? `${e.ref.kind}:${e.ref.id}` : "",
+    ]));
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `personnel-history-${emp?.last_name ?? id}.csv`;
+    a.click();
+  }
 
   const linkAccount = useMutation({
     mutationFn: async () => await linkFn({ data: { employee_id: id, email: linkEmail.trim(), role: linkRole as "hr_admin" | "hiring_manager" | "supervisor" | "it_admin" | "employee" | "candidate" } }),
@@ -258,6 +285,58 @@ function EmployeeProfile() {
                 {linkAccount.isPending ? "Linking…" : "Link account"}
               </Button>
             </div>
+          )}
+        </Card>
+      )}
+
+      {isHr && (
+        <Card className="p-5 mt-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 className="font-medium flex items-center gap-2"><HistoryIcon className="h-4 w-4" /> Personnel record history</h2>
+            <div className="flex items-center gap-2">
+              <Select value={historyFilter} onValueChange={setHistoryFilter}>
+                <SelectTrigger className="w-44 h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[
+                    ["all", "All events"],
+                    ["hire", "Hire"],
+                    ["status", "Status"],
+                    ["compensation", "Compensation"],
+                    ["paf", "PAF"],
+                    ["review", "Reviews"],
+                    ["training", "Training"],
+                    ["provisioning", "Provisioning"],
+                    ["grievance", "Grievances"],
+                    ["audit", "Other audit"],
+                  ].map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={exportHistoryCsv} disabled={!filteredHistory.length}>
+                <Download className="h-4 w-4 mr-2" /> Export CSV
+              </Button>
+            </div>
+          </div>
+          {!history ? (
+            <p className="text-sm text-muted-foreground">Loading history…</p>
+          ) : filteredHistory.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No events recorded.</p>
+          ) : (
+            <ol className="relative border-l ml-2 space-y-4">
+              {filteredHistory.map((e, idx) => (
+                <li key={idx} className="pl-4 ml-2">
+                  <span className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full bg-primary" />
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="text-sm font-medium">{e.title}</p>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(e.at).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="outline" className="text-[10px] capitalize">{e.category}</Badge>
+                    {e.actor && <span className="text-xs text-muted-foreground">by {e.actor}</span>}
+                  </div>
+                  {e.detail && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{e.detail}</p>}
+                </li>
+              ))}
+            </ol>
           )}
         </Card>
       )}
