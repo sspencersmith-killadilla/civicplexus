@@ -18,6 +18,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
 import { getDirectReportTaskCounts } from "@/lib/my-team.functions";
 import { getEmployeeHistory, type HistoryEvent } from "@/lib/employee-history.functions";
+import { HistoryAttachments } from "@/components/history-attachments";
 import { Badge } from "@/components/ui/badge";
 import { Download, History as HistoryIcon } from "lucide-react";
 
