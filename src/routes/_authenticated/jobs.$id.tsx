@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2, Sparkles, FileText, Check, Pencil, X, Upload, FileDown, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2, Sparkles, FileText, Check, Pencil, X, Upload, FileDown, Trash2, Video } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { submitRequisitionForApproval, postRequisition, closeRequisition, transitionApplicationStatus, scheduleInterview, convertApplicationToHire } from "@/lib/jobs.functions";
@@ -404,6 +404,32 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
                 )}
                 <div><Label>Interviewer work emails (comma-separated)</Label><Textarea rows={2} value={iv.interviewer_emails} onChange={(e)=>setIv({...iv, interviewer_emails: e.target.value})} /></div>
                 <div className="flex justify-end"><Button onClick={()=>doSched.mutate()} disabled={!iv.scheduled_at || !iv.interviewer_emails || doSched.isPending}>{doSched.isPending ? "Scheduling…" : "Schedule"}</Button></div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={openAsync} onOpenChange={setOpenAsync}>
+            <DialogTrigger asChild><Button size="sm" variant="outline"><Video className="h-3 w-3 mr-1" />Async invite</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Send async interview invitation</DialogTitle></DialogHeader>
+              <p className="text-xs text-muted-foreground mb-3">Mints a one-time candidate link to a one-way interview kit. Candidate records their answers; two takes allowed but Take 2 becomes final.</p>
+              <div className="space-y-3">
+                <div>
+                  <Label>Interview kit</Label>
+                  <Select value={asyncForm.kit_id} onValueChange={(v)=>setAsyncForm({...asyncForm, kit_id: v})}>
+                    <SelectTrigger><SelectValue placeholder={(kitsQ.data ?? []).length ? "Pick a one-way kit…" : "No active one-way kits — create one first"} /></SelectTrigger>
+                    <SelectContent>{(kitsQ.data ?? []).map((k) => <SelectItem key={k.id} value={k.id}>{k.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                  {!(kitsQ.data ?? []).length && !kitsQ.isLoading && (
+                    <p className="text-xs text-muted-foreground mt-1">Build kits in <Link to="/interview-kits" className="underline">Interview Kits</Link>.</p>
+                  )}
+                </div>
+                <div>
+                  <Label>Link valid for (days)</Label>
+                  <Input type="number" min={1} max={60} value={asyncForm.days_valid} onChange={(e)=>setAsyncForm({...asyncForm, days_valid: parseInt(e.target.value) || 14})} />
+                </div>
+                <div className="flex justify-end">
+                  <Button disabled={!asyncForm.kit_id || doAsync.isPending} onClick={()=>doAsync.mutate()}>{doAsync.isPending ? "Sending…" : "Send invitation"}</Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
