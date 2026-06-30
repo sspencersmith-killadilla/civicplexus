@@ -3113,6 +3113,33 @@ export type Database = {
           },
         ]
       }
+      interview_retention_audit: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          id: string
+          next: Json
+          note: string | null
+          previous: Json
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          next?: Json
+          note?: string | null
+          previous?: Json
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          next?: Json
+          note?: string | null
+          previous?: Json
+        }
+        Relationships: []
+      }
       interview_rooms: {
         Row: {
           ai_captions_enabled: boolean
@@ -4462,6 +4489,9 @@ export type Database = {
           first_run_complete: boolean
           first_run_completed_at: string | null
           id: string
+          interview_recording_archive_bucket: string | null
+          interview_recording_archive_enabled: boolean
+          interview_recording_archive_prefix: string | null
           logo_url: string | null
           notification_defaults: Json | null
           org_name: string
@@ -4493,6 +4523,9 @@ export type Database = {
           first_run_complete?: boolean
           first_run_completed_at?: string | null
           id?: string
+          interview_recording_archive_bucket?: string | null
+          interview_recording_archive_enabled?: boolean
+          interview_recording_archive_prefix?: string | null
           logo_url?: string | null
           notification_defaults?: Json | null
           org_name?: string
@@ -4524,6 +4557,9 @@ export type Database = {
           first_run_complete?: boolean
           first_run_completed_at?: string | null
           id?: string
+          interview_recording_archive_bucket?: string | null
+          interview_recording_archive_enabled?: boolean
+          interview_recording_archive_prefix?: string | null
           logo_url?: string | null
           notification_defaults?: Json | null
           org_name?: string
