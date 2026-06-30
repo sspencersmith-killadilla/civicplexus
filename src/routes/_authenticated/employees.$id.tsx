@@ -19,6 +19,7 @@ import { BadgeWizard } from "@/components/badge-wizard";
 import { Input } from "@/components/ui/input";
 import { linkUserToEmployee, unlinkEmployeeUser } from "@/lib/employee-account.functions";
 import { getEmployeeHistory, type HistoryEvent } from "@/lib/employee-history.functions";
+import { getEmployeeProfile } from "@/lib/employee-directory.functions";
 import { Badge } from "@/components/ui/badge";
 import { Download, History as HistoryIcon } from "lucide-react";
 import { HistoryAttachments } from "@/components/history-attachments";
@@ -53,10 +54,12 @@ function EmployeeProfile() {
   const unlinkFn = useServerFn(unlinkEmployeeUser);
   const historyFn = useServerFn(getEmployeeHistory);
 
-  const { data: emp, isLoading } = useQuery({
-    queryKey: ["employee", id],
-    queryFn: async () => (await supabase.from("employees").select("id, first_name, last_name, job_title, department, status, start_date, personal_email, work_email, phone, photo_path, manager_id, user_id, date_of_birth").eq("id", id).single()).data as Emp | null,
+  const profileFn = useServerFn(getEmployeeProfile);
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ["employee-profile", id],
+    queryFn: () => profileFn({ data: { id } }),
   });
+  const emp = profile as (Emp & { supervisor?: { id: string; first_name: string; last_name: string; job_title: string | null; department: string | null; photo_path: string | null } | null; reports?: Array<{ id: string; first_name: string; last_name: string; job_title: string | null; photo_path: string | null; status: string }>; viewer?: { is_hr_admin: boolean; is_self: boolean; is_manager_of: boolean } }) | null;
   const { data: photoUrl } = useQuery({
     queryKey: ["employee-photo", emp?.photo_path],
     enabled: !!emp?.photo_path,
@@ -91,7 +94,7 @@ function EmployeeProfile() {
       }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Saved"); setEditOpen(false); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-profile", id] }); toast.success("Saved"); setEditOpen(false); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
 
@@ -126,12 +129,12 @@ function EmployeeProfile() {
 
   const linkAccount = useMutation({
     mutationFn: async () => await linkFn({ data: { employee_id: id, email: linkEmail.trim(), role: linkRole as "hr_admin" | "hiring_manager" | "supervisor" | "it_admin" | "employee" | "candidate" } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Account linked"); setLinkEmail(""); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-profile", id] }); toast.success("Account linked"); setLinkEmail(""); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Link failed"),
   });
   const unlinkAccount = useMutation({
     mutationFn: async () => { await unlinkFn({ data: { employee_id: id } }); },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Account unlinked"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-profile", id] }); toast.success("Account unlinked"); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Unlink failed"),
   });
 
@@ -142,13 +145,13 @@ function EmployeeProfile() {
       if (!up.ok) throw new Error("Upload failed");
       await confirmPhoto({ data: { employee_id: id, path } });
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Photo updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-profile", id] }); toast.success("Photo updated"); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Upload failed"),
   });
 
   const removePhoto = useMutation({
     mutationFn: async () => { await clearPhoto({ data: { employee_id: id } }); },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Photo removed"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-profile", id] }); toast.success("Photo removed"); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
