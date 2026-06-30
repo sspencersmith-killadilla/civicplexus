@@ -251,7 +251,7 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
   const mintPortal = useServerFn(mintCandidatePortalToken);
   const sendMsg = useServerFn(postRecruiterMessage);
   const sendEmail = useServerFn(sendTemplatedToApplicant);
-  const [iv, setIv] = useState({ scheduled_at: "", interviewer_emails: "", location: "", duration_minutes: 45, stage: "first_round" as const });
+  const [iv, setIv] = useState({ scheduled_at: "", interviewer_emails: "", location: "", duration_minutes: 45, stage: "first_round" as const, use_inapp_room: true });
   const [openIv, setOpenIv] = useState(false);
   const [openHire, setOpenHire] = useState(false);
   const [openOffer, setOpenOffer] = useState(false);
@@ -285,7 +285,8 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
       return sched({ data: {
         application_id: app.id, scheduled_at: new Date(iv.scheduled_at).toISOString(),
         duration_minutes: iv.duration_minutes, stage: iv.stage,
-        location: iv.location || undefined, interviewer_ids: ids,
+        location: iv.use_inapp_room ? undefined : (iv.location || undefined),
+        interviewer_ids: ids, use_inapp_room: iv.use_inapp_room,
       }});
     },
     onSuccess: () => { qc.invalidateQueries(); setOpenIv(false); toast.success("Interview scheduled"); set.mutate("interview"); },
@@ -361,7 +362,16 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
                     </SelectContent>
                   </Select></div>
                 </div>
-                <div><Label>Location / video link</Label><Input value={iv.location} onChange={(e)=>setIv({...iv, location: e.target.value})} /></div>
+                <div className="rounded border p-3 bg-muted/30 space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-medium">
+                    <input type="checkbox" checked={iv.use_inapp_room} onChange={(e)=>setIv({...iv, use_inapp_room: e.target.checked})} />
+                    Use built-in video room (LiveKit)
+                  </label>
+                  <p className="text-xs text-muted-foreground">The room URL is generated automatically after scheduling and emailed to the candidate. Panelists can join from the Interviews page.</p>
+                </div>
+                {!iv.use_inapp_room && (
+                  <div><Label>Location / video link</Label><Input placeholder="Zoom / Meet / Teams URL or physical address" value={iv.location} onChange={(e)=>setIv({...iv, location: e.target.value})} /></div>
+                )}
                 <div><Label>Interviewer work emails (comma-separated)</Label><Textarea rows={2} value={iv.interviewer_emails} onChange={(e)=>setIv({...iv, interviewer_emails: e.target.value})} /></div>
                 <div className="flex justify-end"><Button onClick={()=>doSched.mutate()} disabled={!iv.scheduled_at || !iv.interviewer_emails || doSched.isPending}>{doSched.isPending ? "Scheduling…" : "Schedule"}</Button></div>
               </div>

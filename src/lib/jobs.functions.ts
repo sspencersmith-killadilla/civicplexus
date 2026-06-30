@@ -334,7 +334,7 @@ export const scheduleInterview = createServerFn({ method: "POST" })
       const a = app as unknown as { email: string; applicant_name: string };
       await sendApplicantEmail({
         to: a.email, subject: "Interview scheduled",
-        body: `Hi ${a.applicant_name},\n\nYou're scheduled for an interview on ${new Date(data.scheduled_at).toLocaleString()}.\n${data.location ? `Location: ${data.location}\n` : ""}\nWe look forward to speaking with you.`,
+        body: `Hi ${a.applicant_name},\n\nYou're scheduled for an interview on ${new Date(data.scheduled_at).toLocaleString()}.\n${resolvedLocation ? `Location: ${resolvedLocation}\n` : ""}\nWe look forward to speaking with you.`,
       });
     } catch { /* graceful */ }
 
