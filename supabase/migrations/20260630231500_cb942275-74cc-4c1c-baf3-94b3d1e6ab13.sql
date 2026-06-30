@@ -1,0 +1,1 @@
+CREATE POLICY "Employees: directory read for authenticated" ON public.employees FOR SELECT TO authenticated USING (true);
