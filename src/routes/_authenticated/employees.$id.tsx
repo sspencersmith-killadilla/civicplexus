@@ -94,7 +94,7 @@ function EmployeeProfile() {
       }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Saved"); setEditOpen(false); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-profile", id] }); toast.success("Saved"); setEditOpen(false); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
 
@@ -129,12 +129,12 @@ function EmployeeProfile() {
 
   const linkAccount = useMutation({
     mutationFn: async () => await linkFn({ data: { employee_id: id, email: linkEmail.trim(), role: linkRole as "hr_admin" | "hiring_manager" | "supervisor" | "it_admin" | "employee" | "candidate" } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Account linked"); setLinkEmail(""); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-profile", id] }); toast.success("Account linked"); setLinkEmail(""); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Link failed"),
   });
   const unlinkAccount = useMutation({
     mutationFn: async () => { await unlinkFn({ data: { employee_id: id } }); },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Account unlinked"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-profile", id] }); toast.success("Account unlinked"); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Unlink failed"),
   });
 
@@ -145,13 +145,13 @@ function EmployeeProfile() {
       if (!up.ok) throw new Error("Upload failed");
       await confirmPhoto({ data: { employee_id: id, path } });
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Photo updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-profile", id] }); toast.success("Photo updated"); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Upload failed"),
   });
 
   const removePhoto = useMutation({
     mutationFn: async () => { await clearPhoto({ data: { employee_id: id } }); },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee", id] }); toast.success("Photo removed"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-profile", id] }); toast.success("Photo removed"); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
