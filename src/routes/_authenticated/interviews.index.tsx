@@ -167,7 +167,7 @@ function InterviewsIndex() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Button asChild size="sm" variant={submitted ? "default" : "outline"}>
-                    <Link to="/interviews/$id" params={{ id: inv.id }}>{submitted ? <><Play className="h-3 w-3 mr-1" />Review takes</> : <>Open<ArrowRight className="h-3 w-3 ml-1" /></>}</Link>
+                    <Link to="/interviews/async/$id" params={{ id: inv.id }}>{submitted ? <><Play className="h-3 w-3 mr-1" />Review takes</> : <>Open<ArrowRight className="h-3 w-3 ml-1" /></>}</Link>
                   </Button>
                 </div>
               </Card>
