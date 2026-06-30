@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { LogOut, PanelLeftClose, PanelLeftOpen, Menu } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -11,6 +11,7 @@ import { MODULE_REGISTRY } from "@/lib/modules";
 import { useModuleSettings } from "@/hooks/use-module-settings";
 import { ModuleGate } from "@/components/module-gate";
 import { DemoTour } from "@/components/demo-tour";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
   const { data } = useCurrentUser();
