@@ -334,6 +334,7 @@ function EmployeeProfile() {
                     {e.actor && <span className="text-xs text-muted-foreground">by {e.actor}</span>}
                   </div>
                   {e.detail && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{e.detail}</p>}
+                  <HistoryAttachments employeeId={id} attachments={e.attachments} />
                 </li>
               ))}
             </ol>
