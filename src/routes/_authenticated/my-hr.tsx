@@ -12,10 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
 import { getDirectReportTaskCounts } from "@/lib/my-team.functions";
+import { getEmployeeHistory, type HistoryEvent } from "@/lib/employee-history.functions";
+import { Badge } from "@/components/ui/badge";
+import { Download, History as HistoryIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR });
 
@@ -42,8 +46,10 @@ function MyHR() {
   const completeFn = useServerFn(completeTraining);
   const photoUrlFn = useServerFn(getEmployeePhotoUrl);
   const reportCountsFn = useServerFn(getDirectReportTaskCounts);
+  const historyFn = useServerFn(getEmployeeHistory);
   const [completeFor, setCompleteFor] = useState<{ id: string; name: string; employee_id: string } | null>(null);
   const [completeForm, setCompleteForm] = useState<{ score: string; notes: string; file: File | null }>({ score: "", notes: "", file: null });
+  const [historyFilter, setHistoryFilter] = useState<string>("all");
   const complete = useMutation({
     mutationFn: async () => {
       if (!completeFor) throw new Error("No assignment");
@@ -129,6 +135,21 @@ function MyHR() {
       return (data ?? []) as Array<{ id: string; start_date: string; end_date: string; total_hours: number; status: string; leave_plans: { name: string } }>;
     },
   });
+
+  const historyQ = useQuery({
+    queryKey: ["my-history", empQ.data?.id],
+    enabled: !!empQ.data?.id,
+    queryFn: () => historyFn({ data: { employee_id: empQ.data!.id } }),
+  });
+  const filteredHistory = (historyQ.data ?? []).filter((e: HistoryEvent) => historyFilter === "all" || e.category === historyFilter);
+  function exportMyHistoryCsv() {
+    const rows: (string | number)[][] = [["When", "Category", "Title", "Detail", "Actor"]];
+    filteredHistory.forEach((e: HistoryEvent) => rows.push([new Date(e.at).toISOString(), e.category, e.title, e.detail ?? "", e.actor ?? ""]));
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `my-personnel-history.csv`; a.click();
+  }
 
   const trainingQ = useQuery({
     queryKey: ["my-training", empQ.data?.id],
@@ -310,6 +331,58 @@ function MyHR() {
           </div>
         </section>
       </div>
+
+      {empQ.data?.id && (
+        <Card className="p-5 mt-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 className="font-medium flex items-center gap-2"><HistoryIcon className="h-4 w-4" /> My personnel history</h2>
+            <div className="flex items-center gap-2">
+              <Select value={historyFilter} onValueChange={setHistoryFilter}>
+                <SelectTrigger className="w-44 h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[
+                    ["all", "All events"],
+                    ["hire", "Hire"],
+                    ["status", "Status"],
+                    ["compensation", "Compensation"],
+                    ["paf", "PAF"],
+                    ["review", "Reviews"],
+                    ["training", "Training"],
+                    ["provisioning", "Provisioning"],
+                    ["grievance", "Grievances"],
+                    ["audit", "Other audit"],
+                  ].map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={exportMyHistoryCsv} disabled={!filteredHistory.length}>
+                <Download className="h-4 w-4 mr-2" /> Export CSV
+              </Button>
+            </div>
+          </div>
+          {!historyQ.data ? (
+            <p className="text-sm text-muted-foreground">Loading history…</p>
+          ) : filteredHistory.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No events recorded.</p>
+          ) : (
+            <ol className="relative border-l ml-2 space-y-4">
+              {filteredHistory.map((e, idx) => (
+                <li key={idx} className="pl-4 ml-2">
+                  <span className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full bg-primary" />
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="text-sm font-medium">{e.title}</p>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(e.at).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="outline" className="text-[10px] capitalize">{e.category}</Badge>
+                    {e.actor && <span className="text-xs text-muted-foreground">by {e.actor}</span>}
+                  </div>
+                  {e.detail && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{e.detail}</p>}
+                </li>
+              ))}
+            </ol>
+          )}
+        </Card>
+      )}
 
       <Dialog open={!!completeFor} onOpenChange={(o) => !o && setCompleteFor(null)}>
         <DialogContent>
