@@ -1,6 +1,6 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
+import { LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -18,6 +18,15 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const qc = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { isEnabled, isModuleEnabled } = useModuleSettings();
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("cp:sidebar:collapsed") === "1";
+  });
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("cp:sidebar:collapsed", collapsed ? "1" : "0");
+    }
+  }, [collapsed]);
 
   async function signOut() {
     await qc.cancelQueries();
@@ -40,18 +49,48 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
   return (
     <div className="flex min-h-screen bg-background">
-      <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground">
-        <div className="px-5 py-6 border-b border-sidebar-border">
-          <Link to="/" className="flex items-center gap-2.5" aria-label="CivicPlexus home">
-            <img src={markAsset.url} alt="" aria-hidden="true" className="h-8 w-8 object-contain" />
-            <span className="font-serif text-lg tracking-tight">CivicPlexus</span>
+      <aside
+        className={cn(
+          "hidden md:flex flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-200",
+          collapsed ? "w-16" : "w-64",
+        )}
+      >
+        <div className={cn("border-b border-sidebar-border flex items-center", collapsed ? "px-2 py-4 justify-center" : "px-5 py-6 justify-between gap-2")}>
+          <Link to="/" className="flex items-center gap-2.5 min-w-0" aria-label="CivicPlexus home">
+            <img src={markAsset.url} alt="" aria-hidden="true" className="h-8 w-8 object-contain shrink-0" />
+            {!collapsed && (
+              <span className="font-serif text-lg tracking-tight truncate">CivicPlexus</span>
+            )}
           </Link>
-          <p className="mt-1 text-xs text-sidebar-foreground/60">Municipal HRIS</p>
+          {!collapsed && (
+            <button
+              type="button"
+              onClick={() => setCollapsed(true)}
+              aria-label="Collapse sidebar"
+              className="p-1.5 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
+          )}
         </div>
-        <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
+        {collapsed && (
+          <div className="px-2 pt-2 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setCollapsed(false)}
+              aria-label="Expand sidebar"
+              className="p-1.5 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+            >
+              <PanelLeftOpen className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+        <nav className={cn("flex-1 py-4 space-y-5 overflow-y-auto", collapsed ? "px-2" : "px-3")}>
           {groups.map((g) => (
             <div key={g.label}>
-              <p className="px-3 mb-1 text-[10px] uppercase tracking-wider text-sidebar-foreground/40">{g.label}</p>
+              {!collapsed && (
+                <p className="px-3 mb-1 text-[10px] uppercase tracking-wider text-sidebar-foreground/40">{g.label}</p>
+              )}
               <div className="space-y-1">
                 {g.items.map((n) => {
                   const active = pathname === n.to || pathname.startsWith(n.to + "/");
@@ -60,15 +99,18 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                     <Link
                       key={n.to}
                       to={n.to}
+                      title={collapsed ? n.label : undefined}
+                      aria-label={collapsed ? n.label : undefined}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                        "flex items-center gap-3 py-2 rounded-md text-sm transition-colors",
+                        collapsed ? "px-2 justify-center" : "px-3",
                         active
                           ? "bg-sidebar-accent text-sidebar-accent-foreground"
                           : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
                       )}
                     >
-                      <Icon className="h-4 w-4" />
-                      {n.label}
+                      <Icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span className="truncate">{n.label}</span>}
                     </Link>
                   );
                 })}
@@ -77,12 +119,25 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           ))}
         </nav>
         <div className="p-3 border-t border-sidebar-border">
-          <div className="px-3 py-2 text-xs">
-            <p className="font-medium truncate">{data?.profile?.full_name ?? data?.user.email}</p>
-            <p className="text-sidebar-foreground/60 truncate">{(data?.roles ?? []).join(", ") || "—"}</p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={signOut} className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground">
-            <LogOut className="h-4 w-4 mr-2" /> Sign out
+          {!collapsed && (
+            <div className="px-3 py-2 text-xs">
+              <p className="font-medium truncate">{data?.profile?.full_name ?? data?.user.email}</p>
+              <p className="text-sidebar-foreground/60 truncate">{(data?.roles ?? []).join(", ") || "—"}</p>
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={signOut}
+            title={collapsed ? "Sign out" : undefined}
+            aria-label="Sign out"
+            className={cn(
+              "w-full text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+              collapsed ? "justify-center px-0" : "justify-start",
+            )}
+          >
+            <LogOut className={cn("h-4 w-4", collapsed ? "" : "mr-2")} />
+            {!collapsed && "Sign out"}
           </Button>
         </div>
       </aside>
