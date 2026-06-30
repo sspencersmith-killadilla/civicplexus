@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp } from "lucide-react";
+import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp, Cake, PartyPopper } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
 import { getDirectReportTaskCounts } from "@/lib/my-team.functions";
@@ -100,11 +100,11 @@ function MyHR() {
     enabled: !!empQ.data?.id,
     queryFn: async () => {
       const { data } = await supabase.from("employees")
-        .select("id, first_name, last_name, job_title, photo_path, status")
+        .select("id, first_name, last_name, job_title, photo_path, status, date_of_birth, start_date")
         .eq("manager_id", empQ.data!.id)
         .eq("status", "active")
         .order("last_name");
-      return (data ?? []) as Array<{ id: string; first_name: string; last_name: string; job_title: string | null; photo_path: string | null; status: string }>;
+      return (data ?? []) as Array<{ id: string; first_name: string; last_name: string; job_title: string | null; photo_path: string | null; status: string; date_of_birth: string | null; start_date: string | null }>;
     },
   });
 
