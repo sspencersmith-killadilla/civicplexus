@@ -17,7 +17,8 @@ const SettingsInput = z.object({
   note: z.string().trim().max(500).optional(),
 });
 
-async function assertHr(ctx: { supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> }; userId: string }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function assertHr(ctx: { supabase: any; userId: string }) {
   const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "hr_admin" });
   if (!data) throw new Error("HR admin only");
 }
@@ -26,8 +27,7 @@ export const getInterviewRetentionSettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertHr(context);
-    const { data, error } = await context.supabase
-      .from("org_settings")
+    const { data, error } = await (context.supabase.from("org_settings") as never as { select: (s: string) => { maybeSingle: () => Promise<{ data: (Settings & { id: string }) | null; error: unknown }> } })
       .select("id, interview_retention_days, interview_recording_archive_enabled, interview_recording_archive_bucket, interview_recording_archive_prefix")
       .maybeSingle();
     if (error) throw error;
@@ -36,7 +36,7 @@ export const getInterviewRetentionSettings = createServerFn({ method: "GET" })
       .select("id, actor_id, previous, next, note, created_at")
       .order("created_at", { ascending: false })
       .limit(25);
-    return { settings: data as (Settings & { id: string }) | null, audit: (audit ?? []) as Array<{ id: string; actor_id: string | null; previous: Settings; next: Settings; note: string | null; created_at: string }> };
+    return { settings: data, audit: (audit ?? []) as Array<{ id: string; actor_id: string | null; previous: Settings; next: Settings; note: string | null; created_at: string }> };
   });
 
 export const updateInterviewRetentionSettings = createServerFn({ method: "POST" })
@@ -44,10 +44,10 @@ export const updateInterviewRetentionSettings = createServerFn({ method: "POST" 
   .inputValidator((d: z.infer<typeof SettingsInput>) => SettingsInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertHr(context);
-    const { data: prev, error: pe } = await context.supabase
-      .from("org_settings")
+    const { data: prevRaw, error: pe } = await (context.supabase.from("org_settings") as never as { select: (s: string) => { maybeSingle: () => Promise<{ data: (Settings & { id: string }) | null; error: unknown }> } })
       .select("id, interview_retention_days, interview_recording_archive_enabled, interview_recording_archive_bucket, interview_recording_archive_prefix")
       .maybeSingle();
+    const prev = prevRaw;
     if (pe || !prev) throw pe ?? new Error("Settings row missing");
     const previous: Settings = {
       interview_retention_days: prev.interview_retention_days,
