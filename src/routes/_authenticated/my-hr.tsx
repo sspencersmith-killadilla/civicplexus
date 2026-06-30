@@ -332,6 +332,58 @@ function MyHR() {
         </section>
       </div>
 
+      {empQ.data?.id && (
+        <Card className="p-5 mt-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 className="font-medium flex items-center gap-2"><HistoryIcon className="h-4 w-4" /> My personnel history</h2>
+            <div className="flex items-center gap-2">
+              <Select value={historyFilter} onValueChange={setHistoryFilter}>
+                <SelectTrigger className="w-44 h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[
+                    ["all", "All events"],
+                    ["hire", "Hire"],
+                    ["status", "Status"],
+                    ["compensation", "Compensation"],
+                    ["paf", "PAF"],
+                    ["review", "Reviews"],
+                    ["training", "Training"],
+                    ["provisioning", "Provisioning"],
+                    ["grievance", "Grievances"],
+                    ["audit", "Other audit"],
+                  ].map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={exportMyHistoryCsv} disabled={!filteredHistory.length}>
+                <Download className="h-4 w-4 mr-2" /> Export CSV
+              </Button>
+            </div>
+          </div>
+          {!historyQ.data ? (
+            <p className="text-sm text-muted-foreground">Loading history…</p>
+          ) : filteredHistory.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No events recorded.</p>
+          ) : (
+            <ol className="relative border-l ml-2 space-y-4">
+              {filteredHistory.map((e, idx) => (
+                <li key={idx} className="pl-4 ml-2">
+                  <span className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full bg-primary" />
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="text-sm font-medium">{e.title}</p>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(e.at).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="outline" className="text-[10px] capitalize">{e.category}</Badge>
+                    {e.actor && <span className="text-xs text-muted-foreground">by {e.actor}</span>}
+                  </div>
+                  {e.detail && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{e.detail}</p>}
+                </li>
+              ))}
+            </ol>
+          )}
+        </Card>
+      )}
+
       <Dialog open={!!completeFor} onOpenChange={(o) => !o && setCompleteFor(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Mark complete: {completeFor?.name}</DialogTitle></DialogHeader>
