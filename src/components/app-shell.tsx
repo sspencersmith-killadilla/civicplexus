@@ -121,39 +121,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             </button>
           </div>
         )}
-        <nav className={cn("flex-1 py-4 space-y-5 overflow-y-auto", collapsed ? "px-2" : "px-3")}>
-          {groups.map((g) => (
-            <div key={g.label}>
-              {!collapsed && (
-                <p className="px-3 mb-1 text-[10px] uppercase tracking-wider text-sidebar-foreground/40">{g.label}</p>
-              )}
-              <div className="space-y-1">
-                {g.items.map((n) => {
-                  const active = pathname === n.to || pathname.startsWith(n.to + "/");
-                  const Icon = n.icon;
-                  return (
-                    <Link
-                      key={n.to}
-                      to={n.to}
-                      title={collapsed ? n.label : undefined}
-                      aria-label={collapsed ? n.label : undefined}
-                      className={cn(
-                        "flex items-center gap-3 py-2 rounded-md text-sm transition-colors",
-                        collapsed ? "px-2 justify-center" : "px-3",
-                        active
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
-                      )}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span className="truncate">{n.label}</span>}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
+        {sidebarNav}
         <div className="p-3 border-t border-sidebar-border">
           {!collapsed && (
             <div className="px-3 py-2 text-xs">
