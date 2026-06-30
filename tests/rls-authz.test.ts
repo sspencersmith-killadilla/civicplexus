@@ -71,8 +71,13 @@ d("RLS: anonymous writes are blocked on sensitive tables", () => {
   });
 
   it("employee_training: anon cannot mark complete (self_completion)", async () => {
-    const res = await anon.from("employee_training").update({ status: "complete" } as never).eq("id", "00000000-0000-0000-0000-000000000000");
-    expectBlocked(res, "write");
+    const { data, error } = await anon
+      .from("employee_training")
+      .update({ status: "complete" } as never)
+      .neq("id", "00000000-0000-0000-0000-000000000000")
+      .select("id");
+    // Either RLS errors, or zero rows update (no row visible/updatable to anon).
+    if (!error) expect((data ?? []).length).toBe(0);
   });
 
   it("application_self_id: anon cannot INSERT (self_id_anon_insert_no_ownership)", async () => {
