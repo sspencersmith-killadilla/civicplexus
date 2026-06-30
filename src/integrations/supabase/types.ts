@@ -1755,6 +1755,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          date_of_birth: string | null
           department: string | null
           end_date: string | null
           external_id: string | null
@@ -1780,6 +1781,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          date_of_birth?: string | null
           department?: string | null
           end_date?: string | null
           external_id?: string | null
@@ -1805,6 +1807,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          date_of_birth?: string | null
           department?: string | null
           end_date?: string | null
           external_id?: string | null
