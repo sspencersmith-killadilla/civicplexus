@@ -37,6 +37,7 @@ import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
 import { Route as AuthenticatedLmsImportsRouteImport } from './routes/_authenticated/lms-imports'
+import { Route as AuthenticatedInterviewKitsRouteImport } from './routes/_authenticated/interview-kits'
 import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_authenticated/internal-careers'
 import { Route as AuthenticatedIdBadgeTemplatesRouteImport } from './routes/_authenticated/id-badge-templates'
 import { Route as AuthenticatedHrFinanceRouteImport } from './routes/_authenticated/hr-finance'
@@ -269,6 +270,12 @@ const AuthenticatedLmsImportsRoute = AuthenticatedLmsImportsRouteImport.update({
   path: '/lms-imports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInterviewKitsRoute =
+  AuthenticatedInterviewKitsRouteImport.update({
+    id: '/interview-kits',
+    path: '/interview-kits',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInternalCareersRoute =
   AuthenticatedInternalCareersRouteImport.update({
     id: '/internal-careers',
@@ -763,6 +770,7 @@ export interface FileRoutesByFullPath {
   '/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -875,6 +883,7 @@ export interface FileRoutesByTo {
   '/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -988,6 +997,7 @@ export interface FileRoutesById {
   '/_authenticated/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/_authenticated/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/_authenticated/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/_authenticated/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/_authenticated/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -1102,6 +1112,7 @@ export interface FileRouteTypes {
     | '/hr-finance'
     | '/id-badge-templates'
     | '/internal-careers'
+    | '/interview-kits'
     | '/lms-imports'
     | '/my-hr'
     | '/notifications'
@@ -1214,6 +1225,7 @@ export interface FileRouteTypes {
     | '/hr-finance'
     | '/id-badge-templates'
     | '/internal-careers'
+    | '/interview-kits'
     | '/lms-imports'
     | '/my-hr'
     | '/notifications'
@@ -1326,6 +1338,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hr-finance'
     | '/_authenticated/id-badge-templates'
     | '/_authenticated/internal-careers'
+    | '/_authenticated/interview-kits'
     | '/_authenticated/lms-imports'
     | '/_authenticated/my-hr'
     | '/_authenticated/notifications'
@@ -1636,6 +1649,13 @@ declare module '@tanstack/react-router' {
       path: '/lms-imports'
       fullPath: '/lms-imports'
       preLoaderRoute: typeof AuthenticatedLmsImportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/interview-kits': {
+      id: '/_authenticated/interview-kits'
+      path: '/interview-kits'
+      fullPath: '/interview-kits'
+      preLoaderRoute: typeof AuthenticatedInterviewKitsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/internal-careers': {
@@ -2276,6 +2296,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrFinanceRoute: typeof AuthenticatedHrFinanceRoute
   AuthenticatedIdBadgeTemplatesRoute: typeof AuthenticatedIdBadgeTemplatesRoute
   AuthenticatedInternalCareersRoute: typeof AuthenticatedInternalCareersRoute
+  AuthenticatedInterviewKitsRoute: typeof AuthenticatedInterviewKitsRoute
   AuthenticatedLmsImportsRoute: typeof AuthenticatedLmsImportsRoute
   AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -2358,6 +2379,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrFinanceRoute: AuthenticatedHrFinanceRoute,
   AuthenticatedIdBadgeTemplatesRoute: AuthenticatedIdBadgeTemplatesRoute,
   AuthenticatedInternalCareersRoute: AuthenticatedInternalCareersRoute,
+  AuthenticatedInterviewKitsRoute: AuthenticatedInterviewKitsRoute,
   AuthenticatedLmsImportsRoute: AuthenticatedLmsImportsRoute,
   AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,

@@ -51,7 +51,7 @@ function KitsPage() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        {(kits as Kit[]).map((k) => (
+        {(kits as unknown as Kit[]).map((k) => (
           <Card key={k.id} className="p-4 space-y-2">
             <div className="flex justify-between items-start">
               <div>
