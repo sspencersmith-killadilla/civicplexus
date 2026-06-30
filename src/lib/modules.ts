@@ -52,6 +52,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/paf", "Personnel Actions", PafIcon, ["hr_admin", "hiring_manager", "supervisor"]),
   ]},
   { key: moduleKey("people"), label: "People", items: [
+    def("/directory", "Directory", Users, ["hr_admin", "hiring_manager", "supervisor", "it_admin", "employee", "candidate"]),
     def("/employees", "Employees", Users, ["hr_admin", "hiring_manager"]),
     def("/positions", "Positions", ClipboardList, ["hr_admin", "hiring_manager", "supervisor"]),
     def("/hire-requests", "Hire Requests", UserPlus, ["hr_admin", "supervisor", "hiring_manager"]),
