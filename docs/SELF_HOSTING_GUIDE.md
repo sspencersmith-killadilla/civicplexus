@@ -503,6 +503,27 @@ These ship enabled by default and can be toggled per tenant from `/admin-modules
 - **ID Badges + QR Verify** — CR80 PDFs, public `/api/public/badge/{serial}`
 - **Offline PWA** — service worker (`/sw.js`) with Background Sync against `/api/public/hooks/offline-replay`
 
+### LiveKit (live interview rooms) {#livekit-live-interview-rooms}
+
+Live multi-party interview rooms are powered by LiveKit. The rest of the Interviews module — scheduling, scorecards, candidate two-take async video responses — works without it. Enabling LiveKit only lights up the **Join room** action on each scheduled interview.
+
+**Steps:**
+1. Create a project at [cloud.livekit.io](https://cloud.livekit.io) (free tier is sufficient for evaluation) or self-host LiveKit Server.
+2. From the project page, copy the **WebSocket URL** (`wss://your-project.livekit.cloud`), the **API Key**, and the **API Secret**.
+3. Save them as three backend secrets — names must match exactly:
+   - `LIVEKIT_URL`
+   - `LIVEKIT_API_KEY`
+   - `LIVEKIT_API_SECRET`
+4. Reload an interview detail page. HR admins will no longer see the *Enable live interview rooms* banner, and panelists can click **Join room**.
+5. *(Optional)* To enable composite recordings, configure S3-compatible egress on the LiveKit project. Rooms function without egress; only the recording side is skipped, while the consent log and scorecards remain in place.
+
+**Did it work?** ✅ On `/interviews/<id>/room`, the setup banner is gone and clicking **Join interview** opens the LiveKit room without an error toast.
+
+**Common failures:**
+- `Live interviews are not configured…` toast → one of the three secrets is missing or misnamed.
+- Token mints but the room never connects → `LIVEKIT_URL` is `https://…` instead of `wss://…`, or the project region is unreachable from the SSR runtime.
+- `invalid api key` from LiveKit → secret was rotated in the LiveKit dashboard; update `LIVEKIT_API_SECRET` to match.
+
 ### PWA / Background Sync deployment notes
 - The build emits `/sw.js` via `vite-plugin-pwa` in `injectManifest` mode (source: `src/sw.ts`).
 - `/api/public/hooks/offline-replay` verifies the user's Supabase bearer token before executing queued RPCs — do not place it behind additional auth middleware.

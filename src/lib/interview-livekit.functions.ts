@@ -2,6 +2,21 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+/** Reports whether live interview rooms are wired up (server-side env vars present). Never returns the secrets themselves. */
+export const getLiveKitStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { livekitConfigured } = await import("@/lib/livekit.server");
+    const { data: roles } = await context.supabase
+      .from("user_roles").select("role").eq("user_id", context.userId);
+    const roleSet = new Set(((roles ?? []) as Array<{ role: string }>).map((r) => r.role));
+    return {
+      configured: livekitConfigured(),
+      is_hr_admin: roleSet.has("hr_admin"),
+      required_secrets: ["LIVEKIT_URL", "LIVEKIT_API_KEY", "LIVEKIT_API_SECRET"] as const,
+    };
+  });
+
 /** Panelist joins a live interview room. Requires being on the interview's panel or HR/hiring-manager. */
 export const joinLiveInterviewRoom = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
