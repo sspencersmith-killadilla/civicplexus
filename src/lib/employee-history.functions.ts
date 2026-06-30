@@ -19,7 +19,7 @@ export type HistoryEvent = {
   detail?: string | null;
   actor?: string | null;
   ref?: { kind: string; id: string } | null;
-  meta?: unknown;
+  meta?: Record<string, string | number | boolean | null | undefined> | null;
 };
 
 export const getEmployeeHistory = createServerFn({ method: "POST" })
