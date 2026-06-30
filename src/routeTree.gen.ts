@@ -37,6 +37,7 @@ import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenti
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
 import { Route as AuthenticatedLmsImportsRouteImport } from './routes/_authenticated/lms-imports'
+import { Route as AuthenticatedInterviewKitsRouteImport } from './routes/_authenticated/interview-kits'
 import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_authenticated/internal-careers'
 import { Route as AuthenticatedIdBadgeTemplatesRouteImport } from './routes/_authenticated/id-badge-templates'
 import { Route as AuthenticatedHrFinanceRouteImport } from './routes/_authenticated/hr-finance'
@@ -78,6 +79,7 @@ import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedCompCyclesIndexRouteImport } from './routes/_authenticated/comp-cycles.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
+import { Route as CandidateTokenInterviewRouteImport } from './routes/candidate.$token.interview'
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
@@ -107,9 +109,17 @@ import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/badge.$serial'
 import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
+import { Route as AuthenticatedInterviewsIdRoomRouteImport } from './routes/_authenticated/interviews.$id.room'
 import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim.v2.Users'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
 import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
+import { Route as ApiPublicInterviewTokenUploadUrlRouteImport } from './routes/api/public/interview/$token/upload-url'
+import { Route as ApiPublicInterviewTokenSubmitTakeRouteImport } from './routes/api/public/interview/$token/submit-take'
+import { Route as ApiPublicInterviewTokenStatusRouteImport } from './routes/api/public/interview/$token/status'
+import { Route as ApiPublicInterviewTokenFinalizeRouteImport } from './routes/api/public/interview/$token/finalize'
+import { Route as ApiPublicInterviewTokenDsrRouteImport } from './routes/api/public/interview/$token/dsr'
+import { Route as ApiPublicInterviewTokenConsentRouteImport } from './routes/api/public/interview/$token/consent'
+import { Route as ApiPublicInterviewTokenAccommodationRouteImport } from './routes/api/public/interview/$token/accommodation'
 import { Route as ApiPublicCandidateTokenStatusRouteImport } from './routes/api/public/candidate/$token/status'
 import { Route as ApiPublicCandidateTokenMessageRouteImport } from './routes/api/public/candidate/$token/message'
 
@@ -261,6 +271,12 @@ const AuthenticatedLmsImportsRoute = AuthenticatedLmsImportsRouteImport.update({
   path: '/lms-imports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInterviewKitsRoute =
+  AuthenticatedInterviewKitsRouteImport.update({
+    id: '/interview-kits',
+    path: '/interview-kits',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInternalCareersRoute =
   AuthenticatedInternalCareersRouteImport.update({
     id: '/internal-careers',
@@ -487,6 +503,11 @@ const CareersSlugApplyRoute = CareersSlugApplyRouteImport.update({
   path: '/apply',
   getParentRoute: () => CareersSlugRoute,
 } as any)
+const CandidateTokenInterviewRoute = CandidateTokenInterviewRouteImport.update({
+  id: '/interview',
+  path: '/interview',
+  getParentRoute: () => CandidateTokenRoute,
+} as any)
 const ApiPublicJobApplicationsRoute =
   ApiPublicJobApplicationsRouteImport.update({
     id: '/api/public/job-applications',
@@ -649,6 +670,12 @@ const AuthenticatedReviewCyclesIdCalibrationRoute =
     path: '/calibration',
     getParentRoute: () => AuthenticatedReviewCyclesIdRoute,
   } as any)
+const AuthenticatedInterviewsIdRoomRoute =
+  AuthenticatedInterviewsIdRoomRouteImport.update({
+    id: '/room',
+    path: '/room',
+    getParentRoute: () => AuthenticatedInterviewsIdRoute,
+  } as any)
 const ApiPublicScimV2UsersRoute = ApiPublicScimV2UsersRouteImport.update({
   id: '/api/public/scim/v2/Users',
   path: '/api/public/scim/v2/Users',
@@ -664,6 +691,48 @@ const ApiPublicOffersTokenRespondRoute =
   ApiPublicOffersTokenRespondRouteImport.update({
     id: '/api/public/offers/$token/respond',
     path: '/api/public/offers/$token/respond',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenUploadUrlRoute =
+  ApiPublicInterviewTokenUploadUrlRouteImport.update({
+    id: '/api/public/interview/$token/upload-url',
+    path: '/api/public/interview/$token/upload-url',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenSubmitTakeRoute =
+  ApiPublicInterviewTokenSubmitTakeRouteImport.update({
+    id: '/api/public/interview/$token/submit-take',
+    path: '/api/public/interview/$token/submit-take',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenStatusRoute =
+  ApiPublicInterviewTokenStatusRouteImport.update({
+    id: '/api/public/interview/$token/status',
+    path: '/api/public/interview/$token/status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenFinalizeRoute =
+  ApiPublicInterviewTokenFinalizeRouteImport.update({
+    id: '/api/public/interview/$token/finalize',
+    path: '/api/public/interview/$token/finalize',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenDsrRoute =
+  ApiPublicInterviewTokenDsrRouteImport.update({
+    id: '/api/public/interview/$token/dsr',
+    path: '/api/public/interview/$token/dsr',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenConsentRoute =
+  ApiPublicInterviewTokenConsentRouteImport.update({
+    id: '/api/public/interview/$token/consent',
+    path: '/api/public/interview/$token/consent',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicInterviewTokenAccommodationRoute =
+  ApiPublicInterviewTokenAccommodationRouteImport.update({
+    id: '/api/public/interview/$token/accommodation',
+    path: '/api/public/interview/$token/accommodation',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicCandidateTokenStatusRoute =
@@ -708,6 +777,7 @@ export interface FileRoutesByFullPath {
   '/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -728,7 +798,7 @@ export interface FileRoutesByFullPath {
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
-  '/candidate/$token': typeof CandidateTokenRoute
+  '/candidate/$token': typeof CandidateTokenRouteWithChildren
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
   '/careers/': typeof CareersIndexRoute
@@ -741,7 +811,7 @@ export interface FileRoutesByFullPath {
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
-  '/interviews/$id': typeof AuthenticatedInterviewsIdRoute
+  '/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -755,6 +825,7 @@ export interface FileRoutesByFullPath {
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
@@ -771,6 +842,7 @@ export interface FileRoutesByFullPath {
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
+  '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -779,6 +851,13 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
+  '/api/public/interview/$token/consent': typeof ApiPublicInterviewTokenConsentRoute
+  '/api/public/interview/$token/dsr': typeof ApiPublicInterviewTokenDsrRoute
+  '/api/public/interview/$token/finalize': typeof ApiPublicInterviewTokenFinalizeRoute
+  '/api/public/interview/$token/status': typeof ApiPublicInterviewTokenStatusRoute
+  '/api/public/interview/$token/submit-take': typeof ApiPublicInterviewTokenSubmitTakeRoute
+  '/api/public/interview/$token/upload-url': typeof ApiPublicInterviewTokenUploadUrlRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
   '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
@@ -812,6 +891,7 @@ export interface FileRoutesByTo {
   '/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -832,7 +912,7 @@ export interface FileRoutesByTo {
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
-  '/candidate/$token': typeof CandidateTokenRoute
+  '/candidate/$token': typeof CandidateTokenRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
   '/careers': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
@@ -844,7 +924,7 @@ export interface FileRoutesByTo {
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
-  '/interviews/$id': typeof AuthenticatedInterviewsIdRoute
+  '/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -858,6 +938,7 @@ export interface FileRoutesByTo {
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles': typeof AuthenticatedCompCyclesIndexRoute
@@ -874,6 +955,7 @@ export interface FileRoutesByTo {
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
+  '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -882,6 +964,13 @@ export interface FileRoutesByTo {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
+  '/api/public/interview/$token/consent': typeof ApiPublicInterviewTokenConsentRoute
+  '/api/public/interview/$token/dsr': typeof ApiPublicInterviewTokenDsrRoute
+  '/api/public/interview/$token/finalize': typeof ApiPublicInterviewTokenFinalizeRoute
+  '/api/public/interview/$token/status': typeof ApiPublicInterviewTokenStatusRoute
+  '/api/public/interview/$token/submit-take': typeof ApiPublicInterviewTokenSubmitTakeRoute
+  '/api/public/interview/$token/upload-url': typeof ApiPublicInterviewTokenUploadUrlRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
   '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
@@ -917,6 +1006,7 @@ export interface FileRoutesById {
   '/_authenticated/hr-finance': typeof AuthenticatedHrFinanceRoute
   '/_authenticated/id-badge-templates': typeof AuthenticatedIdBadgeTemplatesRoute
   '/_authenticated/internal-careers': typeof AuthenticatedInternalCareersRoute
+  '/_authenticated/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/_authenticated/lms-imports': typeof AuthenticatedLmsImportsRoute
   '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -937,7 +1027,7 @@ export interface FileRoutesById {
   '/_authenticated/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
-  '/candidate/$token': typeof CandidateTokenRoute
+  '/candidate/$token': typeof CandidateTokenRouteWithChildren
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
   '/careers/': typeof CareersIndexRoute
@@ -950,7 +1040,7 @@ export interface FileRoutesById {
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
-  '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRoute
+  '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/_authenticated/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -964,6 +1054,7 @@ export interface FileRoutesById {
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
@@ -980,6 +1071,7 @@ export interface FileRoutesById {
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
+  '/_authenticated/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/_authenticated/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -988,6 +1080,13 @@ export interface FileRoutesById {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
+  '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
+  '/api/public/interview/$token/consent': typeof ApiPublicInterviewTokenConsentRoute
+  '/api/public/interview/$token/dsr': typeof ApiPublicInterviewTokenDsrRoute
+  '/api/public/interview/$token/finalize': typeof ApiPublicInterviewTokenFinalizeRoute
+  '/api/public/interview/$token/status': typeof ApiPublicInterviewTokenStatusRoute
+  '/api/public/interview/$token/submit-take': typeof ApiPublicInterviewTokenSubmitTakeRoute
+  '/api/public/interview/$token/upload-url': typeof ApiPublicInterviewTokenUploadUrlRoute
   '/api/public/offers/$token/respond': typeof ApiPublicOffersTokenRespondRoute
   '/api/public/offers/$token/view': typeof ApiPublicOffersTokenViewRoute
   '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRoute
@@ -1023,6 +1122,7 @@ export interface FileRouteTypes {
     | '/hr-finance'
     | '/id-badge-templates'
     | '/internal-careers'
+    | '/interview-kits'
     | '/lms-imports'
     | '/my-hr'
     | '/notifications'
@@ -1070,6 +1170,7 @@ export interface FileRouteTypes {
     | '/transcript/$employeeId'
     | '/api/public/health'
     | '/api/public/job-applications'
+    | '/candidate/$token/interview'
     | '/careers/$slug/apply'
     | '/cascades/'
     | '/comp-cycles/'
@@ -1086,6 +1187,7 @@ export interface FileRouteTypes {
     | '/reviews/'
     | '/templates/'
     | '/careers/$slug/'
+    | '/interviews/$id/room'
     | '/review-cycles/$id/calibration'
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
@@ -1094,6 +1196,13 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
+    | '/api/public/interview/$token/accommodation'
+    | '/api/public/interview/$token/consent'
+    | '/api/public/interview/$token/dsr'
+    | '/api/public/interview/$token/finalize'
+    | '/api/public/interview/$token/status'
+    | '/api/public/interview/$token/submit-take'
+    | '/api/public/interview/$token/upload-url'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
     | '/api/public/scim/v2/Users'
@@ -1127,6 +1236,7 @@ export interface FileRouteTypes {
     | '/hr-finance'
     | '/id-badge-templates'
     | '/internal-careers'
+    | '/interview-kits'
     | '/lms-imports'
     | '/my-hr'
     | '/notifications'
@@ -1173,6 +1283,7 @@ export interface FileRouteTypes {
     | '/transcript/$employeeId'
     | '/api/public/health'
     | '/api/public/job-applications'
+    | '/candidate/$token/interview'
     | '/careers/$slug/apply'
     | '/cascades'
     | '/comp-cycles'
@@ -1189,6 +1300,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/templates'
     | '/careers/$slug'
+    | '/interviews/$id/room'
     | '/review-cycles/$id/calibration'
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
@@ -1197,6 +1309,13 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
+    | '/api/public/interview/$token/accommodation'
+    | '/api/public/interview/$token/consent'
+    | '/api/public/interview/$token/dsr'
+    | '/api/public/interview/$token/finalize'
+    | '/api/public/interview/$token/status'
+    | '/api/public/interview/$token/submit-take'
+    | '/api/public/interview/$token/upload-url'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
     | '/api/public/scim/v2/Users'
@@ -1231,6 +1350,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hr-finance'
     | '/_authenticated/id-badge-templates'
     | '/_authenticated/internal-careers'
+    | '/_authenticated/interview-kits'
     | '/_authenticated/lms-imports'
     | '/_authenticated/my-hr'
     | '/_authenticated/notifications'
@@ -1278,6 +1398,7 @@ export interface FileRouteTypes {
     | '/_authenticated/transcript/$employeeId'
     | '/api/public/health'
     | '/api/public/job-applications'
+    | '/candidate/$token/interview'
     | '/careers/$slug/apply'
     | '/_authenticated/cascades/'
     | '/_authenticated/comp-cycles/'
@@ -1294,6 +1415,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reviews/'
     | '/_authenticated/templates/'
     | '/careers/$slug/'
+    | '/_authenticated/interviews/$id/room'
     | '/_authenticated/review-cycles/$id/calibration'
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
@@ -1302,6 +1424,13 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
+    | '/api/public/interview/$token/accommodation'
+    | '/api/public/interview/$token/consent'
+    | '/api/public/interview/$token/dsr'
+    | '/api/public/interview/$token/finalize'
+    | '/api/public/interview/$token/status'
+    | '/api/public/interview/$token/submit-take'
+    | '/api/public/interview/$token/upload-url'
     | '/api/public/offers/$token/respond'
     | '/api/public/offers/$token/view'
     | '/api/public/scim/v2/Users'
@@ -1312,7 +1441,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   OfflineShellRoute: typeof OfflineShellRoute
-  CandidateTokenRoute: typeof CandidateTokenRoute
+  CandidateTokenRoute: typeof CandidateTokenRouteWithChildren
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
   OfferTokenRoute: typeof OfferTokenRoute
   CareersIndexRoute: typeof CareersIndexRoute
@@ -1325,6 +1454,13 @@ export interface RootRouteChildren {
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
   ApiPublicCandidateTokenMessageRoute: typeof ApiPublicCandidateTokenMessageRoute
   ApiPublicCandidateTokenStatusRoute: typeof ApiPublicCandidateTokenStatusRoute
+  ApiPublicInterviewTokenAccommodationRoute: typeof ApiPublicInterviewTokenAccommodationRoute
+  ApiPublicInterviewTokenConsentRoute: typeof ApiPublicInterviewTokenConsentRoute
+  ApiPublicInterviewTokenDsrRoute: typeof ApiPublicInterviewTokenDsrRoute
+  ApiPublicInterviewTokenFinalizeRoute: typeof ApiPublicInterviewTokenFinalizeRoute
+  ApiPublicInterviewTokenStatusRoute: typeof ApiPublicInterviewTokenStatusRoute
+  ApiPublicInterviewTokenSubmitTakeRoute: typeof ApiPublicInterviewTokenSubmitTakeRoute
+  ApiPublicInterviewTokenUploadUrlRoute: typeof ApiPublicInterviewTokenUploadUrlRoute
   ApiPublicOffersTokenRespondRoute: typeof ApiPublicOffersTokenRespondRoute
   ApiPublicOffersTokenViewRoute: typeof ApiPublicOffersTokenViewRoute
   ApiPublicScimV2UsersRoute: typeof ApiPublicScimV2UsersRoute
@@ -1526,6 +1662,13 @@ declare module '@tanstack/react-router' {
       path: '/lms-imports'
       fullPath: '/lms-imports'
       preLoaderRoute: typeof AuthenticatedLmsImportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/interview-kits': {
+      id: '/_authenticated/interview-kits'
+      path: '/interview-kits'
+      fullPath: '/interview-kits'
+      preLoaderRoute: typeof AuthenticatedInterviewKitsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/internal-careers': {
@@ -1815,6 +1958,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CareersSlugApplyRouteImport
       parentRoute: typeof CareersSlugRoute
     }
+    '/candidate/$token/interview': {
+      id: '/candidate/$token/interview'
+      path: '/interview'
+      fullPath: '/candidate/$token/interview'
+      preLoaderRoute: typeof CandidateTokenInterviewRouteImport
+      parentRoute: typeof CandidateTokenRoute
+    }
     '/api/public/job-applications': {
       id: '/api/public/job-applications'
       path: '/api/public/job-applications'
@@ -2018,6 +2168,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewCyclesIdCalibrationRouteImport
       parentRoute: typeof AuthenticatedReviewCyclesIdRoute
     }
+    '/_authenticated/interviews/$id/room': {
+      id: '/_authenticated/interviews/$id/room'
+      path: '/room'
+      fullPath: '/interviews/$id/room'
+      preLoaderRoute: typeof AuthenticatedInterviewsIdRoomRouteImport
+      parentRoute: typeof AuthenticatedInterviewsIdRoute
+    }
     '/api/public/scim/v2/Users': {
       id: '/api/public/scim/v2/Users'
       path: '/api/public/scim/v2/Users'
@@ -2037,6 +2194,55 @@ declare module '@tanstack/react-router' {
       path: '/api/public/offers/$token/respond'
       fullPath: '/api/public/offers/$token/respond'
       preLoaderRoute: typeof ApiPublicOffersTokenRespondRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/upload-url': {
+      id: '/api/public/interview/$token/upload-url'
+      path: '/api/public/interview/$token/upload-url'
+      fullPath: '/api/public/interview/$token/upload-url'
+      preLoaderRoute: typeof ApiPublicInterviewTokenUploadUrlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/submit-take': {
+      id: '/api/public/interview/$token/submit-take'
+      path: '/api/public/interview/$token/submit-take'
+      fullPath: '/api/public/interview/$token/submit-take'
+      preLoaderRoute: typeof ApiPublicInterviewTokenSubmitTakeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/status': {
+      id: '/api/public/interview/$token/status'
+      path: '/api/public/interview/$token/status'
+      fullPath: '/api/public/interview/$token/status'
+      preLoaderRoute: typeof ApiPublicInterviewTokenStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/finalize': {
+      id: '/api/public/interview/$token/finalize'
+      path: '/api/public/interview/$token/finalize'
+      fullPath: '/api/public/interview/$token/finalize'
+      preLoaderRoute: typeof ApiPublicInterviewTokenFinalizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/dsr': {
+      id: '/api/public/interview/$token/dsr'
+      path: '/api/public/interview/$token/dsr'
+      fullPath: '/api/public/interview/$token/dsr'
+      preLoaderRoute: typeof ApiPublicInterviewTokenDsrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/consent': {
+      id: '/api/public/interview/$token/consent'
+      path: '/api/public/interview/$token/consent'
+      fullPath: '/api/public/interview/$token/consent'
+      preLoaderRoute: typeof ApiPublicInterviewTokenConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/interview/$token/accommodation': {
+      id: '/api/public/interview/$token/accommodation'
+      path: '/api/public/interview/$token/accommodation'
+      fullPath: '/api/public/interview/$token/accommodation'
+      preLoaderRoute: typeof ApiPublicInterviewTokenAccommodationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/candidate/$token/status': {
@@ -2067,6 +2273,20 @@ const AuthenticatedPoliciesRouteChildren: AuthenticatedPoliciesRouteChildren = {
 const AuthenticatedPoliciesRouteWithChildren =
   AuthenticatedPoliciesRoute._addFileChildren(
     AuthenticatedPoliciesRouteChildren,
+  )
+
+interface AuthenticatedInterviewsIdRouteChildren {
+  AuthenticatedInterviewsIdRoomRoute: typeof AuthenticatedInterviewsIdRoomRoute
+}
+
+const AuthenticatedInterviewsIdRouteChildren: AuthenticatedInterviewsIdRouteChildren =
+  {
+    AuthenticatedInterviewsIdRoomRoute: AuthenticatedInterviewsIdRoomRoute,
+  }
+
+const AuthenticatedInterviewsIdRouteWithChildren =
+  AuthenticatedInterviewsIdRoute._addFileChildren(
+    AuthenticatedInterviewsIdRouteChildren,
   )
 
 interface AuthenticatedReviewCyclesIdRouteChildren {
@@ -2110,6 +2330,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrFinanceRoute: typeof AuthenticatedHrFinanceRoute
   AuthenticatedIdBadgeTemplatesRoute: typeof AuthenticatedIdBadgeTemplatesRoute
   AuthenticatedInternalCareersRoute: typeof AuthenticatedInternalCareersRoute
+  AuthenticatedInterviewKitsRoute: typeof AuthenticatedInterviewKitsRoute
   AuthenticatedLmsImportsRoute: typeof AuthenticatedLmsImportsRoute
   AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -2139,7 +2360,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
-  AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRoute
+  AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRouteWithChildren
   AuthenticatedJobsIdRoute: typeof AuthenticatedJobsIdRoute
   AuthenticatedLeaveIdRoute: typeof AuthenticatedLeaveIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
@@ -2192,6 +2413,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrFinanceRoute: AuthenticatedHrFinanceRoute,
   AuthenticatedIdBadgeTemplatesRoute: AuthenticatedIdBadgeTemplatesRoute,
   AuthenticatedInternalCareersRoute: AuthenticatedInternalCareersRoute,
+  AuthenticatedInterviewKitsRoute: AuthenticatedInterviewKitsRoute,
   AuthenticatedLmsImportsRoute: AuthenticatedLmsImportsRoute,
   AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
@@ -2221,7 +2443,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
-  AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRoute,
+  AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRouteWithChildren,
   AuthenticatedJobsIdRoute: AuthenticatedJobsIdRoute,
   AuthenticatedLeaveIdRoute: AuthenticatedLeaveIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
@@ -2253,6 +2475,18 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CandidateTokenRouteChildren {
+  CandidateTokenInterviewRoute: typeof CandidateTokenInterviewRoute
+}
+
+const CandidateTokenRouteChildren: CandidateTokenRouteChildren = {
+  CandidateTokenInterviewRoute: CandidateTokenInterviewRoute,
+}
+
+const CandidateTokenRouteWithChildren = CandidateTokenRoute._addFileChildren(
+  CandidateTokenRouteChildren,
+)
+
 interface CareersSlugRouteChildren {
   CareersSlugApplyRoute: typeof CareersSlugApplyRoute
   CareersSlugIndexRoute: typeof CareersSlugIndexRoute
@@ -2272,7 +2506,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   OfflineShellRoute: OfflineShellRoute,
-  CandidateTokenRoute: CandidateTokenRoute,
+  CandidateTokenRoute: CandidateTokenRouteWithChildren,
   CareersSlugRoute: CareersSlugRouteWithChildren,
   OfferTokenRoute: OfferTokenRoute,
   CareersIndexRoute: CareersIndexRoute,
@@ -2285,6 +2519,15 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
   ApiPublicCandidateTokenMessageRoute: ApiPublicCandidateTokenMessageRoute,
   ApiPublicCandidateTokenStatusRoute: ApiPublicCandidateTokenStatusRoute,
+  ApiPublicInterviewTokenAccommodationRoute:
+    ApiPublicInterviewTokenAccommodationRoute,
+  ApiPublicInterviewTokenConsentRoute: ApiPublicInterviewTokenConsentRoute,
+  ApiPublicInterviewTokenDsrRoute: ApiPublicInterviewTokenDsrRoute,
+  ApiPublicInterviewTokenFinalizeRoute: ApiPublicInterviewTokenFinalizeRoute,
+  ApiPublicInterviewTokenStatusRoute: ApiPublicInterviewTokenStatusRoute,
+  ApiPublicInterviewTokenSubmitTakeRoute:
+    ApiPublicInterviewTokenSubmitTakeRoute,
+  ApiPublicInterviewTokenUploadUrlRoute: ApiPublicInterviewTokenUploadUrlRoute,
   ApiPublicOffersTokenRespondRoute: ApiPublicOffersTokenRespondRoute,
   ApiPublicOffersTokenViewRoute: ApiPublicOffersTokenViewRoute,
   ApiPublicScimV2UsersRoute: ApiPublicScimV2UsersRoute,
