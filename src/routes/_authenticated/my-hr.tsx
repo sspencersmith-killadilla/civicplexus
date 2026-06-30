@@ -16,6 +16,9 @@ import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, U
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
 import { getDirectReportTaskCounts } from "@/lib/my-team.functions";
+import { getEmployeeHistory, type HistoryEvent } from "@/lib/employee-history.functions";
+import { Badge } from "@/components/ui/badge";
+import { Download, History as HistoryIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR });
 
@@ -42,8 +45,10 @@ function MyHR() {
   const completeFn = useServerFn(completeTraining);
   const photoUrlFn = useServerFn(getEmployeePhotoUrl);
   const reportCountsFn = useServerFn(getDirectReportTaskCounts);
+  const historyFn = useServerFn(getEmployeeHistory);
   const [completeFor, setCompleteFor] = useState<{ id: string; name: string; employee_id: string } | null>(null);
   const [completeForm, setCompleteForm] = useState<{ score: string; notes: string; file: File | null }>({ score: "", notes: "", file: null });
+  const [historyFilter, setHistoryFilter] = useState<string>("all");
   const complete = useMutation({
     mutationFn: async () => {
       if (!completeFor) throw new Error("No assignment");
