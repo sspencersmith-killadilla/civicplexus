@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { saveCareersCustomization } from "@/lib/careers-customization.functions";
+import { getInterviewRetentionSettings, updateInterviewRetentionSettings } from "@/lib/interview-retention.functions";
 
 export const Route = createFileRoute("/_authenticated/settings")({ component: SettingsPage });
 
@@ -21,6 +22,31 @@ function SettingsPage() {
   const [form, setForm] = useState({ org_name: "", ein: "", address: "", phone: "", primary_color: "", accent_color: "", sso_metadata_url: "", retention_policy: "{}", require_mfa: false, sso_only: false, payroll_bureau: "", fed_employer_id: "" });
   const [careers, setCareers] = useState({ html: "", css: "" });
   const saveCareers = useServerFn(saveCareersCustomization);
+  const getRetention = useServerFn(getInterviewRetentionSettings);
+  const saveRetention = useServerFn(updateInterviewRetentionSettings);
+  const retentionQ = useQuery({ queryKey: ["interview-retention"], queryFn: () => getRetention() });
+  const [retention, setRetention] = useState({ days: 90, archive: false, bucket: "", prefix: "", note: "" });
+  useEffect(() => {
+    const s = retentionQ.data?.settings;
+    if (s) setRetention({
+      days: s.interview_retention_days,
+      archive: !!s.interview_recording_archive_enabled,
+      bucket: s.interview_recording_archive_bucket ?? "",
+      prefix: s.interview_recording_archive_prefix ?? "",
+      note: "",
+    });
+  }, [retentionQ.data]);
+  const saveRetentionMut = useMutation({
+    mutationFn: () => saveRetention({ data: {
+      interview_retention_days: Number(retention.days) || 90,
+      interview_recording_archive_enabled: retention.archive,
+      interview_recording_archive_bucket: retention.bucket || null,
+      interview_recording_archive_prefix: retention.prefix || null,
+      note: retention.note || undefined,
+    } }),
+    onSuccess: () => { toast.success("Retention settings saved"); setRetention(r => ({ ...r, note: "" })); qc.invalidateQueries({ queryKey: ["interview-retention"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   useEffect(() => {
     if (data) setForm({
@@ -96,6 +122,56 @@ function SettingsPage() {
           </div>
         </Card>
         <Button onClick={() => save.mutate()} disabled={save.isPending} className="w-fit">Save Settings</Button>
+        <Card className="p-6 space-y-4">
+          <div>
+            <h3 className="font-serif text-lg">Interview recording retention</h3>
+            <p className="text-xs text-muted-foreground">Sets how long one-way and live interview recordings are kept before automatic purge. Optionally mirror to an external S3 bucket for long-term legal hold. Every change is logged with the actor and time.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Retention (days)</Label>
+              <div className="flex gap-2">
+                <Input type="number" min={7} max={3650} value={retention.days} onChange={(e) => setRetention({ ...retention, days: Number(e.target.value) })} />
+                {[30, 90, 180, 365].map(d => (
+                  <Button key={d} type="button" variant="outline" size="sm" onClick={() => setRetention({ ...retention, days: d })}>{d}</Button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div><Label>Archive to S3</Label><p className="text-xs text-muted-foreground">Mirror recordings before purge.</p></div>
+              <Switch checked={retention.archive} onCheckedChange={(v) => setRetention({ ...retention, archive: v })} />
+            </div>
+          </div>
+          {retention.archive && (
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>S3 bucket</Label><Input value={retention.bucket} onChange={(e) => setRetention({ ...retention, bucket: e.target.value })} placeholder="city-hr-interview-archive" /></div>
+              <div><Label>Key prefix (optional)</Label><Input value={retention.prefix} onChange={(e) => setRetention({ ...retention, prefix: e.target.value })} placeholder="interviews/" /></div>
+            </div>
+          )}
+          <div>
+            <Label>Change note (audit)</Label>
+            <Input value={retention.note} onChange={(e) => setRetention({ ...retention, note: e.target.value })} placeholder="Why is this change being made?" />
+          </div>
+          <Button onClick={() => saveRetentionMut.mutate()} disabled={saveRetentionMut.isPending} className="w-fit">Save retention settings</Button>
+          <div>
+            <h4 className="font-medium text-sm mb-2">Recent changes</h4>
+            {retentionQ.data?.audit?.length ? (
+              <ul className="space-y-2 text-xs">
+                {retentionQ.data.audit.map(a => (
+                  <li key={a.id} className="border rounded p-2">
+                    <div className="text-muted-foreground">{new Date(a.created_at).toLocaleString()} · actor {a.actor_id?.slice(0, 8) ?? "—"}</div>
+                    <div>
+                      Retention: <strong>{a.previous.interview_retention_days}d → {a.next.interview_retention_days}d</strong>
+                      {" · "}Archive: <strong>{a.previous.interview_recording_archive_enabled ? "on" : "off"} → {a.next.interview_recording_archive_enabled ? "on" : "off"}</strong>
+                      {a.next.interview_recording_archive_bucket ? <> · bucket <code>{a.next.interview_recording_archive_bucket}</code></> : null}
+                    </div>
+                    {a.note ? <div className="italic">"{a.note}"</div> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="text-xs text-muted-foreground">No changes recorded yet.</p>}
+          </div>
+        </Card>
         <Card className="p-6 space-y-4">
           <div>
             <h3 className="font-serif text-lg">Public careers page</h3>
