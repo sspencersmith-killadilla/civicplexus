@@ -4,7 +4,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useRef, useState, useEffect } from "react";
 import Tree from "react-d3-tree";
 import { toPng } from "html-to-image";
-import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronDown, ChevronRight, Download, Printer, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
+import { getOrgChartDirectory } from "@/lib/employee-directory.functions";
 
 export const Route = createFileRoute("/_authenticated/org-chart")({
   component: OrgChartPage,
@@ -80,6 +80,7 @@ function seniorityScore(e: Emp): number {
 function OrgChartPage() {
   const navigate = useNavigate();
   const photoUrlFn = useServerFn(getEmployeePhotoUrl);
+  const directoryFn = useServerFn(getOrgChartDirectory);
   const containerRef = useRef<HTMLDivElement>(null);
   const [translate, setTranslate] = useState({ x: 400, y: 80 });
   const [zoom, setZoom] = useState(0.8);
@@ -98,40 +99,13 @@ function OrgChartPage() {
     });
   };
 
-  const { data: employees, isLoading } = useQuery({
-    queryKey: ["org-chart-employees"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("employees")
-        .select("id, first_name, last_name, job_title, department, status, manager_id, user_id, photo_path")
-        .order("last_name");
-      if (error) throw error;
-      return (data ?? []) as Emp[];
-    },
+  const { data: directory, isLoading } = useQuery({
+    queryKey: ["org-chart-directory"],
+    queryFn: () => directoryFn({ data: {} }),
   });
-
-  const { data: positions } = useQuery({
-    queryKey: ["org-chart-positions"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("positions")
-        .select("id, title, department, status, budgeted_fte, reports_to_position_id");
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
-  const { data: orgName } = useQuery({
-    queryKey: ["org-chart-org-name"],
-    staleTime: 5 * 60 * 1000,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("org_settings")
-        .select("org_name")
-        .maybeSingle();
-      return (data?.org_name as string | undefined) ?? "Organization";
-    },
-  });
+  const employees = directory?.employees as Emp[] | undefined;
+  const positions = directory?.positions ?? [];
+  const orgName = directory?.org_name ?? "Organization";
 
   const filtered = useMemo(() => {
     if (!employees) return [];
