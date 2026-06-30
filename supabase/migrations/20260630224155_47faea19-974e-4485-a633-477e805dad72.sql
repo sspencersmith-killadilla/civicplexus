@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Anon self-id insert for public applications" ON public.application_self_id;
