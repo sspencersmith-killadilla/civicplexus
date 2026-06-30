@@ -279,16 +279,28 @@ export const scheduleInterview = createServerFn({ method: "POST" })
     stage: z.enum(["phone_screen","first_round","panel","final"]).default("first_round"),
     location: z.string().max(500).optional(),
     interviewer_ids: z.array(z.string().uuid()).min(1),
+    use_inapp_room: z.boolean().optional().default(false),
   }).parse(i))
   .handler(async ({ data, context }) => {
+    const { getRequestHeader } = await import("@tanstack/react-start/server");
+    let resolvedLocation: string | null = data.location ?? null;
     const { data: iv, error } = await context.supabase.from("interviews" as never).insert({
       application_id: data.application_id, scheduled_at: data.scheduled_at,
       duration_minutes: data.duration_minutes, stage: data.stage,
-      location: data.location ?? null, interviewer_ids: data.interviewer_ids,
+      location: resolvedLocation, interviewer_ids: data.interviewer_ids,
       created_by: context.userId,
     } as never).select().single();
     if (error) throw new Error(error.message);
     const ivRow = iv as { id: string };
+
+    if (data.use_inapp_room) {
+      const origin = getRequestHeader("origin") || getRequestHeader("x-forwarded-host")
+        ? (getRequestHeader("origin") || `https://${getRequestHeader("x-forwarded-host")}`)
+        : (process.env.SITE_URL || "");
+      resolvedLocation = `${origin}/interviews/${ivRow.id}/room`;
+      await context.supabase.from("interviews" as never)
+        .update({ location: resolvedLocation } as never).eq("id", ivRow.id);
+    }
 
     // Try calendar sync (best-effort)
     let calendarEventId: string | null = null;
