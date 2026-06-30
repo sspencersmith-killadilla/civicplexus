@@ -19,7 +19,7 @@ export type HistoryEvent = {
   detail?: string | null;
   actor?: string | null;
   ref?: { kind: string; id: string } | null;
-  meta?: Record<string, string | number | boolean | null | undefined> | null;
+  meta?: Record<string, string | number | boolean | null> | null;
 };
 
 export const getEmployeeHistory = createServerFn({ method: "POST" })
@@ -76,7 +76,7 @@ export const getEmployeeHistory = createServerFn({ method: "POST" })
         detail: `${amount}${c.change_reason ? ` — ${c.change_reason}` : ""}`,
         actor: c.created_by,
         ref: { kind: "employee_comp", id: c.id },
-        meta: { source: c.source, base_annual: c.base_annual, hourly_rate: c.hourly_rate },
+        meta: { source: c.source, base_annual: c.base_annual ?? null, hourly_rate: c.hourly_rate ?? null },
       });
     });
 
@@ -198,7 +198,7 @@ export const getEmployeeHistory = createServerFn({ method: "POST" })
         detail,
         actor: a.actor_id,
         ref: { kind: "audit", id: a.id },
-        meta: diff,
+        meta: null,
       });
     });
 
