@@ -169,40 +169,40 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             </div>
           </div>
         </SheetContent>
-      </Sheet>
-      <main className="flex-1 min-w-0">
-        <DemoTour />
-        {title && (
-          <header className="border-b bg-card px-4 md:px-10 py-4 md:py-5 flex items-center gap-3">
-            <SheetTrigger asChild>
-              <button
-                type="button"
-                aria-label="Open menu"
-                className="md:hidden p-2 rounded-md text-foreground/70 hover:bg-accent hover:text-accent-foreground"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            </SheetTrigger>
-            <h1 className="font-serif text-xl md:text-2xl tracking-tight">{title}</h1>
-          </header>
-        )}
-        {!title && (
-          <div className="md:hidden px-4 pt-4">
-            <SheetTrigger asChild>
-              <button
-                type="button"
-                aria-label="Open menu"
-                className="p-2 rounded-md text-foreground/70 hover:bg-accent hover:text-accent-foreground"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            </SheetTrigger>
+        <main className="flex-1 min-w-0">
+          <DemoTour />
+          {title && (
+            <header className="border-b bg-card px-4 md:px-10 py-4 md:py-5 flex items-center gap-3">
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  className="md:hidden p-2 rounded-md text-foreground/70 hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+              </SheetTrigger>
+              <h1 className="font-serif text-xl md:text-2xl tracking-tight">{title}</h1>
+            </header>
+          )}
+          {!title && (
+            <div className="md:hidden px-4 pt-4">
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  className="p-2 rounded-md text-foreground/70 hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+              </SheetTrigger>
+            </div>
+          )}
+          <div className="px-4 md:px-10 py-6">
+            <ModuleGate>{children}</ModuleGate>
           </div>
-        )}
-        <div className="px-4 md:px-10 py-6">
-          <ModuleGate>{children}</ModuleGate>
-        </div>
-      </main>
+        </main>
+      </Sheet>
     </div>
   );
 }
