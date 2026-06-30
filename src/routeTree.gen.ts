@@ -110,6 +110,7 @@ import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/badge.$serial'
 import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
+import { Route as AuthenticatedInterviewsAsyncIdRouteImport } from './routes/_authenticated/interviews.async.$id'
 import { Route as AuthenticatedInterviewsIdRoomRouteImport } from './routes/_authenticated/interviews.$id.room'
 import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim.v2.Users'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
@@ -677,6 +678,12 @@ const AuthenticatedReviewCyclesIdCalibrationRoute =
     path: '/calibration',
     getParentRoute: () => AuthenticatedReviewCyclesIdRoute,
   } as any)
+const AuthenticatedInterviewsAsyncIdRoute =
+  AuthenticatedInterviewsAsyncIdRouteImport.update({
+    id: '/interviews/async/$id',
+    path: '/interviews/async/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInterviewsIdRoomRoute =
   AuthenticatedInterviewsIdRoomRouteImport.update({
     id: '/room',
@@ -851,6 +858,7 @@ export interface FileRoutesByFullPath {
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
+  '/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -965,6 +973,7 @@ export interface FileRoutesByTo {
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
   '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
+  '/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -1082,6 +1091,7 @@ export interface FileRoutesById {
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/_authenticated/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
+  '/_authenticated/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/_authenticated/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
@@ -1199,6 +1209,7 @@ export interface FileRouteTypes {
     | '/templates/'
     | '/careers/$slug/'
     | '/interviews/$id/room'
+    | '/interviews/async/$id'
     | '/review-cycles/$id/calibration'
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
@@ -1313,6 +1324,7 @@ export interface FileRouteTypes {
     | '/templates'
     | '/careers/$slug'
     | '/interviews/$id/room'
+    | '/interviews/async/$id'
     | '/review-cycles/$id/calibration'
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
@@ -1429,6 +1441,7 @@ export interface FileRouteTypes {
     | '/_authenticated/templates/'
     | '/careers/$slug/'
     | '/_authenticated/interviews/$id/room'
+    | '/_authenticated/interviews/async/$id'
     | '/_authenticated/review-cycles/$id/calibration'
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
@@ -2188,6 +2201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewCyclesIdCalibrationRouteImport
       parentRoute: typeof AuthenticatedReviewCyclesIdRoute
     }
+    '/_authenticated/interviews/async/$id': {
+      id: '/_authenticated/interviews/async/$id'
+      path: '/interviews/async/$id'
+      fullPath: '/interviews/async/$id'
+      preLoaderRoute: typeof AuthenticatedInterviewsAsyncIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/interviews/$id/room': {
       id: '/_authenticated/interviews/$id/room'
       path: '/room'
@@ -2406,6 +2426,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReviewCyclesIndexRoute: typeof AuthenticatedReviewCyclesIndexRoute
   AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
+  AuthenticatedInterviewsAsyncIdRoute: typeof AuthenticatedInterviewsAsyncIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -2492,6 +2513,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReviewCyclesIndexRoute: AuthenticatedReviewCyclesIndexRoute,
   AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
+  AuthenticatedInterviewsAsyncIdRoute: AuthenticatedInterviewsAsyncIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

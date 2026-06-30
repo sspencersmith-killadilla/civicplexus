@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2, Sparkles, FileText, Check, Pencil, X, Upload, FileDown, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2, Sparkles, FileText, Check, Pencil, X, Upload, FileDown, Trash2, Video } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { submitRequisitionForApproval, postRequisition, closeRequisition, transitionApplicationStatus, scheduleInterview, convertApplicationToHire } from "@/lib/jobs.functions";
@@ -20,6 +20,7 @@ import { createOffer } from "@/lib/offers.functions";
 import { mintCandidatePortalToken, postRecruiterMessage } from "@/lib/candidate-portal.functions";
 import { sendTemplatedToApplicant } from "@/lib/email-templates.functions";
 import { screenApplication, recordScreenDecision } from "@/lib/applicant-ai.functions";
+import { createInterviewInvitation } from "@/lib/interview-invitations.functions";
 import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/jobs/$id")({ component: JobDetail });
@@ -251,8 +252,11 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
   const mintPortal = useServerFn(mintCandidatePortalToken);
   const sendMsg = useServerFn(postRecruiterMessage);
   const sendEmail = useServerFn(sendTemplatedToApplicant);
+  const mintAsync = useServerFn(createInterviewInvitation);
   const [iv, setIv] = useState({ scheduled_at: "", interviewer_emails: "", location: "", duration_minutes: 45, stage: "first_round" as const, use_inapp_room: true });
   const [openIv, setOpenIv] = useState(false);
+  const [openAsync, setOpenAsync] = useState(false);
+  const [asyncForm, setAsyncForm] = useState({ kit_id: "", days_valid: 14 });
   const [openHire, setOpenHire] = useState(false);
   const [openOffer, setOpenOffer] = useState(false);
   const [openMsg, setOpenMsg] = useState(false);
@@ -267,6 +271,32 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
       return (data ?? []) as Array<{ id: string; name: string }>;
     },
     enabled: openHire || openOffer,
+  });
+
+  const kitsQ = useQuery({
+    queryKey: ["interview_kits_oneway_pick"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("interview_kits" as never)
+        .select("id, name, kind, is_active")
+        .eq("kind", "one_way")
+        .eq("is_active", true)
+        .order("name");
+      return (data ?? []) as unknown as Array<{ id: string; name: string }>;
+    },
+    enabled: openAsync,
+  });
+
+  const doAsync = useMutation({
+    mutationFn: () => mintAsync({ data: { application_id: app.id, kit_id: asyncForm.kit_id, days_valid: asyncForm.days_valid } }),
+    onSuccess: (r: { url: string; expires_at: string }) => {
+      navigator.clipboard?.writeText(r.url).catch(() => {});
+      toast.success("Async interview link copied — emailing candidate…");
+      sendEmail({ data: { application_id: app.id, template_key: "async_interview_invitation", extra_vars: { interview_url: r.url, expires_at: new Date(r.expires_at).toLocaleDateString() } } }).catch(() => {});
+      setOpenAsync(false);
+      set.mutate("interview");
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const set = useMutation({
@@ -374,6 +404,32 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
                 )}
                 <div><Label>Interviewer work emails (comma-separated)</Label><Textarea rows={2} value={iv.interviewer_emails} onChange={(e)=>setIv({...iv, interviewer_emails: e.target.value})} /></div>
                 <div className="flex justify-end"><Button onClick={()=>doSched.mutate()} disabled={!iv.scheduled_at || !iv.interviewer_emails || doSched.isPending}>{doSched.isPending ? "Scheduling…" : "Schedule"}</Button></div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={openAsync} onOpenChange={setOpenAsync}>
+            <DialogTrigger asChild><Button size="sm" variant="outline"><Video className="h-3 w-3 mr-1" />Async invite</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Send async interview invitation</DialogTitle></DialogHeader>
+              <p className="text-xs text-muted-foreground mb-3">Mints a one-time candidate link to a one-way interview kit. Candidate records their answers; two takes allowed but Take 2 becomes final.</p>
+              <div className="space-y-3">
+                <div>
+                  <Label>Interview kit</Label>
+                  <Select value={asyncForm.kit_id} onValueChange={(v)=>setAsyncForm({...asyncForm, kit_id: v})}>
+                    <SelectTrigger><SelectValue placeholder={(kitsQ.data ?? []).length ? "Pick a one-way kit…" : "No active one-way kits — create one first"} /></SelectTrigger>
+                    <SelectContent>{(kitsQ.data ?? []).map((k) => <SelectItem key={k.id} value={k.id}>{k.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                  {!(kitsQ.data ?? []).length && !kitsQ.isLoading && (
+                    <p className="text-xs text-muted-foreground mt-1">Build kits in <Link to="/interview-kits" className="underline">Interview Kits</Link>.</p>
+                  )}
+                </div>
+                <div>
+                  <Label>Link valid for (days)</Label>
+                  <Input type="number" min={1} max={60} value={asyncForm.days_valid} onChange={(e)=>setAsyncForm({...asyncForm, days_valid: parseInt(e.target.value) || 14})} />
+                </div>
+                <div className="flex justify-end">
+                  <Button disabled={!asyncForm.kit_id || doAsync.isPending} onClick={()=>doAsync.mutate()}>{doAsync.isPending ? "Sending…" : "Send invitation"}</Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
