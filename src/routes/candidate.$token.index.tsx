@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Briefcase, CalendarClock, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/candidate/$token")({ component: CandidatePortal });
+export const Route = createFileRoute("/candidate/$token/")({ component: CandidatePortal });
 
 type Status = {
   application: { id: string; applicant_name: string; email: string; status: string; created_at: string };
