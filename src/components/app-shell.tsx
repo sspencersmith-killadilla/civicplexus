@@ -69,14 +69,10 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     }))
     .filter((g) => g.items.length);
 
-  const defaultExpanded = new Set(groups.map((g) => g.label));
-  const isGroupExpanded = (label: string) =>
-    expandedGroups.has(label) || defaultExpanded.has(label);
-
   const sidebarNav = (
     <nav className="flex-1 py-4 space-y-1 overflow-y-auto px-3">
       {groups.map((g) => {
-        const open = collapsed ? true : isGroupExpanded(g.label);
+        const open = collapsed ? true : !collapsedGroups.has(g.label);
         const hasActiveChild = g.items.some(
           (n) => pathname === n.to || pathname.startsWith(n.to + "/")
         );
