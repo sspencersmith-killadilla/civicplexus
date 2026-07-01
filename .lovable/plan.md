@@ -1,51 +1,73 @@
-## Plan: make HR admin access reliable everywhere
+## Goal
 
-### Goal
-HR admins, especially the demo HR admin account, should be able to open the HR modules and see/manage all operational activity: PAFs, jobs/requisitions, applications, approvals, 1-on-1s, reviews, and related workflow data. This should not make anything public or weaken employee/candidate privacy.
+Let HR admins connect the HRIS to an external LMS (Chamilo, Moodle, or Forma), automatically pull completion data into `employee_training`, and keep the existing manual CSV upload as a fallback / for any other system.
 
-### What I found
-- The demo user does have `hr_admin`, `supervisor`, `hiring_manager`, and `employee` roles.
-- The PAF and Jobs modules are currently enabled.
-- Some database policies already allow HR admins, but several app screens still read directly through browser-side RLS or rely on role data fetched through policies. When that role/permission read is blocked, stale, or incomplete, the UI hides creation controls or returns empty lists.
-- Several workflow pages still use direct table queries instead of the newer server-backed access pattern, which is why permissions can look correct in the admin panel but still fail in the actual module.
+## Approach
 
-### Implementation steps
-1. **Create a single server-backed HR access context**
-   - Add/extend a server function that reads the current signed-in user’s roles and effective permissions with trusted server access.
-   - Return normalized booleans like `isHrAdmin`, `canManagePaf`, `canManageJobs`, `canManageApprovals`, `canManageReviews`, `canManageOneOnOnes`.
-   - Use this as the source of truth for navigation and page-level action buttons instead of fragile client-side role reads.
+All three LMSs expose REST APIs that return course completions per user. We add a small provider abstraction so each LMS has one adapter that returns a normalized "completion" shape (email, external_course_id, course_name, completed_at, score, evidence_url). Everything downstream — matching to employees/courses, upserting into `employee_training`, and issuing certifications — reuses the existing logic in `src/lib/lms.functions.ts`.
 
-2. **Move PAF list and employee picker to server functions**
-   - Replace direct browser queries on `/paf` with server functions:
-     - HR admins see all PAFs.
-     - HR admins can select any employee except themselves when creating a PAF.
-     - Supervisors/department admins keep scoped access only.
-   - Keep PAF submission authorization server-side so non-HR users cannot abuse the broader UI.
+### 1. Schema (one migration)
 
-3. **Move Jobs/Requisitions list/detail reads to server functions**
-   - Replace direct browser reads on `/jobs` and `/jobs/:id` for requisitions and approval chains.
-   - HR admins see all requisitions and all applicants.
-   - Hiring managers/supervisors keep scoped access based on requester/hiring manager/permissions.
-   - Candidate/public careers behavior stays unchanged.
+- `lms_connections` — one row per configured LMS
+  - `id`, `provider` (`chamilo|moodle|forma`), `label`, `base_url`, `auth_kind` (`api_key|oauth2|basic`), `enabled`, `sync_cursor` (timestamp of last successful pull), `last_sync_at`, `last_sync_status`, `last_error`, timestamps
+  - Secrets (API key, client secret, password) are NOT stored in the row — stored via `secrets--add_secret` as `LMS_<PROVIDER>_<ID>_TOKEN`. Row only holds a reference name.
+- `lms_sync_runs` — audit of each pull: connection_id, started_at, finished_at, rows_fetched, matched, unmatched, errors jsonb, status
+- Extend `lms_credit_imports` with nullable `connection_id` so auto-syncs show in the same history UI as manual uploads
+- RLS: HR admin only (SELECT/INSERT/UPDATE/DELETE); `service_role` full. Grants included.
 
-4. **Add HR-admin universal RLS safety net where needed**
-   - Review the tables used by PAFs, jobs, approvals, one-on-ones, reviews, and screenings.
-   - Add narrowly scoped authenticated HR-admin policies only where missing.
-   - Do not add anon access and do not expose sensitive application or employee data publicly.
+### 2. Provider adapters
 
-5. **Fix navigation/action gating**
-   - Ensure the sidebar and page buttons treat HR admin as a universal internal administrator, even if granular permissions are not individually assigned.
-   - Keep module toggles respected; if a super admin turns a module off, it stays off.
+New file `src/lib/lms-providers.server.ts` exporting:
 
-6. **Add a regression self-check/test path**
-   - Expand the existing access self-check/regression tests so an HR admin must be able to:
-     - list/create PAFs,
-     - view approval chains/steps,
-     - list all requisitions,
-     - view applications,
-     - list one-on-ones/reviews.
-   - Keep negative checks for anon and ordinary employees so security does not regress.
+```
+type LmsCompletion = { email; external_course_id; course_name; completed_at; score?; evidence_url? }
+interface LmsProvider { testConnection(cfg): Promise<{ok, message}>; fetchCompletions(cfg, since?): AsyncIterable<LmsCompletion> }
+```
 
-### Validation
-- Verify the demo HR admin role can access `/paf`, create a PAF, see existing PAFs, access `/jobs`, open a requisition, and see applicants/approval chains.
-- Confirm public users still only see public posted careers data and cannot see internal requisition/application/admin workflow data.
+Adapters:
+- **Chamilo** — uses the built-in web service API (`main/webservices/api/v2.php`) with an API key. Endpoints: `user_list`, `course_list`, `user_get_completed_tracked_courses` (and `MySpace` reports). Pull completions since cursor, paginate.
+- **Moodle** — Web Services REST (`/webservice/rest/server.php`), token auth. Functions: `core_completion_get_course_completion_status`, `gradereport_user_get_grade_items`, `core_enrol_get_enrolled_users`. Iterate courses × users, filter by `timecompleted > cursor`.
+- **Forma LMS** — REST/JSON API with API key or basic auth. Endpoint: `/lms/api/v1/report/completion` (per Forma docs). Simple paginated pull.
+
+Each adapter is self-contained, fetch-based (Workers-compatible), no SDK dependencies.
+
+### 3. Server functions (`src/lib/lms-connections.functions.ts`)
+
+All `requireSupabaseAuth` + HR-admin check:
+
+- `listLmsConnections` / `upsertLmsConnection` / `deleteLmsConnection`
+- `setLmsConnectionSecret({ id, secret })` — stores via `set_secret` under `LMS_<id>_TOKEN`
+- `testLmsConnection({ id })` — loads adapter, calls `testConnection`, returns ok/message
+- `runLmsSync({ id, dry_run? })` — pulls completions since cursor, reuses the existing matcher from `lms.functions.ts` (extract shared helper `matchAndStageCompletions`), writes a `lms_credit_imports` row (auto-commit or preview based on `dry_run`), records `lms_sync_runs`, advances `sync_cursor`
+
+### 4. Scheduled auto-sync
+
+Public route `src/routes/api/public/hooks/lms-sync.ts` (apikey-protected) iterates enabled connections and calls `runLmsSync`. Register a `pg_cron` job (hourly) that hits it via `pg_net` — following the schedule-jobs pattern already used for reminders.
+
+### 5. UI
+
+Extend `src/routes/_authenticated/lms-imports.tsx` with a two-tab layout:
+
+- **Connections tab** (new)
+  - List of `lms_connections` with status pill, last-sync time, "Test", "Sync now", "Edit", "Disable"
+  - "Add connection" dialog: provider dropdown (Chamilo / Moodle / Forma), label, base URL, secret input (posted to `setLmsConnectionSecret`, never rendered back), enabled toggle
+  - Recent `lms_sync_runs` table with row counts and error drill-down
+- **Manual upload tab** (existing UI, unchanged) — CSV path continues to serve any LMS we don't have an adapter for. Provider dropdown gains `chamilo|moodle|forma|other`.
+
+Nav entry stays under Training → "LMS imports"; page title becomes "LMS integrations".
+
+### 6. Docs
+
+Update `docs/END_USER_GUIDE.md` and `docs/SELF_HOSTING_GUIDE.md` with a short "Connecting an LMS" section covering the three providers (where to generate the API key/token in each, required endpoints/permissions, sync cadence, and how to fall back to CSV).
+
+## Out of scope
+
+- Pushing enrollments *from* HRIS *to* the LMS (read-only sync only)
+- SCORM/xAPI ingestion
+- Per-user OAuth (HR admin configures one service account per LMS)
+
+## Open questions
+
+1. Sync direction — read-only from LMS into HRIS is the assumption. Confirm you don't also want HRIS → LMS enrollment push in this pass.
+2. Cadence — hourly cron OK, or do you want a manual-only "Sync now" button first and add the schedule later?
+3. Any fourth LMS to include now (Absorb, TalentLMS, LearnDash)?

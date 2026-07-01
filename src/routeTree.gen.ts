@@ -108,6 +108,7 @@ import { Route as AuthenticatedCompCyclesIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksOfflineReplayRouteImport } from './routes/api/public/hooks/offline-replay'
+import { Route as ApiPublicHooksLmsSyncRouteImport } from './routes/api/public/hooks/lms-sync'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/badge.$serial'
@@ -669,6 +670,11 @@ const ApiPublicHooksOfflineReplayRoute =
     path: '/api/public/hooks/offline-replay',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksLmsSyncRoute = ApiPublicHooksLmsSyncRouteImport.update({
+  id: '/api/public/hooks/lms-sync',
+  path: '/api/public/hooks/lms-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksBenefitsCallbackRoute =
   ApiPublicHooksBenefitsCallbackRouteImport.update({
     id: '/api/public/hooks/benefits-callback',
@@ -878,6 +884,7 @@ export interface FileRoutesByFullPath {
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
+  '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
@@ -995,6 +1002,7 @@ export interface FileRoutesByTo {
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
+  '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
@@ -1115,6 +1123,7 @@ export interface FileRoutesById {
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
+  '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
@@ -1235,6 +1244,7 @@ export interface FileRouteTypes {
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
+    | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
@@ -1352,6 +1362,7 @@ export interface FileRouteTypes {
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
+    | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
@@ -1471,6 +1482,7 @@ export interface FileRouteTypes {
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
+    | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
     | '/api/public/candidate/$token/message'
@@ -1502,6 +1514,7 @@ export interface RootRouteChildren {
   ApiPublicBadgeSerialRoute: typeof ApiPublicBadgeSerialRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
+  ApiPublicHooksLmsSyncRoute: typeof ApiPublicHooksLmsSyncRoute
   ApiPublicHooksOfflineReplayRoute: typeof ApiPublicHooksOfflineReplayRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
   ApiPublicCandidateTokenMessageRoute: typeof ApiPublicCandidateTokenMessageRoute
@@ -2213,6 +2226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksOfflineReplayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/lms-sync': {
+      id: '/api/public/hooks/lms-sync'
+      path: '/api/public/hooks/lms-sync'
+      fullPath: '/api/public/hooks/lms-sync'
+      preLoaderRoute: typeof ApiPublicHooksLmsSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/benefits-callback': {
       id: '/api/public/hooks/benefits-callback'
       path: '/api/public/hooks/benefits-callback'
@@ -2592,6 +2612,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBadgeSerialRoute: ApiPublicBadgeSerialRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
+  ApiPublicHooksLmsSyncRoute: ApiPublicHooksLmsSyncRoute,
   ApiPublicHooksOfflineReplayRoute: ApiPublicHooksOfflineReplayRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
   ApiPublicCandidateTokenMessageRoute: ApiPublicCandidateTokenMessageRoute,
