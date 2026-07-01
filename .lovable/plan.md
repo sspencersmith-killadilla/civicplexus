@@ -1,33 +1,53 @@
-# Enable Live Rooms — in-app setup guide
+## Goal
 
-Goal: make it obvious how to turn on live video interview rooms (LiveKit), both to end-users reading docs and to admins inside the app.
+Ship a comprehensive, role-aware **End User Guide** covering every module and feature, so Employees, Supervisors, HR Admins, Recruiters, Payroll, and Super Admins each know exactly how to use CivicPlexus.
 
-## 1. Docs
+## Deliverable
 
-- **User Guide (`docs/USER_GUIDE.md`)** — add a short "Live interview rooms" subsection under the Interviews module: what live rooms do (panelist multi-party, consent log, optional recording), the "Not configured" state, and a pointer to the Self-Hosting Guide for credential setup.
-- **Self-Hosting Guide (`docs/SELF_HOSTING_GUIDE.md`)** — add a "LiveKit (live interview rooms)" section covering:
-  1. Create a LiveKit Cloud project (or self-host) → copy the `wss://…` URL, API Key, API Secret.
-  2. Save three project secrets: `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`.
-  3. Optional egress: configure S3-compatible storage on the LiveKit project to enable recordings (rooms still work without it).
-  4. Verification steps + common failures (wrong scheme, region mismatch, expired keys).
+A single new doc, `docs/END_USER_GUIDE.md`, rendered inside the app and on the public docs site alongside the existing User Guide and Self-Hosting Guide.
 
-## 2. In-app "Not configured" banner
+### Structure
 
-- New server fn `getLiveKitStatus` in `src/lib/interview-livekit.functions.ts` that returns `{ configured: boolean }` (reuses existing `livekitConfigured()`). HR-only.
-- On `src/routes/_authenticated/interviews.$id.room.tsx` and the interviews list, when `configured === false` show an `Alert` with:
-  - Plain-English explanation that live rooms are off.
-  - Numbered setup steps (mirrors the Self-Hosting Guide).
-  - "Open setup guide" link to the docs route and a "Copy required secret names" button.
-  - For non-HR users: a softer "Live rooms aren't enabled yet — ask your HR admin" message.
+1. **How to use this guide** — legend of role badges (👤 Employee, 👥 Supervisor, 🧑‍💼 HR Admin, 🎯 Recruiter, 💵 Payroll, 🛡️ Super Admin), sign-in basics, navigation, sidebar collapse, mobile hamburger, offline PWA.
+2. **One chapter per module**, each with:
+   - What it is (1–2 sentences)
+   - Who can use it (role badges)
+   - Where to find it (sidebar path)
+   - Step-by-step workflows for each role that touches it
+   - Common tasks / tips / gotchas
+   - Related modules
 
-## 3. Demo tour + module registry
+### Modules covered (grouped as in the sidebar)
 
-- Add a tour stop in `src/lib/demo-tour.ts` mentioning live rooms and the setup path.
-- In `src/lib/modules.ts`, mark the live-rooms sub-feature description so the module page shows configuration status.
+- **Overview**: Dashboard, My HR, Directory, Org Chart, Notifications, Help
+- **People**: Employees, Employee Import, Employee Profile, Photos & Badges, ID Badge Templates, Personnel History
+- **Time & Leave**: Timekeeping (clock in/out, exempt schedules, comp time), Shift Patterns, Leave Requests & Approvals, Offline PWA use
+- **Performance**: Goals, Cascades, 1-on-1s (templates + meetings + transfer on supervisor change), Reviews & Review Cycles, Calibration
+- **Compensation**: Comp Grades, Market Ranges, Comp Cycles, HR Finance / Budget & FTE
+- **Hiring**: Requisitions (Draft→Approval→Posted wizard), Positions, Hire Requests, Jobs, Applicant Pool + AI Screening (HITL), Interview Kits, Interviews (index, live LiveKit rooms, async two-take), Offers, Careers Page customization + brochures, Internal Careers
+- **Onboarding / Offboarding**: Preboarding, New Hire Compliance, Offboarding workflow, Equipment, Provisioning
+- **PAF & Approvals**: PAF create/submit/approve, Approval Inbox, Approval chain + audit log
+- **Compliance**: OSHA, TCOLE, TMRS, EEO Snapshot, FLSA Audit, Policies & Policy Campaigns, Grievances, CBA, Documents, Doc Templates, Docs Generator, Forms, Training / LMS / Transcripts
+- **Payroll**: Payroll Runs, Profiles, Payroll Export
+- **Reports**: Reports, Recruiting Reports, Audit Log
+- **Admin**: Setup Wizard, Org Settings (roles + AI), Module Toggles, Identity/SCIM, Migration, Demo Sandbox, Email Templates, Retention Settings, Worker Types, Settings
 
-## Technical notes
+### How it's surfaced
 
-- No schema changes, no new secrets created automatically — the guide explains how the admin adds them via project Secrets.
-- `getLiveKitStatus` uses `requireSupabaseAuth` + `has_role('hr_admin')` check; non-HR callers get `{ configured }` only (no secrets ever leave the server).
-- Banner is a presentational component (`src/components/livekit-setup-banner.tsx`) so it can be reused on the interviews list and detail/room routes.
-- Docs edits are markdown-only; the existing server-side markdown renderer handles them.
+- **In-app**: add a third tab "End User Guide" to `/help` alongside User Guide and Self-Hosting Guide (`src/routes/_authenticated/help.tsx`). Same Markdown renderer, same download button.
+- **Public docs site**: register a new slug `end-user-guide` in `src/routes/api/public/docs/$file.ts` so `/api/public/docs/end-user-guide` renders with the existing TOC + mobile-friendly layout and `.md` download works.
+- **Demo tour**: add a step pointing new users to Help → End User Guide.
+
+### Out of scope
+
+- No code/behavior changes to the modules themselves.
+- No new PDFs (Markdown only; users can print to PDF from browser). If you want branded PDFs later, we can add a follow-up.
+- Video walkthroughs.
+
+### Technical notes
+
+- Guide will be a single ~long Markdown file with H2 per module and H3 per role workflow, so the existing TOC generator (H2/H3) produces clean navigation.
+- Role badges rendered as inline emoji + bold text (no images), so print and screen-reader friendly.
+- Content sourced from the current app's routes, modules registry (`src/lib/modules.ts`), existing `docs/USER_GUIDE.md`, and prior work already shipped (1-on-1, PAF, badges, interviews, PWA, timekeeping, etc.).
+
+Confirm and I'll write it.
