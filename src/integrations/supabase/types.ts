@@ -5283,6 +5283,90 @@ export type Database = {
           },
         ]
       }
+      permission_group_keys: {
+        Row: {
+          group_id: string
+          permission_key: string
+        }
+        Insert: {
+          group_id: string
+          permission_key: string
+        }
+        Update: {
+          group_id?: string
+          permission_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permission_group_keys_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "permission_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "permission_group_keys_permission_key_fkey"
+            columns: ["permission_key"]
+            isOneToOne: false
+            referencedRelation: "permission_keys"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      permission_groups: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_system: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      permission_keys: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          key: string
+          label: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          key: string
+          label: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          key?: string
+          label?: string
+        }
+        Relationships: []
+      }
       personnel_actions: {
         Row: {
           action_type: string
@@ -6964,6 +7048,67 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permission_grants: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          mode: string
+          permission_key: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          mode: string
+          permission_key: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          mode?: string
+          permission_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_permission_grants_permission_key_fkey"
+            columns: ["permission_key"]
+            isOneToOne: false
+            referencedRelation: "permission_keys"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      user_permission_groups: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          group_id: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          group_id: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          group_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_permission_groups_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "permission_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -7177,6 +7322,14 @@ export type Database = {
           org_name: string
         }[]
       }
+      get_effective_permissions: {
+        Args: { _uid: string }
+        Returns: {
+          permission_key: string
+          source: string
+        }[]
+      }
+      has_permission: { Args: { _key: string }; Returns: boolean }
       hr_set_employee_status: {
         Args: {
           _employee_id: string

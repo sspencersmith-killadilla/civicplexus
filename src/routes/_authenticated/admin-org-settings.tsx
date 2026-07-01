@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertTriangle, CheckCircle2, RefreshCw, Search, Sparkles, Trash2, UserPlus } from "lucide-react";
+import { AlertTriangle, CheckCircle2, KeyRound, RefreshCw, Search, Sparkles, Trash2, UserPlus } from "lucide-react";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { runAccessSelfCheck } from "@/lib/access-selfcheck.functions";
 import {
@@ -147,6 +147,16 @@ function OrgSettingsPage() {
   return (
     <AppShell title="Organization settings">
       <div className="max-w-4xl mx-auto space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5" /> Granular permissions</CardTitle>
+            <CardDescription>Create permission groups and assign them to users, or set per-user grant/deny overrides on top of roles.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild><Link to="/admin-permissions">Manage permissions</Link></Button>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5" /> AI provider</CardTitle>
