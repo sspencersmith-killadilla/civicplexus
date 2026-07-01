@@ -515,3 +515,40 @@ CivicPlexus ships as an installable Progressive Web App with an offline-first sh
 | Approve / deny PAF step | Approvals |
 
 Everything else falls back to a network-first cached navigation; static assets are CacheFirst.
+
+## 17. Elected Officials & Board Appointees
+
+Governance is a first-class module for tracking elected officials, board members, and commission appointees separately from employees.
+
+### 17.1 Concepts
+- **Body** — a governing body (Council, Board, Commission). Sets pay rules: `per_meeting_amount`, `chair_bonus_amount`, `per_diem_amount`, and `pay_absent`.
+- **Seat** — a numbered position on a body (e.g., Place 3, District 2, At-Large).
+- **Official** — the person. Public visibility is controlled per record; contact details are private by default.
+- **Term** — the assignment of an official to a seat with start/end dates, oath, and status (`active`, `resigned`, `removed`, `expired`).
+- **Disclosure** — Chapter 176 conflict-of-interest, financial statements, ethics acknowledgments.
+
+### 17.2 Lifecycle
+1. **Create body & seats** — HR admin or City Clerk (`admin-officials`).
+2. **Add official record** — name, photo, bio, contact. Set `public_visible` and `public_show_contact` flags.
+3. **Create term** — link official + seat, set appointment date and term end.
+4. **Swear in** — records oath date/administrator, flips term to `active`.
+5. **Attendance & pay** — log meetings, mark attendance, click **Generate pay** to create draft reimbursements (idempotent per meeting/kind).
+6. **Disclosures** — track required filings and due dates.
+7. **End term** — resignation, removal, or expiration. Triggers immediate notification to HR admins and City Clerk.
+8. **Public roster** — `/officials` shows only records with `public_visible = true`; contact is masked unless `public_show_contact = true`.
+
+### 17.3 New roles
+- **City Clerk** (`city_clerk`) — full CRUD on bodies, seats, officials, terms, meetings, attendance, disclosures. Runs pay generation and roster exports.
+- **Elected Official** (`elected_official`) — read own record and term, submit their own disclosures. No access to other employee data.
+- HR admins retain full override.
+
+### 17.4 Notifications
+A daily `pg_cron` sweep (`notify_officials_expiring`) alerts HR admins and City Clerks when a term is within 120 days of expiration (de-duplicated every 30 days). Resignations and removals fire immediately.
+
+### 17.5 Exports
+From `/officials` (public) and `/admin-officials` (clerk):
+- **CSV** — spreadsheet export of the visible roster.
+- **CSV (full history)** *(clerk only)* — includes ended terms and disclosure history.
+- **PDF** — opens a print-ready view; use browser "Save as PDF".
+
+The public CSV/PDF respects `public_visible` and `public_show_contact`. Clerk exports include seat, term dates, oath, and disclosure status.
