@@ -209,17 +209,10 @@ export function getLmsProvider(kind: LmsProviderKind): LmsProvider {
 }
 
 /** Shared matcher used by both manual CSV import and auto-sync. */
-export async function matchAndApplyCompletions(
-  supabaseAdmin: {
-    from: (t: string) => {
-      select: (c: string) => { in?: (col: string, ids: string[]) => Promise<{ data: unknown }> } & Promise<{ data: unknown }>;
-      upsert: (v: unknown, o?: unknown) => Promise<{ error: { message: string } | null }>;
-    };
-  },
-  completions: LmsCompletion[],
-) {
-  const empRes = await (supabaseAdmin.from("employees").select("id,personal_email,work_email") as unknown as Promise<{ data: Array<{ id: string; personal_email: string | null; work_email: string | null }> | null }>);
-  const courseRes = await (supabaseAdmin.from("courses").select("id,name,external_course_id") as unknown as Promise<{ data: Array<{ id: string; name: string; external_course_id: string | null }> | null }>);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function matchAndApplyCompletions(supabaseAdmin: any, completions: LmsCompletion[]) {
+  const empRes = await supabaseAdmin.from("employees").select("id,personal_email,work_email");
+  const courseRes = await supabaseAdmin.from("courses").select("id,name,external_course_id");
   const emps = empRes.data ?? [];
   const courses = courseRes.data ?? [];
 
@@ -227,8 +220,8 @@ export async function matchAndApplyCompletions(
   const errors: Array<{ row: number; error: string }> = [];
   for (let i = 0; i < completions.length; i++) {
     const c = completions[i];
-    const emp = emps.find((e) => (e.personal_email?.toLowerCase() === c.email.toLowerCase()) || (e.work_email?.toLowerCase() === c.email.toLowerCase()));
-    const course = courses.find((k) => (k.external_course_id && k.external_course_id === c.external_course_id) || (k.name && k.name.toLowerCase() === c.course_name.toLowerCase()));
+    const emp = emps.find((e: { personal_email: string | null; work_email: string | null }) => (e.personal_email?.toLowerCase() === c.email.toLowerCase()) || (e.work_email?.toLowerCase() === c.email.toLowerCase()));
+    const course = courses.find((k: { name: string; external_course_id: string | null }) => (k.external_course_id && k.external_course_id === c.external_course_id) || (k.name && k.name.toLowerCase() === c.course_name.toLowerCase()));
     if (!emp) { errors.push({ row: i + 1, error: `No employee for ${c.email}` }); continue; }
     if (!course) { errors.push({ row: i + 1, error: `No course for ${c.external_course_id || c.course_name}` }); continue; }
     matched++;
@@ -239,7 +232,7 @@ export async function matchAndApplyCompletions(
       completed_at: c.completed_at,
       score: c.score ?? null,
       evidence_path: c.evidence_url ?? null,
-    } as never, { onConflict: "employee_id,course_id" });
+    }, { onConflict: "employee_id,course_id" });
     if (!error) applied++;
     else errors.push({ row: i + 1, error: error.message });
   }
