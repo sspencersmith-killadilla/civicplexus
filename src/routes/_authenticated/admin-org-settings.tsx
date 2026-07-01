@@ -21,6 +21,10 @@ import {
   listRoleAssignments,
   revokeRole,
   searchProfiles,
+  listDepartmentAdmins,
+  listDepartments,
+  addDepartmentAdmin,
+  removeDepartmentAdmin,
 } from "@/lib/org-admin.functions";
 import { reopenSetup } from "@/lib/setup.functions";
 
@@ -39,6 +43,10 @@ function OrgSettingsPage() {
   const grantFn = useServerFn(grantRole);
   const revokeFn = useServerFn(revokeRole);
   const reopenFn = useServerFn(reopenSetup);
+  const listDeptAdminsFn = useServerFn(listDepartmentAdmins);
+  const listDeptsFn = useServerFn(listDepartments);
+  const addDeptAdminFn = useServerFn(addDepartmentAdmin);
+  const removeDeptAdminFn = useServerFn(removeDepartmentAdmin);
 
   const status = useQuery({
     queryKey: ["org-admin-status"],
@@ -75,6 +83,44 @@ function OrgSettingsPage() {
     onSuccess: () => {
       toast.success("Role revoked");
       qc.invalidateQueries({ queryKey: ["org-admin-roles"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deptAdmins = useQuery({
+    queryKey: ["dept-admins"],
+    queryFn: () => listDeptAdminsFn({ data: undefined as never }),
+    enabled: isAdmin,
+  });
+  const depts = useQuery({
+    queryKey: ["dept-list"],
+    queryFn: () => listDeptsFn({ data: undefined as never }),
+    enabled: isAdmin,
+  });
+  const [deptPickUser, setDeptPickUser] = useState<{ id: string; label: string } | null>(null);
+  const [deptPickDept, setDeptPickDept] = useState<string>("");
+  const [deptQuery, setDeptQuery] = useState("");
+  const [deptResults, setDeptResults] = useState<Array<{ id: string; full_name: string | null; email: string | null }>>([]);
+  const deptSearch = useMutation({
+    mutationFn: (q: string) => searchFn({ data: { q } }),
+    onSuccess: (data) => setDeptResults(data),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const addDeptAdmin = useMutation({
+    mutationFn: (vars: { user_id: string; department: string }) => addDeptAdminFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Department admin assigned");
+      setDeptPickUser(null); setDeptPickDept(""); setDeptQuery(""); setDeptResults([]);
+      qc.invalidateQueries({ queryKey: ["dept-admins"] });
+      qc.invalidateQueries({ queryKey: ["org-admin-roles"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const removeDeptAdmin = useMutation({
+    mutationFn: (vars: { user_id: string; department: string }) => removeDeptAdminFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Assignment removed");
+      qc.invalidateQueries({ queryKey: ["dept-admins"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
