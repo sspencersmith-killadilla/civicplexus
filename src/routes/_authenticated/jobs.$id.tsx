@@ -21,6 +21,7 @@ import { mintCandidatePortalToken, postRecruiterMessage } from "@/lib/candidate-
 import { sendTemplatedToApplicant } from "@/lib/email-templates.functions";
 import { screenApplication, recordScreenDecision } from "@/lib/applicant-ai.functions";
 import { createInterviewInvitation } from "@/lib/interview-invitations.functions";
+import { listApplicationsForRequisition } from "@/lib/applications.functions";
 import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/jobs/$id")({ component: JobDetail });
@@ -53,6 +54,7 @@ function JobDetail() {
   const close = useServerFn(closeRequisition);
   const screen = useServerFn(screenApplication);
   const decide = useServerFn(recordScreenDecision);
+  const listApps = useServerFn(listApplicationsForRequisition);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkRunning, setBulkRunning] = useState(false);
 
@@ -67,11 +69,7 @@ function JobDetail() {
 
   const appsQ = useQuery({
     queryKey: ["job_applications", id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("job_applications" as never).select("*").eq("requisition_id", id).order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Array<{ id: string; applicant_name: string; email: string; status: string; is_internal: boolean; rating: number | null; created_at: string }>;
-    },
+    queryFn: () => listApps({ data: { requisition_id: id } }),
   });
 
   const chainQ = useQuery({

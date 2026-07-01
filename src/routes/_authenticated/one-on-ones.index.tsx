@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { listOneOnOneCandidates } from "@/lib/one-on-ones.functions";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,6 +28,9 @@ function OneOnOnesIndex() {
   const qc = useQueryClient();
   const { data: me } = useCurrentUser();
   const uid = me?.user.id;
+  const listCandidatesFn = useServerFn(listOneOnOneCandidates);
+
+  type Candidate = { id: string; first_name: string; last_name: string; department: string | null };
 
   const sessionsQ = useQuery({
     queryKey: ["one_on_ones"],
@@ -40,15 +45,8 @@ function OneOnOnesIndex() {
   });
 
   const employeesQ = useQuery({
-    queryKey: ["employees_select_min"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("employees")
-        .select("id, first_name, last_name, department")
-        .order("last_name");
-      if (error) throw error;
-      return data;
-    },
+    queryKey: ["one_on_one_candidates"],
+    queryFn: () => listCandidatesFn({ data: undefined as never }),
   });
 
   const templatesQ = useQuery({
@@ -97,10 +95,10 @@ function OneOnOnesIndex() {
       setEmpId(""); setTitle(""); setTplId(""); setScheduledAt("");
       window.location.assign(`/one-on-ones/${s.id}`);
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Create failed"),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Create failed"),
   });
 
-  const empMap = new Map((employeesQ.data ?? []).map((e) => [e.id, e]));
+  const empMap = new Map(((employeesQ.data ?? []) as Candidate[]).map((e) => [e.id, e]));
 
   return (
     <AppShell title="1-on-1s">
@@ -120,7 +118,7 @@ function OneOnOnesIndex() {
                 <Select value={empId} onValueChange={setEmpId}>
                   <SelectTrigger><SelectValue placeholder="Pick a direct report" /></SelectTrigger>
                   <SelectContent>
-                    {(employeesQ.data ?? []).map((e) => (
+                    {((employeesQ.data ?? []) as Candidate[]).map((e) => (
                       <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}{e.department ? ` · ${e.department}` : ""}</SelectItem>
                     ))}
                   </SelectContent>
