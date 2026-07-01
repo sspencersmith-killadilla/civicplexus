@@ -4301,6 +4301,476 @@ export type Database = {
           },
         ]
       }
+      official_attendance: {
+        Row: {
+          created_at: string
+          id: string
+          meeting_id: string
+          notes: string | null
+          official_id: string
+          present: boolean
+          recorded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meeting_id: string
+          notes?: string | null
+          official_id: string
+          present?: boolean
+          recorded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meeting_id?: string
+          notes?: string | null
+          official_id?: string
+          present?: boolean
+          recorded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "official_attendance_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "official_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "official_attendance_official_id_fkey"
+            columns: ["official_id"]
+            isOneToOne: false
+            referencedRelation: "officials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      official_bodies: {
+        Row: {
+          comp_model: Database["public"]["Enums"]["official_comp_model"]
+          created_at: string
+          description: string | null
+          fixed_stipend_amount: number | null
+          fixed_stipend_period: string | null
+          id: string
+          kind: Database["public"]["Enums"]["official_body_kind"]
+          meeting_cadence: string | null
+          name: string
+          per_meeting_amount: number | null
+          roster_public: boolean
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          comp_model?: Database["public"]["Enums"]["official_comp_model"]
+          created_at?: string
+          description?: string | null
+          fixed_stipend_amount?: number | null
+          fixed_stipend_period?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["official_body_kind"]
+          meeting_cadence?: string | null
+          name: string
+          per_meeting_amount?: number | null
+          roster_public?: boolean
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          comp_model?: Database["public"]["Enums"]["official_comp_model"]
+          created_at?: string
+          description?: string | null
+          fixed_stipend_amount?: number | null
+          fixed_stipend_period?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["official_body_kind"]
+          meeting_cadence?: string | null
+          name?: string
+          per_meeting_amount?: number | null
+          roster_public?: boolean
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      official_disclosures: {
+        Row: {
+          created_at: string
+          cycle_year: number
+          document_id: string | null
+          due_date: string | null
+          id: string
+          kind: Database["public"]["Enums"]["official_disclosure_kind"]
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["official_disclosure_status"]
+          submitted_at: string | null
+          term_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_year: number
+          document_id?: string | null
+          due_date?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["official_disclosure_kind"]
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["official_disclosure_status"]
+          submitted_at?: string | null
+          term_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cycle_year?: number
+          document_id?: string | null
+          due_date?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["official_disclosure_kind"]
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["official_disclosure_status"]
+          submitted_at?: string | null
+          term_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "official_disclosures_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "official_disclosures_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "official_terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      official_meetings: {
+        Row: {
+          agenda_url: string | null
+          body_id: string
+          created_at: string
+          id: string
+          is_public: boolean
+          meeting_date: string
+          minutes_url: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          agenda_url?: string | null
+          body_id: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          meeting_date: string
+          minutes_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agenda_url?: string | null
+          body_id?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          meeting_date?: string
+          minutes_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "official_meetings_body_id_fkey"
+            columns: ["body_id"]
+            isOneToOne: false
+            referencedRelation: "official_bodies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      official_seats: {
+        Row: {
+          appointing_authority: string | null
+          body_id: string
+          created_at: string
+          id: string
+          is_chair: boolean
+          is_ex_officio: boolean
+          seat_label: string
+          seat_number: number | null
+          term_length_months: number | null
+          updated_at: string
+        }
+        Insert: {
+          appointing_authority?: string | null
+          body_id: string
+          created_at?: string
+          id?: string
+          is_chair?: boolean
+          is_ex_officio?: boolean
+          seat_label: string
+          seat_number?: number | null
+          term_length_months?: number | null
+          updated_at?: string
+        }
+        Update: {
+          appointing_authority?: string | null
+          body_id?: string
+          created_at?: string
+          id?: string
+          is_chair?: boolean
+          is_ex_officio?: boolean
+          seat_label?: string
+          seat_number?: number | null
+          term_length_months?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "official_seats_body_id_fkey"
+            columns: ["body_id"]
+            isOneToOne: false
+            referencedRelation: "official_bodies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      official_terms: {
+        Row: {
+          appointing_authority: string | null
+          appointment_type: Database["public"]["Enums"]["official_appointment_type"]
+          bond_amount: number | null
+          bond_document_id: string | null
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          ended_at: string | null
+          ended_reason: string | null
+          id: string
+          notes: string | null
+          oath_administered_by: string | null
+          oath_document_id: string | null
+          oath_signed_at: string | null
+          official_id: string
+          seat_id: string
+          start_date: string
+          status: Database["public"]["Enums"]["official_term_status"]
+          updated_at: string
+        }
+        Insert: {
+          appointing_authority?: string | null
+          appointment_type?: Database["public"]["Enums"]["official_appointment_type"]
+          bond_amount?: number | null
+          bond_document_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          ended_at?: string | null
+          ended_reason?: string | null
+          id?: string
+          notes?: string | null
+          oath_administered_by?: string | null
+          oath_document_id?: string | null
+          oath_signed_at?: string | null
+          official_id: string
+          seat_id: string
+          start_date: string
+          status?: Database["public"]["Enums"]["official_term_status"]
+          updated_at?: string
+        }
+        Update: {
+          appointing_authority?: string | null
+          appointment_type?: Database["public"]["Enums"]["official_appointment_type"]
+          bond_amount?: number | null
+          bond_document_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          ended_at?: string | null
+          ended_reason?: string | null
+          id?: string
+          notes?: string | null
+          oath_administered_by?: string | null
+          oath_document_id?: string | null
+          oath_signed_at?: string | null
+          official_id?: string
+          seat_id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["official_term_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "official_terms_bond_document_id_fkey"
+            columns: ["bond_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "official_terms_oath_document_id_fkey"
+            columns: ["oath_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "official_terms_official_id_fkey"
+            columns: ["official_id"]
+            isOneToOne: false
+            referencedRelation: "officials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "official_terms_seat_id_fkey"
+            columns: ["seat_id"]
+            isOneToOne: false
+            referencedRelation: "official_seats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      officials: {
+        Row: {
+          bio: string | null
+          created_at: string
+          email: string | null
+          employee_id: string | null
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          photo_path: string | null
+          preferred_name: string | null
+          publish_bio: boolean
+          publish_contact: boolean
+          publish_photo: boolean
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          employee_id?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          phone?: string | null
+          photo_path?: string | null
+          preferred_name?: string | null
+          publish_bio?: boolean
+          publish_contact?: boolean
+          publish_photo?: boolean
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          employee_id?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          photo_path?: string | null
+          preferred_name?: string | null
+          publish_bio?: boolean
+          publish_contact?: boolean
+          publish_photo?: boolean
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "officials_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      officials_reimbursements: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_notes: string | null
+          id: string
+          incurred_date: string
+          purpose: string
+          receipt_document_id: string | null
+          status: Database["public"]["Enums"]["official_reimb_status"]
+          term_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          id?: string
+          incurred_date: string
+          purpose: string
+          receipt_document_id?: string | null
+          status?: Database["public"]["Enums"]["official_reimb_status"]
+          term_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          id?: string
+          incurred_date?: string
+          purpose?: string
+          receipt_document_id?: string | null
+          status?: Database["public"]["Enums"]["official_reimb_status"]
+          term_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "officials_reimbursements_receipt_document_id_fkey"
+            columns: ["receipt_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "officials_reimbursements_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "official_terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_instances: {
         Row: {
           completed_at: string | null
@@ -7381,6 +7851,7 @@ export type Database = {
         Args: { _employee_id: string; _uid: string }
         Returns: boolean
       }
+      can_manage_officials: { Args: { _uid: string }; Returns: boolean }
       can_view_paf: {
         Args: { _paf_id: string; _uid: string }
         Returns: boolean
@@ -7512,6 +7983,8 @@ export type Database = {
         | "candidate"
         | "supervisor"
         | "department_admin"
+        | "elected_official"
+        | "city_clerk"
       employee_status:
         | "candidate"
         | "preboarding"
@@ -7527,6 +8000,37 @@ export type Database = {
         | "expired"
         | "revoked"
       interview_kit_kind: "one_way" | "live"
+      official_appointment_type: "elected" | "appointed" | "ex_officio"
+      official_body_kind:
+        | "council"
+        | "board"
+        | "commission"
+        | "authority"
+        | "committee"
+      official_comp_model: "unpaid" | "fixed_stipend" | "per_meeting" | "mixed"
+      official_disclosure_kind:
+        | "sfi"
+        | "ch176"
+        | "ethics_attest"
+        | "oma_training"
+        | "pia_training"
+      official_disclosure_status:
+        | "pending"
+        | "submitted"
+        | "reviewed"
+        | "waived"
+      official_reimb_status:
+        | "draft"
+        | "submitted"
+        | "approved"
+        | "denied"
+        | "paid"
+      official_term_status:
+        | "pending"
+        | "active"
+        | "expired"
+        | "resigned"
+        | "removed"
       task_assignee:
         | "employee"
         | "manager"
@@ -7685,6 +8189,8 @@ export const Constants = {
         "candidate",
         "supervisor",
         "department_admin",
+        "elected_official",
+        "city_clerk",
       ],
       employee_status: [
         "candidate",
@@ -7703,6 +8209,42 @@ export const Constants = {
         "revoked",
       ],
       interview_kit_kind: ["one_way", "live"],
+      official_appointment_type: ["elected", "appointed", "ex_officio"],
+      official_body_kind: [
+        "council",
+        "board",
+        "commission",
+        "authority",
+        "committee",
+      ],
+      official_comp_model: ["unpaid", "fixed_stipend", "per_meeting", "mixed"],
+      official_disclosure_kind: [
+        "sfi",
+        "ch176",
+        "ethics_attest",
+        "oma_training",
+        "pia_training",
+      ],
+      official_disclosure_status: [
+        "pending",
+        "submitted",
+        "reviewed",
+        "waived",
+      ],
+      official_reimb_status: [
+        "draft",
+        "submitted",
+        "approved",
+        "denied",
+        "paid",
+      ],
+      official_term_status: [
+        "pending",
+        "active",
+        "expired",
+        "resigned",
+        "removed",
+      ],
       task_assignee: [
         "employee",
         "manager",

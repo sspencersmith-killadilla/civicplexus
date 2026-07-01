@@ -13,7 +13,9 @@ import { Route as OfflineShellRouteImport } from './routes/offline-shell'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OfficialsIndexRouteImport } from './routes/officials.index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as OfficialsSlugRouteImport } from './routes/officials.$slug'
 import { Route as OfferTokenRouteImport } from './routes/offer.$token'
 import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
@@ -60,6 +62,7 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedAdminPermissionsRouteImport } from './routes/_authenticated/admin-permissions'
 import { Route as AuthenticatedAdminOrgSettingsRouteImport } from './routes/_authenticated/admin-org-settings'
+import { Route as AuthenticatedAdminOfficialsRouteImport } from './routes/_authenticated/admin-officials'
 import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authenticated/admin-modules'
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
 import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authenticated/admin-identity'
@@ -147,9 +150,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
+  id: '/officials/',
+  path: '/officials/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CareersIndexRoute = CareersIndexRouteImport.update({
   id: '/careers/',
   path: '/careers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfficialsSlugRoute = OfficialsSlugRouteImport.update({
+  id: '/officials/$slug',
+  path: '/officials/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OfferTokenRoute = OfferTokenRouteImport.update({
@@ -399,6 +412,12 @@ const AuthenticatedAdminOrgSettingsRoute =
   AuthenticatedAdminOrgSettingsRouteImport.update({
     id: '/admin-org-settings',
     path: '/admin-org-settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminOfficialsRoute =
+  AuthenticatedAdminOfficialsRouteImport.update({
+    id: '/admin-officials',
+    path: '/admin-officials',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminModulesRoute =
@@ -789,6 +808,7 @@ export interface FileRoutesByFullPath {
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
+  '/admin-officials': typeof AuthenticatedAdminOfficialsRoute
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -835,7 +855,9 @@ export interface FileRoutesByFullPath {
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
+  '/officials/$slug': typeof OfficialsSlugRoute
   '/careers/': typeof CareersIndexRoute
+  '/officials/': typeof OfficialsIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -908,6 +930,7 @@ export interface FileRoutesByTo {
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
+  '/admin-officials': typeof AuthenticatedAdminOfficialsRoute
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -953,7 +976,9 @@ export interface FileRoutesByTo {
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/offer/$token': typeof OfferTokenRoute
+  '/officials/$slug': typeof OfficialsSlugRoute
   '/careers': typeof CareersIndexRoute
+  '/officials': typeof OfficialsIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1028,6 +1053,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/_authenticated/admin-modules': typeof AuthenticatedAdminModulesRoute
+  '/_authenticated/admin-officials': typeof AuthenticatedAdminOfficialsRoute
   '/_authenticated/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/_authenticated/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
@@ -1074,7 +1100,9 @@ export interface FileRoutesById {
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
+  '/officials/$slug': typeof OfficialsSlugRoute
   '/careers/': typeof CareersIndexRoute
+  '/officials/': typeof OfficialsIndexRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/_authenticated/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1149,6 +1177,7 @@ export interface FileRouteTypes {
     | '/admin-identity'
     | '/admin-migration'
     | '/admin-modules'
+    | '/admin-officials'
     | '/admin-org-settings'
     | '/admin-permissions'
     | '/approvals'
@@ -1195,7 +1224,9 @@ export interface FileRouteTypes {
     | '/worker-types'
     | '/careers/$slug'
     | '/offer/$token'
+    | '/officials/$slug'
     | '/careers/'
+    | '/officials/'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1268,6 +1299,7 @@ export interface FileRouteTypes {
     | '/admin-identity'
     | '/admin-migration'
     | '/admin-modules'
+    | '/admin-officials'
     | '/admin-org-settings'
     | '/admin-permissions'
     | '/approvals'
@@ -1313,7 +1345,9 @@ export interface FileRouteTypes {
     | '/training'
     | '/worker-types'
     | '/offer/$token'
+    | '/officials/$slug'
     | '/careers'
+    | '/officials'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1387,6 +1421,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-identity'
     | '/_authenticated/admin-migration'
     | '/_authenticated/admin-modules'
+    | '/_authenticated/admin-officials'
     | '/_authenticated/admin-org-settings'
     | '/_authenticated/admin-permissions'
     | '/_authenticated/approvals'
@@ -1433,7 +1468,9 @@ export interface FileRouteTypes {
     | '/_authenticated/worker-types'
     | '/careers/$slug'
     | '/offer/$token'
+    | '/officials/$slug'
     | '/careers/'
+    | '/officials/'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
     | '/_authenticated/compliance/new-hire'
@@ -1506,7 +1543,9 @@ export interface RootRouteChildren {
   OfflineShellRoute: typeof OfflineShellRoute
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
   OfferTokenRoute: typeof OfferTokenRoute
+  OfficialsSlugRoute: typeof OfficialsSlugRoute
   CareersIndexRoute: typeof CareersIndexRoute
+  OfficialsIndexRoute: typeof OfficialsIndexRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
   CandidateTokenInterviewRoute: typeof CandidateTokenInterviewRoute
@@ -1561,11 +1600,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/officials/': {
+      id: '/officials/'
+      path: '/officials'
+      fullPath: '/officials/'
+      preLoaderRoute: typeof OfficialsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/careers/': {
       id: '/careers/'
       path: '/careers'
       fullPath: '/careers/'
       preLoaderRoute: typeof CareersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/officials/$slug': {
+      id: '/officials/$slug'
+      path: '/officials/$slug'
+      fullPath: '/officials/$slug'
+      preLoaderRoute: typeof OfficialsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/offer/$token': {
@@ -1888,6 +1941,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-org-settings'
       fullPath: '/admin-org-settings'
       preLoaderRoute: typeof AuthenticatedAdminOrgSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin-officials': {
+      id: '/_authenticated/admin-officials'
+      path: '/admin-officials'
+      fullPath: '/admin-officials'
+      preLoaderRoute: typeof AuthenticatedAdminOfficialsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin-modules': {
@@ -2409,6 +2469,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminIdentityRoute: typeof AuthenticatedAdminIdentityRoute
   AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
   AuthenticatedAdminModulesRoute: typeof AuthenticatedAdminModulesRoute
+  AuthenticatedAdminOfficialsRoute: typeof AuthenticatedAdminOfficialsRoute
   AuthenticatedAdminOrgSettingsRoute: typeof AuthenticatedAdminOrgSettingsRoute
   AuthenticatedAdminPermissionsRoute: typeof AuthenticatedAdminPermissionsRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
@@ -2496,6 +2557,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminIdentityRoute: AuthenticatedAdminIdentityRoute,
   AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
   AuthenticatedAdminModulesRoute: AuthenticatedAdminModulesRoute,
+  AuthenticatedAdminOfficialsRoute: AuthenticatedAdminOfficialsRoute,
   AuthenticatedAdminOrgSettingsRoute: AuthenticatedAdminOrgSettingsRoute,
   AuthenticatedAdminPermissionsRoute: AuthenticatedAdminPermissionsRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
@@ -2604,7 +2666,9 @@ const rootRouteChildren: RootRouteChildren = {
   OfflineShellRoute: OfflineShellRoute,
   CareersSlugRoute: CareersSlugRouteWithChildren,
   OfferTokenRoute: OfferTokenRoute,
+  OfficialsSlugRoute: OfficialsSlugRoute,
   CareersIndexRoute: CareersIndexRoute,
+  OfficialsIndexRoute: OfficialsIndexRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
   CandidateTokenInterviewRoute: CandidateTokenInterviewRoute,
@@ -2633,13 +2697,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
