@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2, Sparkles, FileText, Check, Pencil, X, Upload, FileDown, Trash2, Video } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { submitRequisitionForApproval, postRequisition, closeRequisition, transitionApplicationStatus, scheduleInterview, convertApplicationToHire } from "@/lib/jobs.functions";
+import { submitRequisitionForApproval, postRequisition, closeRequisition, transitionApplicationStatus, scheduleInterview, convertApplicationToHire, getJobRequisitionForStaff, getRequisitionApprovalForStaff } from "@/lib/jobs.functions";
 import { createOffer } from "@/lib/offers.functions";
 import { mintCandidatePortalToken, postRecruiterMessage } from "@/lib/candidate-portal.functions";
 import { sendTemplatedToApplicant } from "@/lib/email-templates.functions";
@@ -52,6 +52,8 @@ function JobDetail() {
   const submitForApproval = useServerFn(submitRequisitionForApproval);
   const post = useServerFn(postRequisition);
   const close = useServerFn(closeRequisition);
+  const getReq = useServerFn(getJobRequisitionForStaff);
+  const getApproval = useServerFn(getRequisitionApprovalForStaff);
   const screen = useServerFn(screenApplication);
   const decide = useServerFn(recordScreenDecision);
   const listApps = useServerFn(listApplicationsForRequisition);
@@ -60,11 +62,7 @@ function JobDetail() {
 
   const reqQ = useQuery({
     queryKey: ["job_requisition", id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("job_requisitions" as never).select("*").eq("id", id).single();
-      if (error) throw error;
-      return data as never as { id: string; title: string; status: string; slug: string | null; internal_only: boolean; department: string | null; description: string | null; summary: string | null; brochure_url: string | null };
-    },
+    queryFn: () => getReq({ data: { id } }) as Promise<{ id: string; title: string; status: string; slug: string | null; internal_only: boolean; department: string | null; description: string | null; summary: string | null; brochure_url: string | null }>,
   });
 
   const appsQ = useQuery({
@@ -74,13 +72,7 @@ function JobDetail() {
 
   const chainQ = useQuery({
     queryKey: ["approval_chain", id],
-    queryFn: async () => {
-      const { data: chain } = await supabase.from("approval_chains" as never).select("*").eq("entity_type", "requisition").eq("entity_id", id).maybeSingle();
-      const c = chain as { id: string; status: string; current_stage: number } | null;
-      if (!c) return { chain: null, steps: [] };
-      const { data: steps } = await supabase.from("approval_steps" as never).select("*").eq("chain_id", c.id).order("stage");
-      return { chain: c, steps: (steps ?? []) as Array<{ id: string; stage: number; approver_label: string; status: string; decision_notes: string | null }> };
-    },
+    queryFn: () => getApproval({ data: { requisition_id: id } }),
   });
 
   const sub = useMutation({ mutationFn: () => submitForApproval({ data: { requisition_id: id } }),
