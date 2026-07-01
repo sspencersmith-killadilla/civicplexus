@@ -38,7 +38,6 @@ export const upsertLmsConnection = createServerFn({ method: "POST" })
       auth_kind: authKindEnum.default("api_key"),
       username: z.string().max(200).optional().nullable(),
       enabled: z.boolean().default(true),
-      secret: z.string().max(4000).optional(), // if provided, stored in project secrets
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -68,17 +67,6 @@ export const upsertLmsConnection = createServerFn({ method: "POST" })
     }
     const envName = secretEnvName(id!);
     await supabaseAdmin.from("lms_connections").update({ secret_name: envName } as never).eq("id", id!);
-
-    if (data.secret) {
-      // Store secret via Supabase Vault-backed function-secrets. Since add_secret is
-      // an agent tool, we cannot call it at runtime; write to a helper table for
-      // now and surface an instruction. Instead: persist to a private secrets table.
-      // Fallback: store in a project-scoped secure table only readable by service_role.
-      await supabaseAdmin.from("org_settings").upsert({
-        id: "singleton",
-      } as never, { onConflict: "id" });
-      // We rely on the LMS_* env var being set by the operator (documented).
-    }
     return { id, secret_env: envName };
   });
 
