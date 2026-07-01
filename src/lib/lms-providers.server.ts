@@ -218,10 +218,6 @@ export async function matchAndApplyCompletions(
   },
   completions: LmsCompletion[],
 ) {
-  const emails = Array.from(new Set(completions.map((c) => c.email.toLowerCase()).filter(Boolean)));
-  const codes = Array.from(new Set(completions.map((c) => c.external_course_id).filter(Boolean)));
-  const names = Array.from(new Set(completions.map((c) => c.course_name.toLowerCase()).filter(Boolean)));
-
   const empRes = await (supabaseAdmin.from("employees").select("id,personal_email,work_email") as unknown as Promise<{ data: Array<{ id: string; personal_email: string | null; work_email: string | null }> | null }>);
   const courseRes = await (supabaseAdmin.from("courses").select("id,name,external_course_id") as unknown as Promise<{ data: Array<{ id: string; name: string; external_course_id: string | null }> | null }>);
   const emps = empRes.data ?? [];
@@ -249,6 +245,3 @@ export async function matchAndApplyCompletions(
   }
   return { fetched: completions.length, matched, applied, errors };
 }
-
-// Suppress unused import warning
-export const __unused = { emails: 0, codes: 0, names: 0 };
