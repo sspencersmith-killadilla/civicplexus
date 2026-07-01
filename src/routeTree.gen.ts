@@ -110,6 +110,7 @@ import { Route as AuthenticatedComplianceTcoleRouteImport } from './routes/_auth
 import { Route as AuthenticatedComplianceNewHireRouteImport } from './routes/_authenticated/compliance.new-hire'
 import { Route as AuthenticatedCompCyclesIdRouteImport } from './routes/_authenticated/comp-cycles.$id'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
+import { Route as AuthenticatedAdminOfficialsPrintRouteImport } from './routes/_authenticated/admin-officials.print'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksOfflineReplayRouteImport } from './routes/api/public/hooks/offline-replay'
 import { Route as ApiPublicHooksLmsSyncRouteImport } from './routes/api/public/hooks/lms-sync'
@@ -684,6 +685,12 @@ const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
   path: '/cascades/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminOfficialsPrintRoute =
+  AuthenticatedAdminOfficialsPrintRouteImport.update({
+    id: '/print',
+    path: '/print',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
+  } as any)
 const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
   id: '/api/public/hooks/reminders',
   path: '/api/public/hooks/reminders',
@@ -814,7 +821,7 @@ export interface FileRoutesByFullPath {
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
-  '/admin-officials': typeof AuthenticatedAdminOfficialsRoute
+  '/admin-officials': typeof AuthenticatedAdminOfficialsRouteWithChildren
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -865,6 +872,7 @@ export interface FileRoutesByFullPath {
   '/officials/print': typeof OfficialsPrintRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
+  '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -937,7 +945,7 @@ export interface FileRoutesByTo {
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
-  '/admin-officials': typeof AuthenticatedAdminOfficialsRoute
+  '/admin-officials': typeof AuthenticatedAdminOfficialsRouteWithChildren
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -987,6 +995,7 @@ export interface FileRoutesByTo {
   '/officials/print': typeof OfficialsPrintRoute
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
+  '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1061,7 +1070,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/_authenticated/admin-modules': typeof AuthenticatedAdminModulesRoute
-  '/_authenticated/admin-officials': typeof AuthenticatedAdminOfficialsRoute
+  '/_authenticated/admin-officials': typeof AuthenticatedAdminOfficialsRouteWithChildren
   '/_authenticated/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/_authenticated/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
@@ -1112,6 +1121,7 @@ export interface FileRoutesById {
   '/officials/print': typeof OfficialsPrintRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
+  '/_authenticated/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/_authenticated/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1237,6 +1247,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/careers/'
     | '/officials/'
+    | '/admin-officials/print'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1359,6 +1370,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/careers'
     | '/officials'
+    | '/admin-officials/print'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1483,6 +1495,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/careers/'
     | '/officials/'
+    | '/_authenticated/admin-officials/print'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
     | '/_authenticated/compliance/new-hire'
@@ -2292,6 +2305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCascadesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin-officials/print': {
+      id: '/_authenticated/admin-officials/print'
+      path: '/print'
+      fullPath: '/admin-officials/print'
+      preLoaderRoute: typeof AuthenticatedAdminOfficialsPrintRouteImport
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
+    }
     '/api/public/hooks/reminders': {
       id: '/api/public/hooks/reminders'
       path: '/api/public/hooks/reminders'
@@ -2442,6 +2462,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminOfficialsRouteChildren {
+  AuthenticatedAdminOfficialsPrintRoute: typeof AuthenticatedAdminOfficialsPrintRoute
+}
+
+const AuthenticatedAdminOfficialsRouteChildren: AuthenticatedAdminOfficialsRouteChildren =
+  {
+    AuthenticatedAdminOfficialsPrintRoute:
+      AuthenticatedAdminOfficialsPrintRoute,
+  }
+
+const AuthenticatedAdminOfficialsRouteWithChildren =
+  AuthenticatedAdminOfficialsRoute._addFileChildren(
+    AuthenticatedAdminOfficialsRouteChildren,
+  )
+
 interface AuthenticatedPoliciesRouteChildren {
   AuthenticatedPoliciesIdRoute: typeof AuthenticatedPoliciesIdRoute
 }
@@ -2489,7 +2524,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminIdentityRoute: typeof AuthenticatedAdminIdentityRoute
   AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
   AuthenticatedAdminModulesRoute: typeof AuthenticatedAdminModulesRoute
-  AuthenticatedAdminOfficialsRoute: typeof AuthenticatedAdminOfficialsRoute
+  AuthenticatedAdminOfficialsRoute: typeof AuthenticatedAdminOfficialsRouteWithChildren
   AuthenticatedAdminOrgSettingsRoute: typeof AuthenticatedAdminOrgSettingsRoute
   AuthenticatedAdminPermissionsRoute: typeof AuthenticatedAdminPermissionsRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
@@ -2577,7 +2612,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminIdentityRoute: AuthenticatedAdminIdentityRoute,
   AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
   AuthenticatedAdminModulesRoute: AuthenticatedAdminModulesRoute,
-  AuthenticatedAdminOfficialsRoute: AuthenticatedAdminOfficialsRoute,
+  AuthenticatedAdminOfficialsRoute:
+    AuthenticatedAdminOfficialsRouteWithChildren,
   AuthenticatedAdminOrgSettingsRoute: AuthenticatedAdminOrgSettingsRoute,
   AuthenticatedAdminPermissionsRoute: AuthenticatedAdminPermissionsRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,

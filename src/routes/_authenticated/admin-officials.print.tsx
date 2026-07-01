@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
-import { listBodies } from "@/lib/officials.functions";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { createServerFn } from "@tanstack/react-start";
@@ -78,8 +77,6 @@ function ClerkPrint() {
           </section>
         );
       })}
-      {/* keep listBodies import from being tree-shaken so route stays consistent */}
-      <span className="hidden">{String(listBodies.name ?? "")}</span>
     </div>
   );
 }
