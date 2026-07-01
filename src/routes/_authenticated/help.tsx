@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Download } from "lucide-react";
 import userGuide from "@/../docs/USER_GUIDE.md?raw";
 import selfHostGuide from "@/../docs/SELF_HOSTING_GUIDE.md?raw";
+import endUserGuide from "@/../docs/END_USER_GUIDE.md?raw";
 
 export const Route = createFileRoute("/_authenticated/help")({
   head: () => ({ meta: [{ title: "Help & Docs — CivicPlexus" }] }),
@@ -24,26 +25,38 @@ function download(name: string, content: string) {
 }
 
 function HelpPage() {
-  const [tab, setTab] = useState("user");
+  const [tab, setTab] = useState("enduser");
+  const activeContent =
+    tab === "user" ? userGuide : tab === "host" ? selfHostGuide : endUserGuide;
+  const activeFilename =
+    tab === "user"
+      ? "civicplexus-user-guide.md"
+      : tab === "host"
+        ? "civicplexus-self-hosting-guide.md"
+        : "civicplexus-end-user-guide.md";
   return (
     <AppShell title="Help & Docs">
       <Tabs value={tab} onValueChange={setTab} className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <TabsList>
+            <TabsTrigger value="enduser">End User Guide</TabsTrigger>
             <TabsTrigger value="user">User Guide</TabsTrigger>
             <TabsTrigger value="host">Self-Hosting Guide</TabsTrigger>
           </TabsList>
           <Button
             variant="outline" size="sm"
-            onClick={() =>
-              tab === "user"
-                ? download("civicplexus-user-guide.md", userGuide)
-                : download("civicplexus-self-hosting-guide.md", selfHostGuide)
-            }
+            onClick={() => download(activeFilename, activeContent)}
           >
             <Download className="h-4 w-4 mr-2" /> Download Markdown
           </Button>
         </div>
+        <TabsContent value="enduser">
+          <Card className="p-6 md:p-10">
+            <article className="prose prose-sm md:prose-base max-w-none dark:prose-invert prose-headings:font-serif prose-table:text-sm">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{endUserGuide}</ReactMarkdown>
+            </article>
+          </Card>
+        </TabsContent>
         <TabsContent value="user">
           <Card className="p-6 md:p-10">
             <article className="prose prose-sm md:prose-base max-w-none dark:prose-invert prose-headings:font-serif prose-table:text-sm">

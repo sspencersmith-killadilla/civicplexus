@@ -2,10 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { marked } from "marked";
 import userGuide from "@/../docs/USER_GUIDE.md?raw";
 import selfHostGuide from "@/../docs/SELF_HOSTING_GUIDE.md?raw";
+import endUserGuide from "@/../docs/END_USER_GUIDE.md?raw";
 
 type Doc = { title: string; body: string; downloadName: string };
 
 const DOCS: Record<string, Doc> = {
+  "end-user-guide": { title: "CivicPlexus — End User Guide", body: endUserGuide, downloadName: "civicplexus-end-user-guide.md" },
   "user-guide": { title: "CivicPlexus — User Guide", body: userGuide, downloadName: "civicplexus-user-guide.md" },
   "self-hosting": { title: "CivicPlexus — Self-Hosting Guide", body: selfHostGuide, downloadName: "civicplexus-self-hosting-guide.md" },
 };
@@ -116,6 +118,7 @@ function renderPage(doc: Doc, slug: string): string {
   <div class="topbar-inner">
     <a class="brand" href="/">CivicPlexus Docs</a>
     <nav class="docnav" aria-label="Documentation">
+      <a href="/api/public/docs/end-user-guide" ${slug === "end-user-guide" ? 'aria-current="page"' : ""}>End User Guide</a>
       <a href="/api/public/docs/user-guide" ${slug === "user-guide" ? 'aria-current="page"' : ""}>User Guide</a>
       <a href="/api/public/docs/self-hosting" ${slug === "self-hosting" ? 'aria-current="page"' : ""}>Self-Hosting Guide</a>
     </nav>
