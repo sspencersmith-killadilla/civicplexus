@@ -107,6 +107,8 @@ bun install
    - `offer-letters`
    - `payroll-exports`
    - `compliance-exports`
+   - `official-photos`
+   - `official-documents`
 
 **Did it work?** ✅ `supabase db push` reports "Finished". The Tables UI shows `employees`, `job_requisitions`, `payroll_runs`, `performance_reviews`, etc.
 
