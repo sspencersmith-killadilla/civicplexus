@@ -19,6 +19,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const qc = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { isEnabled, isModuleEnabled } = useModuleSettings();
+  const isHrAdmin = !!data?.is_hr_admin || hasRole(data?.roles, "hr_admin");
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return window.localStorage.getItem("cp:sidebar:collapsed") === "1";
@@ -64,7 +65,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       items: g.items.filter(
         (n) =>
           isEnabled(n.key) &&
-          (!data?.roles?.length || n.roles.some((r) => hasRole(data?.roles, r))),
+          (isHrAdmin || !data?.roles?.length || n.roles.some((r) => hasRole(data?.roles, r))),
       ),
     }))
     .filter((g) => g.items.length);
