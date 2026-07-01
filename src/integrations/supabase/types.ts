@@ -7944,6 +7944,13 @@ export type Database = {
         Args: { _training_id: string }
         Returns: undefined
       }
+      notify_officials_expiring: { Args: never; Returns: number }
+      officials_notify_targets: {
+        Args: never
+        Returns: {
+          user_id: string
+        }[]
+      }
       purge_expired_interview_media: { Args: never; Returns: number }
       record_audit_event: {
         Args: {
