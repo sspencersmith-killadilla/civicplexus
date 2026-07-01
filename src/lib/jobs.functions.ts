@@ -570,7 +570,11 @@ export const getPublicRequisition = createServerFn({ method: "GET" })
 export const listPositionsForRequisition = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const access = await getHiringAccessContext(context.userId);
+    if (!access.isHrAdmin && !access.canReadHiring && !access.roles.some((r) => ["hiring_manager", "supervisor", "department_admin"].includes(r))) {
+      throw new Error("Forbidden");
+    }
+    const { data, error } = await access.supabaseAdmin
       .from("positions")
       .select("id, title, department, worker_type_id, status")
       .in("status", ["open", "filled"])
