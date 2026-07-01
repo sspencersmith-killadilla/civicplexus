@@ -3744,10 +3744,68 @@ export type Database = {
           },
         ]
       }
+      lms_connections: {
+        Row: {
+          auth_kind: string
+          base_url: string
+          config: Json
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          id: string
+          label: string
+          last_error: string | null
+          last_sync_at: string | null
+          last_sync_status: string | null
+          provider: string
+          secret_name: string | null
+          sync_cursor: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          auth_kind?: string
+          base_url: string
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          label: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          provider: string
+          secret_name?: string | null
+          sync_cursor?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          auth_kind?: string
+          base_url?: string
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          label?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          provider?: string
+          secret_name?: string | null
+          sync_cursor?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
       lms_credit_imports: {
         Row: {
           applied_rows: number
           committed_at: string | null
+          connection_id: string | null
           created_at: string
           errors: Json
           filename: string | null
@@ -3763,6 +3821,7 @@ export type Database = {
         Insert: {
           applied_rows?: number
           committed_at?: string | null
+          connection_id?: string | null
           created_at?: string
           errors?: Json
           filename?: string | null
@@ -3778,6 +3837,7 @@ export type Database = {
         Update: {
           applied_rows?: number
           committed_at?: string | null
+          connection_id?: string | null
           created_at?: string
           errors?: Json
           filename?: string | null
@@ -3790,7 +3850,65 @@ export type Database = {
           unmatched_rows?: number
           uploaded_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lms_credit_imports_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "lms_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lms_sync_runs: {
+        Row: {
+          applied: number
+          connection_id: string
+          errors: Json
+          finished_at: string | null
+          id: string
+          matched: number
+          rows_fetched: number
+          started_at: string
+          status: string
+          triggered_by: string
+          unmatched: number
+        }
+        Insert: {
+          applied?: number
+          connection_id: string
+          errors?: Json
+          finished_at?: string | null
+          id?: string
+          matched?: number
+          rows_fetched?: number
+          started_at?: string
+          status?: string
+          triggered_by?: string
+          unmatched?: number
+        }
+        Update: {
+          applied?: number
+          connection_id?: string
+          errors?: Json
+          finished_at?: string | null
+          id?: string
+          matched?: number
+          rows_fetched?: number
+          started_at?: string
+          status?: string
+          triggered_by?: string
+          unmatched?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_sync_runs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "lms_connections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       market_ranges: {
         Row: {
