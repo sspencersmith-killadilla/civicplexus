@@ -95,10 +95,10 @@ function OneOnOnesIndex() {
       setEmpId(""); setTitle(""); setTplId(""); setScheduledAt("");
       window.location.assign(`/one-on-ones/${s.id}`);
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Create failed"),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Create failed"),
   });
 
-  const empMap = new Map((employeesQ.data ?? []).map((e) => [e.id, e]));
+  const empMap = new Map(((employeesQ.data ?? []) as Candidate[]).map((e) => [e.id, e]));
 
   return (
     <AppShell title="1-on-1s">
@@ -118,7 +118,7 @@ function OneOnOnesIndex() {
                 <Select value={empId} onValueChange={setEmpId}>
                   <SelectTrigger><SelectValue placeholder="Pick a direct report" /></SelectTrigger>
                   <SelectContent>
-                    {(employeesQ.data ?? []).map((e) => (
+                    {((employeesQ.data ?? []) as Candidate[]).map((e) => (
                       <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}{e.department ? ` · ${e.department}` : ""}</SelectItem>
                     ))}
                   </SelectContent>
