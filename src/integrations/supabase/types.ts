@@ -3001,6 +3001,13 @@ export type Database = {
             referencedRelation: "job_requisitions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "interview_invitations_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "job_requisitions_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       interview_kits: {
@@ -3407,6 +3414,13 @@ export type Database = {
             columns: ["requisition_id"]
             isOneToOne: false
             referencedRelation: "job_requisitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "job_requisitions_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4144,6 +4158,13 @@ export type Database = {
             columns: ["requisition_id"]
             isOneToOne: false
             referencedRelation: "job_requisitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "job_requisitions_public"
             referencedColumns: ["id"]
           },
           {
@@ -7011,6 +7032,63 @@ export type Database = {
       }
     }
     Views: {
+      job_requisitions_public: {
+        Row: {
+          benefits: string | null
+          brochure_url: string | null
+          closes_at: string | null
+          department: string | null
+          description: string | null
+          employment_type: string | null
+          id: string | null
+          location: string | null
+          posted_at: string | null
+          posting_sections: Json | null
+          requirements: string | null
+          salary_max: number | null
+          salary_min: number | null
+          slug: string | null
+          summary: string | null
+          title: string | null
+        }
+        Insert: {
+          benefits?: string | null
+          brochure_url?: string | null
+          closes_at?: string | null
+          department?: string | null
+          description?: string | null
+          employment_type?: string | null
+          id?: string | null
+          location?: string | null
+          posted_at?: string | null
+          posting_sections?: Json | null
+          requirements?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          slug?: string | null
+          summary?: string | null
+          title?: string | null
+        }
+        Update: {
+          benefits?: string | null
+          brochure_url?: string | null
+          closes_at?: string | null
+          department?: string | null
+          description?: string | null
+          employment_type?: string | null
+          id?: string | null
+          location?: string | null
+          posted_at?: string | null
+          posting_sections?: Json | null
+          requirements?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          slug?: string | null
+          summary?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
       position_headcount: {
         Row: {
           budgeted_fte: number | null
