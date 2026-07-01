@@ -15,10 +15,10 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Landmark, Plus, UserPlus, ShieldCheck, XCircle } from "lucide-react";
+import { Landmark, Plus, UserPlus, ShieldCheck, XCircle, Coins } from "lucide-react";
 import {
   listBodies, getBody, upsertBody, upsertSeat, upsertOfficial,
-  createTerm, swearIn, endTerm, upcomingExpirations,
+  createTerm, swearIn, endTerm, upcomingExpirations, generateMeetingReimbursements,
 } from "@/lib/officials.functions";
 
 export const Route = createFileRoute("/_authenticated/admin-officials")({ component: OfficialsAdmin });
@@ -100,11 +100,19 @@ function BodyDialog({ onSaved, existing }: { onSaved: () => void; existing?: any
   const [form, setForm] = useState<any>(existing ?? {
     slug: "", name: "", kind: "board", comp_model: "unpaid",
     fixed_stipend_amount: null, fixed_stipend_period: null, per_meeting_amount: null,
+    chair_bonus_amount: null, per_diem_amount: null, pay_absent: false,
     meeting_cadence: "", description: "", roster_public: true, sort_order: 100,
   });
   const fn = useServerFn(upsertBody);
   const m = useMutation({
-    mutationFn: () => fn({ data: { ...form, fixed_stipend_amount: form.fixed_stipend_amount ? Number(form.fixed_stipend_amount) : null, per_meeting_amount: form.per_meeting_amount ? Number(form.per_meeting_amount) : null } }),
+    mutationFn: () => fn({ data: {
+      ...form,
+      fixed_stipend_amount: form.fixed_stipend_amount ? Number(form.fixed_stipend_amount) : null,
+      per_meeting_amount: form.per_meeting_amount ? Number(form.per_meeting_amount) : null,
+      chair_bonus_amount: form.chair_bonus_amount ? Number(form.chair_bonus_amount) : null,
+      per_diem_amount: form.per_diem_amount ? Number(form.per_diem_amount) : null,
+      pay_absent: !!form.pay_absent,
+    } }),
     onSuccess: () => { toast.success("Saved"); setOpen(false); onSaved(); },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -153,7 +161,18 @@ function BodyDialog({ onSaved, existing }: { onSaved: () => void; existing?: any
             </div>
           )}
           {(form.comp_model === "per_meeting" || form.comp_model === "mixed") && (
-            <div><Label>Per-meeting amount</Label><Input type="number" value={form.per_meeting_amount ?? ""} onChange={(e) => setForm({ ...form, per_meeting_amount: e.target.value })} /></div>
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Per-meeting amount</Label><Input type="number" value={form.per_meeting_amount ?? ""} onChange={(e) => setForm({ ...form, per_meeting_amount: e.target.value })} /></div>
+                <div><Label>Chair bonus (per meeting)</Label><Input type="number" value={form.chair_bonus_amount ?? ""} onChange={(e) => setForm({ ...form, chair_bonus_amount: e.target.value })} /></div>
+              </div>
+            </>
+          )}
+          {form.comp_model !== "unpaid" && (
+            <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
+              <div><Label>Per-diem / travel (per meeting)</Label><Input type="number" value={form.per_diem_amount ?? ""} onChange={(e) => setForm({ ...form, per_diem_amount: e.target.value })} /></div>
+              <label className="flex items-center gap-2 text-xs pb-2"><Switch checked={!!form.pay_absent} onCheckedChange={(v) => setForm({ ...form, pay_absent: v })} /> Pay when absent</label>
+            </div>
           )}
           <div><Label>Meeting cadence</Label><Input value={form.meeting_cadence ?? ""} onChange={(e) => setForm({ ...form, meeting_cadence: e.target.value })} placeholder="e.g. 1st & 3rd Tuesday, 6:00 pm" /></div>
           <div><Label>Description</Label><Textarea rows={3} value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
@@ -195,6 +214,7 @@ function BodyDetail({ bodyId, body }: { bodyId: string; body: Body }) {
           <div className="flex gap-2">
             <BodyDialog onSaved={() => { qc.invalidateQueries({ queryKey: ["officials-bodies"] }); refresh(); }} existing={{ ...body, ...(q.data?.body ?? {}) }} />
             <SeatDialog bodyId={bodyId} onSaved={refresh} />
+            <GenerateReimbDialog bodyId={bodyId} />
           </div>
         </div>
       </Card>
