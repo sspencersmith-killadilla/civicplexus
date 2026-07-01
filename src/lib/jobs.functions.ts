@@ -149,6 +149,58 @@ export const getRequisitionApprovalForStaff = createServerFn({ method: "GET" })
     return { chain, steps: steps ?? [] };
   });
 
+export const listWorkerTypesForHiring = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const access = await getHiringAccessContext(context.userId);
+    if (!access.isHrAdmin && !access.canReadHiring && !access.roles.some((r) => ["hiring_manager", "supervisor", "department_admin"].includes(r))) {
+      throw new Error("Forbidden");
+    }
+    const { data, error } = await access.supabaseAdmin
+      .from("worker_types")
+      .select("id, name")
+      .order("name");
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Array<{ id: string; name: string }>;
+  });
+
+export const listOneWayInterviewKitsForHiring = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const access = await getHiringAccessContext(context.userId);
+    if (!access.isHrAdmin && !access.canReadHiring && !access.roles.some((r) => ["hiring_manager", "supervisor", "department_admin"].includes(r))) {
+      throw new Error("Forbidden");
+    }
+    const { data, error } = await access.supabaseAdmin
+      .from("interview_kits")
+      .select("id, name, kind, is_active")
+      .eq("kind", "one_way")
+      .eq("is_active", true)
+      .order("name");
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Array<{ id: string; name: string; kind: string; is_active: boolean }>;
+  });
+
+export const resolveInterviewersByEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ emails: z.array(z.string().email()).min(1).max(20) }).parse(i))
+  .handler(async ({ data, context }) => {
+    const access = await getHiringAccessContext(context.userId);
+    if (!access.isHrAdmin && !access.canReadHiring && !access.roles.some((r) => ["hiring_manager", "supervisor", "department_admin"].includes(r))) {
+      throw new Error("Forbidden");
+    }
+    const lower = data.emails.map((e) => e.toLowerCase());
+    const { data: emps, error } = await access.supabaseAdmin
+      .from("employees")
+      .select("user_id, work_email, personal_email")
+      .not("user_id", "is", null);
+    if (error) throw new Error(error.message);
+    return ((emps ?? []) as Array<{ user_id: string | null; work_email: string | null; personal_email: string | null }>)
+      .filter((e) => e.user_id && (lower.includes((e.work_email ?? "").toLowerCase()) || lower.includes((e.personal_email ?? "").toLowerCase())))
+      .map((e) => e.user_id!)
+      .filter((id, idx, arr) => arr.indexOf(id) === idx);
+  });
+
 export const updateRequisition = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), patch: RequisitionInput.partial() }).parse(i))
