@@ -192,3 +192,130 @@ d("RLS: public-readable tables still expose only safe columns", () => {
     }
   });
 });
+
+/**
+ * Targeted regression suite for the three tables whose policies have
+ * historically drifted: employees, interview_kits, job_requisitions.
+ * These lock in the current hardened state so a future migration cannot
+ * silently widen access to anon or authenticated-but-unrelated users.
+ */
+d("RLS regressions: employees table", () => {
+  it("anon cannot SELECT employees (directory read is authenticated-only)", async () => {
+    const res = await anon.from("employees").select("id, first_name, last_name").limit(1);
+    expectBlocked(res, "read");
+  });
+
+  it("anon cannot INSERT employees", async () => {
+    const res = await anon.from("employees").insert({
+      first_name: "Anon", last_name: "Attacker", status: "active",
+    } as never);
+    expectBlocked(res, "write");
+  });
+
+  it("anon cannot UPDATE sensitive columns on employees", async () => {
+    for (const patch of [
+      { manager_id: "00000000-0000-0000-0000-000000000000" },
+      { department: "Executive" },
+      { job_title: "City Manager" },
+      { status: "active" },
+      { user_id: "00000000-0000-0000-0000-000000000000" },
+    ]) {
+      const res = await anon.from("employees").update(patch as never)
+        .neq("id", "00000000-0000-0000-0000-000000000000");
+      expectBlocked(res, "write");
+    }
+  });
+
+  it("anon cannot DELETE employees", async () => {
+    const res = await anon.from("employees").delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+    expectBlocked(res, "write");
+  });
+});
+
+d("RLS regressions: interview_kits table", () => {
+  it("anon cannot SELECT interview_kits (rubrics are not public)", async () => {
+    const res = await anon.from("interview_kits").select("id, title, rubric").limit(1);
+    expectBlocked(res, "read");
+  });
+
+  it("anon cannot INSERT interview_kits", async () => {
+    const res = await anon.from("interview_kits").insert({
+      title: "Anon kit", rubric: { competencies: [] },
+    } as never);
+    expectBlocked(res, "write");
+  });
+
+  it("anon cannot UPDATE interview_kits", async () => {
+    const res = await anon.from("interview_kits").update({ title: "Hacked" } as never)
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+    expectBlocked(res, "write");
+  });
+
+  it("anon cannot DELETE interview_kits", async () => {
+    const res = await anon.from("interview_kits").delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+    expectBlocked(res, "write");
+  });
+});
+
+d("RLS regressions: job_requisitions table", () => {
+  it("anon cannot INSERT job_requisitions", async () => {
+    const res = await anon.from("job_requisitions").insert({
+      title: "Ghost Req", status: "draft",
+    } as never);
+    expectBlocked(res, "write");
+  });
+
+  it("anon cannot UPDATE job_requisitions", async () => {
+    const res = await anon.from("job_requisitions")
+      .update({ status: "posted" } as never)
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+    expectBlocked(res, "write");
+  });
+
+  it("anon cannot DELETE job_requisitions", async () => {
+    const res = await anon.from("job_requisitions").delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+    expectBlocked(res, "write");
+  });
+
+  it("anon cannot read non-posted (draft/pending) requisitions", async () => {
+    for (const status of ["draft", "pending_approval", "approved", "closed"]) {
+      const { data, error } = await anon
+        .from("job_requisitions")
+        .select("id, status")
+        .eq("status", status)
+        .limit(5);
+      if (error) continue;
+      expect((data ?? []).length, `anon leaked ${status} requisitions`).toBe(0);
+    }
+  });
+
+  it("anon cannot read internal columns on job_requisitions via select-*", async () => {
+    // Ask PostgREST for columns that anon must not have column-level grants on.
+    // Either the request errors ("permission denied for column") or returns no rows.
+    const forbidden = [
+      "ai_rubric",
+      "hiring_manager_id",
+      "internal_notes",
+      "budget_amount",
+      "approval_chain_id",
+    ];
+    for (const col of forbidden) {
+      const { data, error } = await anon
+        .from("job_requisitions")
+        .select(`id, ${col}`)
+        .eq("status", "posted")
+        .limit(1);
+      if (error) {
+        expect(error.message.toLowerCase()).toMatch(/permission|denied|does not exist|not allowed|column/);
+      } else {
+        // If PostgREST did not error, the column must not have leaked a value.
+        for (const row of (data ?? []) as Array<Record<string, unknown>>) {
+          expect(row[col]).toBeUndefined();
+        }
+      }
+    }
+  });
+});
