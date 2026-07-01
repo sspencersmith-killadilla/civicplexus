@@ -50,12 +50,12 @@ function PermissionsPage() {
 
   const keys = useQuery({
     queryKey: ["perm-keys"],
-    queryFn: () => listKeysFn({ data: undefined as never }),
+    queryFn: () => listKeysFn({ data: undefined as never }) as Promise<PermKey[]>,
     enabled: isAdmin,
   });
   const groups = useQuery({
     queryKey: ["perm-groups"],
-    queryFn: () => listGroupsFn({ data: undefined as never }),
+    queryFn: () => listGroupsFn({ data: undefined as never }) as Promise<Group[]>,
     enabled: isAdmin,
   });
 

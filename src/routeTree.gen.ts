@@ -58,6 +58,7 @@ import { Route as AuthenticatedCbaRouteImport } from './routes/_authenticated/cb
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
+import { Route as AuthenticatedAdminPermissionsRouteImport } from './routes/_authenticated/admin-permissions'
 import { Route as AuthenticatedAdminOrgSettingsRouteImport } from './routes/_authenticated/admin-org-settings'
 import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authenticated/admin-modules'
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
@@ -387,6 +388,12 @@ const AuthenticatedApprovalsRoute = AuthenticatedApprovalsRouteImport.update({
   path: '/approvals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminPermissionsRoute =
+  AuthenticatedAdminPermissionsRouteImport.update({
+    id: '/admin-permissions',
+    path: '/admin-permissions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminOrgSettingsRoute =
   AuthenticatedAdminOrgSettingsRouteImport.update({
     id: '/admin-org-settings',
@@ -777,6 +784,7 @@ export interface FileRoutesByFullPath {
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
+  '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
@@ -894,6 +902,7 @@ export interface FileRoutesByTo {
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
+  '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
@@ -1012,6 +1021,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/_authenticated/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/_authenticated/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
+  '/_authenticated/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
@@ -1131,6 +1141,7 @@ export interface FileRouteTypes {
     | '/admin-migration'
     | '/admin-modules'
     | '/admin-org-settings'
+    | '/admin-permissions'
     | '/approvals'
     | '/audit'
     | '/benefits'
@@ -1248,6 +1259,7 @@ export interface FileRouteTypes {
     | '/admin-migration'
     | '/admin-modules'
     | '/admin-org-settings'
+    | '/admin-permissions'
     | '/approvals'
     | '/audit'
     | '/benefits'
@@ -1365,6 +1377,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-migration'
     | '/_authenticated/admin-modules'
     | '/_authenticated/admin-org-settings'
+    | '/_authenticated/admin-permissions'
     | '/_authenticated/approvals'
     | '/_authenticated/audit'
     | '/_authenticated/benefits'
@@ -1848,6 +1861,13 @@ declare module '@tanstack/react-router' {
       path: '/approvals'
       fullPath: '/approvals'
       preLoaderRoute: typeof AuthenticatedApprovalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin-permissions': {
+      id: '/_authenticated/admin-permissions'
+      path: '/admin-permissions'
+      fullPath: '/admin-permissions'
+      preLoaderRoute: typeof AuthenticatedAdminPermissionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin-org-settings': {
@@ -2370,6 +2390,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
   AuthenticatedAdminModulesRoute: typeof AuthenticatedAdminModulesRoute
   AuthenticatedAdminOrgSettingsRoute: typeof AuthenticatedAdminOrgSettingsRoute
+  AuthenticatedAdminPermissionsRoute: typeof AuthenticatedAdminPermissionsRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
@@ -2456,6 +2477,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
   AuthenticatedAdminModulesRoute: AuthenticatedAdminModulesRoute,
   AuthenticatedAdminOrgSettingsRoute: AuthenticatedAdminOrgSettingsRoute,
+  AuthenticatedAdminPermissionsRoute: AuthenticatedAdminPermissionsRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
