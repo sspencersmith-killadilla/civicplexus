@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OfficialsIndexRouteImport } from './routes/officials.index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as OfficialsPrintRouteImport } from './routes/officials.print'
 import { Route as OfficialsSlugRouteImport } from './routes/officials.$slug'
 import { Route as OfferTokenRouteImport } from './routes/offer.$token'
 import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
@@ -158,6 +159,11 @@ const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
 const CareersIndexRoute = CareersIndexRouteImport.update({
   id: '/careers/',
   path: '/careers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfficialsPrintRoute = OfficialsPrintRouteImport.update({
+  id: '/officials/print',
+  path: '/officials/print',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OfficialsSlugRoute = OfficialsSlugRouteImport.update({
@@ -856,6 +862,7 @@ export interface FileRoutesByFullPath {
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
+  '/officials/print': typeof OfficialsPrintRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
@@ -977,6 +984,7 @@ export interface FileRoutesByTo {
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
+  '/officials/print': typeof OfficialsPrintRoute
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
@@ -1101,6 +1109,7 @@ export interface FileRoutesById {
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
+  '/officials/print': typeof OfficialsPrintRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
@@ -1225,6 +1234,7 @@ export interface FileRouteTypes {
     | '/careers/$slug'
     | '/offer/$token'
     | '/officials/$slug'
+    | '/officials/print'
     | '/careers/'
     | '/officials/'
     | '/cascades/$id'
@@ -1346,6 +1356,7 @@ export interface FileRouteTypes {
     | '/worker-types'
     | '/offer/$token'
     | '/officials/$slug'
+    | '/officials/print'
     | '/careers'
     | '/officials'
     | '/cascades/$id'
@@ -1469,6 +1480,7 @@ export interface FileRouteTypes {
     | '/careers/$slug'
     | '/offer/$token'
     | '/officials/$slug'
+    | '/officials/print'
     | '/careers/'
     | '/officials/'
     | '/_authenticated/cascades/$id'
@@ -1544,6 +1556,7 @@ export interface RootRouteChildren {
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
   OfferTokenRoute: typeof OfferTokenRoute
   OfficialsSlugRoute: typeof OfficialsSlugRoute
+  OfficialsPrintRoute: typeof OfficialsPrintRoute
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
@@ -1612,6 +1625,13 @@ declare module '@tanstack/react-router' {
       path: '/careers'
       fullPath: '/careers/'
       preLoaderRoute: typeof CareersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/officials/print': {
+      id: '/officials/print'
+      path: '/officials/print'
+      fullPath: '/officials/print'
+      preLoaderRoute: typeof OfficialsPrintRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/officials/$slug': {
@@ -2667,6 +2687,7 @@ const rootRouteChildren: RootRouteChildren = {
   CareersSlugRoute: CareersSlugRouteWithChildren,
   OfferTokenRoute: OfferTokenRoute,
   OfficialsSlugRoute: OfficialsSlugRoute,
+  OfficialsPrintRoute: OfficialsPrintRoute,
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
