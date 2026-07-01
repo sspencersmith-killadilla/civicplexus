@@ -28,6 +28,9 @@ function OneOnOnesIndex() {
   const qc = useQueryClient();
   const { data: me } = useCurrentUser();
   const uid = me?.user.id;
+  const listCandidatesFn = useServerFn(listOneOnOneCandidates);
+
+  type Candidate = { id: string; first_name: string; last_name: string; department: string | null };
 
   const sessionsQ = useQuery({
     queryKey: ["one_on_ones"],
