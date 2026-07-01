@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { submitPaf, repairPafChains } from "@/lib/paf.functions";
+import { submitPaf, repairPafChains, listPafs, listPafEmployees } from "@/lib/paf.functions";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/paf/")({ component: PafIndex });
@@ -27,6 +26,8 @@ function PafIndex() {
   const qc = useQueryClient();
   const submit = useServerFn(submitPaf);
   const repair = useServerFn(repairPafChains);
+  const listPafsFn = useServerFn(listPafs);
+  const listEmployeesFn = useServerFn(listPafEmployees);
   const [open, setOpen] = useState(false);
   const { data: me } = useCurrentUser();
   const isHR = hasRole(me?.roles, "hr_admin");
@@ -46,20 +47,12 @@ function PafIndex() {
 
   const listQ = useQuery({
     queryKey: ["pafs"],
-    queryFn: async () => {
-      const { data } = await supabase.from("personnel_actions")
-        .select("id, paf_number, action_type, effective_date, status, employees(first_name, last_name)")
-        .order("created_at", { ascending: false }).limit(50);
-      return (data ?? []) as Array<{ id: string; paf_number: string; action_type: string; effective_date: string; status: string; employees: { first_name: string; last_name: string } }>;
-    },
+    queryFn: () => listPafsFn({ data: undefined as never }),
   });
 
   const empsQ = useQuery({
     queryKey: ["emps-min"],
-    queryFn: async () => {
-      const { data } = await supabase.from("employees").select("id, user_id, first_name, last_name, job_title").order("last_name").limit(500);
-      return (data ?? []) as Array<{ id: string; user_id: string | null; first_name: string; last_name: string; job_title: string | null }>;
-    },
+    queryFn: () => listEmployeesFn({ data: undefined as never }),
   });
 
   const [form, setForm] = useState({

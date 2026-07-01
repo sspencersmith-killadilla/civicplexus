@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ExternalLink, CalendarClock, UserPlus, FileSignature, Send, Link2, Sparkles, FileText, Check, Pencil, X, Upload, FileDown, Trash2, Video } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { submitRequisitionForApproval, postRequisition, closeRequisition, transitionApplicationStatus, scheduleInterview, convertApplicationToHire } from "@/lib/jobs.functions";
+import { submitRequisitionForApproval, postRequisition, closeRequisition, transitionApplicationStatus, scheduleInterview, convertApplicationToHire, getJobRequisitionForStaff, getRequisitionApprovalForStaff, listWorkerTypesForHiring, listOneWayInterviewKitsForHiring, resolveInterviewersByEmail } from "@/lib/jobs.functions";
 import { createOffer } from "@/lib/offers.functions";
 import { mintCandidatePortalToken, postRecruiterMessage } from "@/lib/candidate-portal.functions";
 import { sendTemplatedToApplicant } from "@/lib/email-templates.functions";
@@ -52,6 +52,8 @@ function JobDetail() {
   const submitForApproval = useServerFn(submitRequisitionForApproval);
   const post = useServerFn(postRequisition);
   const close = useServerFn(closeRequisition);
+  const getReq = useServerFn(getJobRequisitionForStaff);
+  const getApproval = useServerFn(getRequisitionApprovalForStaff);
   const screen = useServerFn(screenApplication);
   const decide = useServerFn(recordScreenDecision);
   const listApps = useServerFn(listApplicationsForRequisition);
@@ -60,11 +62,7 @@ function JobDetail() {
 
   const reqQ = useQuery({
     queryKey: ["job_requisition", id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("job_requisitions" as never).select("*").eq("id", id).single();
-      if (error) throw error;
-      return data as never as { id: string; title: string; status: string; slug: string | null; internal_only: boolean; department: string | null; description: string | null; summary: string | null; brochure_url: string | null };
-    },
+    queryFn: () => getReq({ data: { id } }) as Promise<{ id: string; title: string; status: string; slug: string | null; internal_only: boolean; department: string | null; description: string | null; summary: string | null; brochure_url: string | null }>,
   });
 
   const appsQ = useQuery({
@@ -74,13 +72,7 @@ function JobDetail() {
 
   const chainQ = useQuery({
     queryKey: ["approval_chain", id],
-    queryFn: async () => {
-      const { data: chain } = await supabase.from("approval_chains" as never).select("*").eq("entity_type", "requisition").eq("entity_id", id).maybeSingle();
-      const c = chain as { id: string; status: string; current_stage: number } | null;
-      if (!c) return { chain: null, steps: [] };
-      const { data: steps } = await supabase.from("approval_steps" as never).select("*").eq("chain_id", c.id).order("stage");
-      return { chain: c, steps: (steps ?? []) as Array<{ id: string; stage: number; approver_label: string; status: string; decision_notes: string | null }> };
-    },
+    queryFn: () => getApproval({ data: { requisition_id: id } }),
   });
 
   const sub = useMutation({ mutationFn: () => submitForApproval({ data: { requisition_id: id } }),
@@ -246,6 +238,9 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
   const change = useServerFn(transitionApplicationStatus);
   const sched = useServerFn(scheduleInterview);
   const convert = useServerFn(convertApplicationToHire);
+  const listWorkerTypes = useServerFn(listWorkerTypesForHiring);
+  const listKits = useServerFn(listOneWayInterviewKitsForHiring);
+  const resolveInterviewers = useServerFn(resolveInterviewersByEmail);
   const draftOffer = useServerFn(createOffer);
   const mintPortal = useServerFn(mintCandidatePortalToken);
   const sendMsg = useServerFn(postRecruiterMessage);
@@ -264,24 +259,13 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
 
   const wtsQ = useQuery({
     queryKey: ["worker_types_pick"],
-    queryFn: async () => {
-      const { data } = await supabase.from("worker_types").select("id, name").order("name");
-      return (data ?? []) as Array<{ id: string; name: string }>;
-    },
+    queryFn: () => listWorkerTypes({ data: undefined as never }),
     enabled: openHire || openOffer,
   });
 
   const kitsQ = useQuery({
     queryKey: ["interview_kits_oneway_pick"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("interview_kits" as never)
-        .select("id, name, kind, is_active")
-        .eq("kind", "one_way")
-        .eq("is_active", true)
-        .order("name");
-      return (data ?? []) as unknown as Array<{ id: string; name: string }>;
-    },
+    queryFn: () => listKits({ data: undefined as never }),
     enabled: openAsync,
   });
 
@@ -313,8 +297,7 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
     mutationFn: async () => {
       // resolve emails to user ids
       const emails = iv.interviewer_emails.split(",").map((s) => s.trim()).filter(Boolean);
-      const { data: emps } = await supabase.from("employees").select("user_id, work_email, personal_email").or(emails.length ? emails.map(e => `work_email.eq.${e},personal_email.eq.${e}`).join(",") : "");
-      const ids = ((emps ?? []) as Array<{ user_id: string | null }>).map(e => e.user_id).filter((u): u is string => !!u);
+      const ids = await resolveInterviewers({ data: { emails } });
       if (!ids.length) throw new Error("Could not resolve interviewer emails to users");
       return sched({ data: {
         application_id: app.id, scheduled_at: new Date(iv.scheduled_at).toISOString(),

@@ -6,6 +6,27 @@ function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
 }
 
+async function getHiringAccessContext(userId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const [{ data: roleRows }, { data: perms }] = await Promise.all([
+    supabaseAdmin.from("user_roles").select("role").eq("user_id", userId),
+    supabaseAdmin.rpc("get_effective_permissions", { _uid: userId }),
+  ]);
+  const roles = (roleRows ?? []).map((r) => r.role as string);
+  const permSet = new Set(((perms ?? []) as Array<{ permission_key: string }>).map((p) => p.permission_key));
+  return {
+    supabaseAdmin,
+    roles,
+    isHrAdmin: roles.includes("hr_admin"),
+    canReadHiring: roles.includes("hr_admin") || permSet.has("job_requisitions.read.internal") || permSet.has("applications.read"),
+    canWriteHiring: roles.includes("hr_admin") || permSet.has("job_requisitions.write") || permSet.has("applications.write"),
+  };
+}
+
+function canSeeReq(req: { requested_by: string | null; hiring_manager_id: string | null }, userId: string, access: Awaited<ReturnType<typeof getHiringAccessContext>>) {
+  return access.isHrAdmin || access.canReadHiring || req.requested_by === userId || req.hiring_manager_id === userId;
+}
+
 const RequisitionInput = z.object({
   title: z.string().trim().min(2).max(200),
   department: z.string().trim().max(100).optional().nullable(),
@@ -36,7 +57,11 @@ export const createRequisition = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => RequisitionInput.parse(i))
   .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase
+    const access = await getHiringAccessContext(context.userId);
+    if (!access.isHrAdmin && !access.roles.some((r) => ["hiring_manager", "supervisor", "department_admin"].includes(r)) && !access.canWriteHiring) {
+      throw new Error("Forbidden: only HR admins, supervisors, hiring managers, department admins, or authorized hiring staff can create requisitions");
+    }
+    const { data: row, error } = await access.supabaseAdmin
       .from("job_requisitions" as never)
       .insert({
         ...data,
@@ -48,11 +73,132 @@ export const createRequisition = createServerFn({ method: "POST" })
       .select()
       .single();
     if (error) throw new Error(error.message);
-    await context.supabase.rpc("record_audit_event" as never, {
-      _action: "create", _entity: "job_requisition",
-      _entity_id: (row as { id: string }).id, _diff: { title: data.title },
+    await access.supabaseAdmin.from("audit_events").insert({
+      actor_id: context.userId,
+      action: "create",
+      entity: "job_requisition",
+      entity_id: (row as unknown as { id: string }).id,
+      diff: { title: data.title },
     } as never);
     return row;
+  });
+
+export const listJobRequisitions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const access = await getHiringAccessContext(context.userId);
+    const { data, error } = await access.supabaseAdmin
+      .from("job_requisitions")
+      .select("id, title, department, status, slug, posted_at, internal_only, requested_by, hiring_manager_id, created_at")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return ((data ?? []) as Array<{ id: string; title: string; department: string | null; status: string; slug: string | null; posted_at: string | null; internal_only: boolean; requested_by: string | null; hiring_manager_id: string | null; created_at: string }> )
+      .filter((r) => canSeeReq(r, context.userId, access))
+      .map(({ requested_by, hiring_manager_id, created_at, ...r }) => {
+        void requested_by; void hiring_manager_id; void created_at;
+        return r;
+      });
+  });
+
+export const getJobRequisitionForStaff = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const access = await getHiringAccessContext(context.userId);
+    const { data: req, error } = await access.supabaseAdmin
+      .from("job_requisitions")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!req) throw new Error("Requisition not found");
+    if (!canSeeReq(req as { requested_by: string | null; hiring_manager_id: string | null }, context.userId, access)) {
+      throw new Error("Forbidden");
+    }
+    return req;
+  });
+
+export const getRequisitionApprovalForStaff = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ requisition_id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const access = await getHiringAccessContext(context.userId);
+    const { data: req } = await access.supabaseAdmin
+      .from("job_requisitions")
+      .select("requested_by, hiring_manager_id")
+      .eq("id", data.requisition_id)
+      .maybeSingle();
+    if (!req || !canSeeReq(req, context.userId, access)) throw new Error("Forbidden");
+
+    const { data: chain } = await access.supabaseAdmin
+      .from("approval_chains")
+      .select("id, status, current_stage")
+      .eq("entity_type", "requisition")
+      .eq("entity_id", data.requisition_id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!chain) return { chain: null, steps: [] };
+
+    const { data: steps, error } = await access.supabaseAdmin
+      .from("approval_steps")
+      .select("id, stage, approver_label, status, decision_notes")
+      .eq("chain_id", chain.id)
+      .order("stage");
+    if (error) throw new Error(error.message);
+    return { chain, steps: steps ?? [] };
+  });
+
+export const listWorkerTypesForHiring = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const access = await getHiringAccessContext(context.userId);
+    if (!access.isHrAdmin && !access.canReadHiring && !access.roles.some((r) => ["hiring_manager", "supervisor", "department_admin"].includes(r))) {
+      throw new Error("Forbidden");
+    }
+    const { data, error } = await access.supabaseAdmin
+      .from("worker_types")
+      .select("id, name")
+      .order("name");
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Array<{ id: string; name: string }>;
+  });
+
+export const listOneWayInterviewKitsForHiring = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const access = await getHiringAccessContext(context.userId);
+    if (!access.isHrAdmin && !access.canReadHiring && !access.roles.some((r) => ["hiring_manager", "supervisor", "department_admin"].includes(r))) {
+      throw new Error("Forbidden");
+    }
+    const { data, error } = await access.supabaseAdmin
+      .from("interview_kits")
+      .select("id, name, kind, is_active")
+      .eq("kind", "one_way")
+      .eq("is_active", true)
+      .order("name");
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Array<{ id: string; name: string; kind: string; is_active: boolean }>;
+  });
+
+export const resolveInterviewersByEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ emails: z.array(z.string().email()).min(1).max(20) }).parse(i))
+  .handler(async ({ data, context }) => {
+    const access = await getHiringAccessContext(context.userId);
+    if (!access.isHrAdmin && !access.canReadHiring && !access.roles.some((r) => ["hiring_manager", "supervisor", "department_admin"].includes(r))) {
+      throw new Error("Forbidden");
+    }
+    const lower = data.emails.map((e) => e.toLowerCase());
+    const { data: emps, error } = await access.supabaseAdmin
+      .from("employees")
+      .select("user_id, work_email, personal_email")
+      .not("user_id", "is", null);
+    if (error) throw new Error(error.message);
+    return ((emps ?? []) as Array<{ user_id: string | null; work_email: string | null; personal_email: string | null }>)
+      .filter((e) => e.user_id && (lower.includes((e.work_email ?? "").toLowerCase()) || lower.includes((e.personal_email ?? "").toLowerCase())))
+      .map((e) => e.user_id!)
+      .filter((id, idx, arr) => arr.indexOf(id) === idx);
   });
 
 export const updateRequisition = createServerFn({ method: "POST" })
@@ -97,11 +243,18 @@ export const submitRequisitionForApproval = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ requisition_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as never;
-    let chain = await defaultApproverChain(sb, context.userId);
+    const access = await getHiringAccessContext(context.userId);
+    const { data: reqForAuth } = await access.supabaseAdmin
+      .from("job_requisitions")
+      .select("requested_by, hiring_manager_id")
+      .eq("id", data.requisition_id)
+      .maybeSingle();
+    if (!reqForAuth || !canSeeReq(reqForAuth, context.userId, access)) throw new Error("Forbidden");
+
+    let chain = await defaultApproverChain(access.supabaseAdmin as never, context.userId);
     // Fallback: try the requisition's hiring manager as a stage-1 approver
     if (chain.length === 0) {
-      const { data: req } = await context.supabase
+      const { data: req } = await access.supabaseAdmin
         .from("job_requisitions" as never)
         .select("hiring_manager_id").eq("id", data.requisition_id).maybeSingle();
       const hmId = (req as { hiring_manager_id: string | null } | null)?.hiring_manager_id ?? null;
@@ -113,20 +266,20 @@ export const submitRequisitionForApproval = createServerFn({ method: "POST" })
       // No approvers configured — surface gracefully so the wizard can offer direct posting
       return { chain_id: null, skipped: true, reason: "no_approvers" as const };
     }
-    const { data: chainRow, error: cErr } = await context.supabase
+    const { data: chainRow, error: cErr } = await access.supabaseAdmin
       .from("approval_chains" as never)
-      .insert({ entity_type: "requisition", entity_id: data.requisition_id, created_by: context.userId } as never)
+      .insert({ kind: "requisition", entity_type: "requisition", entity_id: data.requisition_id, created_by: context.userId } as never)
       .select().single();
     if (cErr) throw new Error(cErr.message);
     const chainId = (chainRow as { id: string }).id;
-    const { error: sErr } = await context.supabase
+    const { error: sErr } = await access.supabaseAdmin
       .from("approval_steps" as never)
       .insert(chain.map((c) => ({ ...c, chain_id: chainId })) as never);
     if (sErr) throw new Error(sErr.message);
-    await context.supabase.from("job_requisitions" as never).update({ status: "pending_approval" } as never).eq("id", data.requisition_id);
+    await access.supabaseAdmin.from("job_requisitions" as never).update({ status: "pending_approval" } as never).eq("id", data.requisition_id);
     // notify first approver
     if (chain[0].approver_id) {
-      await context.supabase.from("notifications").insert({
+      await access.supabaseAdmin.from("notifications").insert({
         user_id: chain[0].approver_id, type: "approval", title: "Requisition pending your approval",
         body: `A new job requisition needs ${chain[0].approver_label} approval`,
         link: "/approvals",
@@ -143,39 +296,40 @@ export const decideApprovalStep = createServerFn({ method: "POST" })
     notes: z.string().max(2000).optional(),
   }).parse(i))
   .handler(async ({ data, context }) => {
-    const { data: step, error: stepErr } = await context.supabase
+    const access = await getHiringAccessContext(context.userId);
+    const { data: step, error: stepErr } = await access.supabaseAdmin
       .from("approval_steps" as never).select("*").eq("id", data.step_id).single();
     if (stepErr || !step) throw new Error("Step not found");
     const s = step as { id: string; chain_id: string; stage: number; approver_id: string };
-    if (s.approver_id !== context.userId) throw new Error("Not your approval step");
-    await context.supabase.from("approval_steps" as never).update({
+    if (!access.isHrAdmin && s.approver_id !== context.userId) throw new Error("Not your approval step");
+    await access.supabaseAdmin.from("approval_steps" as never).update({
       status: data.decision, decision_notes: data.notes ?? null,
       decided_at: new Date().toISOString(), decided_by: context.userId,
     } as never).eq("id", s.id);
 
-    const { data: chain } = await context.supabase
+    const { data: chain } = await access.supabaseAdmin
       .from("approval_chains" as never).select("*").eq("id", s.chain_id).single();
     const c = chain as unknown as { id: string; entity_type: string; entity_id: string };
 
     if (data.decision === "rejected") {
-      await context.supabase.from("approval_chains" as never).update({ status: "rejected" } as never).eq("id", c.id);
+      await access.supabaseAdmin.from("approval_chains" as never).update({ status: "rejected" } as never).eq("id", c.id);
       if (c.entity_type === "requisition") {
-        await context.supabase.from("job_requisitions" as never).update({ status: "draft" } as never).eq("id", c.entity_id);
+        await access.supabaseAdmin.from("job_requisitions" as never).update({ status: "draft" } as never).eq("id", c.entity_id);
       } else if (c.entity_type === "hire_request") {
-        await context.supabase.from("hire_requests").update({ status: "rejected", hr_notes: data.notes ?? null } as never).eq("id", c.entity_id);
+        await access.supabaseAdmin.from("hire_requests").update({ status: "rejected", hr_notes: data.notes ?? null } as never).eq("id", c.entity_id);
       }
       return { ok: true, terminal: true };
     }
     // approved: find next pending step
-    const { data: next } = await context.supabase
+    const { data: next } = await access.supabaseAdmin
       .from("approval_steps" as never).select("*")
       .eq("chain_id", c.id).eq("status", "pending")
       .order("stage", { ascending: true }).limit(1).maybeSingle();
     if (next) {
       const n = next as { stage: number; approver_id: string | null; approver_label: string };
-      await context.supabase.from("approval_chains" as never).update({ current_stage: n.stage } as never).eq("id", c.id);
+      await access.supabaseAdmin.from("approval_chains" as never).update({ current_stage: n.stage } as never).eq("id", c.id);
       if (n.approver_id) {
-        await context.supabase.from("notifications").insert({
+        await access.supabaseAdmin.from("notifications").insert({
           user_id: n.approver_id, type: "approval", title: "Approval pending",
           body: `${n.approver_label} approval needed`, link: "/approvals",
         });
@@ -183,9 +337,9 @@ export const decideApprovalStep = createServerFn({ method: "POST" })
       return { ok: true, terminal: false };
     }
     // all approved
-    await context.supabase.from("approval_chains" as never).update({ status: "approved" } as never).eq("id", c.id);
+    await access.supabaseAdmin.from("approval_chains" as never).update({ status: "approved" } as never).eq("id", c.id);
     if (c.entity_type === "requisition") {
-      await context.supabase.from("job_requisitions" as never).update({ status: "approved" } as never).eq("id", c.entity_id);
+      await access.supabaseAdmin.from("job_requisitions" as never).update({ status: "approved" } as never).eq("id", c.entity_id);
     } else if (c.entity_type === "hire_request") {
       await context.supabase.rpc("decide_hire_request" as never, { _request_id: c.entity_id, _action: "activate", _hr_notes: data.notes ?? null } as never);
     }
@@ -196,7 +350,10 @@ export const postRequisition = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ requisition_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("job_requisitions" as never).update({
+    const access = await getHiringAccessContext(context.userId);
+    const { data: req } = await access.supabaseAdmin.from("job_requisitions").select("requested_by, hiring_manager_id").eq("id", data.requisition_id).maybeSingle();
+    if (!req || !canSeeReq(req, context.userId, access)) throw new Error("Forbidden");
+    const { error } = await access.supabaseAdmin.from("job_requisitions" as never).update({
       status: "posted", posted_at: new Date().toISOString(),
     } as never).eq("id", data.requisition_id);
     if (error) throw new Error(error.message);
@@ -207,7 +364,10 @@ export const closeRequisition = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ requisition_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
-    await context.supabase.from("job_requisitions" as never).update({ status: "closed" } as never).eq("id", data.requisition_id);
+    const access = await getHiringAccessContext(context.userId);
+    const { data: req } = await access.supabaseAdmin.from("job_requisitions").select("requested_by, hiring_manager_id").eq("id", data.requisition_id).maybeSingle();
+    if (!req || !canSeeReq(req, context.userId, access)) throw new Error("Forbidden");
+    await access.supabaseAdmin.from("job_requisitions" as never).update({ status: "closed" } as never).eq("id", data.requisition_id);
     return { ok: true };
   });
 
@@ -462,7 +622,11 @@ export const getPublicRequisition = createServerFn({ method: "GET" })
 export const listPositionsForRequisition = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const access = await getHiringAccessContext(context.userId);
+    if (!access.isHrAdmin && !access.canReadHiring && !access.roles.some((r) => ["hiring_manager", "supervisor", "department_admin"].includes(r))) {
+      throw new Error("Forbidden");
+    }
+    const { data, error } = await access.supabaseAdmin
       .from("positions")
       .select("id, title, department, worker_type_id, status")
       .in("status", ["open", "filled"])

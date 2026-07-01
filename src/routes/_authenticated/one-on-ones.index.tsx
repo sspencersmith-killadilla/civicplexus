@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { listOneOnOneCandidates } from "@/lib/one-on-ones.functions";
+import { createOneOnOneSession, listOneOnOneCandidates, listOneOnOneSessions } from "@/lib/one-on-ones.functions";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,34 +14,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, MessagesSquare, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { useCurrentUser } from "@/hooks/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/one-on-ones/")({
   component: OneOnOnesIndex,
 });
 
-function makeCode() {
-  return Math.random().toString(36).slice(2, 8).toUpperCase();
-}
-
 function OneOnOnesIndex() {
   const qc = useQueryClient();
-  const { data: me } = useCurrentUser();
-  const uid = me?.user.id;
   const listCandidatesFn = useServerFn(listOneOnOneCandidates);
+  const listSessionsFn = useServerFn(listOneOnOneSessions);
+  const createSessionFn = useServerFn(createOneOnOneSession);
 
   type Candidate = { id: string; first_name: string; last_name: string; department: string | null };
 
   const sessionsQ = useQuery({
     queryKey: ["one_on_ones"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("one_on_ones")
-        .select("id,title,short_code,status,scheduled_at,manager_user_id,employee_id,created_at")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => listSessionsFn({ data: undefined as never }),
   });
 
   const employeesQ = useQuery({
@@ -70,23 +58,12 @@ function OneOnOnesIndex() {
 
   const create = useMutation({
     mutationFn: async () => {
-      if (!uid) throw new Error("Not signed in");
-      const code = makeCode();
-      const { data, error } = await supabase
-        .from("one_on_ones")
-        .insert({
-          manager_user_id: uid,
-          employee_id: empId || null,
-          template_id: tplId || null,
-          short_code: code,
-          title: title || null,
-          scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
-          created_by: uid,
-        })
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
+      return createSessionFn({ data: {
+        employee_id: empId || null,
+        template_id: tplId || null,
+        title: title || null,
+        scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
+      }});
     },
     onSuccess: (s) => {
       qc.invalidateQueries({ queryKey: ["one_on_ones"] });

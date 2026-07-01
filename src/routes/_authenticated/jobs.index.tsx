@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Check, ChevronRight, ChevronLeft, ExternalLink, Briefcase, FileCheck2, Megaphone, ListChecks } from "lucide-react";
 import { toast } from "sonner";
-import { createRequisition, submitRequisitionForApproval, postRequisition, listPositionsForRequisition } from "@/lib/jobs.functions";
+import { createRequisition, submitRequisitionForApproval, postRequisition, listPositionsForRequisition, listJobRequisitions } from "@/lib/jobs.functions";
 import { checkPositionBudget } from "@/lib/budget.functions";
 
 const SAMPLE_TEMPLATE = {
@@ -127,14 +126,11 @@ function HiringGuide() {
 function JobsIndex() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const listReqs = useServerFn(listJobRequisitions);
 
   const reqsQ = useQuery({
     queryKey: ["job_requisitions"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("job_requisitions" as never).select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Array<{ id: string; title: string; department: string | null; status: string; slug: string | null; posted_at: string | null; internal_only: boolean }>;
-    },
+    queryFn: () => listReqs({ data: undefined as never }),
   });
 
   return (

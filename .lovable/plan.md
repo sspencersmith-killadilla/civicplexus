@@ -1,63 +1,51 @@
-## Root cause
+## Plan: make HR admin access reliable everywhere
 
-The granular permission system only affects three tables (`employees`, `interview_kits`, `job_requisitions`). Everything else — `one_on_ones`, `job_applications`, `interviews`, `screenings`, `application_messages`, and the 1-on-1 child tables — still gates access purely on role (`hr_admin`) or a hardcoded manager/hiring-manager relationship. So granting permissions in `/admin-permissions` has no effect on those flows.
+### Goal
+HR admins, especially the demo HR admin account, should be able to open the HR modules and see/manage all operational activity: PAFs, jobs/requisitions, applications, approvals, 1-on-1s, reviews, and related workflow data. This should not make anything public or weaken employee/candidate privacy.
 
-Two concrete failures follow from that:
+### What I found
+- The demo user does have `hr_admin`, `supervisor`, `hiring_manager`, and `employee` roles.
+- The PAF and Jobs modules are currently enabled.
+- Some database policies already allow HR admins, but several app screens still read directly through browser-side RLS or rely on role data fetched through policies. When that role/permission read is blocked, stale, or incomplete, the UI hides creation controls or returns empty lists.
+- Several workflow pages still use direct table queries instead of the newer server-backed access pattern, which is why permissions can look correct in the admin panel but still fail in the actual module.
 
-1. **"Can't schedule a 1-on-1 with a direct report"** — the New 1-on-1 dialog's employee picker queries `employees` directly from the browser. RLS returns only rows where `manager_id = <my employee id>` (plus own row). If a supervisor's direct reports aren't perfectly linked (or they're a department admin, not the direct manager), the dropdown is empty and there's no one to pick. Even after fixing links, department admins and delegates have no path.
-2. **"Can't see candidates for jobs"** — `job_applications` SELECT requires `hr_admin` OR `hiring_manager_id/requested_by = auth.uid()`. A department admin, a supervisor with view rights, or anyone granted a "read applications" permission is filtered out. Same story for `interviews`, `interview_feedback`, `screenings`, `application_messages`.
+### Implementation steps
+1. **Create a single server-backed HR access context**
+   - Add/extend a server function that reads the current signed-in user’s roles and effective permissions with trusted server access.
+   - Return normalized booleans like `isHrAdmin`, `canManagePaf`, `canManageJobs`, `canManageApprovals`, `canManageReviews`, `canManageOneOnOnes`.
+   - Use this as the source of truth for navigation and page-level action buttons instead of fragile client-side role reads.
 
-## Fix
+2. **Move PAF list and employee picker to server functions**
+   - Replace direct browser queries on `/paf` with server functions:
+     - HR admins see all PAFs.
+     - HR admins can select any employee except themselves when creating a PAF.
+     - Supervisors/department admins keep scoped access only.
+   - Keep PAF submission authorization server-side so non-HR users cannot abuse the broader UI.
 
-### 1. Extend the permission catalog
+3. **Move Jobs/Requisitions list/detail reads to server functions**
+   - Replace direct browser reads on `/jobs` and `/jobs/:id` for requisitions and approval chains.
+   - HR admins see all requisitions and all applicants.
+   - Hiring managers/supervisors keep scoped access based on requester/hiring manager/permissions.
+   - Candidate/public careers behavior stays unchanged.
 
-Add keys the RLS layer can honor:
-- `one_on_ones.manage` — schedule/edit any 1-on-1 (and read/write child notes, agenda, action items)
-- `one_on_ones.read.reports` — read 1-on-1s for anyone in the caller's reporting chain (dept admin / skip-level)
-- `applications.read` — read job applications and application messages across postings
-- `applications.write` — update status / add messages
-- `interviews.manage` — read/write interviews, feedback
-- `screenings.read` — read AI screening rows
+4. **Add HR-admin universal RLS safety net where needed**
+   - Review the tables used by PAFs, jobs, approvals, one-on-ones, reviews, and screenings.
+   - Add narrowly scoped authenticated HR-admin policies only where missing.
+   - Do not add anon access and do not expose sensitive application or employee data publicly.
 
-Seed a **"Hiring team"** system group (`applications.read` + `applications.write` + `interviews.manage` + `screenings.read` + `interview_kits.read` + `job_requisitions.read.internal`) and a **"People manager+"** group (`one_on_ones.manage` + `one_on_ones.read.reports`). HR admin retains implicit-all.
+5. **Fix navigation/action gating**
+   - Ensure the sidebar and page buttons treat HR admin as a universal internal administrator, even if granular permissions are not individually assigned.
+   - Keep module toggles respected; if a super admin turns a module off, it stays off.
 
-### 2. Add permission-aware RLS clauses
+6. **Add a regression self-check/test path**
+   - Expand the existing access self-check/regression tests so an HR admin must be able to:
+     - list/create PAFs,
+     - view approval chains/steps,
+     - list all requisitions,
+     - view applications,
+     - list one-on-ones/reviews.
+   - Keep negative checks for anon and ordinary employees so security does not regress.
 
-Additive `PERMISSIVE` policies (existing role/relationship policies stay in place):
-- `one_on_ones`: SELECT/INSERT/UPDATE/DELETE where `has_permission('one_on_ones.manage')`; SELECT where `has_permission('one_on_ones.read.reports')` AND the target employee reports (directly or transitively) into the caller.
-- `one_on_one_notes`, `one_on_one_agenda_notes`, `one_on_one_action_items`: mirror the parent's `has_permission('one_on_ones.manage')` for full access.
-- `job_applications`, `application_messages`: SELECT via `applications.read`, INSERT/UPDATE via `applications.write`.
-- `interviews`, `interview_feedback`: ALL via `interviews.manage`.
-- `screenings`: SELECT via `screenings.read`.
-
-Add a small SECURITY DEFINER helper `private.reports_into(_manager_uid uuid, _employee_id uuid)` for the transitive-report check so the RLS doesn't recurse on `employees`.
-
-### 3. Unblock the 1-on-1 employee picker
-
-The dropdown must show anyone the caller can legitimately meet with, not what browser-RLS happens to return. Add `listOneOnOneCandidates` server function (in `src/lib/one-on-one-transfer.functions.ts` or a new `src/lib/one-on-ones.functions.ts`) using `supabaseAdmin` that returns:
-- HR admin or `one_on_ones.manage` → all employees
-- Otherwise → self + direct reports + transitive reports (if `one_on_ones.read.reports`) + department-admin scope
-
-Swap `one-on-ones.index.tsx`'s `employeesQ` to use this function via `useServerFn`.
-
-### 4. Unblock the candidate view for job_applications
-
-Add `listApplicationsForRequisition` / `listApplicationsInbox` server functions that check role + `applications.read` + hiring-manager relationship server-side and return rows via `supabaseAdmin`. Update `src/routes/_authenticated/jobs.$id.tsx` (and the applicant-pool view used for AI screening bulk actions) to use them, mirroring the pattern already used for the directory/org chart.
-
-### 5. Regression coverage
-
-Extend `tests/roles-matrix.test.ts` with matrix rows for `one_on_ones`, `job_applications`, `interviews`, and `screenings` under the four roles + a "granted `applications.read`" user, so the permission→RLS wiring can't silently regress again.
-
-## Out of scope
-
-- No redesign of the admin permission UI — the new keys will appear automatically in the existing category list.
-- No changes to the existing role-based policies; the new clauses are strictly additive so nothing currently working breaks.
-
-## Files touched
-
-- New migration: permission keys + system groups + additive RLS + `private.reports_into` helper
-- `src/lib/one-on-ones.functions.ts` (new) — `listOneOnOneCandidates`
-- `src/lib/applications.functions.ts` (new) — `listApplicationsForRequisition`, `listApplicationsInbox`
-- `src/routes/_authenticated/one-on-ones.index.tsx` — swap picker to server fn
-- `src/routes/_authenticated/jobs.$id.tsx` and applicant-pool component — swap applicant reads to server fn
-- `tests/roles-matrix.test.ts` — expanded matrix
+### Validation
+- Verify the demo HR admin role can access `/paf`, create a PAF, see existing PAFs, access `/jobs`, open a requisition, and see applicants/approval chains.
+- Confirm public users still only see public posted careers data and cannot see internal requisition/application/admin workflow data.

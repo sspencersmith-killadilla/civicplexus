@@ -23,6 +23,102 @@ const createInput = z.object({
   approval_roles: z.array(z.enum(["supervisor","hiring_manager","hr_admin","it_admin"])).optional(),
 });
 
+async function getPafAccessContext(userId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const [{ data: roleRows }, { data: meEmp }, { data: deptRows }] = await Promise.all([
+    supabaseAdmin.from("user_roles").select("role").eq("user_id", userId),
+    supabaseAdmin.from("employees").select("id, department").eq("user_id", userId).maybeSingle(),
+    supabaseAdmin.from("department_admins").select("department").eq("user_id", userId),
+  ]);
+  const roles = (roleRows ?? []).map((r) => r.role as string);
+  return {
+    supabaseAdmin,
+    roles,
+    isHrAdmin: roles.includes("hr_admin"),
+    isSupervisor: roles.includes("supervisor"),
+    isHiringManager: roles.includes("hiring_manager"),
+    isDeptAdmin: roles.includes("department_admin"),
+    employeeId: (meEmp as { id?: string } | null)?.id ?? null,
+    departments: ((deptRows ?? []) as Array<{ department: string }>).map((d) => d.department),
+  };
+}
+
+export const listPafs = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const access = await getPafAccessContext(context.userId);
+    const { data, error } = await access.supabaseAdmin
+      .from("personnel_actions")
+      .select("id, paf_number, action_type, effective_date, status, initiated_by, employees(id, first_name, last_name, manager_id, department, user_id)")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+
+    const rows = (data ?? []) as Array<{
+      id: string;
+      paf_number: string;
+      action_type: string;
+      effective_date: string;
+      status: string;
+      initiated_by: string | null;
+      employees: { id: string; first_name: string; last_name: string; manager_id: string | null; department: string | null; user_id: string | null } | null;
+    }>;
+
+    const deptSet = new Set(access.departments);
+    return rows
+      .filter((p) => {
+        if (access.isHrAdmin) return true;
+        if (p.initiated_by === context.userId) return true;
+        const emp = p.employees;
+        if (!emp) return false;
+        if (emp.user_id === context.userId) return true;
+        if (access.employeeId && emp.manager_id === access.employeeId) return true;
+        if (emp.department && deptSet.has(emp.department)) return true;
+        return false;
+      })
+      .map((p) => ({
+        id: p.id,
+        paf_number: p.paf_number,
+        action_type: p.action_type,
+        effective_date: p.effective_date,
+        status: p.status,
+        employees: p.employees ? { first_name: p.employees.first_name, last_name: p.employees.last_name } : null,
+      }));
+  });
+
+export const listPafEmployees = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const access = await getPafAccessContext(context.userId);
+    const canCreate = access.isHrAdmin || access.isSupervisor || access.isHiringManager || access.isDeptAdmin;
+    if (!canCreate) return [];
+
+    const { data, error } = await access.supabaseAdmin
+      .from("employees")
+      .select("id, user_id, first_name, last_name, job_title, manager_id, department, status")
+      .order("last_name")
+      .limit(1000);
+    if (error) throw new Error(error.message);
+
+    const deptSet = new Set(access.departments);
+    return ((data ?? []) as Array<{ id: string; user_id: string | null; first_name: string; last_name: string; job_title: string | null; manager_id: string | null; department: string | null; status: string | null }>)
+      .filter((e) => {
+        if (!["active", "preboarding"].includes(e.status ?? "active")) return false;
+        if (e.user_id === context.userId) return false;
+        if (access.isHrAdmin) return true;
+        if (access.employeeId && e.manager_id === access.employeeId) return true;
+        if (e.department && deptSet.has(e.department)) return true;
+        return false;
+      })
+      .map((e) => ({
+        id: e.id,
+        user_id: e.user_id,
+        first_name: e.first_name,
+        last_name: e.last_name,
+        job_title: e.job_title,
+      }));
+  });
+
 export const submitPaf = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => createInput.parse(d))
@@ -470,7 +566,13 @@ export const repairPafChains = createServerFn({ method: "POST" })
       // Resolve manager from the employee
       const { data: emp } = await supabaseAdmin
         .from("employees").select("manager_id").eq("id", paf.employee_id).maybeSingle();
-      const managerUserId = (emp as { manager_id: string | null } | null)?.manager_id ?? null;
+      let managerUserId: string | null = null;
+      const managerEmployeeId = (emp as { manager_id: string | null } | null)?.manager_id ?? null;
+      if (managerEmployeeId) {
+        const { data: mgr } = await supabaseAdmin
+          .from("employees").select("user_id").eq("id", managerEmployeeId).maybeSingle();
+        managerUserId = (mgr as { user_id: string | null } | null)?.user_id ?? null;
+      }
 
       const steps = resolveApprovalChain({
         action_type: paf.action_type as PafActionType,
@@ -505,8 +607,12 @@ export const repairPafChains = createServerFn({ method: "POST" })
       const stageMismatch = have.length !== need;
       const emptyRoles = have.some((s) => !s.approver_role);
       const missingApprover = have.some((s) => !s.approver_id);
+      const wrongApprover = have.some((s) => {
+        const expected = steps.find((step) => step.stage === s.stage);
+        return !!expected?.approver_id && s.approver_id !== expected.approver_id;
+      });
 
-      if (!stageMismatch && !emptyRoles && !missingApprover) { alreadyOk++; continue; }
+      if (!stageMismatch && !emptyRoles && !missingApprover && !wrongApprover) { alreadyOk++; continue; }
       if (decided) { problems.push({ paf_id: paf.id, reason: "has decided steps; skipped" }); continue; }
 
       // Wipe pending steps and reinsert clean ones
