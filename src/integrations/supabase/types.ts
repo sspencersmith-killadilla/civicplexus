@@ -7342,6 +7342,10 @@ export type Database = {
         Args: { _dept: string; _uid: string }
         Returns: boolean
       }
+      is_in_report_chain: {
+        Args: { _employee_id: string; _manager_uid: string }
+        Returns: boolean
+      }
       is_iv_manager: { Args: { _uid: string }; Returns: boolean }
       is_panelist_for_interview: {
         Args: { _interview: string; _user: string }
