@@ -107,6 +107,8 @@ bun install
    - `offer-letters`
    - `payroll-exports`
    - `compliance-exports`
+   - `official-photos`
+   - `official-documents`
 
 **Did it work?** ✅ `supabase db push` reports "Finished". The Tables UI shows `employees`, `job_requisitions`, `payroll_runs`, `performance_reviews`, etc.
 
@@ -620,3 +622,44 @@ Set `AI_PROVIDER` in `.env`:
 
 The health endpoint reports `ai_not_configured` when the chosen provider is
 missing credentials, so misconfiguration surfaces immediately.
+
+---
+
+## 15. Governance (Elected Officials & Boards)
+
+Municipal governance data lives alongside HR but has its own tables, buckets, roles, and cron jobs.
+
+### 15.1 Tables
+`official_bodies`, `official_seats`, `officials`, `official_terms`, `official_meetings`, `official_attendance`, `official_disclosures`, `officials_reimbursements`. All are RLS-enabled.
+
+### 15.2 Storage buckets
+Both **private**:
+- `official-photos` — headshots for the public roster (served via signed URLs).
+- `official-documents` — oaths, disclosures, appointment letters (clerk/HR only).
+
+### 15.3 Roles
+Add to your `app_role` enum if not present:
+- `city_clerk` — full CRUD on governance tables and roster exports.
+- `elected_official` — read-only on own record and term; may submit own disclosures.
+
+HR admins retain full override via `hr_admin`.
+
+### 15.4 Public roster privacy flags
+Per-record flags on `officials`:
+- `public_visible` (bool, default `false`) — required for the record to appear on `/officials` and in the public CSV/PDF exports.
+- `public_show_contact` (bool, default `false`) — email/phone shown publicly only when `true`.
+
+The `officials_public_read` policy and `exportPublicRosterCsv` server function both enforce these flags. Set defaults per body when onboarding a new commission.
+
+### 15.5 Scheduled jobs
+Register in `pg_cron` (or the equivalent scheduler):
+
+| Job | Cadence | What it does |
+| --- | ------- | ------------ |
+| `notify_officials_expiring` | daily 06:00 | Notifies HR admins and city clerks about active terms ending within 120 days (dedup 30 d). |
+| `generate_meeting_reimbursements` | on demand | Called from the admin UI to convert attendance into draft reimbursement records. |
+
+Term status changes to `resigned` or `removed` fire an immediate notification via `officials_notify_targets()` — no cron needed.
+
+### 15.6 Health check
+Governance is reported under `modules.governance` in the health probe. If storage buckets are missing, the probe returns `governance_storage_missing`.

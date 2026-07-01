@@ -729,3 +729,40 @@ Each module chapter lists:
 - **Bug reports** — include the URL, what you did, and what happened. Screenshots help.
 
 *End of guide.*
+## Elected Officials & Boards
+
+**Who** — City Clerk, HR admins, and (read-only) elected officials for their own record. **Where** — Sidebar → Governance → **Officials**
+
+### Governing bodies
+1. **Admin → Officials → New body**. Enter name, kind (Council / Board / Commission), pay rules:
+   - **Per-meeting amount** — flat pay for attending a meeting.
+   - **Chair bonus** — extra amount when the attendee is the seat chair.
+   - **Per diem** — daily allowance.
+   - **Pay when absent** — pay excused/unexcused absences.
+2. Add **Seats** — Place/District number, chair flag, term length.
+
+### Add an official and swear them in
+1. **New official** — name, email, photo, bio. Toggle:
+   - **Public visible** — appear on the `/officials` public roster.
+   - **Show contact publicly** — expose email/phone to the public.
+2. **New term** — pick official + seat, appointment date, term end.
+3. Click **Swear in** — enter oath date and administrator. Term becomes `active`.
+
+### Meetings, attendance, and pay
+1. Log a meeting on the body.
+2. Mark **Attendance** per official (present/absent/excused).
+3. Click **Generate pay** for a date range. Draft reimbursement records are created using the body's pay rules; re-running the same range is safe (deduped by meeting + pay kind).
+
+### Disclosures
+Record Chapter 176 conflict-of-interest, financial statements, and ethics acknowledgments with due dates. Officials can submit their own via **My HR → Disclosures**.
+
+### End a term
+Use **End term** to record resignation, removal, or expiration. HR admins and the City Clerk get an immediate notification. A daily sweep also warns 120 days before any active term expires.
+
+### Public roster (`/officials`)
+Community-facing page. Only records with **Public visible** appear; contact info shows only if **Show contact publicly** is enabled. Use the header buttons to download **CSV** or open a print-ready **PDF**.
+
+### Roles
+- **City Clerk** — full governance access; runs pay generation and roster exports.
+- **Elected Official** — read own record, submit own disclosures.
+- **HR Admin** — full override on all governance data.
