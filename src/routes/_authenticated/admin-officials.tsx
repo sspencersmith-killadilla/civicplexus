@@ -412,3 +412,41 @@ function EndTermButton({ termId, onDone }: { termId: string; onDone: () => void 
     </Dialog>
   );
 }
+
+function GenerateReimbDialog({ bodyId }: { bodyId: string }) {
+  const [open, setOpen] = useState(false);
+  const today = new Date();
+  const first = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+  const last = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().slice(0, 10);
+  const [from, setFrom] = useState(first);
+  const [to, setTo] = useState(last);
+  const fn = useServerFn(generateMeetingReimbursements);
+  const m = useMutation({
+    mutationFn: () => fn({ data: { body_id: bodyId, from, to } }),
+    onSuccess: (r) => {
+      toast.success(`Generated ${r.created} reimbursement${r.created === 1 ? "" : "s"} (${r.skipped} skipped)`);
+      setOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline"><Coins className="h-4 w-4 mr-1" /> Generate pay</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Generate reimbursements from attendance</DialogTitle></DialogHeader>
+        <p className="text-xs text-muted-foreground">
+          Creates draft reimbursement records for every attended meeting in the range, using this body's per-meeting amount, chair bonus, and per-diem rules. Existing records for the same meeting are skipped.
+        </p>
+        <div className="grid grid-cols-2 gap-3 mt-2">
+          <div><Label>From</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
+          <div><Label>To</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => m.mutate()} disabled={m.isPending}>{m.isPending ? "Generating…" : "Generate"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
