@@ -30,6 +30,11 @@ function PafIndex() {
   const [open, setOpen] = useState(false);
   const { data: me } = useCurrentUser();
   const isHR = hasRole(me?.roles, "hr_admin");
+  const canCreate =
+    isHR ||
+    hasRole(me?.roles, "supervisor") ||
+    hasRole(me?.roles, "hiring_manager") ||
+    hasRole(me?.roles, "department_admin");
   const repairM = useMutation({
     mutationFn: () => repair({}),
     onSuccess: (r: { scanned: number; repaired: number; alreadyOk: number; problems: Array<{ paf_id: string; reason: string }> }) => {
@@ -98,6 +103,7 @@ function PafIndex() {
               {repairM.isPending ? "Repairing…" : "Repair approval chains"}
             </Button>
           )}
+          {canCreate && (
           <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1" /> New PAF</Button></DialogTrigger>
           <DialogContent className="max-w-xl">
@@ -160,6 +166,7 @@ function PafIndex() {
             </div>
           </DialogContent>
           </Dialog>
+          )}
         </div>
       </div>
 
