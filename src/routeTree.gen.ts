@@ -13,7 +13,9 @@ import { Route as OfflineShellRouteImport } from './routes/offline-shell'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OfficialsIndexRouteImport } from './routes/officials.index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as OfficialsSlugRouteImport } from './routes/officials.$slug'
 import { Route as OfferTokenRouteImport } from './routes/offer.$token'
 import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
@@ -32,6 +34,7 @@ import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedOshaRouteImport } from './routes/_authenticated/osha'
 import { Route as AuthenticatedOrgChartRouteImport } from './routes/_authenticated/org-chart'
 import { Route as AuthenticatedOneOnOneTemplatesRouteImport } from './routes/_authenticated/one-on-one-templates'
+import { Route as AuthenticatedOfficialsRouteImport } from './routes/_authenticated/officials'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
@@ -147,9 +150,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
+  id: '/officials/',
+  path: '/officials/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CareersIndexRoute = CareersIndexRouteImport.update({
   id: '/careers/',
   path: '/careers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfficialsSlugRoute = OfficialsSlugRouteImport.update({
+  id: '/officials/$slug',
+  path: '/officials/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OfferTokenRoute = OfferTokenRouteImport.update({
@@ -249,6 +262,11 @@ const AuthenticatedOneOnOneTemplatesRoute =
     path: '/one-on-one-templates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOfficialsRoute = AuthenticatedOfficialsRouteImport.update({
+  id: '/officials',
+  path: '/officials',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOffboardingRoute =
   AuthenticatedOffboardingRouteImport.update({
     id: '/offboarding',
@@ -817,6 +835,7 @@ export interface FileRoutesByFullPath {
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
+  '/officials': typeof AuthenticatedOfficialsRoute
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/org-chart': typeof AuthenticatedOrgChartRoute
   '/osha': typeof AuthenticatedOshaRoute
@@ -835,7 +854,9 @@ export interface FileRoutesByFullPath {
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
+  '/officials/$slug': typeof OfficialsSlugRoute
   '/careers/': typeof CareersIndexRoute
+  '/officials/': typeof OfficialsIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -936,6 +957,7 @@ export interface FileRoutesByTo {
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
+  '/officials': typeof OfficialsIndexRoute
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/org-chart': typeof AuthenticatedOrgChartRoute
   '/osha': typeof AuthenticatedOshaRoute
@@ -953,6 +975,7 @@ export interface FileRoutesByTo {
   '/training': typeof AuthenticatedTrainingRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/offer/$token': typeof OfferTokenRoute
+  '/officials/$slug': typeof OfficialsSlugRoute
   '/careers': typeof CareersIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1056,6 +1079,7 @@ export interface FileRoutesById {
   '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
+  '/_authenticated/officials': typeof AuthenticatedOfficialsRoute
   '/_authenticated/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/_authenticated/org-chart': typeof AuthenticatedOrgChartRoute
   '/_authenticated/osha': typeof AuthenticatedOshaRoute
@@ -1074,7 +1098,9 @@ export interface FileRoutesById {
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
+  '/officials/$slug': typeof OfficialsSlugRoute
   '/careers/': typeof CareersIndexRoute
+  '/officials/': typeof OfficialsIndexRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/_authenticated/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1177,6 +1203,7 @@ export interface FileRouteTypes {
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
+    | '/officials'
     | '/one-on-one-templates'
     | '/org-chart'
     | '/osha'
@@ -1195,7 +1222,9 @@ export interface FileRouteTypes {
     | '/worker-types'
     | '/careers/$slug'
     | '/offer/$token'
+    | '/officials/$slug'
     | '/careers/'
+    | '/officials/'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1296,6 +1325,7 @@ export interface FileRouteTypes {
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
+    | '/officials'
     | '/one-on-one-templates'
     | '/org-chart'
     | '/osha'
@@ -1313,6 +1343,7 @@ export interface FileRouteTypes {
     | '/training'
     | '/worker-types'
     | '/offer/$token'
+    | '/officials/$slug'
     | '/careers'
     | '/cascades/$id'
     | '/comp-cycles/$id'
@@ -1415,6 +1446,7 @@ export interface FileRouteTypes {
     | '/_authenticated/my-hr'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
+    | '/_authenticated/officials'
     | '/_authenticated/one-on-one-templates'
     | '/_authenticated/org-chart'
     | '/_authenticated/osha'
@@ -1433,7 +1465,9 @@ export interface FileRouteTypes {
     | '/_authenticated/worker-types'
     | '/careers/$slug'
     | '/offer/$token'
+    | '/officials/$slug'
     | '/careers/'
+    | '/officials/'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
     | '/_authenticated/compliance/new-hire'
@@ -1506,7 +1540,9 @@ export interface RootRouteChildren {
   OfflineShellRoute: typeof OfflineShellRoute
   CareersSlugRoute: typeof CareersSlugRouteWithChildren
   OfferTokenRoute: typeof OfferTokenRoute
+  OfficialsSlugRoute: typeof OfficialsSlugRoute
   CareersIndexRoute: typeof CareersIndexRoute
+  OfficialsIndexRoute: typeof OfficialsIndexRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
   CandidateTokenInterviewRoute: typeof CandidateTokenInterviewRoute
@@ -1561,11 +1597,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/officials/': {
+      id: '/officials/'
+      path: '/officials'
+      fullPath: '/officials/'
+      preLoaderRoute: typeof OfficialsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/careers/': {
       id: '/careers/'
       path: '/careers'
       fullPath: '/careers/'
       preLoaderRoute: typeof CareersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/officials/$slug': {
+      id: '/officials/$slug'
+      path: '/officials/$slug'
+      fullPath: '/officials/$slug'
+      preLoaderRoute: typeof OfficialsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/offer/$token': {
@@ -1692,6 +1742,13 @@ declare module '@tanstack/react-router' {
       path: '/one-on-one-templates'
       fullPath: '/one-on-one-templates'
       preLoaderRoute: typeof AuthenticatedOneOnOneTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/officials': {
+      id: '/_authenticated/officials'
+      path: '/officials'
+      fullPath: '/officials'
+      preLoaderRoute: typeof AuthenticatedOfficialsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/offboarding': {
@@ -2437,6 +2494,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
+  AuthenticatedOfficialsRoute: typeof AuthenticatedOfficialsRoute
   AuthenticatedOneOnOneTemplatesRoute: typeof AuthenticatedOneOnOneTemplatesRoute
   AuthenticatedOrgChartRoute: typeof AuthenticatedOrgChartRoute
   AuthenticatedOshaRoute: typeof AuthenticatedOshaRoute
@@ -2524,6 +2582,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
+  AuthenticatedOfficialsRoute: AuthenticatedOfficialsRoute,
   AuthenticatedOneOnOneTemplatesRoute: AuthenticatedOneOnOneTemplatesRoute,
   AuthenticatedOrgChartRoute: AuthenticatedOrgChartRoute,
   AuthenticatedOshaRoute: AuthenticatedOshaRoute,
@@ -2604,7 +2663,9 @@ const rootRouteChildren: RootRouteChildren = {
   OfflineShellRoute: OfflineShellRoute,
   CareersSlugRoute: CareersSlugRouteWithChildren,
   OfferTokenRoute: OfferTokenRoute,
+  OfficialsSlugRoute: OfficialsSlugRoute,
   CareersIndexRoute: CareersIndexRoute,
+  OfficialsIndexRoute: OfficialsIndexRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
   CandidateTokenInterviewRoute: CandidateTokenInterviewRoute,
@@ -2633,13 +2694,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
