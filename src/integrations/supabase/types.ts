@@ -4348,6 +4348,7 @@ export type Database = {
       }
       official_bodies: {
         Row: {
+          chair_bonus_amount: number | null
           comp_model: Database["public"]["Enums"]["official_comp_model"]
           created_at: string
           description: string | null
@@ -4357,6 +4358,8 @@ export type Database = {
           kind: Database["public"]["Enums"]["official_body_kind"]
           meeting_cadence: string | null
           name: string
+          pay_absent: boolean
+          per_diem_amount: number | null
           per_meeting_amount: number | null
           roster_public: boolean
           slug: string
@@ -4364,6 +4367,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          chair_bonus_amount?: number | null
           comp_model?: Database["public"]["Enums"]["official_comp_model"]
           created_at?: string
           description?: string | null
@@ -4373,6 +4377,8 @@ export type Database = {
           kind?: Database["public"]["Enums"]["official_body_kind"]
           meeting_cadence?: string | null
           name: string
+          pay_absent?: boolean
+          per_diem_amount?: number | null
           per_meeting_amount?: number | null
           roster_public?: boolean
           slug: string
@@ -4380,6 +4386,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          chair_bonus_amount?: number | null
           comp_model?: Database["public"]["Enums"]["official_comp_model"]
           created_at?: string
           description?: string | null
@@ -4389,6 +4396,8 @@ export type Database = {
           kind?: Database["public"]["Enums"]["official_body_kind"]
           meeting_cadence?: string | null
           name?: string
+          pay_absent?: boolean
+          per_diem_amount?: number | null
           per_meeting_amount?: number | null
           roster_public?: boolean
           slug?: string
@@ -4711,6 +4720,7 @@ export type Database = {
       officials_reimbursements: {
         Row: {
           amount: number
+          attendance_id: string | null
           created_at: string
           created_by: string | null
           decided_at: string | null
@@ -4718,6 +4728,8 @@ export type Database = {
           decision_notes: string | null
           id: string
           incurred_date: string
+          meeting_id: string | null
+          pay_kind: string | null
           purpose: string
           receipt_document_id: string | null
           status: Database["public"]["Enums"]["official_reimb_status"]
@@ -4726,6 +4738,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          attendance_id?: string | null
           created_at?: string
           created_by?: string | null
           decided_at?: string | null
@@ -4733,6 +4746,8 @@ export type Database = {
           decision_notes?: string | null
           id?: string
           incurred_date: string
+          meeting_id?: string | null
+          pay_kind?: string | null
           purpose: string
           receipt_document_id?: string | null
           status?: Database["public"]["Enums"]["official_reimb_status"]
@@ -4741,6 +4756,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          attendance_id?: string | null
           created_at?: string
           created_by?: string | null
           decided_at?: string | null
@@ -4748,6 +4764,8 @@ export type Database = {
           decision_notes?: string | null
           id?: string
           incurred_date?: string
+          meeting_id?: string | null
+          pay_kind?: string | null
           purpose?: string
           receipt_document_id?: string | null
           status?: Database["public"]["Enums"]["official_reimb_status"]
@@ -4755,6 +4773,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "officials_reimbursements_attendance_id_fkey"
+            columns: ["attendance_id"]
+            isOneToOne: false
+            referencedRelation: "official_attendance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "officials_reimbursements_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "official_meetings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "officials_reimbursements_receipt_document_id_fkey"
             columns: ["receipt_document_id"]
@@ -7909,6 +7941,13 @@ export type Database = {
         Returns: {
           complete: boolean
           org_name: string
+        }[]
+      }
+      generate_meeting_reimbursements: {
+        Args: { p_body_id: string; p_from: string; p_to: string }
+        Returns: {
+          created: number
+          skipped: number
         }[]
       }
       get_effective_permissions: {
