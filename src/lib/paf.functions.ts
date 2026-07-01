@@ -566,7 +566,13 @@ export const repairPafChains = createServerFn({ method: "POST" })
       // Resolve manager from the employee
       const { data: emp } = await supabaseAdmin
         .from("employees").select("manager_id").eq("id", paf.employee_id).maybeSingle();
-      const managerUserId = (emp as { manager_id: string | null } | null)?.manager_id ?? null;
+      let managerUserId: string | null = null;
+      const managerEmployeeId = (emp as { manager_id: string | null } | null)?.manager_id ?? null;
+      if (managerEmployeeId) {
+        const { data: mgr } = await supabaseAdmin
+          .from("employees").select("user_id").eq("id", managerEmployeeId).maybeSingle();
+        managerUserId = (mgr as { user_id: string | null } | null)?.user_id ?? null;
+      }
 
       const steps = resolveApprovalChain({
         action_type: paf.action_type as PafActionType,
@@ -601,8 +607,12 @@ export const repairPafChains = createServerFn({ method: "POST" })
       const stageMismatch = have.length !== need;
       const emptyRoles = have.some((s) => !s.approver_role);
       const missingApprover = have.some((s) => !s.approver_id);
+      const wrongApprover = have.some((s) => {
+        const expected = steps.find((step) => step.stage === s.stage);
+        return !!expected?.approver_id && s.approver_id !== expected.approver_id;
+      });
 
-      if (!stageMismatch && !emptyRoles && !missingApprover) { alreadyOk++; continue; }
+      if (!stageMismatch && !emptyRoles && !missingApprover && !wrongApprover) { alreadyOk++; continue; }
       if (decided) { problems.push({ paf_id: paf.id, reason: "has decided steps; skipped" }); continue; }
 
       // Wipe pending steps and reinsert clean ones
