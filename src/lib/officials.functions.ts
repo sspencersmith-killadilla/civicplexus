@@ -290,3 +290,23 @@ export const confirmOfficialPhoto = createServerFn({ method: "POST" })
 
 // Silence unused import warning; keeping helper for future extension.
 void assertCanManage;
+
+/** Generate stipend/per-diem reimbursements from meeting attendance for a body & date range. */
+export const generateMeetingReimbursements = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({
+      body_id: z.string().uuid(),
+      from: z.string(),
+      to: z.string(),
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase.rpc(
+      "generate_meeting_reimbursements" as never,
+      { p_body_id: data.body_id, p_from: data.from, p_to: data.to } as never,
+    );
+    if (error) throw error;
+    const r = (Array.isArray(rows) ? rows[0] : rows) as { created: number; skipped: number } | null;
+    return { created: r?.created ?? 0, skipped: r?.skipped ?? 0 };
+  });
