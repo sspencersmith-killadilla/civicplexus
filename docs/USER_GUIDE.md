@@ -237,7 +237,9 @@ Manager and report share an agenda template, take running notes (private to the 
 - **Employee Training** tracks status, score, evidence upload, and completion.
 - Completing a course can issue a **Certification** with an expiry; **Expiry tracker** color-codes 30/60/90 days out.
 - **Transcript** prints a full per-employee training history.
-- **LMS Imports** (`/lms-imports`) ingests completions from external LMSs and maps eligible courses into TCOLE continuing-education credits.
+- **LMS Imports** (`/lms-imports`) ingests completions from external LMSs and maps eligible courses into TCOLE continuing-education credits. Two modes:
+  - **Manual upload** — CSV of completions (employee identifier, course code, completion date, score, evidence URL).
+  - **Connections** (HR admin only) — connect Chamilo, Moodle, or Forma LMS with a base URL and API token. Test the connection, run a sync on demand, or let the built-in `pg_cron` job auto-sync hourly. Each sync appears in the **Sync history** panel with rows fetched, matched, applied, and any errors. Tokens are stored as project secrets (`LMS_<id>_TOKEN`) — the connection form shows the exact secret name after saving.
 
 ---
 

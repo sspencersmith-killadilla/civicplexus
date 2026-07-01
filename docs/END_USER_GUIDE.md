@@ -538,6 +538,11 @@ Each module chapter lists:
 2. Employees complete; status shows on transcript.
 3. Employees **cannot** self-mark completion — an instructor, supervisor, or HR must confirm.
 
+**LMS integrations (HR admin)** — Sidebar → Learning → **LMS Imports**
+
+- **Manual upload** tab — drag a CSV of completions for any LMS.
+- **Connections** tab — add a Chamilo, Moodle, or Forma LMS connection with base URL + API token, then **Test**, **Sync now**, or remove. Enabled connections auto-sync hourly via a built-in cron job. The **Sync history** panel shows per-run counts (fetched / matched / applied) and error messages. After saving a connection, add its API token as the project secret name shown in the toast (`LMS_<id>_TOKEN`).
+
 ### OSHA / TCOLE / TMRS
 
 **Who** — 🧑‍💼
