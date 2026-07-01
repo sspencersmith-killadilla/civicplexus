@@ -7,6 +7,7 @@ export const APP_ROLES = [
   "hr_admin",
   "hiring_manager",
   "supervisor",
+  "department_admin",
   "it_admin",
   "employee",
   "candidate",
