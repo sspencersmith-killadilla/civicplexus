@@ -1,80 +1,63 @@
+## Root cause
 
-## 1. Custom permission groups (HR-managed, granular)
+The granular permission system only affects three tables (`employees`, `interview_kits`, `job_requisitions`). Everything else — `one_on_ones`, `job_applications`, `interviews`, `screenings`, `application_messages`, and the 1-on-1 child tables — still gates access purely on role (`hr_admin`) or a hardcoded manager/hiring-manager relationship. So granting permissions in `/admin-permissions` has no effect on those flows.
 
-### Data model (new migration)
-- `permission_keys` (seed table): `key text primary key`, `label`, `category`, `description`. Seeded with a catalog like `employees.read`, `employees.write.contact`, `employees.write.compensation`, `interview_kits.read`, `interview_kits.write`, `job_requisitions.read.internal`, `job_requisitions.write`, `job_requisitions.approve`, `paf.initiate`, `paf.approve`, `reviews.finalize`, `timekeeping.approve`, `comp.write`, `payroll.run`, `org_settings.write`, etc.
-- `permission_groups`: `id`, `name` (unique), `description`, `is_system boolean`, `created_by`.
-- `permission_group_keys`: `group_id`, `permission_key` (composite PK).
-- `user_permission_groups`: `user_id`, `group_id` (composite PK), `granted_by`, `granted_at`.
-- `user_permission_grants` (optional per-user override): `user_id`, `permission_key`, `mode` (`grant`|`deny`), `granted_by`. Deny wins for tightening; explicit grant adds to whatever groups provide.
-- All four tables: GRANTs to `authenticated` (SELECT) and `service_role` (ALL); HR-only INSERT/UPDATE/DELETE via `has_role(_,'hr_admin')`.
+Two concrete failures follow from that:
 
-### Security-definer helper
-- `private.has_permission(_uid uuid, _key text) returns boolean` — HR admins always true; otherwise: `(exists in user_permission_groups→permission_group_keys with key) AND NOT exists deny override) OR grant override`. `STABLE SECURITY DEFINER`, search_path locked.
-- Wrapper `public.has_permission(_key text)` reads `auth.uid()` for use in RLS.
+1. **"Can't schedule a 1-on-1 with a direct report"** — the New 1-on-1 dialog's employee picker queries `employees` directly from the browser. RLS returns only rows where `manager_id = <my employee id>` (plus own row). If a supervisor's direct reports aren't perfectly linked (or they're a department admin, not the direct manager), the dropdown is empty and there's no one to pick. Even after fixing links, department admins and delegates have no path.
+2. **"Can't see candidates for jobs"** — `job_applications` SELECT requires `hr_admin` OR `hiring_manager_id/requested_by = auth.uid()`. A department admin, a supervisor with view rights, or anyone granted a "read applications" permission is filtered out. Same story for `interviews`, `interview_feedback`, `screenings`, `application_messages`.
 
-### RLS integration (targeted, additive)
-Extend existing policies on `employees`, `interview_kits`, `job_requisitions` (and a few adjacent tables: `personnel_actions`, `performance_reviews`, `payroll_runs`) so that in addition to role-based access, `public.has_permission('<key>')` also grants the operation. Existing HR/manager/self policies stay intact — permissions can only broaden or (via deny override) narrow through server checks; they cannot bypass department/self scoping unless explicitly granted at the write level.
+## Fix
 
-### Server-function enforcement
-- New `src/lib/permissions.functions.ts`: `listPermissionKeys`, `listGroups`, `getGroup`, `upsertGroup`, `deleteGroup`, `setGroupKeys`, `listUserGroups`, `assignUserToGroup`, `removeUserFromGroup`, `setUserOverride`, `getEffectivePermissions(userId)`.
-- New `src/lib/authz.server.ts`: `assertPermission(ctx, key)` used by high-value server fns (PAF submit/approve, comp writes, requisition post, kit upsert, payroll run) alongside existing role checks.
+### 1. Extend the permission catalog
 
-### Client
-- New `useMyPermissions()` hook fetching effective keys once; `<Can perm="…">` gate for menu items and buttons.
-- Extend `/admin-org-settings` with a **Permissions** tab:
-  - Groups list + editor (name, description, key picker grouped by category).
-  - User assignment picker (search employees → assign/remove groups, add per-user grant/deny).
-  - Read-only "Effective permissions" preview for the selected user.
+Add keys the RLS layer can honor:
+- `one_on_ones.manage` — schedule/edit any 1-on-1 (and read/write child notes, agenda, action items)
+- `one_on_ones.read.reports` — read 1-on-1s for anyone in the caller's reporting chain (dept admin / skip-level)
+- `applications.read` — read job applications and application messages across postings
+- `applications.write` — update status / add messages
+- `interviews.manage` — read/write interviews, feedback
+- `screenings.read` — read AI screening rows
 
-## 2. Role-matrix RLS regression tests
+Seed a **"Hiring team"** system group (`applications.read` + `applications.write` + `interviews.manage` + `screenings.read` + `interview_kits.read` + `job_requisitions.read.internal`) and a **"People manager+"** group (`one_on_ones.manage` + `one_on_ones.read.reports`). HR admin retains implicit-all.
 
-New `tests/roles-matrix.test.ts` (Vitest), authenticated via env credentials with graceful skip when creds are absent. Adds required env: `E2E_HR_*`, `E2E_DEPT_*` (department admin scoped to a known dept, e.g. "Library"), `E2E_SUP_*`, `E2E_EMP_*`.
+### 2. Add permission-aware RLS clauses
 
-For each of `employees`, `interview_kits`, `job_requisitions`, run a matrix of `(role × op)` where op ∈ {SELECT own, SELECT peer, SELECT out-of-scope, INSERT, UPDATE own, UPDATE peer, DELETE}. Expected outcomes:
+Additive `PERMISSIVE` policies (existing role/relationship policies stay in place):
+- `one_on_ones`: SELECT/INSERT/UPDATE/DELETE where `has_permission('one_on_ones.manage')`; SELECT where `has_permission('one_on_ones.read.reports')` AND the target employee reports (directly or transitively) into the caller.
+- `one_on_one_notes`, `one_on_one_agenda_notes`, `one_on_one_action_items`: mirror the parent's `has_permission('one_on_ones.manage')` for full access.
+- `job_applications`, `application_messages`: SELECT via `applications.read`, INSERT/UPDATE via `applications.write`.
+- `interviews`, `interview_feedback`: ALL via `interviews.manage`.
+- `screenings`: SELECT via `screenings.read`.
 
-```text
-                       employees              interview_kits         job_requisitions
-HR admin      R/W all rows                    R/W all                R/W all incl internal cols
-Dept admin    R all; W within own dept only   R only                 R all; W within dept
-Supervisor    R self+reports; W self contact  R only                 R all posted+internal; no W
-Employee      R self+directory-safe cols;     no read                R posted only; no internal
-              W self contact only                                    cols; no W
-```
+Add a small SECURITY DEFINER helper `private.reports_into(_manager_uid uuid, _employee_id uuid)` for the transitive-report check so the RLS doesn't recurse on `employees`.
 
-Each cell is one `it()` asserting either the expected row/columns come back or the write errors with an RLS/permission message. Column-leak checks reuse the `select("id, forbidden_col")` pattern already in `tests/rls-authz.test.ts`.
+### 3. Unblock the 1-on-1 employee picker
 
-Additional cross-cutting cells:
-- Employee with `employees.write.compensation` permission granted → UPDATE of `base_annual` via `employee_comp` server fn succeeds (proves permission plumbing).
-- Employee with a deny override on `job_requisitions.read.internal` → still cannot see internal cols even if their role would allow (proves deny wins).
+The dropdown must show anyone the caller can legitimately meet with, not what browser-RLS happens to return. Add `listOneOnOneCandidates` server function (in `src/lib/one-on-one-transfer.functions.ts` or a new `src/lib/one-on-ones.functions.ts`) using `supabaseAdmin` that returns:
+- HR admin or `one_on_ones.manage` → all employees
+- Otherwise → self + direct reports + transitive reports (if `one_on_ones.read.reports`) + department-admin scope
 
-## 3. Files touched
+Swap `one-on-ones.index.tsx`'s `employeesQ` to use this function via `useServerFn`.
 
-**Migrations:** 1 new (permission tables + grants + RLS + `has_permission` helpers + additive policy clauses on employees/interview_kits/job_requisitions/personnel_actions/performance_reviews/payroll_runs).
+### 4. Unblock the candidate view for job_applications
 
-**New code:**
-- `src/lib/permissions.functions.ts`
-- `src/lib/authz.server.ts`
-- `src/hooks/use-permissions.ts`
-- `src/components/can.tsx`
-- `src/routes/_authenticated/admin-permissions.tsx` (or a tab inside `admin-org-settings.tsx`)
-- `tests/roles-matrix.test.ts`
+Add `listApplicationsForRequisition` / `listApplicationsInbox` server functions that check role + `applications.read` + hiring-manager relationship server-side and return rows via `supabaseAdmin`. Update `src/routes/_authenticated/jobs.$id.tsx` (and the applicant-pool view used for AI screening bulk actions) to use them, mirroring the pattern already used for the directory/org chart.
 
-**Edits:**
-- `src/routes/_authenticated/admin-org-settings.tsx` — add Permissions tab entry.
-- `src/components/app-shell.tsx` — wrap sensitive nav items in `<Can>`.
-- Selected server fns (`paf.functions.ts`, `comp.functions.ts`, `jobs.functions.ts`, `interview-kits.functions.ts`, `payroll.functions.ts`) — add `assertPermission` alongside current role checks.
-- `docs/END_USER_GUIDE.md` + `docs/USER_GUIDE.md` — HR "Permissions" section.
+### 5. Regression coverage
 
-## 4. Non-goals
+Extend `tests/roles-matrix.test.ts` with matrix rows for `one_on_ones`, `job_applications`, `interviews`, and `screenings` under the four roles + a "granted `applications.read`" user, so the permission→RLS wiring can't silently regress again.
 
-- Not rewriting existing role checks — permissions layer is additive.
-- Not touching auth/provider/session code.
-- No breaking changes to current RLS policies; new clauses are `OR public.has_permission(...)` additions.
+## Out of scope
 
-## Technical notes
+- No redesign of the admin permission UI — the new keys will appear automatically in the existing category list.
+- No changes to the existing role-based policies; the new clauses are strictly additive so nothing currently working breaks.
 
-- `has_permission` is `STABLE SECURITY DEFINER` with fixed `search_path` to avoid recursion and search-path attacks.
-- `is_system` groups (e.g. "HR Admin", "Supervisor default") are shipped seeded and cannot be deleted from the UI.
-- Deny overrides are enforced in `has_permission` itself so both RLS and server fns honor them uniformly.
-- Test suite skips cleanly when env creds are missing so CI stays green without seeded demo users.
+## Files touched
+
+- New migration: permission keys + system groups + additive RLS + `private.reports_into` helper
+- `src/lib/one-on-ones.functions.ts` (new) — `listOneOnOneCandidates`
+- `src/lib/applications.functions.ts` (new) — `listApplicationsForRequisition`, `listApplicationsInbox`
+- `src/routes/_authenticated/one-on-ones.index.tsx` — swap picker to server fn
+- `src/routes/_authenticated/jobs.$id.tsx` and applicant-pool component — swap applicant reads to server fn
+- `tests/roles-matrix.test.ts` — expanded matrix
