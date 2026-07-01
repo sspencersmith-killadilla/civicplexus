@@ -21,7 +21,7 @@ import {
   createTerm, swearIn, endTerm, upcomingExpirations,
 } from "@/lib/officials.functions";
 
-export const Route = createFileRoute("/_authenticated/officials")({ component: OfficialsAdmin });
+export const Route = createFileRoute("/_authenticated/admin-officials")({ component: OfficialsAdmin });
 
 type Body = { id: string; slug: string; name: string; kind: string; comp_model: string; roster_public: boolean };
 

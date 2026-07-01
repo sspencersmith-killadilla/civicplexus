@@ -34,7 +34,6 @@ import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedOshaRouteImport } from './routes/_authenticated/osha'
 import { Route as AuthenticatedOrgChartRouteImport } from './routes/_authenticated/org-chart'
 import { Route as AuthenticatedOneOnOneTemplatesRouteImport } from './routes/_authenticated/one-on-one-templates'
-import { Route as AuthenticatedOfficialsRouteImport } from './routes/_authenticated/officials'
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
@@ -63,6 +62,7 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedAdminPermissionsRouteImport } from './routes/_authenticated/admin-permissions'
 import { Route as AuthenticatedAdminOrgSettingsRouteImport } from './routes/_authenticated/admin-org-settings'
+import { Route as AuthenticatedAdminOfficialsRouteImport } from './routes/_authenticated/admin-officials'
 import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authenticated/admin-modules'
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
 import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authenticated/admin-identity'
@@ -262,11 +262,6 @@ const AuthenticatedOneOnOneTemplatesRoute =
     path: '/one-on-one-templates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedOfficialsRoute = AuthenticatedOfficialsRouteImport.update({
-  id: '/officials',
-  path: '/officials',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedOffboardingRoute =
   AuthenticatedOffboardingRouteImport.update({
     id: '/offboarding',
@@ -417,6 +412,12 @@ const AuthenticatedAdminOrgSettingsRoute =
   AuthenticatedAdminOrgSettingsRouteImport.update({
     id: '/admin-org-settings',
     path: '/admin-org-settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminOfficialsRoute =
+  AuthenticatedAdminOfficialsRouteImport.update({
+    id: '/admin-officials',
+    path: '/admin-officials',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminModulesRoute =
@@ -807,6 +808,7 @@ export interface FileRoutesByFullPath {
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
+  '/admin-officials': typeof AuthenticatedAdminOfficialsRoute
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -835,7 +837,6 @@ export interface FileRoutesByFullPath {
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
-  '/officials': typeof AuthenticatedOfficialsRoute
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/org-chart': typeof AuthenticatedOrgChartRoute
   '/osha': typeof AuthenticatedOshaRoute
@@ -929,6 +930,7 @@ export interface FileRoutesByTo {
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
+  '/admin-officials': typeof AuthenticatedAdminOfficialsRoute
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -957,7 +959,6 @@ export interface FileRoutesByTo {
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
-  '/officials': typeof OfficialsIndexRoute
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/org-chart': typeof AuthenticatedOrgChartRoute
   '/osha': typeof AuthenticatedOshaRoute
@@ -977,6 +978,7 @@ export interface FileRoutesByTo {
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
   '/careers': typeof CareersIndexRoute
+  '/officials': typeof OfficialsIndexRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1051,6 +1053,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/_authenticated/admin-modules': typeof AuthenticatedAdminModulesRoute
+  '/_authenticated/admin-officials': typeof AuthenticatedAdminOfficialsRoute
   '/_authenticated/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/_authenticated/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
@@ -1079,7 +1082,6 @@ export interface FileRoutesById {
   '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
-  '/_authenticated/officials': typeof AuthenticatedOfficialsRoute
   '/_authenticated/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/_authenticated/org-chart': typeof AuthenticatedOrgChartRoute
   '/_authenticated/osha': typeof AuthenticatedOshaRoute
@@ -1175,6 +1177,7 @@ export interface FileRouteTypes {
     | '/admin-identity'
     | '/admin-migration'
     | '/admin-modules'
+    | '/admin-officials'
     | '/admin-org-settings'
     | '/admin-permissions'
     | '/approvals'
@@ -1203,7 +1206,6 @@ export interface FileRouteTypes {
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
-    | '/officials'
     | '/one-on-one-templates'
     | '/org-chart'
     | '/osha'
@@ -1297,6 +1299,7 @@ export interface FileRouteTypes {
     | '/admin-identity'
     | '/admin-migration'
     | '/admin-modules'
+    | '/admin-officials'
     | '/admin-org-settings'
     | '/admin-permissions'
     | '/approvals'
@@ -1325,7 +1328,6 @@ export interface FileRouteTypes {
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
-    | '/officials'
     | '/one-on-one-templates'
     | '/org-chart'
     | '/osha'
@@ -1345,6 +1347,7 @@ export interface FileRouteTypes {
     | '/offer/$token'
     | '/officials/$slug'
     | '/careers'
+    | '/officials'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1418,6 +1421,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-identity'
     | '/_authenticated/admin-migration'
     | '/_authenticated/admin-modules'
+    | '/_authenticated/admin-officials'
     | '/_authenticated/admin-org-settings'
     | '/_authenticated/admin-permissions'
     | '/_authenticated/approvals'
@@ -1446,7 +1450,6 @@ export interface FileRouteTypes {
     | '/_authenticated/my-hr'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
-    | '/_authenticated/officials'
     | '/_authenticated/one-on-one-templates'
     | '/_authenticated/org-chart'
     | '/_authenticated/osha'
@@ -1744,13 +1747,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOneOnOneTemplatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/officials': {
-      id: '/_authenticated/officials'
-      path: '/officials'
-      fullPath: '/officials'
-      preLoaderRoute: typeof AuthenticatedOfficialsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/offboarding': {
       id: '/_authenticated/offboarding'
       path: '/offboarding'
@@ -1945,6 +1941,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-org-settings'
       fullPath: '/admin-org-settings'
       preLoaderRoute: typeof AuthenticatedAdminOrgSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin-officials': {
+      id: '/_authenticated/admin-officials'
+      path: '/admin-officials'
+      fullPath: '/admin-officials'
+      preLoaderRoute: typeof AuthenticatedAdminOfficialsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin-modules': {
@@ -2466,6 +2469,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminIdentityRoute: typeof AuthenticatedAdminIdentityRoute
   AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
   AuthenticatedAdminModulesRoute: typeof AuthenticatedAdminModulesRoute
+  AuthenticatedAdminOfficialsRoute: typeof AuthenticatedAdminOfficialsRoute
   AuthenticatedAdminOrgSettingsRoute: typeof AuthenticatedAdminOrgSettingsRoute
   AuthenticatedAdminPermissionsRoute: typeof AuthenticatedAdminPermissionsRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
@@ -2494,7 +2498,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
-  AuthenticatedOfficialsRoute: typeof AuthenticatedOfficialsRoute
   AuthenticatedOneOnOneTemplatesRoute: typeof AuthenticatedOneOnOneTemplatesRoute
   AuthenticatedOrgChartRoute: typeof AuthenticatedOrgChartRoute
   AuthenticatedOshaRoute: typeof AuthenticatedOshaRoute
@@ -2554,6 +2557,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminIdentityRoute: AuthenticatedAdminIdentityRoute,
   AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
   AuthenticatedAdminModulesRoute: AuthenticatedAdminModulesRoute,
+  AuthenticatedAdminOfficialsRoute: AuthenticatedAdminOfficialsRoute,
   AuthenticatedAdminOrgSettingsRoute: AuthenticatedAdminOrgSettingsRoute,
   AuthenticatedAdminPermissionsRoute: AuthenticatedAdminPermissionsRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
@@ -2582,7 +2586,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
-  AuthenticatedOfficialsRoute: AuthenticatedOfficialsRoute,
   AuthenticatedOneOnOneTemplatesRoute: AuthenticatedOneOnOneTemplatesRoute,
   AuthenticatedOrgChartRoute: AuthenticatedOrgChartRoute,
   AuthenticatedOshaRoute: AuthenticatedOshaRoute,

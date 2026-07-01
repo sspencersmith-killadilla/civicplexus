@@ -125,7 +125,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/admin-demo", "Demo Account", UserCog, ["hr_admin"]),
   ]},
   { key: moduleKey("governance"), label: "Governance", items: [
-    def("/officials", "Elected & Boards", LandmarkIcon, ["hr_admin"]),
+    def("/admin-officials", "Elected & Boards", LandmarkIcon, ["hr_admin"]),
   ]},
 ];
 
