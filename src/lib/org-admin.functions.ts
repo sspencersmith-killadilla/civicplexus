@@ -7,6 +7,7 @@ export const APP_ROLES = [
   "hr_admin",
   "hiring_manager",
   "supervisor",
+  "department_admin",
   "it_admin",
   "employee",
   "candidate",
@@ -193,4 +194,96 @@ export const getOrgAdminStatus = createServerFn({ method: "GET" })
       first_run_completed_at: org?.first_run_completed_at ?? null,
       fallback_admin: fallbackAdmin,
     };
+  });
+
+/** List all department-admin assignments (HR-admin only). */
+export const listDepartmentAdmins = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireHrAdmin(context.supabase, context.userId);
+    const { data: rows, error } = await context.supabase
+      .from("department_admins")
+      .select("user_id, department")
+      .order("department");
+    if (error) throw error;
+    const ids = Array.from(new Set((rows ?? []).map((r) => r.user_id)));
+    const profileMap = new Map<string, { full_name: string | null; email: string | null }>();
+    if (ids.length) {
+      const { data: profiles } = await context.supabase
+        .from("profiles").select("id, full_name, email").in("id", ids);
+      for (const p of profiles ?? []) profileMap.set(p.id, { full_name: p.full_name, email: p.email });
+    }
+    return (rows ?? []).map((r) => ({
+      user_id: r.user_id,
+      department: r.department,
+      full_name: profileMap.get(r.user_id)?.full_name ?? null,
+      email: profileMap.get(r.user_id)?.email ?? null,
+    }));
+  });
+
+/** Distinct department names from employees, for the assignment picker. */
+export const listDepartments = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireHrAdmin(context.supabase, context.userId);
+    const { data, error } = await context.supabase
+      .from("employees").select("department").not("department", "is", null);
+    if (error) throw error;
+    const set = new Set<string>();
+    for (const r of (data ?? []) as Array<{ department: string | null }>) {
+      if (r.department) set.add(r.department);
+    }
+    return Array.from(set).sort();
+  });
+
+const DeptAssignmentInput = z.object({
+  user_id: z.string().uuid(),
+  department: z.string().min(1).max(200),
+});
+
+export const addDepartmentAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => DeptAssignmentInput.parse(i))
+  .handler(async ({ data, context }) => {
+    await requireHrAdmin(context.supabase, context.userId);
+    // Ensure user holds the department_admin role
+    const { data: hasRole } = await context.supabase
+      .from("user_roles").select("role")
+      .eq("user_id", data.user_id).eq("role", "department_admin").maybeSingle();
+    if (!hasRole) {
+      const { error: grErr } = await context.supabase
+        .from("user_roles").insert({ user_id: data.user_id, role: "department_admin" });
+      if (grErr && !/duplicate key/i.test(grErr.message)) throw grErr;
+    }
+    const { error } = await context.supabase
+      .from("department_admins")
+      .insert({ user_id: data.user_id, department: data.department, created_by: context.userId });
+    if (error && !/duplicate key/i.test(error.message)) throw error;
+    await context.supabase.from("audit_events").insert({
+      actor_id: context.userId,
+      action: "department_admin_add",
+      entity: "department_admin",
+      entity_id: data.user_id,
+      diff: { department: data.department },
+    });
+    return { ok: true };
+  });
+
+export const removeDepartmentAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => DeptAssignmentInput.parse(i))
+  .handler(async ({ data, context }) => {
+    await requireHrAdmin(context.supabase, context.userId);
+    const { error } = await context.supabase
+      .from("department_admins").delete()
+      .eq("user_id", data.user_id).eq("department", data.department);
+    if (error) throw error;
+    await context.supabase.from("audit_events").insert({
+      actor_id: context.userId,
+      action: "department_admin_remove",
+      entity: "department_admin",
+      entity_id: data.user_id,
+      diff: { department: data.department },
+    });
+    return { ok: true };
   });

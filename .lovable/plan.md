@@ -1,53 +1,59 @@
 ## Goal
 
-Ship a comprehensive, role-aware **End User Guide** covering every module and feature, so Employees, Supervisors, HR Admins, Recruiters, Payroll, and Super Admins each know exactly how to use CivicPlexus.
+Fix the PAF visibility and creation problem, and add a new **Department Admin** role that can initiate PAFs for anyone in their assigned department(s) — alongside supervisors, hiring managers, and HR admins.
 
-## Deliverable
+## Root causes
 
-A single new doc, `docs/END_USER_GUIDE.md`, rendered inside the app and on the public docs site alongside the existing User Guide and Self-Hosting Guide.
+1. **Broken supervisor SELECT policy** — the current RLS on `personnel_actions` checks `employees.manager_id = auth.uid()`, but `manager_id` was migrated to reference `public.employees(id)`, not `auth.users(id)`. Supervisors can't see any PAF for their reports; HR admins can technically see them, but if they filed one on the demo/HR pool the initiator link may also mis-match.
+2. **No department-scoped role** — today only direct-manager or HR-admin paths exist. There's no way for a department admin to originate a PAF for someone whose direct supervisor happens to be someone else in the department.
+3. **UI shows "New PAF" to everyone** but the server rejects non-supervisors/HR — plus supervisors currently error out because the manager check compares `manager_id` (an employees.id) to `auth.uid()`.
 
-### Structure
+## Changes
 
-1. **How to use this guide** — legend of role badges (👤 Employee, 👥 Supervisor, 🧑‍💼 HR Admin, 🎯 Recruiter, 💵 Payroll, 🛡️ Super Admin), sign-in basics, navigation, sidebar collapse, mobile hamburger, offline PWA.
-2. **One chapter per module**, each with:
-   - What it is (1–2 sentences)
-   - Who can use it (role badges)
-   - Where to find it (sidebar path)
-   - Step-by-step workflows for each role that touches it
-   - Common tasks / tips / gotchas
-   - Related modules
+### 1. Database migration
 
-### Modules covered (grouped as in the sidebar)
+- Add `department_admin` to the `app_role` enum.
+- New table `public.department_admins (user_id uuid, department text, primary key (user_id, department))` with GRANTs, RLS (HR-admin manages; each user reads their own rows).
+- Helper: `public.is_department_admin(_uid uuid, _dept text) returns boolean` (SECURITY DEFINER, stable).
+- **Fix `personnel_actions` RLS**:
+  - `SELECT`: HR admin **OR** initiator **OR** employee's own user **OR** the employee's manager (resolved through `employees.manager_id -> employees(user_id)`) **OR** a department admin for the employee's department **OR** a user with a pending/decided approval step on the PAF's chain.
+  - `INSERT`: `initiated_by = auth.uid()` **AND** (`hr_admin` OR `supervisor` OR `hiring_manager` OR `department_admin`).
+  - `UPDATE`: HR admin OR initiator (while draft/pending).
+- Rewrite the read policies to use `SECURITY DEFINER` helpers where needed to avoid recursion.
 
-- **Overview**: Dashboard, My HR, Directory, Org Chart, Notifications, Help
-- **People**: Employees, Employee Import, Employee Profile, Photos & Badges, ID Badge Templates, Personnel History
-- **Time & Leave**: Timekeeping (clock in/out, exempt schedules, comp time), Shift Patterns, Leave Requests & Approvals, Offline PWA use
-- **Performance**: Goals, Cascades, 1-on-1s (templates + meetings + transfer on supervisor change), Reviews & Review Cycles, Calibration
-- **Compensation**: Comp Grades, Market Ranges, Comp Cycles, HR Finance / Budget & FTE
-- **Hiring**: Requisitions (Draft→Approval→Posted wizard), Positions, Hire Requests, Jobs, Applicant Pool + AI Screening (HITL), Interview Kits, Interviews (index, live LiveKit rooms, async two-take), Offers, Careers Page customization + brochures, Internal Careers
-- **Onboarding / Offboarding**: Preboarding, New Hire Compliance, Offboarding workflow, Equipment, Provisioning
-- **PAF & Approvals**: PAF create/submit/approve, Approval Inbox, Approval chain + audit log
-- **Compliance**: OSHA, TCOLE, TMRS, EEO Snapshot, FLSA Audit, Policies & Policy Campaigns, Grievances, CBA, Documents, Doc Templates, Docs Generator, Forms, Training / LMS / Transcripts
-- **Payroll**: Payroll Runs, Profiles, Payroll Export
-- **Reports**: Reports, Recruiting Reports, Audit Log
-- **Admin**: Setup Wizard, Org Settings (roles + AI), Module Toggles, Identity/SCIM, Migration, Demo Sandbox, Email Templates, Retention Settings, Worker Types, Settings
+### 2. Server function — `src/lib/paf.functions.ts`
 
-### How it's surfaced
+- Add `department_admin` to the accepted roles for `submitPaf`.
+- Non-HR authorization branch: allow if (a) direct manager of the target employee **or** (b) department admin whose departments include the target's `department`.
+- Include department_admin as an accepted `approver_role` where relevant in the approval chain resolver.
 
-- **In-app**: add a third tab "End User Guide" to `/help` alongside User Guide and Self-Hosting Guide (`src/routes/_authenticated/help.tsx`). Same Markdown renderer, same download button.
-- **Public docs site**: register a new slug `end-user-guide` in `src/routes/api/public/docs/$file.ts` so `/api/public/docs/end-user-guide` renders with the existing TOC + mobile-friendly layout and `.md` download works.
-- **Demo tour**: add a step pointing new users to Help → End User Guide.
+### 3. UI — role plumbing
 
-### Out of scope
+- Extend `AppRole` in `src/hooks/use-current-user.ts` to include `"department_admin"`.
+- Update `src/lib/modules.ts` so PAF-adjacent routes (`/paf`, `/approvals`, `/employees`, `/positions`) include `department_admin`.
+- Gate the "New PAF" button in `src/routes/_authenticated/paf.index.tsx` to `hr_admin | supervisor | hiring_manager | department_admin`.
 
-- No code/behavior changes to the modules themselves.
-- No new PDFs (Markdown only; users can print to PDF from browser). If you want branded PDFs later, we can add a follow-up.
-- Video walkthroughs.
+### 4. Admin UI — manage the new role
 
-### Technical notes
+- In `src/routes/_authenticated/admin-org-settings.tsx`, add a **Department Admins** panel where HR admins can:
+  - Grant/revoke the `department_admin` role on a user.
+  - Assign that user to one or more departments (multi-select of distinct department names from `employees`).
+- Backing server functions in `src/lib/org-admin.functions.ts` (grant/revoke role, add/remove department assignment) — HR-admin gated.
 
-- Guide will be a single ~long Markdown file with H2 per module and H3 per role workflow, so the existing TOC generator (H2/H3) produces clean navigation.
-- Role badges rendered as inline emoji + bold text (no images), so print and screen-reader friendly.
-- Content sourced from the current app's routes, modules registry (`src/lib/modules.ts`), existing `docs/USER_GUIDE.md`, and prior work already shipped (1-on-1, PAF, badges, interviews, PWA, timekeeping, etc.).
+### 5. Docs
 
-Confirm and I'll write it.
+- Add a short section to `docs/END_USER_GUIDE.md` under **PAF** and **Admin → Org Settings** describing the Department Admin role.
+
+## Out of scope
+
+- No changes to the PAF apply/decide logic or approval chain shapes (department_admin becomes an initiator; approvals still route supervisor → HR by default).
+- No bulk backfill of existing PAF ownership.
+
+## Verification
+
+- HR admin can see the PAF list (existing PAFs render).
+- Supervisor sees only PAFs for their direct reports.
+- New department admin (with e.g. "Public Works" assigned) can create a PAF for any active Public Works employee and see all Public Works PAFs.
+- Non-privileged employee still only sees their own.
+
+Proceed?

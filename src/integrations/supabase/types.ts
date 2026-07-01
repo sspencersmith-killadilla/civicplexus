@@ -1040,6 +1040,27 @@ export type Database = {
         }
         Relationships: []
       }
+      department_admins: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dependents: {
         Row: {
           created_at: string
@@ -7015,6 +7036,14 @@ export type Database = {
         Args: { _decision: string; _notes: string; _ts_id: string }
         Returns: undefined
       }
+      can_initiate_paf_for: {
+        Args: { _employee_id: string; _uid: string }
+        Returns: boolean
+      }
+      can_view_paf: {
+        Args: { _paf_id: string; _uid: string }
+        Returns: boolean
+      }
       check_position_budget: {
         Args: { _additional_fte: number; _department: string }
         Returns: Json
@@ -7078,6 +7107,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      is_department_admin: {
+        Args: { _dept: string; _uid: string }
+        Returns: boolean
+      }
       is_iv_manager: { Args: { _uid: string }; Returns: boolean }
       is_panelist_for_interview: {
         Args: { _interview: string; _user: string }
@@ -7125,6 +7158,7 @@ export type Database = {
         | "employee"
         | "candidate"
         | "supervisor"
+        | "department_admin"
       employee_status:
         | "candidate"
         | "preboarding"
@@ -7297,6 +7331,7 @@ export const Constants = {
         "employee",
         "candidate",
         "supervisor",
+        "department_admin",
       ],
       employee_status: [
         "candidate",

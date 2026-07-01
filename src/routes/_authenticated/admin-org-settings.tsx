@@ -21,6 +21,10 @@ import {
   listRoleAssignments,
   revokeRole,
   searchProfiles,
+  listDepartmentAdmins,
+  listDepartments,
+  addDepartmentAdmin,
+  removeDepartmentAdmin,
 } from "@/lib/org-admin.functions";
 import { reopenSetup } from "@/lib/setup.functions";
 
@@ -39,6 +43,10 @@ function OrgSettingsPage() {
   const grantFn = useServerFn(grantRole);
   const revokeFn = useServerFn(revokeRole);
   const reopenFn = useServerFn(reopenSetup);
+  const listDeptAdminsFn = useServerFn(listDepartmentAdmins);
+  const listDeptsFn = useServerFn(listDepartments);
+  const addDeptAdminFn = useServerFn(addDepartmentAdmin);
+  const removeDeptAdminFn = useServerFn(removeDepartmentAdmin);
 
   const status = useQuery({
     queryKey: ["org-admin-status"],
@@ -75,6 +83,44 @@ function OrgSettingsPage() {
     onSuccess: () => {
       toast.success("Role revoked");
       qc.invalidateQueries({ queryKey: ["org-admin-roles"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deptAdmins = useQuery({
+    queryKey: ["dept-admins"],
+    queryFn: () => listDeptAdminsFn({ data: undefined as never }),
+    enabled: isAdmin,
+  });
+  const depts = useQuery({
+    queryKey: ["dept-list"],
+    queryFn: () => listDeptsFn({ data: undefined as never }),
+    enabled: isAdmin,
+  });
+  const [deptPickUser, setDeptPickUser] = useState<{ id: string; label: string } | null>(null);
+  const [deptPickDept, setDeptPickDept] = useState<string>("");
+  const [deptQuery, setDeptQuery] = useState("");
+  const [deptResults, setDeptResults] = useState<Array<{ id: string; full_name: string | null; email: string | null }>>([]);
+  const deptSearch = useMutation({
+    mutationFn: (q: string) => searchFn({ data: { q } }),
+    onSuccess: (data) => setDeptResults(data),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const addDeptAdmin = useMutation({
+    mutationFn: (vars: { user_id: string; department: string }) => addDeptAdminFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Department admin assigned");
+      setDeptPickUser(null); setDeptPickDept(""); setDeptQuery(""); setDeptResults([]);
+      qc.invalidateQueries({ queryKey: ["dept-admins"] });
+      qc.invalidateQueries({ queryKey: ["org-admin-roles"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const removeDeptAdmin = useMutation({
+    mutationFn: (vars: { user_id: string; department: string }) => removeDeptAdminFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Assignment removed");
+      qc.invalidateQueries({ queryKey: ["dept-admins"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -253,6 +299,92 @@ function OrgSettingsPage() {
                 ))}
                 {!roles.data?.length && (
                   <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-6">No role assignments yet.</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Department admins</CardTitle>
+            <CardDescription>
+              Users with the <code>department_admin</code> role can initiate PAFs and view records for employees in the departments they're assigned to.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] items-end">
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Find user</label>
+                <Input
+                  placeholder="Name or email"
+                  value={deptQuery}
+                  onChange={(e) => setDeptQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") deptSearch.mutate(deptQuery); }}
+                />
+                {!!deptResults.length && !deptPickUser && (
+                  <div className="border rounded-md divide-y max-h-40 overflow-auto text-sm">
+                    {deptResults.map((r) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        className="w-full text-left px-2 py-1 hover:bg-muted"
+                        onClick={() => setDeptPickUser({ id: r.id, label: r.full_name ?? r.email ?? r.id })}
+                      >
+                        <div className="font-medium">{r.full_name ?? "(no name)"}</div>
+                        <div className="text-xs text-muted-foreground">{r.email ?? r.id}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {deptPickUser && (
+                  <div className="text-xs">
+                    Selected: <strong>{deptPickUser.label}</strong>{" "}
+                    <button className="underline" onClick={() => setDeptPickUser(null)}>change</button>
+                  </div>
+                )}
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Department</label>
+                <select
+                  className="w-full border rounded-md h-9 px-2 bg-background"
+                  value={deptPickDept}
+                  onChange={(e) => setDeptPickDept(e.target.value)}
+                >
+                  <option value="">Select…</option>
+                  {(depts.data ?? []).map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <Button
+                disabled={!deptPickUser || !deptPickDept || addDeptAdmin.isPending}
+                onClick={() => deptPickUser && addDeptAdmin.mutate({ user_id: deptPickUser.id, department: deptPickDept })}
+              >
+                {addDeptAdmin.isPending ? "Assigning…" : "Assign"}
+              </Button>
+            </div>
+
+            <Table>
+              <TableHeader>
+                <TableRow><TableHead>User</TableHead><TableHead>Department</TableHead><TableHead className="w-24"></TableHead></TableRow>
+              </TableHeader>
+              <TableBody>
+                {(deptAdmins.data ?? []).map((row) => (
+                  <TableRow key={`${row.user_id}:${row.department}`}>
+                    <TableCell>
+                      <div className="font-medium">{row.full_name ?? "(no name)"}</div>
+                      <div className="text-xs text-muted-foreground">{row.email ?? row.user_id}</div>
+                    </TableCell>
+                    <TableCell>{row.department}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm" variant="ghost"
+                        onClick={() => removeDeptAdmin.mutate({ user_id: row.user_id, department: row.department })}
+                      >Remove</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {!deptAdmins.data?.length && (
+                  <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-6">No department admin assignments yet.</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
