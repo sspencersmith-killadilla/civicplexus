@@ -15,11 +15,14 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Landmark, Plus, UserPlus, ShieldCheck, XCircle, Coins } from "lucide-react";
+import { Landmark, Plus, UserPlus, ShieldCheck, XCircle, Coins, Download, Printer } from "lucide-react";
 import {
   listBodies, getBody, upsertBody, upsertSeat, upsertOfficial,
   createTerm, swearIn, endTerm, upcomingExpirations, generateMeetingReimbursements,
 } from "@/lib/officials.functions";
+import { exportClerkRosterCsv } from "@/lib/officials-export.functions";
+import { downloadCsv } from "@/lib/download-csv";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/admin-officials")({ component: OfficialsAdmin });
 
@@ -48,7 +51,18 @@ function OfficialsAdmin() {
               Manage governing bodies, seats, terms, oaths, and public roster visibility.
             </p>
           </div>
-          <BodyDialog onSaved={() => qc.invalidateQueries({ queryKey: ["officials-bodies"] })} />
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={async () => {
+              const r = await exportClerkRosterCsv({ data: { include_history: false } });
+              downloadCsv(r.csv, r.filename);
+            }}><Download className="h-4 w-4 mr-1" /> CSV</Button>
+            <Button size="sm" variant="outline" onClick={async () => {
+              const r = await exportClerkRosterCsv({ data: { include_history: true } });
+              downloadCsv(r.csv, r.filename.replace(".csv", "-full-history.csv"));
+            }}><Download className="h-4 w-4 mr-1" /> CSV (full history)</Button>
+            <Link to="/admin-officials/print"><Button size="sm" variant="outline"><Printer className="h-4 w-4 mr-1" /> PDF</Button></Link>
+            <BodyDialog onSaved={() => qc.invalidateQueries({ queryKey: ["officials-bodies"] })} />
+          </div>
         </div>
 
         {(expQ.data?.length ?? 0) > 0 && (
