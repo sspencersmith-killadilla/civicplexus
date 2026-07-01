@@ -10,7 +10,10 @@ const q = queryOptions({
   queryFn: async () => {
     const bodies = await listPublicBodies();
     const detailed = await Promise.all(
-      bodies.map(async (b: any) => ({ body: b, ...(await getPublicBody({ data: { slug: b.slug } })) })),
+      bodies.map(async (b: any) => {
+        const r = await getPublicBody({ data: { slug: b.slug } });
+        return { body: r.body ?? b, members: r.members };
+      }),
     );
     return detailed;
   },
