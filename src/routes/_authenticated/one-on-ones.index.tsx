@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { listOneOnOneCandidates } from "@/lib/one-on-ones.functions";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -40,15 +42,8 @@ function OneOnOnesIndex() {
   });
 
   const employeesQ = useQuery({
-    queryKey: ["employees_select_min"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("employees")
-        .select("id, first_name, last_name, department")
-        .order("last_name");
-      if (error) throw error;
-      return data;
-    },
+    queryKey: ["one_on_one_candidates"],
+    queryFn: () => listCandidatesFn({ data: undefined as never }),
   });
 
   const templatesQ = useQuery({
