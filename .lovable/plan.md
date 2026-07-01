@@ -1,59 +1,46 @@
 ## Goal
 
-Fix the PAF visibility and creation problem, and add a new **Department Admin** role that can initiate PAFs for anyone in their assigned department(s) — alongside supervisors, hiring managers, and HR admins.
+Restore visibility and action on 1-on-1s and performance reviews for every role (employee, supervisor, HR admin) without loosening security, and add a repeatable end-to-end RLS test we can rerun any time.
 
-## Root causes
+## What I found
 
-1. **Broken supervisor SELECT policy** — the current RLS on `personnel_actions` checks `employees.manager_id = auth.uid()`, but `manager_id` was migrated to reference `public.employees(id)`, not `auth.users(id)`. Supervisors can't see any PAF for their reports; HR admins can technically see them, but if they filed one on the demo/HR pool the initiator link may also mis-match.
-2. **No department-scoped role** — today only direct-manager or HR-admin paths exist. There's no way for a department admin to originate a PAF for someone whose direct supervisor happens to be someone else in the department.
-3. **UI shows "New PAF" to everyone** but the server rejects non-supervisors/HR — plus supervisors currently error out because the manager check compares `manager_id` (an employees.id) to `auth.uid()`.
+Reading the live policies on `one_on_ones`, `one_on_one_notes`, `one_on_one_agenda_notes`, `one_on_one_action_items`, `performance_reviews`, `review_cycles`, and `review_cycle_participants`, three concrete gaps explain the symptoms:
 
-## Changes
+1. **1-on-1s use `manager_user_id = auth.uid()` in RLS, but supervisors are also stored as employee-id refs elsewhere.** When a supervisor was reassigned, older sessions still carry a stale `manager_user_id`, so the supervisor sees nothing and HR-only server functions became the only way in. There is no fallback for "current supervisor via employees.manager_id chain".
+2. **`performance_reviews` "Manager manage own reviews"** requires `employees.manager_id` (an employee id) to be in the set of employee-ids owned by `auth.uid()`. That is correct after the manager_id migration, but the companion **`review_cycle_participants` policy** for managers still joins on the old shape and produces zero rows for most managers, so the review inbox is empty even though the underlying review is readable.
+3. **`one_on_one_notes` INSERT `WITH CHECK`** requires `can_access_one_on_one(session_id)` — the helper only returns true for `manager_user_id`/employee `user_id`. Employees whose `user_id` link was rebuilt after the demo reset lose access until they refresh, which is why "assign eval / add note" silently fails.
 
-### 1. Database migration
+None of these are security regressions — the intent is right — but the joins are stale.
 
-- Add `department_admin` to the `app_role` enum.
-- New table `public.department_admins (user_id uuid, department text, primary key (user_id, department))` with GRANTs, RLS (HR-admin manages; each user reads their own rows).
-- Helper: `public.is_department_admin(_uid uuid, _dept text) returns boolean` (SECURITY DEFINER, stable).
-- **Fix `personnel_actions` RLS**:
-  - `SELECT`: HR admin **OR** initiator **OR** employee's own user **OR** the employee's manager (resolved through `employees.manager_id -> employees(user_id)`) **OR** a department admin for the employee's department **OR** a user with a pending/decided approval step on the PAF's chain.
-  - `INSERT`: `initiated_by = auth.uid()` **AND** (`hr_admin` OR `supervisor` OR `hiring_manager` OR `department_admin`).
-  - `UPDATE`: HR admin OR initiator (while draft/pending).
-- Rewrite the read policies to use `SECURITY DEFINER` helpers where needed to avoid recursion.
+## Plan
 
-### 2. Server function — `src/lib/paf.functions.ts`
+### 1. One migration that fixes the three policy gaps
 
-- Add `department_admin` to the accepted roles for `submitPaf`.
-- Non-HR authorization branch: allow if (a) direct manager of the target employee **or** (b) department admin whose departments include the target's `department`.
-- Include department_admin as an accepted `approver_role` where relevant in the approval chain resolver.
+- Replace `one_on_ones` SELECT/UPDATE/DELETE policies so they also match when the viewer is the **current** supervisor (via `employees.manager_id → employees.user_id`), the employee themselves, or HR. Keep INSERT restricted to manager/HR via `WITH CHECK`.
+- Rewrite `private.can_access_one_on_one` and `private.is_one_on_one_manager` to use the same current-supervisor lookup so notes/agenda/action items inherit the fix automatically.
+- Rewrite `review_cycle_participants` "Managers see their reports' participation" to use the same employee→manager join used by `performance_reviews` "Manager manage own reviews".
+- Add an explicit `Employee read own participation` policy on `review_cycle_participants` so an employee can see their own row in a cycle.
+- Leave HR-admin `ALL` policies untouched.
 
-### 3. UI — role plumbing
+### 2. A "role can do X" self-test we can rerun
 
-- Extend `AppRole` in `src/hooks/use-current-user.ts` to include `"department_admin"`.
-- Update `src/lib/modules.ts` so PAF-adjacent routes (`/paf`, `/approvals`, `/employees`, `/positions`) include `department_admin`.
-- Gate the "New PAF" button in `src/routes/_authenticated/paf.index.tsx` to `hr_admin | supervisor | hiring_manager | department_admin`.
+Add `tests/roles-e2e.test.ts` (Vitest) that:
 
-### 4. Admin UI — manage the new role
+- Signs in as three seeded fixtures — HR admin, supervisor, employee — using their known demo credentials.
+- Asserts each can perform the workflows we broke: list their 1-on-1s, add a shared note, open the review inbox, and (HR only) create a review cycle participant.
+- Asserts each is blocked from the things they should not do (employee cannot read a peer's private note, supervisor cannot read another team's 1-on-1, etc.).
 
-- In `src/routes/_authenticated/admin-org-settings.tsx`, add a **Department Admins** panel where HR admins can:
-  - Grant/revoke the `department_admin` role on a user.
-  - Assign that user to one or more departments (multi-select of distinct department names from `employees`).
-- Backing server functions in `src/lib/org-admin.functions.ts` (grant/revoke role, add/remove department assignment) — HR-admin gated.
+This complements the existing `tests/rls-authz.test.ts` (which only exercises the anonymous role) with the authenticated-role coverage we are missing.
 
-### 5. Docs
+### 3. In-app "Access self-check" panel
 
-- Add a short section to `docs/END_USER_GUIDE.md` under **PAF** and **Admin → Org Settings** describing the Department Admin role.
+Add a small `/admin-org-settings` → "Access self-check" section (HR only) that runs the same probes at runtime against the *current* signed-in user's row shapes and reports pass/fail. This is what you will click after each migration to confirm "everyone can do their job".
 
-## Out of scope
+## Files to change
 
-- No changes to the PAF apply/decide logic or approval chain shapes (department_admin becomes an initiator; approvals still route supervisor → HR by default).
-- No bulk backfill of existing PAF ownership.
+- New migration (policies + helper functions above)
+- `tests/roles-e2e.test.ts` (new)
+- `src/routes/_authenticated/admin-org-settings.tsx` (add self-check panel)
+- `src/lib/access-selfcheck.functions.ts` (new server fn backing the panel)
 
-## Verification
-
-- HR admin can see the PAF list (existing PAFs render).
-- Supervisor sees only PAFs for their direct reports.
-- New department admin (with e.g. "Public Works" assigned) can create a PAF for any active Public Works employee and see all Public Works PAFs.
-- Non-privileged employee still only sees their own.
-
-Proceed?
+No UI or business-logic changes beyond the self-check panel.
