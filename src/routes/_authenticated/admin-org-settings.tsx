@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertTriangle, CheckCircle2, RefreshCw, Search, Sparkles, Trash2, UserPlus } from "lucide-react";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
+import { runAccessSelfCheck } from "@/lib/access-selfcheck.functions";
 import {
   APP_ROLES,
   type AppRole,
@@ -47,6 +48,11 @@ function OrgSettingsPage() {
   const listDeptsFn = useServerFn(listDepartments);
   const addDeptAdminFn = useServerFn(addDepartmentAdmin);
   const removeDeptAdminFn = useServerFn(removeDepartmentAdmin);
+  const selfCheckFn = useServerFn(runAccessSelfCheck);
+  const selfCheck = useMutation({
+    mutationFn: () => selfCheckFn({ data: undefined as never }),
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const status = useQuery({
     queryKey: ["org-admin-status"],
@@ -168,6 +174,38 @@ function OrgSettingsPage() {
             <Button variant="outline" size="sm" onClick={() => status.refetch()}>
               <RefreshCw className="h-4 w-4 mr-2" /> Refresh
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /> Access self-check</CardTitle>
+            <CardDescription>Runs a set of RLS probes as the currently signed-in user and reports what they can and cannot see. Use after schema changes.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <Button size="sm" onClick={() => selfCheck.mutate()} disabled={selfCheck.isPending}>
+              <RefreshCw className="h-4 w-4 mr-2" /> {selfCheck.isPending ? "Running…" : "Run self-check"}
+            </Button>
+            {selfCheck.data && (
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">
+                  {selfCheck.data.pass_count}/{selfCheck.data.total} passed · {new Date(selfCheck.data.ran_at).toLocaleTimeString()}
+                </div>
+                <ul className="space-y-1">
+                  {selfCheck.data.probes.map((p) => (
+                    <li key={p.name} className="flex items-start gap-2">
+                      {p.ok
+                        ? <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                        : <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />}
+                      <div>
+                        <div className="font-medium">{p.name}</div>
+                        <div className="text-xs text-muted-foreground">{p.detail}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </CardContent>
         </Card>
 
