@@ -497,7 +497,7 @@ These ship enabled by default and can be toggled per tenant from `/admin-modules
 - **Identity / SCIM** — Entra/Okta SAML + SCIM v2 (`/api/public/scim.v2.Users`)
 - **CBA** — union contract registry
 - **OSHA** — 300/300A incident log and summary
-- **LMS Imports** — external training ingest → TCOLE mapping
+- **LMS Imports** — external training ingest → TCOLE mapping. Manual CSV upload plus native connectors for **Chamilo** (REST v2), **Moodle** (Web Services REST), and **Forma LMS** (JSON API). Connections are stored in `lms_connections`, runs in `lms_sync_runs`, both HR-admin RLS. Auto-sync is driven by `pg_cron` job `lms-auto-sync-hourly` hitting `/api/public/hooks/lms-sync`. Per-connection API tokens live as project secrets named `LMS_<connection_id>_TOKEN`.
 - **Cascades** — org-wide directives with AI rollup
 - **1-on-1 Templates** — HR-managed question sets
 - **ID Badges + QR Verify** — CR80 PDFs, public `/api/public/badge/{serial}`
