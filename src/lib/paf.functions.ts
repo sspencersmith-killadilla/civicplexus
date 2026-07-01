@@ -35,12 +35,13 @@ export const submitPaf = createServerFn({ method: "POST" })
     const isHrAdmin = roles.includes("hr_admin");
     const isSupervisor = roles.includes("supervisor");
     const isHiringMgr = roles.includes("hiring_manager");
-    if (!isHrAdmin && !isSupervisor && !isHiringMgr) {
-      throw new Error("Forbidden: only HR admins, supervisors, or hiring managers can submit PAFs");
+    const isDeptAdmin = roles.includes("department_admin");
+    if (!isHrAdmin && !isSupervisor && !isHiringMgr && !isDeptAdmin) {
+      throw new Error("Forbidden: only HR admins, supervisors, hiring managers, or department admins can submit PAFs");
     }
     const { data: emp } = await supabaseAdmin
       .from("employees")
-      .select("id, manager_id, user_id")
+      .select("id, manager_id, user_id, department")
       .eq("id", data.employee_id)
       .maybeSingle();
     if (!emp) throw new Error("Employee not found");
@@ -51,8 +52,18 @@ export const submitPaf = createServerFn({ method: "POST" })
       const { data: meEmp } = await supabaseAdmin
         .from("employees").select("id").eq("user_id", context.userId).maybeSingle();
       const isDirectManager = !!meEmp && emp.manager_id === (meEmp as { id: string }).id;
-      if (!isDirectManager) {
-        throw new Error("Forbidden: you may only submit PAFs for employees you directly manage");
+      let isDeptAdminForTarget = false;
+      if (isDeptAdmin && emp.department) {
+        const { data: da } = await supabaseAdmin
+          .from("department_admins")
+          .select("department")
+          .eq("user_id", context.userId)
+          .eq("department", emp.department)
+          .maybeSingle();
+        isDeptAdminForTarget = !!da;
+      }
+      if (!isDirectManager && !isDeptAdminForTarget) {
+        throw new Error("Forbidden: you may only submit PAFs for employees you directly manage or in a department you administer");
       }
     }
 
