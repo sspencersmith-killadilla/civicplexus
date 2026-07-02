@@ -204,6 +204,7 @@ function BodyDialog({ onSaved, existing }: { onSaved: () => void; existing?: any
     fixed_stipend_amount: null, fixed_stipend_period: null, per_meeting_amount: null,
     chair_bonus_amount: null, per_diem_amount: null, pay_absent: false,
     meeting_cadence: "", description: "", roster_public: true, sort_order: 100,
+    accepting_applications: false, application_instructions: "",
   });
   const fn = useServerFn(upsertBody);
   const m = useMutation({
@@ -214,6 +215,8 @@ function BodyDialog({ onSaved, existing }: { onSaved: () => void; existing?: any
       chair_bonus_amount: form.chair_bonus_amount ? Number(form.chair_bonus_amount) : null,
       per_diem_amount: form.per_diem_amount ? Number(form.per_diem_amount) : null,
       pay_absent: !!form.pay_absent,
+      accepting_applications: !!form.accepting_applications,
+      application_instructions: form.application_instructions ?? null,
     } }),
     onSuccess: () => { toast.success("Saved"); setOpen(false); onSaved(); },
     onError: (e: Error) => toast.error(e.message),
@@ -282,6 +285,19 @@ function BodyDialog({ onSaved, existing }: { onSaved: () => void; existing?: any
             <Label>Publish on public roster</Label>
             <Switch checked={!!form.roster_public} onCheckedChange={(v) => setForm({ ...form, roster_public: v })} />
           </div>
+          <div className="flex items-center justify-between rounded-md border p-2">
+            <div>
+              <Label>Accept public applications</Label>
+              <p className="text-[11px] text-muted-foreground">Show on /serve and allow residents to apply.</p>
+            </div>
+            <Switch checked={!!form.accepting_applications} onCheckedChange={(v) => setForm({ ...form, accepting_applications: v })} />
+          </div>
+          {form.accepting_applications && (
+            <div>
+              <Label>Application instructions (public)</Label>
+              <Textarea rows={3} value={form.application_instructions ?? ""} onChange={(e) => setForm({ ...form, application_instructions: e.target.value })} placeholder="Optional guidance shown to applicants" />
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button onClick={() => m.mutate()} disabled={m.isPending}>{m.isPending ? "Saving…" : "Save"}</Button>
