@@ -43,7 +43,7 @@ export const getOfficialOnboarding = createServerFn({ method: "POST" })
     if (!inst) return { instance: null, tasks: [] };
     const { data: tasks } = await context.supabase
       .from("official_task_instances")
-      .select("*, documents(id, name, storage_path)")
+      .select("*, documents(id, title, storage_path, mime_type)")
       .eq("instance_id", inst.id)
       .order("sort_order");
     return { instance: inst, tasks: tasks ?? [] };
