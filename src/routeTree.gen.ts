@@ -89,6 +89,7 @@ import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.app
 import { Route as CandidateTokenInterviewRouteImport } from './routes/candidate.$token.interview'
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
+import { Route as ApiPublicBoardApplicationsRouteImport } from './routes/api/public/board-applications'
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
@@ -567,6 +568,12 @@ const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBoardApplicationsRoute =
+  ApiPublicBoardApplicationsRouteImport.update({
+    id: '/api/public/board-applications',
+    path: '/api/public/board-applications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedTranscriptEmployeeIdRoute =
   AuthenticatedTranscriptEmployeeIdRouteImport.update({
     id: '/transcript/$employeeId',
@@ -894,6 +901,7 @@ export interface FileRoutesByFullPath {
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
+  '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
@@ -1017,6 +1025,7 @@ export interface FileRoutesByTo {
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
+  '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
@@ -1143,6 +1152,7 @@ export interface FileRoutesById {
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
+  '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
@@ -1269,6 +1279,7 @@ export interface FileRouteTypes {
     | '/reviews/$id'
     | '/templates/$id'
     | '/transcript/$employeeId'
+    | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
     | '/candidate/$token/interview'
@@ -1392,6 +1403,7 @@ export interface FileRouteTypes {
     | '/reviews/$id'
     | '/templates/$id'
     | '/transcript/$employeeId'
+    | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
     | '/candidate/$token/interview'
@@ -1517,6 +1529,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reviews/$id'
     | '/_authenticated/templates/$id'
     | '/_authenticated/transcript/$employeeId'
+    | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
     | '/candidate/$token/interview'
@@ -1572,6 +1585,7 @@ export interface RootRouteChildren {
   OfficialsPrintRoute: typeof OfficialsPrintRoute
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
+  ApiPublicBoardApplicationsRoute: typeof ApiPublicBoardApplicationsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
   CandidateTokenInterviewRoute: typeof CandidateTokenInterviewRoute
@@ -2158,6 +2172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/board-applications': {
+      id: '/api/public/board-applications'
+      path: '/api/public/board-applications'
+      fullPath: '/api/public/board-applications'
+      preLoaderRoute: typeof ApiPublicBoardApplicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/transcript/$employeeId': {
       id: '/_authenticated/transcript/$employeeId'
       path: '/transcript/$employeeId'
@@ -2726,6 +2747,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfficialsPrintRoute: OfficialsPrintRoute,
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
+  ApiPublicBoardApplicationsRoute: ApiPublicBoardApplicationsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
   CandidateTokenInterviewRoute: CandidateTokenInterviewRoute,
