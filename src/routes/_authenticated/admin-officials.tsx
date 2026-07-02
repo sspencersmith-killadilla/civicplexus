@@ -46,6 +46,8 @@ function OfficialsAdmin() {
 
   const bodiesQ = useQuery({ queryKey: ["officials-bodies"], queryFn: () => listFn() });
   const expQ = useQuery({ queryKey: ["officials-expirations"], queryFn: () => expFn({ data: { days: 120 } }) });
+  const overdueFn = useServerFn(overdueOfficialOnboarding);
+  const overdueQ = useQuery({ queryKey: ["officials-onboarding-overdue"], queryFn: () => overdueFn() });
   const bodies = (bodiesQ.data ?? []) as Body[];
   const selected = bodies.find((b) => b.id === selectedId) ?? bodies[0] ?? null;
 
@@ -72,9 +74,42 @@ function OfficialsAdmin() {
             }}><Download className="h-4 w-4 mr-1" /> CSV (full history)</Button>
             <Link to="/admin-officials/print"><Button size="sm" variant="outline"><Printer className="h-4 w-4 mr-1" /> PDF</Button></Link>
             <Link to="/admin-officials/archive"><Button size="sm" variant="outline"><Archive className="h-4 w-4 mr-1" /> Archive</Button></Link>
+            <Link to="/admin-officials/onboarding-templates"><Button size="sm" variant="outline"><ClipboardList className="h-4 w-4 mr-1" /> Onboarding templates</Button></Link>
             <BodyDialog onSaved={() => qc.invalidateQueries({ queryKey: ["officials-bodies"] })} />
           </div>
         </div>
+
+        {(overdueQ.data?.length ?? 0) > 0 && (
+          <Collapsible>
+            <Card className="border-rose-300 bg-rose-50/50 dark:bg-rose-950/20">
+              <CollapsibleTrigger className="w-full flex items-center justify-between gap-3 p-3 text-left cursor-pointer group">
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge variant="outline" className="border-rose-400 text-rose-900 dark:text-rose-200">
+                    {(overdueQ.data as any[]).length}
+                  </Badge>
+                  <span className="font-medium">
+                    onboarding {(overdueQ.data as any[]).length === 1 ? "task is" : "tasks are"} overdue
+                  </span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <ul className="text-xs text-muted-foreground px-4 pb-3 space-y-1">
+                  {(overdueQ.data as any[]).slice(0, 20).map((r) => {
+                    const term = r.official_onboarding_instances?.official_terms;
+                    const off = term?.officials;
+                    const seat = term?.official_seats;
+                    return (
+                      <li key={r.id}>
+                        {off?.first_name} {off?.last_name} — {seat?.official_bodies?.name} · {seat?.seat_label} → <span className="capitalize">{r.category}</span>: {r.title} (due {r.due_date})
+                      </li>
+                    );
+                  })}
+                </ul>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+        )}
 
         {(expQ.data?.length ?? 0) > 0 && (
           <Collapsible>
