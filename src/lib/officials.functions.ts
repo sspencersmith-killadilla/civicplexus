@@ -69,6 +69,8 @@ export const upsertBody = createServerFn({ method: "POST" })
       meeting_cadence: z.string().nullable().optional(),
       roster_public: z.boolean(),
       sort_order: z.number().int().default(100),
+      accepting_applications: z.boolean().optional(),
+      application_instructions: z.string().nullable().optional(),
     }).parse(i),
   )
   .handler(async ({ data, context }) => {
