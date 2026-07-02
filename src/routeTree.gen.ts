@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServeIndexRouteImport } from './routes/serve.index'
 import { Route as OfficialsIndexRouteImport } from './routes/officials.index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as ServeApplyRouteImport } from './routes/serve.apply'
 import { Route as OfficialsPrintRouteImport } from './routes/officials.print'
 import { Route as OfficialsSlugRouteImport } from './routes/officials.$slug'
 import { Route as OfferTokenRouteImport } from './routes/offer.$token'
@@ -167,6 +168,11 @@ const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
 const CareersIndexRoute = CareersIndexRouteImport.update({
   id: '/careers/',
   path: '/careers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServeApplyRoute = ServeApplyRouteImport.update({
+  id: '/serve/apply',
+  path: '/serve/apply',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OfficialsPrintRoute = OfficialsPrintRouteImport.update({
@@ -883,6 +889,7 @@ export interface FileRoutesByFullPath {
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
   '/officials/print': typeof OfficialsPrintRoute
+  '/serve/apply': typeof ServeApplyRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
@@ -1008,6 +1015,7 @@ export interface FileRoutesByTo {
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
   '/officials/print': typeof OfficialsPrintRoute
+  '/serve/apply': typeof ServeApplyRoute
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
   '/serve': typeof ServeIndexRoute
@@ -1136,6 +1144,7 @@ export interface FileRoutesById {
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
   '/officials/print': typeof OfficialsPrintRoute
+  '/serve/apply': typeof ServeApplyRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
@@ -1264,6 +1273,7 @@ export interface FileRouteTypes {
     | '/offer/$token'
     | '/officials/$slug'
     | '/officials/print'
+    | '/serve/apply'
     | '/careers/'
     | '/officials/'
     | '/serve/'
@@ -1389,6 +1399,7 @@ export interface FileRouteTypes {
     | '/offer/$token'
     | '/officials/$slug'
     | '/officials/print'
+    | '/serve/apply'
     | '/careers'
     | '/officials'
     | '/serve'
@@ -1516,6 +1527,7 @@ export interface FileRouteTypes {
     | '/offer/$token'
     | '/officials/$slug'
     | '/officials/print'
+    | '/serve/apply'
     | '/careers/'
     | '/officials/'
     | '/serve/'
@@ -1595,6 +1607,7 @@ export interface RootRouteChildren {
   OfferTokenRoute: typeof OfferTokenRoute
   OfficialsSlugRoute: typeof OfficialsSlugRoute
   OfficialsPrintRoute: typeof OfficialsPrintRoute
+  ServeApplyRoute: typeof ServeApplyRoute
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
   ServeIndexRoute: typeof ServeIndexRoute
@@ -1672,6 +1685,13 @@ declare module '@tanstack/react-router' {
       path: '/careers'
       fullPath: '/careers/'
       preLoaderRoute: typeof CareersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/serve/apply': {
+      id: '/serve/apply'
+      path: '/serve/apply'
+      fullPath: '/serve/apply'
+      preLoaderRoute: typeof ServeApplyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/officials/print': {
@@ -2765,6 +2785,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfferTokenRoute: OfferTokenRoute,
   OfficialsSlugRoute: OfficialsSlugRoute,
   OfficialsPrintRoute: OfficialsPrintRoute,
+  ServeApplyRoute: ServeApplyRoute,
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
   ServeIndexRoute: ServeIndexRoute,
