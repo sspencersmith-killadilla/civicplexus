@@ -64,14 +64,19 @@ export const updateOfficialTask = createServerFn({ method: "POST" })
       .parse(i),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      status?: typeof data.status;
+      notes?: string | null;
+      due_date?: string | null;
+      evidence_document_id?: string | null;
+    } = {};
     if (data.status !== undefined) patch.status = data.status;
     if (data.notes !== undefined) patch.notes = data.notes;
     if (data.due_date !== undefined) patch.due_date = data.due_date;
     if (data.evidence_document_id !== undefined) patch.evidence_document_id = data.evidence_document_id;
     const { error } = await context.supabase
       .from("official_task_instances")
-      .update(patch)
+      .update(patch as never)
       .eq("id", data.task_id);
     if (error) throw error;
     return { ok: true };
