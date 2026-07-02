@@ -643,6 +643,10 @@ function TermOnboarding({ termId, onDone }: { termId: string; onDone: () => void
   const getFn = useServerFn(getOfficialOnboarding);
   const updFn = useServerFn(updateOfficialTask);
   const reseedFn = useServerFn(reseedOfficialOnboarding);
+  const attachFn = useServerFn(attachOfficialTaskDocument);
+  const signFn = useServerFn(signOfficialDocumentUrl);
+  const removeDocFn = useServerFn(removeOfficialTaskDocument);
+  const [busyTask, setBusyTask] = useState<string | null>(null);
   const q = useQuery({
     queryKey: ["official-onboarding", termId],
     queryFn: () => getFn({ data: { term_id: termId } }),
@@ -670,6 +674,44 @@ function TermOnboarding({ termId, onDone }: { termId: string; onDone: () => void
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  async function upload(task: any, file: File) {
+    setBusyTask(task.id);
+    try {
+      const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
+      const path = `${termId}/${task.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("official-documents").upload(path, file, { upsert: false });
+      if (error) throw error;
+      await attachFn({
+        data: {
+          task_id: task.id,
+          storage_path: path,
+          title: file.name,
+          mime_type: file.type || null,
+          size_bytes: file.size,
+        },
+      });
+      toast.success("Document attached");
+      qc.invalidateQueries({ queryKey: ["official-onboarding", termId] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload failed");
+    } finally {
+      setBusyTask(null);
+    }
+  }
+  async function viewDoc(docId: string) {
+    try {
+      const r = await signFn({ data: { document_id: docId } });
+      window.open(r.url, "_blank", "noopener,noreferrer");
+    } catch (e: any) { toast.error(e?.message ?? "Cannot open"); }
+  }
+  async function removeDoc(taskId: string) {
+    if (!confirm("Remove attached document?")) return;
+    try {
+      await removeDocFn({ data: { task_id: taskId } });
+      qc.invalidateQueries({ queryKey: ["official-onboarding", termId] });
+    } catch (e: any) { toast.error(e?.message ?? "Failed"); }
+  }
 
   return (
     <Collapsible>
@@ -701,8 +743,9 @@ function TermOnboarding({ termId, onDone }: { termId: string; onDone: () => void
             {tasks.map((t) => {
               const done = t.status === "complete";
               const overdue = !done && t.due_date && t.due_date < new Date().toISOString().slice(0, 10);
+              const doc = t.documents;
               return (
-                <li key={t.id} className="flex items-center gap-2 text-[11px] py-0.5">
+                <li key={t.id} className="flex items-center gap-2 text-[11px] py-0.5 flex-wrap">
                   <input
                     type="checkbox"
                     checked={done}
@@ -719,6 +762,27 @@ function TermOnboarding({ termId, onDone }: { termId: string; onDone: () => void
                     <span className={overdue ? "text-rose-600" : "text-muted-foreground"}>
                       due {t.due_date}
                     </span>
+                  )}
+                  {doc ? (
+                    <span className="flex items-center gap-1">
+                      <button onClick={() => viewDoc(doc.id)} className="inline-flex items-center gap-1 text-primary hover:underline" title={doc.name}>
+                        <Eye className="h-3 w-3" /> doc
+                      </button>
+                      <button onClick={() => removeDoc(t.id)} className="text-muted-foreground hover:text-rose-600" title="Remove">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ) : (
+                    <label className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer">
+                      <Paperclip className="h-3 w-3" />
+                      {busyTask === t.id ? "…" : "attach"}
+                      <input
+                        type="file"
+                        className="hidden"
+                        disabled={busyTask === t.id}
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(t, f); e.currentTarget.value = ""; }}
+                      />
+                    </label>
                   )}
                 </li>
               );
