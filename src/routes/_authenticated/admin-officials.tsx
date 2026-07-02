@@ -95,6 +95,11 @@ function OfficialsAdmin() {
                     </li>
                   ))}
                 </ul>
+                <div className="px-4 pb-3">
+                  <Link to="/admin-officials/archive" className="text-xs underline text-muted-foreground hover:text-foreground">
+                    View expiration archive →
+                  </Link>
+                </div>
               </CollapsibleContent>
             </Card>
           </Collapsible>
