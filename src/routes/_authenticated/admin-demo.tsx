@@ -72,7 +72,7 @@ function AdminDemoPage() {
     try {
       let count = 0;
       let cursor: string | undefined;
-      for (let i = 0; i < 80; i++) {
+      for (let i = 0; i < 120; i++) {
         const r = (await seedNextOfficial({
           data: { regenerate, after_last_name: cursor },
         })) as {
