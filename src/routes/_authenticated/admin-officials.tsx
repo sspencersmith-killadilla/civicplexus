@@ -765,7 +765,7 @@ function TermOnboarding({ termId, onDone }: { termId: string; onDone: () => void
                   )}
                   {doc ? (
                     <span className="flex items-center gap-1">
-                      <button onClick={() => viewDoc(doc.id)} className="inline-flex items-center gap-1 text-primary hover:underline" title={doc.name}>
+                      <button onClick={() => viewDoc(doc.id)} className="inline-flex items-center gap-1 text-primary hover:underline" title={doc.title}>
                         <Eye className="h-3 w-3" /> doc
                       </button>
                       <button onClick={() => removeDoc(t.id)} className="text-muted-foreground hover:text-rose-600" title="Remove">
