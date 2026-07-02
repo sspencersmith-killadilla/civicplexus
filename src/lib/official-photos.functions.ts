@@ -56,7 +56,7 @@ export const seedNextOfficialPhoto = createServerFn({ method: "POST" })
     const { data: termRow } = await supabaseAdmin
       .from("official_terms")
       .select(
-        "appointment_type, start_date, official_seats!inner(seat_label, is_chair, governing_bodies!inner(name, kind))",
+        "appointment_type, start_date, official_seats!inner(seat_label, is_chair, official_bodies!inner(name, kind))",
       )
       .eq("official_id", off.id)
       .order("start_date", { ascending: false })
@@ -64,15 +64,14 @@ export const seedNextOfficialPhoto = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const seat = (termRow as any)?.official_seats;
-    const body = seat?.governing_bodies;
+    const body = seat?.official_bodies;
     const roleLabel: string = body?.name
       ? seat?.is_chair
         ? `Chair of the ${body.name}`
         : `Member of the ${body.name} (${seat?.seat_label ?? "member"})`
       : "municipal official";
-    const category: string = body?.kind === "council" || body?.kind === "governing"
-      ? "elected city official"
-      : "appointed board/commission member";
+    const category: string =
+      body?.kind === "council" ? "elected city official" : "appointed board/commission member";
 
     // Deterministic variety per-official so re-runs stay stable-ish.
     const seed = (off.id + off.last_name)
