@@ -13,6 +13,7 @@ import { Route as OfflineShellRouteImport } from './routes/offline-shell'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ServeIndexRouteImport } from './routes/serve.index'
 import { Route as OfficialsIndexRouteImport } from './routes/officials.index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
 import { Route as OfficialsPrintRouteImport } from './routes/officials.print'
@@ -151,6 +152,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServeIndexRoute = ServeIndexRouteImport.update({
+  id: '/serve/',
+  path: '/serve/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
@@ -879,6 +885,7 @@ export interface FileRoutesByFullPath {
   '/officials/print': typeof OfficialsPrintRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
+  '/serve/': typeof ServeIndexRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1003,6 +1010,7 @@ export interface FileRoutesByTo {
   '/officials/print': typeof OfficialsPrintRoute
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
+  '/serve': typeof ServeIndexRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1130,6 +1138,7 @@ export interface FileRoutesById {
   '/officials/print': typeof OfficialsPrintRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
+  '/serve/': typeof ServeIndexRoute
   '/_authenticated/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1257,6 +1266,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/careers/'
     | '/officials/'
+    | '/serve/'
     | '/admin-officials/print'
     | '/cascades/$id'
     | '/comp-cycles/$id'
@@ -1381,6 +1391,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/careers'
     | '/officials'
+    | '/serve'
     | '/admin-officials/print'
     | '/cascades/$id'
     | '/comp-cycles/$id'
@@ -1507,6 +1518,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/careers/'
     | '/officials/'
+    | '/serve/'
     | '/_authenticated/admin-officials/print'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
@@ -1585,6 +1597,7 @@ export interface RootRouteChildren {
   OfficialsPrintRoute: typeof OfficialsPrintRoute
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
+  ServeIndexRoute: typeof ServeIndexRoute
   ApiPublicBoardApplicationsRoute: typeof ApiPublicBoardApplicationsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
@@ -1638,6 +1651,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/serve/': {
+      id: '/serve/'
+      path: '/serve'
+      fullPath: '/serve/'
+      preLoaderRoute: typeof ServeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/officials/': {
@@ -2747,6 +2767,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfficialsPrintRoute: OfficialsPrintRoute,
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
+  ServeIndexRoute: ServeIndexRoute,
   ApiPublicBoardApplicationsRoute: ApiPublicBoardApplicationsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
