@@ -1401,11 +1401,12 @@ export type Database = {
       documents: {
         Row: {
           created_at: string
-          employee_id: string
+          employee_id: string | null
           id: string
           is_sensitive: boolean
           kind: string
           mime_type: string | null
+          official_term_id: string | null
           size_bytes: number | null
           storage_path: string
           task_instance_id: string | null
@@ -1414,11 +1415,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          employee_id: string
+          employee_id?: string | null
           id?: string
           is_sensitive?: boolean
           kind?: string
           mime_type?: string | null
+          official_term_id?: string | null
           size_bytes?: number | null
           storage_path: string
           task_instance_id?: string | null
@@ -1427,11 +1429,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          employee_id?: string
+          employee_id?: string | null
           id?: string
           is_sensitive?: boolean
           kind?: string
           mime_type?: string | null
+          official_term_id?: string | null
           size_bytes?: number | null
           storage_path?: string
           task_instance_id?: string | null
@@ -1444,6 +1447,13 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_official_term_id_fkey"
+            columns: ["official_term_id"]
+            isOneToOne: false
+            referencedRelation: "official_terms"
             referencedColumns: ["id"]
           },
           {
