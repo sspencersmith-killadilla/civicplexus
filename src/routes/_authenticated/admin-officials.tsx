@@ -23,6 +23,10 @@ import {
 import { exportClerkRosterCsv } from "@/lib/officials-export.functions";
 import { downloadCsv } from "@/lib/download-csv";
 import { Link } from "@tanstack/react-router";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  listBoardApplications, decideBoardApplication, getCoverLetterUrl, exportBoardApplicationsCsv,
+} from "@/lib/board-applications.functions";
 
 export const Route = createFileRoute("/_authenticated/admin-officials")({ component: OfficialsAdmin });
 
@@ -33,6 +37,7 @@ function OfficialsAdmin() {
   const listFn = useServerFn(listBodies);
   const expFn = useServerFn(upcomingExpirations);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [tab, setTab] = useState<string>("bodies");
 
   const bodiesQ = useQuery({ queryKey: ["officials-bodies"], queryFn: () => listFn() });
   const expQ = useQuery({ queryKey: ["officials-expirations"], queryFn: () => expFn({ data: { days: 120 } }) });
@@ -78,6 +83,12 @@ function OfficialsAdmin() {
           </Card>
         )}
 
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList>
+            <TabsTrigger value="bodies">Bodies & seats</TabsTrigger>
+            <TabsTrigger value="applications">Applications</TabsTrigger>
+          </TabsList>
+          <TabsContent value="bodies">
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4">
           <Card className="p-2">
             {bodiesQ.isLoading && <p className="p-3 text-sm text-muted-foreground">Loading…</p>}
@@ -104,8 +115,85 @@ function OfficialsAdmin() {
 
           {selected ? <BodyDetail bodyId={selected.id} body={selected} /> : <Card className="p-6"><p className="text-sm text-muted-foreground">Select a body to manage.</p></Card>}
         </div>
+          </TabsContent>
+          <TabsContent value="applications">
+            <ApplicationsPanel />
+          </TabsContent>
+        </Tabs>
       </div>
     </AppShell>
+  );
+}
+
+function ApplicationsPanel() {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listBoardApplications);
+  const decideFn = useServerFn(decideBoardApplication);
+  const coverFn = useServerFn(getCoverLetterUrl);
+  const expFn = useServerFn(exportBoardApplicationsCsv);
+  const q = useQuery({ queryKey: ["board-applications"], queryFn: () => listFn() });
+  const rows = (q.data ?? []) as any[];
+  const [filter, setFilter] = useState<string>("all");
+  const shown = filter === "all" ? rows : rows.filter((r) => r.status === filter);
+  return (
+    <Card className="p-4 space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium">Board applications</h3>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="h-8 w-40"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {["all","submitted","under_review","shortlisted","approved","declined","withdrawn"].map((s) =>
+                <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <Button size="sm" variant="outline" onClick={async () => {
+          const r = await expFn(); downloadCsv(r.csv, r.filename);
+        }}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
+      </div>
+      {q.isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
+      {!q.isLoading && shown.length === 0 && <p className="text-xs text-muted-foreground">No applications.</p>}
+      <ul className="divide-y">
+        {shown.map((r) => {
+          const primary = (r.board_application_interests ?? []).find((i: any) => i.is_primary);
+          const others = (r.board_application_interests ?? []).filter((i: any) => !i.is_primary);
+          return (
+            <li key={r.id} className="py-3 space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium">{r.first_name} {r.last_name} <span className="text-xs text-muted-foreground">· {r.email}</span></div>
+                  <div className="text-xs text-muted-foreground">
+                    Primary: {primary?.official_bodies?.name ?? "—"}
+                    {others.length > 0 && ` · Also: ${others.map((o: any) => o.official_bodies?.name).filter(Boolean).join(", ")}`}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">Submitted {new Date(r.created_at).toLocaleString()}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">{r.status}</Badge>
+                </div>
+              </div>
+              {r.statement && <p className="text-xs whitespace-pre-wrap border-l-2 border-primary/40 pl-2">{r.statement}</p>}
+              <div className="flex items-center gap-2 flex-wrap">
+                {r.cover_letter_path && (
+                  <Button size="sm" variant="outline" onClick={async () => {
+                    const { url } = await coverFn({ data: { path: r.cover_letter_path } });
+                    window.open(url, "_blank");
+                  }}>Open cover letter</Button>
+                )}
+                {["under_review","shortlisted","approved","declined"].map((s) => (
+                  <Button key={s} size="sm" variant={s === "approved" ? "default" : "outline"} onClick={async () => {
+                    await decideFn({ data: { id: r.id, status: s as any } });
+                    toast.success(`Marked ${s}`);
+                    qc.invalidateQueries({ queryKey: ["board-applications"] });
+                  }}>{s}</Button>
+                ))}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
   );
 }
 

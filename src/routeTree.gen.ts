@@ -88,6 +88,7 @@ import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authenticated/employees.index'
 import { Route as AuthenticatedCompCyclesIndexRouteImport } from './routes/_authenticated/comp-cycles.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
+import { Route as ServeStatusTokenRouteImport } from './routes/serve.status.$token'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
 import { Route as CandidateTokenInterviewRouteImport } from './routes/candidate.$token.interview'
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
@@ -565,6 +566,11 @@ const AuthenticatedCascadesIndexRoute =
     path: '/cascades/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ServeStatusTokenRoute = ServeStatusTokenRouteImport.update({
+  id: '/serve/status/$token',
+  path: '/serve/status/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CareersSlugApplyRoute = CareersSlugApplyRouteImport.update({
   id: '/apply',
   path: '/apply',
@@ -927,6 +933,7 @@ export interface FileRoutesByFullPath {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/status/$token': typeof ServeStatusTokenRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -1054,6 +1061,7 @@ export interface FileRoutesByTo {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/status/$token': typeof ServeStatusTokenRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles': typeof AuthenticatedCompCyclesIndexRoute
   '/employees': typeof AuthenticatedEmployeesIndexRoute
@@ -1184,6 +1192,7 @@ export interface FileRoutesById {
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/status/$token': typeof ServeStatusTokenRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -1314,6 +1323,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/status/$token'
     | '/cascades/'
     | '/comp-cycles/'
     | '/employees/'
@@ -1441,6 +1451,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/status/$token'
     | '/cascades'
     | '/comp-cycles'
     | '/employees'
@@ -1570,6 +1581,7 @@ export interface FileRouteTypes {
     | '/api/public/job-applications'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/status/$token'
     | '/_authenticated/cascades/'
     | '/_authenticated/comp-cycles/'
     | '/_authenticated/employees/'
@@ -1628,6 +1640,7 @@ export interface RootRouteChildren {
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
   CandidateTokenInterviewRoute: typeof CandidateTokenInterviewRoute
+  ServeStatusTokenRoute: typeof ServeStatusTokenRoute
   CandidateTokenIndexRoute: typeof CandidateTokenIndexRoute
   ApiPublicBadgeSerialRoute: typeof ApiPublicBadgeSerialRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
@@ -2203,6 +2216,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/cascades/'
       preLoaderRoute: typeof AuthenticatedCascadesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/serve/status/$token': {
+      id: '/serve/status/$token'
+      path: '/serve/status/$token'
+      fullPath: '/serve/status/$token'
+      preLoaderRoute: typeof ServeStatusTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/careers/$slug/apply': {
       id: '/careers/$slug/apply'
@@ -2814,6 +2834,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
   CandidateTokenInterviewRoute: CandidateTokenInterviewRoute,
+  ServeStatusTokenRoute: ServeStatusTokenRoute,
   CandidateTokenIndexRoute: CandidateTokenIndexRoute,
   ApiPublicBadgeSerialRoute: ApiPublicBadgeSerialRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
