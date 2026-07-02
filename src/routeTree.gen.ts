@@ -116,6 +116,7 @@ import { Route as AuthenticatedComplianceNewHireRouteImport } from './routes/_au
 import { Route as AuthenticatedCompCyclesIdRouteImport } from './routes/_authenticated/comp-cycles.$id'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
 import { Route as AuthenticatedAdminOfficialsPrintRouteImport } from './routes/_authenticated/admin-officials.print'
+import { Route as AuthenticatedAdminOfficialsOnboardingTemplatesRouteImport } from './routes/_authenticated/admin-officials.onboarding-templates'
 import { Route as AuthenticatedAdminOfficialsArchiveRouteImport } from './routes/_authenticated/admin-officials.archive'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksOfflineReplayRouteImport } from './routes/api/public/hooks/offline-replay'
@@ -723,6 +724,12 @@ const AuthenticatedAdminOfficialsPrintRoute =
     path: '/print',
     getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
+const AuthenticatedAdminOfficialsOnboardingTemplatesRoute =
+  AuthenticatedAdminOfficialsOnboardingTemplatesRouteImport.update({
+    id: '/onboarding-templates',
+    path: '/onboarding-templates',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
+  } as any)
 const AuthenticatedAdminOfficialsArchiveRoute =
   AuthenticatedAdminOfficialsArchiveRouteImport.update({
     id: '/archive',
@@ -914,6 +921,7 @@ export interface FileRoutesByFullPath {
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
   '/admin-officials/archive': typeof AuthenticatedAdminOfficialsArchiveRoute
+  '/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1043,6 +1051,7 @@ export interface FileRoutesByTo {
   '/officials': typeof OfficialsIndexRoute
   '/serve': typeof ServeIndexRoute
   '/admin-officials/archive': typeof AuthenticatedAdminOfficialsArchiveRoute
+  '/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1175,6 +1184,7 @@ export interface FileRoutesById {
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
   '/_authenticated/admin-officials/archive': typeof AuthenticatedAdminOfficialsArchiveRoute
+  '/_authenticated/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/_authenticated/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1307,6 +1317,7 @@ export interface FileRouteTypes {
     | '/officials/'
     | '/serve/'
     | '/admin-officials/archive'
+    | '/admin-officials/onboarding-templates'
     | '/admin-officials/print'
     | '/cascades/$id'
     | '/comp-cycles/$id'
@@ -1436,6 +1447,7 @@ export interface FileRouteTypes {
     | '/officials'
     | '/serve'
     | '/admin-officials/archive'
+    | '/admin-officials/onboarding-templates'
     | '/admin-officials/print'
     | '/cascades/$id'
     | '/comp-cycles/$id'
@@ -1567,6 +1579,7 @@ export interface FileRouteTypes {
     | '/officials/'
     | '/serve/'
     | '/_authenticated/admin-officials/archive'
+    | '/_authenticated/admin-officials/onboarding-templates'
     | '/_authenticated/admin-officials/print'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
@@ -2426,6 +2439,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOfficialsPrintRouteImport
       parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
+    '/_authenticated/admin-officials/onboarding-templates': {
+      id: '/_authenticated/admin-officials/onboarding-templates'
+      path: '/onboarding-templates'
+      fullPath: '/admin-officials/onboarding-templates'
+      preLoaderRoute: typeof AuthenticatedAdminOfficialsOnboardingTemplatesRouteImport
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
+    }
     '/_authenticated/admin-officials/archive': {
       id: '/_authenticated/admin-officials/archive'
       path: '/archive'
@@ -2585,6 +2605,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminOfficialsRouteChildren {
   AuthenticatedAdminOfficialsArchiveRoute: typeof AuthenticatedAdminOfficialsArchiveRoute
+  AuthenticatedAdminOfficialsOnboardingTemplatesRoute: typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   AuthenticatedAdminOfficialsPrintRoute: typeof AuthenticatedAdminOfficialsPrintRoute
 }
 
@@ -2592,6 +2613,8 @@ const AuthenticatedAdminOfficialsRouteChildren: AuthenticatedAdminOfficialsRoute
   {
     AuthenticatedAdminOfficialsArchiveRoute:
       AuthenticatedAdminOfficialsArchiveRoute,
+    AuthenticatedAdminOfficialsOnboardingTemplatesRoute:
+      AuthenticatedAdminOfficialsOnboardingTemplatesRoute,
     AuthenticatedAdminOfficialsPrintRoute:
       AuthenticatedAdminOfficialsPrintRoute,
   }

@@ -4749,6 +4749,107 @@ export type Database = {
           },
         ]
       }
+      official_onboarding_instances: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          started_at: string
+          status: Database["public"]["Enums"]["official_onboarding_status"]
+          template_id: string | null
+          term_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["official_onboarding_status"]
+          template_id?: string | null
+          term_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["official_onboarding_status"]
+          template_id?: string | null
+          term_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "official_onboarding_instances_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "official_onboarding_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "official_onboarding_instances_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: true
+            referencedRelation: "official_terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      official_onboarding_templates: {
+        Row: {
+          appointment_type:
+            | Database["public"]["Enums"]["official_appointment_type"]
+            | null
+          body_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_type?:
+            | Database["public"]["Enums"]["official_appointment_type"]
+            | null
+          body_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_type?:
+            | Database["public"]["Enums"]["official_appointment_type"]
+            | null
+          body_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "official_onboarding_templates_body_id_fkey"
+            columns: ["body_id"]
+            isOneToOne: false
+            referencedRelation: "official_bodies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       official_seats: {
         Row: {
           appointing_authority: string | null
@@ -4792,6 +4893,141 @@ export type Database = {
             columns: ["body_id"]
             isOneToOne: false
             referencedRelation: "official_bodies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      official_task_instances: {
+        Row: {
+          assignee: Database["public"]["Enums"]["official_task_assignee"]
+          category: Database["public"]["Enums"]["official_task_category"]
+          completed_at: string | null
+          completed_by: string | null
+          completion_signal: Database["public"]["Enums"]["official_task_signal"]
+          created_at: string
+          description: string | null
+          due_date: string | null
+          evidence_document_id: string | null
+          id: string
+          instance_id: string
+          is_required: boolean
+          notes: string | null
+          sort_order: number
+          status: Database["public"]["Enums"]["official_task_status"]
+          template_task_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee?: Database["public"]["Enums"]["official_task_assignee"]
+          category?: Database["public"]["Enums"]["official_task_category"]
+          completed_at?: string | null
+          completed_by?: string | null
+          completion_signal?: Database["public"]["Enums"]["official_task_signal"]
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          evidence_document_id?: string | null
+          id?: string
+          instance_id: string
+          is_required?: boolean
+          notes?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["official_task_status"]
+          template_task_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee?: Database["public"]["Enums"]["official_task_assignee"]
+          category?: Database["public"]["Enums"]["official_task_category"]
+          completed_at?: string | null
+          completed_by?: string | null
+          completion_signal?: Database["public"]["Enums"]["official_task_signal"]
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          evidence_document_id?: string | null
+          id?: string
+          instance_id?: string
+          is_required?: boolean
+          notes?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["official_task_status"]
+          template_task_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "official_task_instances_evidence_document_id_fkey"
+            columns: ["evidence_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "official_task_instances_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "official_onboarding_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "official_task_instances_template_task_id_fkey"
+            columns: ["template_task_id"]
+            isOneToOne: false
+            referencedRelation: "official_template_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      official_template_tasks: {
+        Row: {
+          assignee: Database["public"]["Enums"]["official_task_assignee"]
+          category: Database["public"]["Enums"]["official_task_category"]
+          completion_signal: Database["public"]["Enums"]["official_task_signal"]
+          created_at: string
+          days_offset: number
+          description: string | null
+          id: string
+          is_required: boolean
+          sort_order: number
+          template_id: string
+          title: string
+        }
+        Insert: {
+          assignee?: Database["public"]["Enums"]["official_task_assignee"]
+          category?: Database["public"]["Enums"]["official_task_category"]
+          completion_signal?: Database["public"]["Enums"]["official_task_signal"]
+          created_at?: string
+          days_offset?: number
+          description?: string | null
+          id?: string
+          is_required?: boolean
+          sort_order?: number
+          template_id: string
+          title: string
+        }
+        Update: {
+          assignee?: Database["public"]["Enums"]["official_task_assignee"]
+          category?: Database["public"]["Enums"]["official_task_category"]
+          completion_signal?: Database["public"]["Enums"]["official_task_signal"]
+          created_at?: string
+          days_offset?: number
+          description?: string | null
+          id?: string
+          is_required?: boolean
+          sort_order?: number
+          template_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "official_template_tasks_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "official_onboarding_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -8227,6 +8463,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      pick_official_onboarding_template: {
+        Args: { _term_id: string }
+        Returns: string
+      }
       purge_expired_interview_media: { Args: never; Returns: number }
       record_audit_event: {
         Args: {
@@ -8302,12 +8542,46 @@ export type Database = {
         | "submitted"
         | "reviewed"
         | "waived"
+      official_onboarding_status: "active" | "complete" | "cancelled"
       official_reimb_status:
         | "draft"
         | "submitted"
         | "approved"
         | "denied"
         | "paid"
+      official_task_assignee:
+        | "official"
+        | "clerk"
+        | "chair"
+        | "hr"
+        | "it"
+        | "automated"
+      official_task_category:
+        | "oath"
+        | "bond"
+        | "ethics"
+        | "disclosure"
+        | "training"
+        | "policy"
+        | "provisioning"
+        | "orientation"
+        | "other"
+      official_task_signal:
+        | "none"
+        | "oath_signed"
+        | "bond_filed"
+        | "ethics_ack"
+        | "coi_filed"
+        | "toma_complete"
+        | "pia_complete"
+        | "photo_consent"
+      official_task_status:
+        | "pending"
+        | "in_progress"
+        | "complete"
+        | "skipped"
+        | "blocked"
+        | "waived"
       official_term_status:
         | "pending"
         | "active"
@@ -8514,12 +8788,50 @@ export const Constants = {
         "reviewed",
         "waived",
       ],
+      official_onboarding_status: ["active", "complete", "cancelled"],
       official_reimb_status: [
         "draft",
         "submitted",
         "approved",
         "denied",
         "paid",
+      ],
+      official_task_assignee: [
+        "official",
+        "clerk",
+        "chair",
+        "hr",
+        "it",
+        "automated",
+      ],
+      official_task_category: [
+        "oath",
+        "bond",
+        "ethics",
+        "disclosure",
+        "training",
+        "policy",
+        "provisioning",
+        "orientation",
+        "other",
+      ],
+      official_task_signal: [
+        "none",
+        "oath_signed",
+        "bond_filed",
+        "ethics_ack",
+        "coi_filed",
+        "toma_complete",
+        "pia_complete",
+        "photo_consent",
+      ],
+      official_task_status: [
+        "pending",
+        "in_progress",
+        "complete",
+        "skipped",
+        "blocked",
+        "waived",
       ],
       official_term_status: [
         "pending",

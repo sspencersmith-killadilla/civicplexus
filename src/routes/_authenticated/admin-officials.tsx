@@ -15,7 +15,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Landmark, Plus, UserPlus, ShieldCheck, XCircle, Coins, Download, Printer, Archive } from "lucide-react";
+import { Landmark, Plus, UserPlus, ShieldCheck, XCircle, Coins, Download, Printer, Archive, ClipboardList, ListChecks } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import {
@@ -29,6 +29,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   listBoardApplications, decideBoardApplication, getCoverLetterUrl, exportBoardApplicationsCsv,
 } from "@/lib/board-applications.functions";
+import {
+  getOfficialOnboarding, updateOfficialTask, reseedOfficialOnboarding, overdueOfficialOnboarding,
+} from "@/lib/official-onboarding.functions";
 
 export const Route = createFileRoute("/_authenticated/admin-officials")({ component: OfficialsAdmin });
 
@@ -43,6 +46,8 @@ function OfficialsAdmin() {
 
   const bodiesQ = useQuery({ queryKey: ["officials-bodies"], queryFn: () => listFn() });
   const expQ = useQuery({ queryKey: ["officials-expirations"], queryFn: () => expFn({ data: { days: 120 } }) });
+  const overdueFn = useServerFn(overdueOfficialOnboarding);
+  const overdueQ = useQuery({ queryKey: ["officials-onboarding-overdue"], queryFn: () => overdueFn() });
   const bodies = (bodiesQ.data ?? []) as Body[];
   const selected = bodies.find((b) => b.id === selectedId) ?? bodies[0] ?? null;
 
@@ -69,9 +74,42 @@ function OfficialsAdmin() {
             }}><Download className="h-4 w-4 mr-1" /> CSV (full history)</Button>
             <Link to="/admin-officials/print"><Button size="sm" variant="outline"><Printer className="h-4 w-4 mr-1" /> PDF</Button></Link>
             <Link to="/admin-officials/archive"><Button size="sm" variant="outline"><Archive className="h-4 w-4 mr-1" /> Archive</Button></Link>
+            <Link to="/admin-officials/onboarding-templates"><Button size="sm" variant="outline"><ClipboardList className="h-4 w-4 mr-1" /> Onboarding templates</Button></Link>
             <BodyDialog onSaved={() => qc.invalidateQueries({ queryKey: ["officials-bodies"] })} />
           </div>
         </div>
+
+        {(overdueQ.data?.length ?? 0) > 0 && (
+          <Collapsible>
+            <Card className="border-rose-300 bg-rose-50/50 dark:bg-rose-950/20">
+              <CollapsibleTrigger className="w-full flex items-center justify-between gap-3 p-3 text-left cursor-pointer group">
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge variant="outline" className="border-rose-400 text-rose-900 dark:text-rose-200">
+                    {(overdueQ.data as any[]).length}
+                  </Badge>
+                  <span className="font-medium">
+                    onboarding {(overdueQ.data as any[]).length === 1 ? "task is" : "tasks are"} overdue
+                  </span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <ul className="text-xs text-muted-foreground px-4 pb-3 space-y-1">
+                  {(overdueQ.data as any[]).slice(0, 20).map((r) => {
+                    const term = r.official_onboarding_instances?.official_terms;
+                    const off = term?.officials;
+                    const seat = term?.official_seats;
+                    return (
+                      <li key={r.id}>
+                        {off?.first_name} {off?.last_name} — {seat?.official_bodies?.name} · {seat?.seat_label} → <span className="capitalize">{r.category}</span>: {r.title} (due {r.due_date})
+                      </li>
+                    );
+                  })}
+                </ul>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+        )}
 
         {(expQ.data?.length ?? 0) > 0 && (
           <Collapsible>
@@ -396,12 +434,17 @@ function BodyDetail({ bodyId, body }: { bodyId: string; body: Body }) {
         {terms.length === 0 && <p className="text-xs text-muted-foreground">No terms recorded.</p>}
         <ul className="text-xs space-y-1">
           {(terms as any[]).map((t) => (
-            <li key={t.id} className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px]">{t.status}</Badge>
-              <span>{t.officials?.first_name} {t.officials?.last_name}</span>
-              <span className="text-muted-foreground">· {t.official_seats?.seat_label}</span>
-              <span className="text-muted-foreground">· {t.start_date} → {t.end_date ?? "present"}</span>
-              {t.status === "pending" && <SwearInButton termId={t.id} onDone={refresh} />}
+            <li key={t.id} className="border-b last:border-b-0 py-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className="text-[10px]">{t.status}</Badge>
+                <span>{t.officials?.first_name} {t.officials?.last_name}</span>
+                <span className="text-muted-foreground">· {t.official_seats?.seat_label}</span>
+                <span className="text-muted-foreground">· {t.start_date} → {t.end_date ?? "present"}</span>
+                {t.status === "pending" && <SwearInButton termId={t.id} onDone={refresh} />}
+              </div>
+              {(t.status === "pending" || t.status === "active") && (
+                <TermOnboarding termId={t.id} onDone={refresh} />
+              )}
             </li>
           ))}
         </ul>
@@ -588,5 +631,97 @@ function GenerateReimbDialog({ bodyId }: { bodyId: string }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function TermOnboarding({ termId, onDone }: { termId: string; onDone: () => void }) {
+  const qc = useQueryClient();
+  const getFn = useServerFn(getOfficialOnboarding);
+  const updFn = useServerFn(updateOfficialTask);
+  const reseedFn = useServerFn(reseedOfficialOnboarding);
+  const q = useQuery({
+    queryKey: ["official-onboarding", termId],
+    queryFn: () => getFn({ data: { term_id: termId } }),
+  });
+  const tasks = ((q.data?.tasks ?? []) as any[]);
+  const inst = q.data?.instance as any;
+  const total = tasks.filter((t) => t.is_required).length;
+  const done = tasks.filter((t) => t.is_required && ["complete", "waived", "skipped"].includes(t.status)).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+
+  const setStatus = useMutation({
+    mutationFn: (v: { task_id: string; status: string }) => updFn({ data: v as any }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["official-onboarding", termId] });
+      qc.invalidateQueries({ queryKey: ["officials-onboarding-overdue"] });
+      onDone();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const reseed = useMutation({
+    mutationFn: () => reseedFn({ data: { term_id: termId } }),
+    onSuccess: () => {
+      toast.success("Onboarding reseeded");
+      qc.invalidateQueries({ queryKey: ["official-onboarding", termId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Collapsible>
+      <CollapsibleTrigger className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 mt-1">
+        <ListChecks className="h-3 w-3" />
+        Onboarding: {done}/{total} required ({pct}%)
+        <ChevronDown className="h-3 w-3 transition-transform group-data-[state=open]:rotate-180" />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-2 rounded border bg-muted/30 p-2 space-y-1">
+          {q.isLoading && <p className="text-[11px] text-muted-foreground">Loading…</p>}
+          {!q.isLoading && !inst && (
+            <div className="flex items-center gap-2">
+              <p className="text-[11px] text-muted-foreground">No onboarding instance yet.</p>
+              <Button size="sm" variant="outline" onClick={() => reseed.mutate()} disabled={reseed.isPending}>Seed</Button>
+            </div>
+          )}
+          {inst && (
+            <div className="flex items-center justify-between gap-2 pb-1">
+              <span className="text-[11px] text-muted-foreground">
+                Template: {inst.official_onboarding_templates?.name ?? "—"}
+              </span>
+              <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => reseed.mutate()} disabled={reseed.isPending}>
+                Reseed
+              </Button>
+            </div>
+          )}
+          <ul className="space-y-0.5">
+            {tasks.map((t) => {
+              const done = t.status === "complete";
+              const overdue = !done && t.due_date && t.due_date < new Date().toISOString().slice(0, 10);
+              return (
+                <li key={t.id} className="flex items-center gap-2 text-[11px] py-0.5">
+                  <input
+                    type="checkbox"
+                    checked={done}
+                    onChange={(e) => setStatus.mutate({ task_id: t.id, status: e.target.checked ? "complete" : "pending" })}
+                    className="h-3 w-3"
+                  />
+                  <span className={`flex-1 ${done ? "line-through text-muted-foreground" : ""}`}>
+                    {t.title}
+                    {!t.is_required && <span className="text-muted-foreground"> (optional)</span>}
+                  </span>
+                  <Badge variant="outline" className="text-[9px] capitalize">{t.category}</Badge>
+                  <Badge variant="outline" className="text-[9px] capitalize">{t.assignee}</Badge>
+                  {t.due_date && (
+                    <span className={overdue ? "text-rose-600" : "text-muted-foreground"}>
+                      due {t.due_date}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
