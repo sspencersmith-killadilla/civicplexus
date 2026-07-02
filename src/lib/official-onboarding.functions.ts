@@ -283,3 +283,156 @@ export const deleteOnboardingTemplateTask = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+/** Attach an uploaded file to an onboarding task. Creates a documents row + links via evidence_document_id. */
+export const attachOfficialTaskDocument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z
+      .object({
+        task_id: z.string().uuid(),
+        storage_path: z.string().min(1),
+        title: z.string().min(1),
+        mime_type: z.string().nullable().optional(),
+        size_bytes: z.number().int().nullable().optional(),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertRole(context.supabase, context.userId);
+    const { data: task, error: te } = await context.supabase
+      .from("official_task_instances")
+      .select("id, category, official_onboarding_instances!inner(term_id)")
+      .eq("id", data.task_id)
+      .maybeSingle();
+    if (te) throw te;
+    if (!task) throw new Error("Task not found");
+    const termId = (task as any).official_onboarding_instances.term_id as string;
+
+    const { data: doc, error: de } = await context.supabase
+      .from("documents")
+      .insert({
+        official_term_id: termId,
+        kind: (task as any).category ?? "other",
+        title: data.title,
+        storage_path: data.storage_path,
+        mime_type: data.mime_type ?? null,
+        size_bytes: data.size_bytes ?? null,
+        uploaded_by: context.userId,
+        is_sensitive: true,
+      })
+      .select("id")
+      .single();
+    if (de) throw de;
+
+    const { error: ue } = await context.supabase
+      .from("official_task_instances")
+      .update({ evidence_document_id: doc.id })
+      .eq("id", data.task_id);
+    if (ue) throw ue;
+
+    return { document_id: doc.id };
+  });
+
+/** Signed URL for viewing a document attached to an onboarding task. */
+export const signOfficialDocumentUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ document_id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { data: doc, error } = await context.supabase
+      .from("documents")
+      .select("storage_path, official_term_id")
+      .eq("id", data.document_id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!doc || !doc.official_term_id) throw new Error("Not found");
+    const { data: signed, error: se } = await context.supabase.storage
+      .from("official-documents")
+      .createSignedUrl(doc.storage_path, 600);
+    if (se) throw se;
+    return { url: signed.signedUrl };
+  });
+
+/** Remove the attached document from a task (deletes row + storage object). */
+export const removeOfficialTaskDocument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ task_id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertRole(context.supabase, context.userId);
+    const { data: task } = await context.supabase
+      .from("official_task_instances")
+      .select("evidence_document_id")
+      .eq("id", data.task_id)
+      .maybeSingle();
+    const docId = task?.evidence_document_id as string | null | undefined;
+    if (!docId) return { ok: true };
+    const { data: doc } = await context.supabase
+      .from("documents").select("storage_path").eq("id", docId).maybeSingle();
+    await context.supabase.from("official_task_instances")
+      .update({ evidence_document_id: null }).eq("id", data.task_id);
+    await context.supabase.from("documents").delete().eq("id", docId);
+    if (doc?.storage_path) {
+      await context.supabase.storage.from("official-documents").remove([doc.storage_path]);
+    }
+    return { ok: true };
+  });
+
+/** Report: onboarding status per active/pending term, with completion metrics. */
+export const officialOnboardingReport = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: terms, error } = await context.supabase
+      .from("official_terms")
+      .select(
+        `id, start_date, end_date, status, appointment_type,
+         officials(first_name, last_name, email),
+         official_seats!inner(seat_label, official_bodies!inner(id, name, slug, kind)),
+         official_onboarding_instances(id, status, template_id,
+           official_onboarding_templates(name),
+           official_task_instances(id, status, is_required, due_date, category, evidence_document_id))`,
+      )
+      .in("status", ["pending", "active"]);
+    if (error) throw error;
+
+    const rows = (terms ?? []).map((t: any) => {
+      const inst = (t.official_onboarding_instances ?? [])[0];
+      const tasks = (inst?.official_task_instances ?? []) as any[];
+      const req = tasks.filter((x) => x.is_required);
+      const doneReq = req.filter((x) => ["complete", "waived", "skipped"].includes(x.status));
+      const overdue = tasks.filter(
+        (x) => x.due_date && x.due_date < today && !["complete", "waived", "skipped"].includes(x.status),
+      );
+      const withDocs = tasks.filter((x) => !!x.evidence_document_id).length;
+      const pct = req.length ? Math.round((doneReq.length / req.length) * 100) : (inst ? 100 : 0);
+      const overall: "not_started" | "in_progress" | "complete" | "no_instance" = !inst
+        ? "no_instance"
+        : inst.status === "complete"
+        ? "complete"
+        : doneReq.length === 0
+        ? "not_started"
+        : "in_progress";
+      return {
+        term_id: t.id,
+        official_name: `${t.officials?.first_name ?? ""} ${t.officials?.last_name ?? ""}`.trim(),
+        email: t.officials?.email ?? null,
+        body_name: t.official_seats?.official_bodies?.name ?? null,
+        body_slug: t.official_seats?.official_bodies?.slug ?? null,
+        body_kind: t.official_seats?.official_bodies?.kind ?? null,
+        seat_label: t.official_seats?.seat_label ?? null,
+        appointment_type: t.appointment_type,
+        term_status: t.status,
+        start_date: t.start_date,
+        end_date: t.end_date,
+        template_name: inst?.official_onboarding_templates?.name ?? null,
+        overall_status: overall,
+        pct_complete: pct,
+        tasks_total: tasks.length,
+        tasks_required: req.length,
+        tasks_required_done: doneReq.length,
+        overdue_count: overdue.length,
+        docs_attached: withDocs,
+      };
+    });
+    return rows;
+  });
