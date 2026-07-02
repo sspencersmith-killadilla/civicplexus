@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServeIndexRouteImport } from './routes/serve.index'
 import { Route as OfficialsIndexRouteImport } from './routes/officials.index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as ServeCandidateFilingRouteImport } from './routes/serve.candidate-filing'
 import { Route as ServeApplyRouteImport } from './routes/serve.apply'
 import { Route as OfficialsPrintRouteImport } from './routes/officials.print'
 import { Route as OfficialsSlugRouteImport } from './routes/officials.$slug'
@@ -168,6 +169,11 @@ const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
 const CareersIndexRoute = CareersIndexRouteImport.update({
   id: '/careers/',
   path: '/careers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServeCandidateFilingRoute = ServeCandidateFilingRouteImport.update({
+  id: '/serve/candidate-filing',
+  path: '/serve/candidate-filing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServeApplyRoute = ServeApplyRouteImport.update({
@@ -890,6 +896,7 @@ export interface FileRoutesByFullPath {
   '/officials/$slug': typeof OfficialsSlugRoute
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
+  '/serve/candidate-filing': typeof ServeCandidateFilingRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
@@ -1016,6 +1023,7 @@ export interface FileRoutesByTo {
   '/officials/$slug': typeof OfficialsSlugRoute
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
+  '/serve/candidate-filing': typeof ServeCandidateFilingRoute
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
   '/serve': typeof ServeIndexRoute
@@ -1145,6 +1153,7 @@ export interface FileRoutesById {
   '/officials/$slug': typeof OfficialsSlugRoute
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
+  '/serve/candidate-filing': typeof ServeCandidateFilingRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
@@ -1274,6 +1283,7 @@ export interface FileRouteTypes {
     | '/officials/$slug'
     | '/officials/print'
     | '/serve/apply'
+    | '/serve/candidate-filing'
     | '/careers/'
     | '/officials/'
     | '/serve/'
@@ -1400,6 +1410,7 @@ export interface FileRouteTypes {
     | '/officials/$slug'
     | '/officials/print'
     | '/serve/apply'
+    | '/serve/candidate-filing'
     | '/careers'
     | '/officials'
     | '/serve'
@@ -1528,6 +1539,7 @@ export interface FileRouteTypes {
     | '/officials/$slug'
     | '/officials/print'
     | '/serve/apply'
+    | '/serve/candidate-filing'
     | '/careers/'
     | '/officials/'
     | '/serve/'
@@ -1608,6 +1620,7 @@ export interface RootRouteChildren {
   OfficialsSlugRoute: typeof OfficialsSlugRoute
   OfficialsPrintRoute: typeof OfficialsPrintRoute
   ServeApplyRoute: typeof ServeApplyRoute
+  ServeCandidateFilingRoute: typeof ServeCandidateFilingRoute
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
   ServeIndexRoute: typeof ServeIndexRoute
@@ -1685,6 +1698,13 @@ declare module '@tanstack/react-router' {
       path: '/careers'
       fullPath: '/careers/'
       preLoaderRoute: typeof CareersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/serve/candidate-filing': {
+      id: '/serve/candidate-filing'
+      path: '/serve/candidate-filing'
+      fullPath: '/serve/candidate-filing'
+      preLoaderRoute: typeof ServeCandidateFilingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/serve/apply': {
@@ -2786,6 +2806,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfficialsSlugRoute: OfficialsSlugRoute,
   OfficialsPrintRoute: OfficialsPrintRoute,
   ServeApplyRoute: ServeApplyRoute,
+  ServeCandidateFilingRoute: ServeCandidateFilingRoute,
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
   ServeIndexRoute: ServeIndexRoute,
