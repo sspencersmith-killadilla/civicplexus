@@ -116,6 +116,7 @@ import { Route as AuthenticatedComplianceNewHireRouteImport } from './routes/_au
 import { Route as AuthenticatedCompCyclesIdRouteImport } from './routes/_authenticated/comp-cycles.$id'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
 import { Route as AuthenticatedAdminOfficialsPrintRouteImport } from './routes/_authenticated/admin-officials.print'
+import { Route as AuthenticatedAdminOfficialsArchiveRouteImport } from './routes/_authenticated/admin-officials.archive'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksOfflineReplayRouteImport } from './routes/api/public/hooks/offline-replay'
 import { Route as ApiPublicHooksLmsSyncRouteImport } from './routes/api/public/hooks/lms-sync'
@@ -722,6 +723,12 @@ const AuthenticatedAdminOfficialsPrintRoute =
     path: '/print',
     getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
+const AuthenticatedAdminOfficialsArchiveRoute =
+  AuthenticatedAdminOfficialsArchiveRouteImport.update({
+    id: '/archive',
+    path: '/archive',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
+  } as any)
 const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
   id: '/api/public/hooks/reminders',
   path: '/api/public/hooks/reminders',
@@ -906,6 +913,7 @@ export interface FileRoutesByFullPath {
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
+  '/admin-officials/archive': typeof AuthenticatedAdminOfficialsArchiveRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1034,6 +1042,7 @@ export interface FileRoutesByTo {
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
   '/serve': typeof ServeIndexRoute
+  '/admin-officials/archive': typeof AuthenticatedAdminOfficialsArchiveRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1165,6 +1174,7 @@ export interface FileRoutesById {
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
+  '/_authenticated/admin-officials/archive': typeof AuthenticatedAdminOfficialsArchiveRoute
   '/_authenticated/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1296,6 +1306,7 @@ export interface FileRouteTypes {
     | '/careers/'
     | '/officials/'
     | '/serve/'
+    | '/admin-officials/archive'
     | '/admin-officials/print'
     | '/cascades/$id'
     | '/comp-cycles/$id'
@@ -1424,6 +1435,7 @@ export interface FileRouteTypes {
     | '/careers'
     | '/officials'
     | '/serve'
+    | '/admin-officials/archive'
     | '/admin-officials/print'
     | '/cascades/$id'
     | '/comp-cycles/$id'
@@ -1554,6 +1566,7 @@ export interface FileRouteTypes {
     | '/careers/'
     | '/officials/'
     | '/serve/'
+    | '/_authenticated/admin-officials/archive'
     | '/_authenticated/admin-officials/print'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
@@ -2413,6 +2426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOfficialsPrintRouteImport
       parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
+    '/_authenticated/admin-officials/archive': {
+      id: '/_authenticated/admin-officials/archive'
+      path: '/archive'
+      fullPath: '/admin-officials/archive'
+      preLoaderRoute: typeof AuthenticatedAdminOfficialsArchiveRouteImport
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
+    }
     '/api/public/hooks/reminders': {
       id: '/api/public/hooks/reminders'
       path: '/api/public/hooks/reminders'
@@ -2564,11 +2584,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminOfficialsRouteChildren {
+  AuthenticatedAdminOfficialsArchiveRoute: typeof AuthenticatedAdminOfficialsArchiveRoute
   AuthenticatedAdminOfficialsPrintRoute: typeof AuthenticatedAdminOfficialsPrintRoute
 }
 
 const AuthenticatedAdminOfficialsRouteChildren: AuthenticatedAdminOfficialsRouteChildren =
   {
+    AuthenticatedAdminOfficialsArchiveRoute:
+      AuthenticatedAdminOfficialsArchiveRoute,
     AuthenticatedAdminOfficialsPrintRoute:
       AuthenticatedAdminOfficialsPrintRoute,
   }

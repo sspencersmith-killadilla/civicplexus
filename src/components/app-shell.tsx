@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LogOut, PanelLeftClose, PanelLeftOpen, Menu, ChevronDown, ChevronRight } from "lucide-react";
+import { LogOut, PanelLeftClose, PanelLeftOpen, Menu, ChevronDown, ChevronRight, Globe, Landmark, HandHeart, Briefcase, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -70,6 +70,13 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     }))
     .filter((g) => g.items.length);
 
+  const publicPortals = [
+    { to: "/officials", label: "Officials roster", icon: Landmark },
+    { to: "/serve", label: "Serve on a board", icon: HandHeart },
+    { to: "/careers", label: "Careers", icon: Briefcase },
+  ];
+  const publicOpen = collapsed ? true : !collapsedGroups.has("__public__");
+
   const sidebarNav = (
     <nav className="flex-1 py-4 space-y-1 overflow-y-auto px-3">
       {groups.map((g) => {
@@ -128,6 +135,48 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           </div>
         );
       })}
+
+      <div className={cn("pt-2 mt-2 border-t border-sidebar-border/60", collapsed ? "space-y-1" : "")}>
+        {!collapsed && (
+          <button
+            type="button"
+            onClick={() => toggleGroup("__public__")}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[10px] uppercase tracking-wider text-sidebar-foreground/50 hover:bg-sidebar-accent/30 hover:text-sidebar-foreground/70"
+          >
+            <span className="flex items-center gap-1.5"><Globe className="h-3 w-3" /> Public portals</span>
+            {publicOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </button>
+        )}
+        {publicOpen && (
+          <div className={cn("space-y-1", collapsed ? "" : "pb-2")}>
+            {publicPortals.map((n) => {
+              const Icon = n.icon;
+              return (
+                <a
+                  key={n.to}
+                  href={n.to}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={collapsed ? n.label : undefined}
+                  aria-label={n.label}
+                  className={cn(
+                    "flex items-center rounded-md text-sm transition-colors text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+                    collapsed ? "justify-center py-2 px-1" : "gap-3 py-2 px-3",
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {!collapsed && (
+                    <>
+                      <span className="truncate flex-1">{n.label}</span>
+                      <ExternalLink className="h-3 w-3 text-sidebar-foreground/40 shrink-0" />
+                    </>
+                  )}
+                </a>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </nav>
   );
 

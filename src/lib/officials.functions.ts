@@ -255,6 +255,55 @@ export const upcomingExpirations = createServerFn({ method: "POST" })
     return rows ?? [];
   });
 
+/** Archive: terms whose end_date is in the past, or whose status is ended (expired/resigned/removed). */
+export const listExpiredTerms = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({
+      search: z.string().optional().default(""),
+      body_id: z.string().uuid().nullable().optional(),
+      status: z.enum(["any", "expired", "resigned", "removed", "active_past_end"]).optional().default("any"),
+      from: z.string().nullable().optional(),
+      to: z.string().nullable().optional(),
+      limit: z.number().int().min(1).max(500).optional().default(200),
+    }).parse(i ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    const today = new Date().toISOString().slice(0, 10);
+    let q = context.supabase
+      .from("official_terms")
+      .select("id, start_date, end_date, status, ended_reason, appointment_type, officials(first_name,last_name), official_seats(seat_label, body_id, official_bodies(id,name,slug))")
+      .not("end_date", "is", null)
+      .lt("end_date", today)
+      .order("end_date", { ascending: false })
+      .limit(data.limit);
+
+    if (data.status === "expired" || data.status === "resigned" || data.status === "removed") {
+      q = q.eq("status", data.status);
+    } else if (data.status === "active_past_end") {
+      q = q.eq("status", "active");
+    }
+    if (data.from) q = q.gte("end_date", data.from);
+    if (data.to) q = q.lte("end_date", data.to);
+
+    const { data: rows, error } = await q;
+    if (error) throw error;
+    let out = rows ?? [];
+    if (data.body_id) {
+      out = out.filter((r: any) => r.official_seats?.body_id === data.body_id);
+    }
+    if (data.search.trim()) {
+      const s = data.search.trim().toLowerCase();
+      out = out.filter((r: any) => {
+        const name = `${r.officials?.first_name ?? ""} ${r.officials?.last_name ?? ""}`.toLowerCase();
+        const body = (r.official_seats?.official_bodies?.name ?? "").toLowerCase();
+        const seat = (r.official_seats?.seat_label ?? "").toLowerCase();
+        return name.includes(s) || body.includes(s) || seat.includes(s);
+      });
+    }
+    return out;
+  });
+
 /** Create a signed upload URL for an official photo (clerk/HR only). */
 export const createOfficialPhotoUploadUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

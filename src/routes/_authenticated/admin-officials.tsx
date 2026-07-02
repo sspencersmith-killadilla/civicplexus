@@ -15,7 +15,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Landmark, Plus, UserPlus, ShieldCheck, XCircle, Coins, Download, Printer } from "lucide-react";
+import { Landmark, Plus, UserPlus, ShieldCheck, XCircle, Coins, Download, Printer, Archive } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import {
@@ -68,6 +68,7 @@ function OfficialsAdmin() {
               downloadCsv(r.csv, r.filename.replace(".csv", "-full-history.csv"));
             }}><Download className="h-4 w-4 mr-1" /> CSV (full history)</Button>
             <Link to="/admin-officials/print"><Button size="sm" variant="outline"><Printer className="h-4 w-4 mr-1" /> PDF</Button></Link>
+            <Link to="/admin-officials/archive"><Button size="sm" variant="outline"><Archive className="h-4 w-4 mr-1" /> Archive</Button></Link>
             <BodyDialog onSaved={() => qc.invalidateQueries({ queryKey: ["officials-bodies"] })} />
           </div>
         </div>
@@ -94,6 +95,11 @@ function OfficialsAdmin() {
                     </li>
                   ))}
                 </ul>
+                <div className="px-4 pb-3">
+                  <Link to="/admin-officials/archive" className="text-xs underline text-muted-foreground hover:text-foreground">
+                    View expiration archive →
+                  </Link>
+                </div>
               </CollapsibleContent>
             </Card>
           </Collapsible>
