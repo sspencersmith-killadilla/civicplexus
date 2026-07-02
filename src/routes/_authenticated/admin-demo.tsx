@@ -12,6 +12,7 @@ import {
   getDemoStatus,
 } from "@/lib/demo-account.functions";
 import { seedNextDemoPhoto } from "@/lib/employee-photos.functions";
+import { seedNextOfficialPhoto } from "@/lib/official-photos.functions";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/admin-demo")({
@@ -27,8 +28,11 @@ function AdminDemoPage() {
   const provision = useServerFn(provisionDemoAccount);
   const reset = useServerFn(resetDemoAccount);
   const seedNext = useServerFn(seedNextDemoPhoto);
+  const seedNextOfficial = useServerFn(seedNextOfficialPhoto);
   const [seeding, setSeeding] = useState(false);
   const [seedMsg, setSeedMsg] = useState<string>("");
+  const [seedingOfficials, setSeedingOfficials] = useState(false);
+  const [seedOfficialsMsg, setSeedOfficialsMsg] = useState<string>("");
 
   async function runSeed(regenerate: boolean) {
     setSeeding(true);
@@ -60,6 +64,39 @@ function AdminDemoPage() {
       toast.error(e instanceof Error ? e.message : "Failed");
     } finally {
       setSeeding(false);
+    }
+  }
+
+  async function runSeedOfficials(regenerate: boolean) {
+    setSeedingOfficials(true);
+    try {
+      let count = 0;
+      let cursor: string | undefined;
+      for (let i = 0; i < 80; i++) {
+        const r = (await seedNextOfficial({
+          data: { regenerate, after_last_name: cursor },
+        })) as {
+          done: boolean;
+          remaining: number;
+          cursor: string | null;
+          official?: { name: string };
+        };
+        if (r.official) {
+          count += 1;
+          setSeedOfficialsMsg(
+            `Generated ${count} • ${r.official.name} (${r.remaining} left)`,
+          );
+        }
+        cursor = r.cursor ?? undefined;
+        if (r.done || !r.official) break;
+        await new Promise((res) => setTimeout(res, 250));
+      }
+      toast.success(`Seeded ${count} official portrait${count === 1 ? "" : "s"}`);
+      setSeedOfficialsMsg("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setSeedingOfficials(false);
     }
   }
 
@@ -163,6 +200,33 @@ function AdminDemoPage() {
               </Button>
               <Button variant="outline" onClick={() => runSeed(true)} disabled={seeding}>
                 {seeding ? "Working…" : "Regenerate all"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-serif">Official portraits</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <p className="text-muted-foreground">
+              Generate photorealistic AI headshots for every elected and appointed
+              official missing a photo. All officials in this instance are
+              fictitious — portraits are synthetic likenesses, not real people.
+              Photos publish to the officials roster automatically.
+            </p>
+            {seedOfficialsMsg && <p className="font-mono text-xs">{seedOfficialsMsg}</p>}
+            <div className="flex gap-2">
+              <Button onClick={() => runSeedOfficials(false)} disabled={seedingOfficials}>
+                {seedingOfficials ? "Generating…" : "Seed missing portraits"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => runSeedOfficials(true)}
+                disabled={seedingOfficials}
+              >
+                {seedingOfficials ? "Working…" : "Regenerate all"}
               </Button>
             </div>
           </CardContent>
