@@ -16,6 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Landmark, Plus, UserPlus, ShieldCheck, XCircle, Coins, Download, Printer } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 import {
   listBodies, getBody, upsertBody, upsertSeat, upsertOfficial,
   createTerm, swearIn, endTerm, upcomingExpirations, generateMeetingReimbursements,
@@ -71,16 +73,30 @@ function OfficialsAdmin() {
         </div>
 
         {(expQ.data?.length ?? 0) > 0 && (
-          <Card className="p-4 border-amber-300 bg-amber-50/50 dark:bg-amber-950/20">
-            <p className="text-sm font-medium">Terms expiring in the next 120 days</p>
-            <ul className="text-xs text-muted-foreground mt-2 space-y-1">
-              {(expQ.data as any[]).map((r) => (
-                <li key={r.id}>
-                  {r.officials?.first_name} {r.officials?.last_name} — {r.official_seats?.official_bodies?.name} · {r.official_seats?.seat_label} → ends {r.end_date}
-                </li>
-              ))}
-            </ul>
-          </Card>
+          <Collapsible>
+            <Card className="border-amber-300 bg-amber-50/50 dark:bg-amber-950/20">
+              <CollapsibleTrigger className="w-full flex items-center justify-between gap-3 p-3 text-left cursor-pointer group">
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge variant="outline" className="border-amber-400 text-amber-900 dark:text-amber-200">
+                    {(expQ.data as any[]).length}
+                  </Badge>
+                  <span className="font-medium">
+                    {(expQ.data as any[]).length === 1 ? "term is" : "terms are"} expiring in the next 120 days
+                  </span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <ul className="text-xs text-muted-foreground px-4 pb-3 space-y-1">
+                  {(expQ.data as any[]).map((r) => (
+                    <li key={r.id}>
+                      {r.officials?.first_name} {r.officials?.last_name} — {r.official_seats?.official_bodies?.name} · {r.official_seats?.seat_label} → ends {r.end_date}
+                    </li>
+                  ))}
+                </ul>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         )}
 
         <Tabs value={tab} onValueChange={setTab}>
