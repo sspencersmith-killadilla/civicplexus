@@ -434,12 +434,17 @@ function BodyDetail({ bodyId, body }: { bodyId: string; body: Body }) {
         {terms.length === 0 && <p className="text-xs text-muted-foreground">No terms recorded.</p>}
         <ul className="text-xs space-y-1">
           {(terms as any[]).map((t) => (
-            <li key={t.id} className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px]">{t.status}</Badge>
-              <span>{t.officials?.first_name} {t.officials?.last_name}</span>
-              <span className="text-muted-foreground">· {t.official_seats?.seat_label}</span>
-              <span className="text-muted-foreground">· {t.start_date} → {t.end_date ?? "present"}</span>
-              {t.status === "pending" && <SwearInButton termId={t.id} onDone={refresh} />}
+            <li key={t.id} className="border-b last:border-b-0 py-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className="text-[10px]">{t.status}</Badge>
+                <span>{t.officials?.first_name} {t.officials?.last_name}</span>
+                <span className="text-muted-foreground">· {t.official_seats?.seat_label}</span>
+                <span className="text-muted-foreground">· {t.start_date} → {t.end_date ?? "present"}</span>
+                {t.status === "pending" && <SwearInButton termId={t.id} onDone={refresh} />}
+              </div>
+              {(t.status === "pending" || t.status === "active") && (
+                <TermOnboarding termId={t.id} onDone={refresh} />
+              )}
             </li>
           ))}
         </ul>
