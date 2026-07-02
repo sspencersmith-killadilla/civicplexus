@@ -31,7 +31,10 @@ import {
 } from "@/lib/board-applications.functions";
 import {
   getOfficialOnboarding, updateOfficialTask, reseedOfficialOnboarding, overdueOfficialOnboarding,
+  attachOfficialTaskDocument, signOfficialDocumentUrl, removeOfficialTaskDocument,
 } from "@/lib/official-onboarding.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { Paperclip, Eye, X, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin-officials")({ component: OfficialsAdmin });
 
@@ -75,6 +78,7 @@ function OfficialsAdmin() {
             <Link to="/admin-officials/print"><Button size="sm" variant="outline"><Printer className="h-4 w-4 mr-1" /> PDF</Button></Link>
             <Link to="/admin-officials/archive"><Button size="sm" variant="outline"><Archive className="h-4 w-4 mr-1" /> Archive</Button></Link>
             <Link to="/admin-officials/onboarding-templates"><Button size="sm" variant="outline"><ClipboardList className="h-4 w-4 mr-1" /> Onboarding templates</Button></Link>
+            <Link to="/admin-officials/onboarding-report"><Button size="sm" variant="outline"><FileText className="h-4 w-4 mr-1" /> Onboarding report</Button></Link>
             <BodyDialog onSaved={() => qc.invalidateQueries({ queryKey: ["officials-bodies"] })} />
           </div>
         </div>
