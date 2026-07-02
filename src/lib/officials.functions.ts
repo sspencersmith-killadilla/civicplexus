@@ -242,11 +242,13 @@ export const upcomingExpirations = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() + data.days);
+    const today = new Date().toISOString().slice(0, 10);
     const { data: rows, error } = await context.supabase
       .from("official_terms")
       .select("id, start_date, end_date, status, officials(first_name,last_name), official_seats(seat_label, official_bodies(name,slug))")
       .eq("status", "active")
       .not("end_date", "is", null)
+      .gte("end_date", today)
       .lte("end_date", cutoff.toISOString().slice(0, 10))
       .order("end_date");
     if (error) throw error;
