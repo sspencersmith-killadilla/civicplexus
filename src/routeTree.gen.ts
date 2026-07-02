@@ -13,8 +13,11 @@ import { Route as OfflineShellRouteImport } from './routes/offline-shell'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ServeIndexRouteImport } from './routes/serve.index'
 import { Route as OfficialsIndexRouteImport } from './routes/officials.index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as ServeCandidateFilingRouteImport } from './routes/serve.candidate-filing'
+import { Route as ServeApplyRouteImport } from './routes/serve.apply'
 import { Route as OfficialsPrintRouteImport } from './routes/officials.print'
 import { Route as OfficialsSlugRouteImport } from './routes/officials.$slug'
 import { Route as OfferTokenRouteImport } from './routes/offer.$token'
@@ -85,10 +88,12 @@ import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authenticated/employees.index'
 import { Route as AuthenticatedCompCyclesIndexRouteImport } from './routes/_authenticated/comp-cycles.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
+import { Route as ServeStatusTokenRouteImport } from './routes/serve.status.$token'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
 import { Route as CandidateTokenInterviewRouteImport } from './routes/candidate.$token.interview'
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
+import { Route as ApiPublicBoardApplicationsRouteImport } from './routes/api/public/board-applications'
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
@@ -152,6 +157,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServeIndexRoute = ServeIndexRouteImport.update({
+  id: '/serve/',
+  path: '/serve/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
   id: '/officials/',
   path: '/officials/',
@@ -160,6 +170,16 @@ const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
 const CareersIndexRoute = CareersIndexRouteImport.update({
   id: '/careers/',
   path: '/careers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServeCandidateFilingRoute = ServeCandidateFilingRouteImport.update({
+  id: '/serve/candidate-filing',
+  path: '/serve/candidate-filing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServeApplyRoute = ServeApplyRouteImport.update({
+  id: '/serve/apply',
+  path: '/serve/apply',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OfficialsPrintRoute = OfficialsPrintRouteImport.update({
@@ -546,6 +566,11 @@ const AuthenticatedCascadesIndexRoute =
     path: '/cascades/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ServeStatusTokenRoute = ServeStatusTokenRouteImport.update({
+  id: '/serve/status/$token',
+  path: '/serve/status/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CareersSlugApplyRoute = CareersSlugApplyRouteImport.update({
   id: '/apply',
   path: '/apply',
@@ -567,6 +592,12 @@ const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBoardApplicationsRoute =
+  ApiPublicBoardApplicationsRouteImport.update({
+    id: '/api/public/board-applications',
+    path: '/api/public/board-applications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedTranscriptEmployeeIdRoute =
   AuthenticatedTranscriptEmployeeIdRouteImport.update({
     id: '/transcript/$employeeId',
@@ -870,8 +901,11 @@ export interface FileRoutesByFullPath {
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
   '/officials/print': typeof OfficialsPrintRoute
+  '/serve/apply': typeof ServeApplyRoute
+  '/serve/candidate-filing': typeof ServeCandidateFilingRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
+  '/serve/': typeof ServeIndexRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -894,10 +928,12 @@ export interface FileRoutesByFullPath {
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
+  '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/status/$token': typeof ServeStatusTokenRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -993,8 +1029,11 @@ export interface FileRoutesByTo {
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
   '/officials/print': typeof OfficialsPrintRoute
+  '/serve/apply': typeof ServeApplyRoute
+  '/serve/candidate-filing': typeof ServeCandidateFilingRoute
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
+  '/serve': typeof ServeIndexRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1017,10 +1056,12 @@ export interface FileRoutesByTo {
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
+  '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/status/$token': typeof ServeStatusTokenRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles': typeof AuthenticatedCompCyclesIndexRoute
   '/employees': typeof AuthenticatedEmployeesIndexRoute
@@ -1119,8 +1160,11 @@ export interface FileRoutesById {
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
   '/officials/print': typeof OfficialsPrintRoute
+  '/serve/apply': typeof ServeApplyRoute
+  '/serve/candidate-filing': typeof ServeCandidateFilingRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
+  '/serve/': typeof ServeIndexRoute
   '/_authenticated/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
@@ -1143,10 +1187,12 @@ export interface FileRoutesById {
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
+  '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/status/$token': typeof ServeStatusTokenRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -1245,8 +1291,11 @@ export interface FileRouteTypes {
     | '/offer/$token'
     | '/officials/$slug'
     | '/officials/print'
+    | '/serve/apply'
+    | '/serve/candidate-filing'
     | '/careers/'
     | '/officials/'
+    | '/serve/'
     | '/admin-officials/print'
     | '/cascades/$id'
     | '/comp-cycles/$id'
@@ -1269,10 +1318,12 @@ export interface FileRouteTypes {
     | '/reviews/$id'
     | '/templates/$id'
     | '/transcript/$employeeId'
+    | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/status/$token'
     | '/cascades/'
     | '/comp-cycles/'
     | '/employees/'
@@ -1368,8 +1419,11 @@ export interface FileRouteTypes {
     | '/offer/$token'
     | '/officials/$slug'
     | '/officials/print'
+    | '/serve/apply'
+    | '/serve/candidate-filing'
     | '/careers'
     | '/officials'
+    | '/serve'
     | '/admin-officials/print'
     | '/cascades/$id'
     | '/comp-cycles/$id'
@@ -1392,10 +1446,12 @@ export interface FileRouteTypes {
     | '/reviews/$id'
     | '/templates/$id'
     | '/transcript/$employeeId'
+    | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/status/$token'
     | '/cascades'
     | '/comp-cycles'
     | '/employees'
@@ -1493,8 +1549,11 @@ export interface FileRouteTypes {
     | '/offer/$token'
     | '/officials/$slug'
     | '/officials/print'
+    | '/serve/apply'
+    | '/serve/candidate-filing'
     | '/careers/'
     | '/officials/'
+    | '/serve/'
     | '/_authenticated/admin-officials/print'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
@@ -1517,10 +1576,12 @@ export interface FileRouteTypes {
     | '/_authenticated/reviews/$id'
     | '/_authenticated/templates/$id'
     | '/_authenticated/transcript/$employeeId'
+    | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/status/$token'
     | '/_authenticated/cascades/'
     | '/_authenticated/comp-cycles/'
     | '/_authenticated/employees/'
@@ -1570,11 +1631,16 @@ export interface RootRouteChildren {
   OfferTokenRoute: typeof OfferTokenRoute
   OfficialsSlugRoute: typeof OfficialsSlugRoute
   OfficialsPrintRoute: typeof OfficialsPrintRoute
+  ServeApplyRoute: typeof ServeApplyRoute
+  ServeCandidateFilingRoute: typeof ServeCandidateFilingRoute
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
+  ServeIndexRoute: typeof ServeIndexRoute
+  ApiPublicBoardApplicationsRoute: typeof ApiPublicBoardApplicationsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
   CandidateTokenInterviewRoute: typeof CandidateTokenInterviewRoute
+  ServeStatusTokenRoute: typeof ServeStatusTokenRoute
   CandidateTokenIndexRoute: typeof CandidateTokenIndexRoute
   ApiPublicBadgeSerialRoute: typeof ApiPublicBadgeSerialRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
@@ -1626,6 +1692,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/serve/': {
+      id: '/serve/'
+      path: '/serve'
+      fullPath: '/serve/'
+      preLoaderRoute: typeof ServeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/officials/': {
       id: '/officials/'
       path: '/officials'
@@ -1638,6 +1711,20 @@ declare module '@tanstack/react-router' {
       path: '/careers'
       fullPath: '/careers/'
       preLoaderRoute: typeof CareersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/serve/candidate-filing': {
+      id: '/serve/candidate-filing'
+      path: '/serve/candidate-filing'
+      fullPath: '/serve/candidate-filing'
+      preLoaderRoute: typeof ServeCandidateFilingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/serve/apply': {
+      id: '/serve/apply'
+      path: '/serve/apply'
+      fullPath: '/serve/apply'
+      preLoaderRoute: typeof ServeApplyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/officials/print': {
@@ -2130,6 +2217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCascadesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/serve/status/$token': {
+      id: '/serve/status/$token'
+      path: '/serve/status/$token'
+      fullPath: '/serve/status/$token'
+      preLoaderRoute: typeof ServeStatusTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/careers/$slug/apply': {
       id: '/careers/$slug/apply'
       path: '/apply'
@@ -2156,6 +2250,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/health'
       fullPath: '/api/public/health'
       preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/board-applications': {
+      id: '/api/public/board-applications'
+      path: '/api/public/board-applications'
+      fullPath: '/api/public/board-applications'
+      preLoaderRoute: typeof ApiPublicBoardApplicationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/transcript/$employeeId': {
@@ -2724,11 +2825,16 @@ const rootRouteChildren: RootRouteChildren = {
   OfferTokenRoute: OfferTokenRoute,
   OfficialsSlugRoute: OfficialsSlugRoute,
   OfficialsPrintRoute: OfficialsPrintRoute,
+  ServeApplyRoute: ServeApplyRoute,
+  ServeCandidateFilingRoute: ServeCandidateFilingRoute,
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
+  ServeIndexRoute: ServeIndexRoute,
+  ApiPublicBoardApplicationsRoute: ApiPublicBoardApplicationsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
   CandidateTokenInterviewRoute: CandidateTokenInterviewRoute,
+  ServeStatusTokenRoute: ServeStatusTokenRoute,
   CandidateTokenIndexRoute: CandidateTokenIndexRoute,
   ApiPublicBadgeSerialRoute: ApiPublicBadgeSerialRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
@@ -2754,13 +2860,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

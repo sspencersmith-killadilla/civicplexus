@@ -399,6 +399,236 @@ export type Database = {
           },
         ]
       }
+      board_application_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          submission_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          submission_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "board_application_audit_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "board_application_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      board_application_interests: {
+        Row: {
+          body_id: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          seat_id: string | null
+          submission_id: string
+        }
+        Insert: {
+          body_id: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          seat_id?: string | null
+          submission_id: string
+        }
+        Update: {
+          body_id?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          seat_id?: string | null
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "board_application_interests_body_id_fkey"
+            columns: ["body_id"]
+            isOneToOne: false
+            referencedRelation: "official_bodies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "board_application_interests_seat_id_fkey"
+            columns: ["seat_id"]
+            isOneToOne: false
+            referencedRelation: "official_seats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "board_application_interests_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "board_application_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      board_application_submissions: {
+        Row: {
+          address: string | null
+          city: string | null
+          conflicts_disclosure: string | null
+          cover_letter_path: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_notes: string | null
+          email: string
+          employer: string | null
+          first_name: string
+          form_data: Json
+          id: string
+          ip_hash: string | null
+          last_name: string
+          occupation: string | null
+          phone: string | null
+          postal_code: string | null
+          qualifications: string | null
+          state: string | null
+          statement: string | null
+          status: string
+          status_token: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          conflicts_disclosure?: string | null
+          cover_letter_path?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          email: string
+          employer?: string | null
+          first_name: string
+          form_data?: Json
+          id?: string
+          ip_hash?: string | null
+          last_name: string
+          occupation?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          qualifications?: string | null
+          state?: string | null
+          statement?: string | null
+          status?: string
+          status_token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          conflicts_disclosure?: string | null
+          cover_letter_path?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          email?: string
+          employer?: string | null
+          first_name?: string
+          form_data?: Json
+          id?: string
+          ip_hash?: string | null
+          last_name?: string
+          occupation?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          qualifications?: string | null
+          state?: string | null
+          statement?: string | null
+          status?: string
+          status_token?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      candidate_filings: {
+        Row: {
+          address: string | null
+          candidate_first_name: string
+          candidate_last_name: string
+          clerk_notes: string | null
+          created_at: string
+          election_date: string | null
+          email: string
+          id: string
+          packet_paths: Json
+          phone: string | null
+          seat_id: string | null
+          seat_label: string | null
+          status: string
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          address?: string | null
+          candidate_first_name: string
+          candidate_last_name: string
+          clerk_notes?: string | null
+          created_at?: string
+          election_date?: string | null
+          email: string
+          id?: string
+          packet_paths?: Json
+          phone?: string | null
+          seat_id?: string | null
+          seat_label?: string | null
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          address?: string | null
+          candidate_first_name?: string
+          candidate_last_name?: string
+          clerk_notes?: string | null
+          created_at?: string
+          election_date?: string | null
+          email?: string
+          id?: string
+          packet_paths?: Json
+          phone?: string | null
+          seat_id?: string | null
+          seat_label?: string | null
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_filings_seat_id_fkey"
+            columns: ["seat_id"]
+            isOneToOne: false
+            referencedRelation: "official_seats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_tokens: {
         Row: {
           application_id: string
@@ -4348,6 +4578,8 @@ export type Database = {
       }
       official_bodies: {
         Row: {
+          accepting_applications: boolean
+          application_instructions: string | null
           chair_bonus_amount: number | null
           comp_model: Database["public"]["Enums"]["official_comp_model"]
           created_at: string
@@ -4367,6 +4599,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accepting_applications?: boolean
+          application_instructions?: string | null
           chair_bonus_amount?: number | null
           comp_model?: Database["public"]["Enums"]["official_comp_model"]
           created_at?: string
@@ -4386,6 +4620,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accepting_applications?: boolean
+          application_instructions?: string | null
           chair_bonus_amount?: number | null
           comp_model?: Database["public"]["Enums"]["official_comp_model"]
           created_at?: string
@@ -7966,6 +8202,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      is_clerk_or_hr: { Args: { _uid: string }; Returns: boolean }
       is_department_admin: {
         Args: { _dept: string; _uid: string }
         Returns: boolean
