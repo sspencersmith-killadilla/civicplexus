@@ -15,7 +15,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Landmark, Plus, UserPlus, ShieldCheck, XCircle, Coins, Download, Printer, Archive } from "lucide-react";
+import { Landmark, Plus, UserPlus, ShieldCheck, XCircle, Coins, Download, Printer, Archive, ClipboardList, ListChecks } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import {
@@ -29,6 +29,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   listBoardApplications, decideBoardApplication, getCoverLetterUrl, exportBoardApplicationsCsv,
 } from "@/lib/board-applications.functions";
+import {
+  getOfficialOnboarding, updateOfficialTask, reseedOfficialOnboarding, overdueOfficialOnboarding,
+} from "@/lib/official-onboarding.functions";
 
 export const Route = createFileRoute("/_authenticated/admin-officials")({ component: OfficialsAdmin });
 
