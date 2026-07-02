@@ -633,3 +633,95 @@ function GenerateReimbDialog({ bodyId }: { bodyId: string }) {
     </Dialog>
   );
 }
+
+function TermOnboarding({ termId, onDone }: { termId: string; onDone: () => void }) {
+  const qc = useQueryClient();
+  const getFn = useServerFn(getOfficialOnboarding);
+  const updFn = useServerFn(updateOfficialTask);
+  const reseedFn = useServerFn(reseedOfficialOnboarding);
+  const q = useQuery({
+    queryKey: ["official-onboarding", termId],
+    queryFn: () => getFn({ data: { term_id: termId } }),
+  });
+  const tasks = ((q.data?.tasks ?? []) as any[]);
+  const inst = q.data?.instance as any;
+  const total = tasks.filter((t) => t.is_required).length;
+  const done = tasks.filter((t) => t.is_required && ["complete", "waived", "skipped"].includes(t.status)).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+
+  const setStatus = useMutation({
+    mutationFn: (v: { task_id: string; status: string }) => updFn({ data: v as any }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["official-onboarding", termId] });
+      qc.invalidateQueries({ queryKey: ["officials-onboarding-overdue"] });
+      onDone();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const reseed = useMutation({
+    mutationFn: () => reseedFn({ data: { term_id: termId } }),
+    onSuccess: () => {
+      toast.success("Onboarding reseeded");
+      qc.invalidateQueries({ queryKey: ["official-onboarding", termId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Collapsible>
+      <CollapsibleTrigger className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 mt-1">
+        <ListChecks className="h-3 w-3" />
+        Onboarding: {done}/{total} required ({pct}%)
+        <ChevronDown className="h-3 w-3 transition-transform group-data-[state=open]:rotate-180" />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-2 rounded border bg-muted/30 p-2 space-y-1">
+          {q.isLoading && <p className="text-[11px] text-muted-foreground">Loading…</p>}
+          {!q.isLoading && !inst && (
+            <div className="flex items-center gap-2">
+              <p className="text-[11px] text-muted-foreground">No onboarding instance yet.</p>
+              <Button size="sm" variant="outline" onClick={() => reseed.mutate()} disabled={reseed.isPending}>Seed</Button>
+            </div>
+          )}
+          {inst && (
+            <div className="flex items-center justify-between gap-2 pb-1">
+              <span className="text-[11px] text-muted-foreground">
+                Template: {inst.official_onboarding_templates?.name ?? "—"}
+              </span>
+              <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => reseed.mutate()} disabled={reseed.isPending}>
+                Reseed
+              </Button>
+            </div>
+          )}
+          <ul className="space-y-0.5">
+            {tasks.map((t) => {
+              const done = t.status === "complete";
+              const overdue = !done && t.due_date && t.due_date < new Date().toISOString().slice(0, 10);
+              return (
+                <li key={t.id} className="flex items-center gap-2 text-[11px] py-0.5">
+                  <input
+                    type="checkbox"
+                    checked={done}
+                    onChange={(e) => setStatus.mutate({ task_id: t.id, status: e.target.checked ? "complete" : "pending" })}
+                    className="h-3 w-3"
+                  />
+                  <span className={`flex-1 ${done ? "line-through text-muted-foreground" : ""}`}>
+                    {t.title}
+                    {!t.is_required && <span className="text-muted-foreground"> (optional)</span>}
+                  </span>
+                  <Badge variant="outline" className="text-[9px] capitalize">{t.category}</Badge>
+                  <Badge variant="outline" className="text-[9px] capitalize">{t.assignee}</Badge>
+                  {t.due_date && (
+                    <span className={overdue ? "text-rose-600" : "text-muted-foreground"}>
+                      due {t.due_date}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
