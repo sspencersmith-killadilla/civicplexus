@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServeIndexRouteImport } from './routes/serve.index'
 import { Route as OfficialsIndexRouteImport } from './routes/officials.index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as ServeVolunteerRouteImport } from './routes/serve.volunteer'
 import { Route as ServeCandidateFilingRouteImport } from './routes/serve.candidate-filing'
 import { Route as ServeApplyRouteImport } from './routes/serve.apply'
 import { Route as OfficialsPrintRouteImport } from './routes/officials.print'
@@ -178,6 +179,11 @@ const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
 const CareersIndexRoute = CareersIndexRouteImport.update({
   id: '/careers/',
   path: '/careers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServeVolunteerRoute = ServeVolunteerRouteImport.update({
+  id: '/serve/volunteer',
+  path: '/serve/volunteer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServeCandidateFilingRoute = ServeCandidateFilingRouteImport.update({
@@ -959,6 +965,7 @@ export interface FileRoutesByFullPath {
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
+  '/serve/volunteer': typeof ServeVolunteerRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
@@ -1095,6 +1102,7 @@ export interface FileRoutesByTo {
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
+  '/serve/volunteer': typeof ServeVolunteerRoute
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
   '/serve': typeof ServeIndexRoute
@@ -1234,6 +1242,7 @@ export interface FileRoutesById {
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
+  '/serve/volunteer': typeof ServeVolunteerRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
@@ -1373,6 +1382,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/serve/apply'
     | '/serve/candidate-filing'
+    | '/serve/volunteer'
     | '/careers/'
     | '/officials/'
     | '/serve/'
@@ -1509,6 +1519,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/serve/apply'
     | '/serve/candidate-filing'
+    | '/serve/volunteer'
     | '/careers'
     | '/officials'
     | '/serve'
@@ -1647,6 +1658,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/serve/apply'
     | '/serve/candidate-filing'
+    | '/serve/volunteer'
     | '/careers/'
     | '/officials/'
     | '/serve/'
@@ -1735,6 +1747,7 @@ export interface RootRouteChildren {
   OfficialsPrintRoute: typeof OfficialsPrintRoute
   ServeApplyRoute: typeof ServeApplyRoute
   ServeCandidateFilingRoute: typeof ServeCandidateFilingRoute
+  ServeVolunteerRoute: typeof ServeVolunteerRoute
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
   ServeIndexRoute: typeof ServeIndexRoute
@@ -1813,6 +1826,13 @@ declare module '@tanstack/react-router' {
       path: '/careers'
       fullPath: '/careers/'
       preLoaderRoute: typeof CareersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/serve/volunteer': {
+      id: '/serve/volunteer'
+      path: '/serve/volunteer'
+      fullPath: '/serve/volunteer'
+      preLoaderRoute: typeof ServeVolunteerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/serve/candidate-filing': {
@@ -3007,6 +3027,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfficialsPrintRoute: OfficialsPrintRoute,
   ServeApplyRoute: ServeApplyRoute,
   ServeCandidateFilingRoute: ServeCandidateFilingRoute,
+  ServeVolunteerRoute: ServeVolunteerRoute,
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
   ServeIndexRoute: ServeIndexRoute,
