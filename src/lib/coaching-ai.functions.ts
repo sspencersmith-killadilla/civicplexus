@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { generateText } from "ai";
+import { generateText, generateObject } from "ai";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 const MODEL = "google/gemini-3-flash-preview";
@@ -87,20 +87,32 @@ export const extractOneOnOneActionItems = createServerFn({ method: "POST" })
     if (!combined.trim()) throw new Error("No agenda notes to scan");
 
     const prompt = `Scan the following 1-on-1 meeting notes and extract concrete action items / commitments.
-Return ONLY a JSON array of objects with shape:
-[{ "text": "string", "due_date": "YYYY-MM-DD or null", "assignee": "manager|employee|other or null" }]
-No markdown, no prose. If none, return [].
+If there are no clear action items, return an empty array.
 
 Notes:
 ${combined}`;
 
-    const { text } = await generateText({ model: gateway()(MODEL), prompt });
     let items: Array<{ text: string; due_date?: string | null; assignee?: string | null }> = [];
     try {
-      const cleaned = text.replace(/```json|```/g, "").trim();
-      items = JSON.parse(cleaned);
+      const { object } = await generateObject({
+        model: gateway()(MODEL),
+        schema: z.object({
+          items: z.array(z.object({
+            text: z.string(),
+            due_date: z.string().nullable().optional(),
+            assignee: z.enum(["manager", "employee", "other"]).nullable().optional(),
+          })),
+        }),
+        prompt,
+      });
+      items = object.items ?? [];
     } catch {
-      throw new Error("AI returned malformed JSON");
+      // Fallback: try free-text + JSON extraction in case structured output is unsupported.
+      const { text } = await generateText({ model: gateway()(MODEL), prompt: `${prompt}\n\nReturn ONLY a JSON array like [{"text":"...","due_date":"YYYY-MM-DD or null","assignee":"manager|employee|other or null"}].` });
+      const match = text.match(/\[[\s\S]*\]/);
+      if (match) {
+        try { items = JSON.parse(match[0]); } catch { items = []; }
+      }
     }
     if (!Array.isArray(items) || items.length === 0) return { inserted: 0, items: [] };
 
