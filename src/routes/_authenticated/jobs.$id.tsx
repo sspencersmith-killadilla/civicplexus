@@ -22,6 +22,8 @@ import { sendTemplatedToApplicant } from "@/lib/email-templates.functions";
 import { screenApplication, recordScreenDecision } from "@/lib/applicant-ai.functions";
 import { createInterviewInvitation } from "@/lib/interview-invitations.functions";
 import { listApplicationsForRequisition } from "@/lib/applications.functions";
+import { listSupplementalQuestions, saveSupplementalQuestions } from "@/lib/application-templates.functions";
+import { Switch } from "@/components/ui/switch";
 import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/jobs/$id")({ component: JobDetail });
@@ -169,6 +171,7 @@ function JobDetail() {
           <TabsTrigger value="apps">Applications ({appsQ.data?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="approval">Approval</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="supplementals">Supplemental questions</TabsTrigger>
         </TabsList>
         <TabsContent value="apps" className="space-y-3">
           {apps.length > 0 && (
@@ -227,6 +230,9 @@ function JobDetail() {
             {r.description && <pre className="text-sm whitespace-pre-wrap font-sans">{r.description}</pre>}
           </Card>
           <BrochurePanel requisitionId={r.id} currentUrl={r.brochure_url} />
+        </TabsContent>
+        <TabsContent value="supplementals">
+          <SupplementalQuestionsEditor requisitionId={id} />
         </TabsContent>
       </Tabs>
     </AppShell>
@@ -777,6 +783,132 @@ function BrochurePanel({ requisitionId, currentUrl }: { requisitionId: string; c
         </Label>
         <input id="brochure-upload" type="file" accept="application/pdf" className="hidden" disabled={busy} onChange={onUpload} />
       </div>
+    </Card>
+  );
+}
+
+type Draft = {
+  id: string | null;
+  key: string;
+  label: string;
+  type: "text" | "textarea" | "email" | "tel" | "date" | "number" | "select" | "boolean";
+  options: { value: string; label: string }[] | null;
+  required: boolean;
+};
+
+function SupplementalQuestionsEditor({ requisitionId }: { requisitionId: string }) {
+  const listFn = useServerFn(listSupplementalQuestions);
+  const saveFn = useServerFn(saveSupplementalQuestions);
+  const qc = useQueryClient();
+  const q = useQuery({
+    queryKey: ["supplementals", requisitionId],
+    queryFn: () => listFn({ data: { requisition_id: requisitionId } }),
+  });
+  const [drafts, setDrafts] = useState<Draft[] | null>(null);
+
+  const rows = drafts ?? (q.data ?? []).map((r: any) => ({
+    id: r.id, key: r.key, label: r.label, type: r.type,
+    options: r.options ?? null, required: !!r.required,
+  })) as Draft[];
+
+  function update(idx: number, patch: Partial<Draft>) {
+    const next = rows.map((r, i) => i === idx ? { ...r, ...patch } : r);
+    setDrafts(next);
+  }
+  function add() {
+    setDrafts([...rows, { id: null, key: `q${rows.length + 1}`, label: "New question", type: "text", options: null, required: false }]);
+  }
+  function remove(idx: number) {
+    setDrafts(rows.filter((_, i) => i !== idx));
+  }
+
+  const save = useMutation({
+    mutationFn: () => saveFn({ data: {
+      requisition_id: requisitionId,
+      questions: rows.map((r, idx) => ({
+        id: r.id ?? null, key: r.key, label: r.label, type: r.type,
+        options: r.type === "select" ? (r.options ?? []) : null,
+        required: r.required, sort_order: idx,
+      })),
+    } }),
+    onSuccess: () => {
+      toast.success("Supplemental questions saved");
+      setDrafts(null);
+      qc.invalidateQueries({ queryKey: ["supplementals", requisitionId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Card className="p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold">Supplemental questions</h3>
+          <p className="text-xs text-muted-foreground">Extra questions shown after the base application. Required ones block submission until answered.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={add}>Add question</Button>
+          <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending || drafts === null}>
+            {save.isPending ? "Saving…" : "Save"}
+          </Button>
+        </div>
+      </div>
+      {q.isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
+      {rows.length === 0 && !q.isLoading && (
+        <p className="text-xs text-muted-foreground">No supplemental questions yet.</p>
+      )}
+      <ul className="space-y-3">
+        {rows.map((r, idx) => (
+          <li key={r.id ?? `new-${idx}`} className="border rounded p-3 space-y-2">
+            <div className="grid md:grid-cols-[1fr_1fr_160px_auto] gap-2 items-end">
+              <div>
+                <Label className="text-xs">Key</Label>
+                <Input value={r.key} onChange={(e) => update(idx, { key: e.target.value.replace(/[^a-z0-9_]/gi, "_") })} />
+              </div>
+              <div>
+                <Label className="text-xs">Label</Label>
+                <Input value={r.label} onChange={(e) => update(idx, { label: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs">Type</Label>
+                <Select value={r.type} onValueChange={(v) => update(idx, { type: v as Draft["type"] })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(["text","textarea","email","tel","date","number","select","boolean"] as const).map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2 pb-2">
+                <Switch checked={r.required} onCheckedChange={(v) => update(idx, { required: v })} />
+                <Label className="text-xs">Required</Label>
+              </div>
+            </div>
+            {r.type === "select" && (
+              <div>
+                <Label className="text-xs">Options (one per line, format: value|label)</Label>
+                <Textarea
+                  rows={3}
+                  value={(r.options ?? []).map((o) => `${o.value}|${o.label}`).join("\n")}
+                  onChange={(e) => update(idx, {
+                    options: e.target.value.split("\n").map((l) => l.trim()).filter(Boolean).map((line) => {
+                      const [value, ...rest] = line.split("|");
+                      const label = rest.join("|").trim() || value;
+                      return { value: value.trim(), label };
+                    }),
+                  })}
+                />
+              </div>
+            )}
+            <div className="flex justify-end">
+              <Button size="sm" variant="ghost" onClick={() => remove(idx)}>
+                <Trash2 className="h-3 w-3 mr-1" /> Remove
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </Card>
   );
 }

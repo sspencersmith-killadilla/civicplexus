@@ -7,6 +7,8 @@ const Body = z.object({
   email: z.string().trim().email().max(200),
   phone: z.string().trim().max(40).optional().nullable(),
   cover_letter: z.string().trim().max(20000).optional().nullable(),
+  answers: z.record(z.string(), z.any()).optional().nullable(),
+  supplemental_answers: z.record(z.string(), z.any()).optional().nullable(),
   self_id: z
     .object({
       gender: z.string().max(40).optional().nullable(),
@@ -35,12 +37,24 @@ export const Route = createFileRoute("/api/public/job-applications")({
             if (typeof rawSelfId === "string" && rawSelfId.length > 0) {
               try { selfId = JSON.parse(rawSelfId); } catch { selfId = null; }
             }
+            const rawAnswers = fd.get("answers");
+            let answers: Record<string, unknown> | null = null;
+            if (typeof rawAnswers === "string" && rawAnswers.length > 0) {
+              try { answers = JSON.parse(rawAnswers); } catch { answers = null; }
+            }
+            const rawSupp = fd.get("supplemental_answers");
+            let suppAnswers: Record<string, unknown> | null = null;
+            if (typeof rawSupp === "string" && rawSupp.length > 0) {
+              try { suppAnswers = JSON.parse(rawSupp); } catch { suppAnswers = null; }
+            }
             parsed = Body.parse({
               requisition_id: fd.get("requisition_id"),
               applicant_name: fd.get("applicant_name"),
               email: fd.get("email"),
               phone: fd.get("phone") || undefined,
               cover_letter: fd.get("cover_letter") || undefined,
+              answers,
+              supplemental_answers: suppAnswers,
               self_id: selfId,
             });
             const f = fd.get("resume");
@@ -86,6 +100,8 @@ export const Route = createFileRoute("/api/public/job-applications")({
             resume_url: resumeUrl,
             source: "public",
             is_internal: false,
+            answers: parsed.answers ?? {},
+            supplemental_answers: parsed.supplemental_answers ?? {},
           } as never).select().single();
           if (insErr) return j({ error: insErr.message }, 500);
           const a = app as { id: string };
