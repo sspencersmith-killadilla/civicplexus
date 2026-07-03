@@ -82,6 +82,7 @@ import { Route as CandidateTokenIndexRouteImport } from './routes/candidate.$tok
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
 import { Route as AuthenticatedReviewCyclesIndexRouteImport } from './routes/_authenticated/review-cycles.index'
+import { Route as AuthenticatedPoliciesIndexRouteImport } from './routes/_authenticated/policies.index'
 import { Route as AuthenticatedPayrollIndexRouteImport } from './routes/_authenticated/payroll.index'
 import { Route as AuthenticatedPafIndexRouteImport } from './routes/_authenticated/paf.index'
 import { Route as AuthenticatedOneOnOnesIndexRouteImport } from './routes/_authenticated/one-on-ones.index'
@@ -94,6 +95,7 @@ import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authenticated/employees.index'
 import { Route as AuthenticatedCompCyclesIndexRouteImport } from './routes/_authenticated/comp-cycles.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
+import { Route as AuthenticatedAdminOfficialsIndexRouteImport } from './routes/_authenticated/admin-officials.index'
 import { Route as ServeVolunteerJobsRouteImport } from './routes/serve.volunteer.jobs'
 import { Route as ServeVolunteerClockRouteImport } from './routes/serve.volunteer.clock'
 import { Route as ServeStatusTokenRouteImport } from './routes/serve.status.$token'
@@ -130,6 +132,8 @@ import { Route as AuthenticatedAdminOfficialsPrintRouteImport } from './routes/_
 import { Route as AuthenticatedAdminOfficialsOnboardingTemplatesRouteImport } from './routes/_authenticated/admin-officials.onboarding-templates'
 import { Route as AuthenticatedAdminOfficialsOnboardingReportRouteImport } from './routes/_authenticated/admin-officials.onboarding-report'
 import { Route as AuthenticatedAdminOfficialsArchiveRouteImport } from './routes/_authenticated/admin-officials.archive'
+import { Route as AuthenticatedReviewCyclesIdIndexRouteImport } from './routes/_authenticated/review-cycles.$id.index'
+import { Route as AuthenticatedInterviewsIdIndexRouteImport } from './routes/_authenticated/interviews.$id.index'
 import { Route as ServeVolunteerJobsSlugRouteImport } from './routes/serve.volunteer.jobs.$slug'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksOfflineReplayRouteImport } from './routes/api/public/hooks/offline-replay'
@@ -547,6 +551,12 @@ const AuthenticatedReviewCyclesIndexRoute =
     path: '/review-cycles/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPoliciesIndexRoute =
+  AuthenticatedPoliciesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedPoliciesRoute,
+  } as any)
 const AuthenticatedPayrollIndexRoute =
   AuthenticatedPayrollIndexRouteImport.update({
     id: '/payroll/',
@@ -614,6 +624,12 @@ const AuthenticatedCascadesIndexRoute =
     id: '/cascades/',
     path: '/cascades/',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminOfficialsIndexRoute =
+  AuthenticatedAdminOfficialsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
 const ServeVolunteerJobsRoute = ServeVolunteerJobsRouteImport.update({
   id: '/jobs',
@@ -815,6 +831,18 @@ const AuthenticatedAdminOfficialsArchiveRoute =
     id: '/archive',
     path: '/archive',
     getParentRoute: () => AuthenticatedAdminOfficialsRoute,
+  } as any)
+const AuthenticatedReviewCyclesIdIndexRoute =
+  AuthenticatedReviewCyclesIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedReviewCyclesIdRoute,
+  } as any)
+const AuthenticatedInterviewsIdIndexRoute =
+  AuthenticatedInterviewsIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedInterviewsIdRoute,
   } as any)
 const ServeVolunteerJobsSlugRoute = ServeVolunteerJobsSlugRouteImport.update({
   id: '/$slug',
@@ -1059,6 +1087,7 @@ export interface FileRoutesByFullPath {
   '/serve/status/$token': typeof ServeStatusTokenRoute
   '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
   '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
+  '/admin-officials/': typeof AuthenticatedAdminOfficialsIndexRoute
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -1071,6 +1100,7 @@ export interface FileRoutesByFullPath {
   '/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/paf/': typeof AuthenticatedPafIndexRoute
   '/payroll/': typeof AuthenticatedPayrollIndexRoute
+  '/policies/': typeof AuthenticatedPoliciesIndexRoute
   '/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
@@ -1088,6 +1118,8 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/serve/volunteer/jobs/$slug': typeof ServeVolunteerJobsSlugRoute
+  '/interviews/$id/': typeof AuthenticatedInterviewsIdIndexRoute
+  '/review-cycles/$id/': typeof AuthenticatedReviewCyclesIdIndexRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
@@ -1109,7 +1141,6 @@ export interface FileRoutesByTo {
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
-  '/admin-officials': typeof AuthenticatedAdminOfficialsRouteWithChildren
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -1141,7 +1172,6 @@ export interface FileRoutesByTo {
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/org-chart': typeof AuthenticatedOrgChartRoute
   '/osha': typeof AuthenticatedOshaRoute
-  '/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
@@ -1182,7 +1212,6 @@ export interface FileRoutesByTo {
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
-  '/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -1190,7 +1219,6 @@ export interface FileRoutesByTo {
   '/payroll/$id': typeof AuthenticatedPayrollIdRoute
   '/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
-  '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -1204,6 +1232,7 @@ export interface FileRoutesByTo {
   '/serve/status/$token': typeof ServeStatusTokenRoute
   '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
   '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
+  '/admin-officials': typeof AuthenticatedAdminOfficialsIndexRoute
   '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles': typeof AuthenticatedCompCyclesIndexRoute
   '/employees': typeof AuthenticatedEmployeesIndexRoute
@@ -1216,6 +1245,7 @@ export interface FileRoutesByTo {
   '/one-on-ones': typeof AuthenticatedOneOnOnesIndexRoute
   '/paf': typeof AuthenticatedPafIndexRoute
   '/payroll': typeof AuthenticatedPayrollIndexRoute
+  '/policies': typeof AuthenticatedPoliciesIndexRoute
   '/review-cycles': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
@@ -1233,6 +1263,8 @@ export interface FileRoutesByTo {
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/serve/volunteer/jobs/$slug': typeof ServeVolunteerJobsSlugRoute
+  '/interviews/$id': typeof AuthenticatedInterviewsIdIndexRoute
+  '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdIndexRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
@@ -1352,6 +1384,7 @@ export interface FileRoutesById {
   '/serve/status/$token': typeof ServeStatusTokenRoute
   '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
   '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
+  '/_authenticated/admin-officials/': typeof AuthenticatedAdminOfficialsIndexRoute
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -1364,6 +1397,7 @@ export interface FileRoutesById {
   '/_authenticated/one-on-ones/': typeof AuthenticatedOneOnOnesIndexRoute
   '/_authenticated/paf/': typeof AuthenticatedPafIndexRoute
   '/_authenticated/payroll/': typeof AuthenticatedPayrollIndexRoute
+  '/_authenticated/policies/': typeof AuthenticatedPoliciesIndexRoute
   '/_authenticated/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
@@ -1381,6 +1415,8 @@ export interface FileRoutesById {
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/serve/volunteer/jobs/$slug': typeof ServeVolunteerJobsSlugRoute
+  '/_authenticated/interviews/$id/': typeof AuthenticatedInterviewsIdIndexRoute
+  '/_authenticated/review-cycles/$id/': typeof AuthenticatedReviewCyclesIdIndexRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
@@ -1500,6 +1536,7 @@ export interface FileRouteTypes {
     | '/serve/status/$token'
     | '/serve/volunteer/clock'
     | '/serve/volunteer/jobs'
+    | '/admin-officials/'
     | '/cascades/'
     | '/comp-cycles/'
     | '/employees/'
@@ -1512,6 +1549,7 @@ export interface FileRouteTypes {
     | '/one-on-ones/'
     | '/paf/'
     | '/payroll/'
+    | '/policies/'
     | '/review-cycles/'
     | '/reviews/'
     | '/templates/'
@@ -1529,6 +1567,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
     | '/serve/volunteer/jobs/$slug'
+    | '/interviews/$id/'
+    | '/review-cycles/$id/'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/interview/$token/accommodation'
@@ -1550,7 +1590,6 @@ export interface FileRouteTypes {
     | '/admin-identity'
     | '/admin-migration'
     | '/admin-modules'
-    | '/admin-officials'
     | '/admin-org-settings'
     | '/admin-permissions'
     | '/approvals'
@@ -1582,7 +1621,6 @@ export interface FileRouteTypes {
     | '/one-on-one-templates'
     | '/org-chart'
     | '/osha'
-    | '/policies'
     | '/policy-campaigns'
     | '/positions'
     | '/preboarding'
@@ -1623,7 +1661,6 @@ export interface FileRouteTypes {
     | '/employees/import'
     | '/forms/$key'
     | '/grievances/$id'
-    | '/interviews/$id'
     | '/jobs/$id'
     | '/leave/$id'
     | '/one-on-ones/$id'
@@ -1631,7 +1668,6 @@ export interface FileRouteTypes {
     | '/payroll/$id'
     | '/payroll/profiles'
     | '/policies/$id'
-    | '/review-cycles/$id'
     | '/reviews/$id'
     | '/templates/$id'
     | '/transcript/$employeeId'
@@ -1645,6 +1681,7 @@ export interface FileRouteTypes {
     | '/serve/status/$token'
     | '/serve/volunteer/clock'
     | '/serve/volunteer/jobs'
+    | '/admin-officials'
     | '/cascades'
     | '/comp-cycles'
     | '/employees'
@@ -1657,6 +1694,7 @@ export interface FileRouteTypes {
     | '/one-on-ones'
     | '/paf'
     | '/payroll'
+    | '/policies'
     | '/review-cycles'
     | '/reviews'
     | '/templates'
@@ -1674,6 +1712,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
     | '/serve/volunteer/jobs/$slug'
+    | '/interviews/$id'
+    | '/review-cycles/$id'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/interview/$token/accommodation'
@@ -1792,6 +1832,7 @@ export interface FileRouteTypes {
     | '/serve/status/$token'
     | '/serve/volunteer/clock'
     | '/serve/volunteer/jobs'
+    | '/_authenticated/admin-officials/'
     | '/_authenticated/cascades/'
     | '/_authenticated/comp-cycles/'
     | '/_authenticated/employees/'
@@ -1804,6 +1845,7 @@ export interface FileRouteTypes {
     | '/_authenticated/one-on-ones/'
     | '/_authenticated/paf/'
     | '/_authenticated/payroll/'
+    | '/_authenticated/policies/'
     | '/_authenticated/review-cycles/'
     | '/_authenticated/reviews/'
     | '/_authenticated/templates/'
@@ -1821,6 +1863,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
     | '/serve/volunteer/jobs/$slug'
+    | '/_authenticated/interviews/$id/'
+    | '/_authenticated/review-cycles/$id/'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/interview/$token/accommodation'
@@ -2392,6 +2436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewCyclesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/policies/': {
+      id: '/_authenticated/policies/'
+      path: '/'
+      fullPath: '/policies/'
+      preLoaderRoute: typeof AuthenticatedPoliciesIndexRouteImport
+      parentRoute: typeof AuthenticatedPoliciesRoute
+    }
     '/_authenticated/payroll/': {
       id: '/_authenticated/payroll/'
       path: '/payroll'
@@ -2475,6 +2526,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/cascades/'
       preLoaderRoute: typeof AuthenticatedCascadesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin-officials/': {
+      id: '/_authenticated/admin-officials/'
+      path: '/'
+      fullPath: '/admin-officials/'
+      preLoaderRoute: typeof AuthenticatedAdminOfficialsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
     '/serve/volunteer/jobs': {
       id: '/serve/volunteer/jobs'
@@ -2728,6 +2786,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOfficialsArchiveRouteImport
       parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
+    '/_authenticated/review-cycles/$id/': {
+      id: '/_authenticated/review-cycles/$id/'
+      path: '/'
+      fullPath: '/review-cycles/$id/'
+      preLoaderRoute: typeof AuthenticatedReviewCyclesIdIndexRouteImport
+      parentRoute: typeof AuthenticatedReviewCyclesIdRoute
+    }
+    '/_authenticated/interviews/$id/': {
+      id: '/_authenticated/interviews/$id/'
+      path: '/'
+      fullPath: '/interviews/$id/'
+      preLoaderRoute: typeof AuthenticatedInterviewsIdIndexRouteImport
+      parentRoute: typeof AuthenticatedInterviewsIdRoute
+    }
     '/serve/volunteer/jobs/$slug': {
       id: '/serve/volunteer/jobs/$slug'
       path: '/$slug'
@@ -2904,6 +2976,7 @@ interface AuthenticatedAdminOfficialsRouteChildren {
   AuthenticatedAdminOfficialsOnboardingReportRoute: typeof AuthenticatedAdminOfficialsOnboardingReportRoute
   AuthenticatedAdminOfficialsOnboardingTemplatesRoute: typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   AuthenticatedAdminOfficialsPrintRoute: typeof AuthenticatedAdminOfficialsPrintRoute
+  AuthenticatedAdminOfficialsIndexRoute: typeof AuthenticatedAdminOfficialsIndexRoute
   AuthenticatedAdminOfficialsApplicationsIdRoute: typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   AuthenticatedAdminOfficialsApplicationsCompareRoute: typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
 }
@@ -2918,6 +2991,8 @@ const AuthenticatedAdminOfficialsRouteChildren: AuthenticatedAdminOfficialsRoute
       AuthenticatedAdminOfficialsOnboardingTemplatesRoute,
     AuthenticatedAdminOfficialsPrintRoute:
       AuthenticatedAdminOfficialsPrintRoute,
+    AuthenticatedAdminOfficialsIndexRoute:
+      AuthenticatedAdminOfficialsIndexRoute,
     AuthenticatedAdminOfficialsApplicationsIdRoute:
       AuthenticatedAdminOfficialsApplicationsIdRoute,
     AuthenticatedAdminOfficialsApplicationsCompareRoute:
@@ -2931,10 +3006,12 @@ const AuthenticatedAdminOfficialsRouteWithChildren =
 
 interface AuthenticatedPoliciesRouteChildren {
   AuthenticatedPoliciesIdRoute: typeof AuthenticatedPoliciesIdRoute
+  AuthenticatedPoliciesIndexRoute: typeof AuthenticatedPoliciesIndexRoute
 }
 
 const AuthenticatedPoliciesRouteChildren: AuthenticatedPoliciesRouteChildren = {
   AuthenticatedPoliciesIdRoute: AuthenticatedPoliciesIdRoute,
+  AuthenticatedPoliciesIndexRoute: AuthenticatedPoliciesIndexRoute,
 }
 
 const AuthenticatedPoliciesRouteWithChildren =
@@ -2944,11 +3021,13 @@ const AuthenticatedPoliciesRouteWithChildren =
 
 interface AuthenticatedInterviewsIdRouteChildren {
   AuthenticatedInterviewsIdRoomRoute: typeof AuthenticatedInterviewsIdRoomRoute
+  AuthenticatedInterviewsIdIndexRoute: typeof AuthenticatedInterviewsIdIndexRoute
 }
 
 const AuthenticatedInterviewsIdRouteChildren: AuthenticatedInterviewsIdRouteChildren =
   {
     AuthenticatedInterviewsIdRoomRoute: AuthenticatedInterviewsIdRoomRoute,
+    AuthenticatedInterviewsIdIndexRoute: AuthenticatedInterviewsIdIndexRoute,
   }
 
 const AuthenticatedInterviewsIdRouteWithChildren =
@@ -2958,12 +3037,15 @@ const AuthenticatedInterviewsIdRouteWithChildren =
 
 interface AuthenticatedReviewCyclesIdRouteChildren {
   AuthenticatedReviewCyclesIdCalibrationRoute: typeof AuthenticatedReviewCyclesIdCalibrationRoute
+  AuthenticatedReviewCyclesIdIndexRoute: typeof AuthenticatedReviewCyclesIdIndexRoute
 }
 
 const AuthenticatedReviewCyclesIdRouteChildren: AuthenticatedReviewCyclesIdRouteChildren =
   {
     AuthenticatedReviewCyclesIdCalibrationRoute:
       AuthenticatedReviewCyclesIdCalibrationRoute,
+    AuthenticatedReviewCyclesIdIndexRoute:
+      AuthenticatedReviewCyclesIdIndexRoute,
   }
 
 const AuthenticatedReviewCyclesIdRouteWithChildren =
