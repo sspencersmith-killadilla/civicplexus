@@ -78,7 +78,7 @@ function VendorFormsAdmin() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        {((data ?? []) as Template[]).map((t) => (
+        {((data ?? []) as unknown as Template[]).map((t) => (
           <Card key={t.id} className="p-4">
             <div className="flex items-start justify-between">
               <div>
