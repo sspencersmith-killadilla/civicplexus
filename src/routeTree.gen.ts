@@ -16,6 +16,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServeIndexRouteImport } from './routes/serve.index'
 import { Route as OfficialsIndexRouteImport } from './routes/officials.index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
+import { Route as ServeVolunteerRouteImport } from './routes/serve.volunteer'
+import { Route as ServeVendorRouteImport } from './routes/serve.vendor'
 import { Route as ServeCandidateFilingRouteImport } from './routes/serve.candidate-filing'
 import { Route as ServeApplyRouteImport } from './routes/serve.apply'
 import { Route as OfficialsPrintRouteImport } from './routes/officials.print'
@@ -23,6 +25,8 @@ import { Route as OfficialsSlugRouteImport } from './routes/officials.$slug'
 import { Route as OfferTokenRouteImport } from './routes/offer.$token'
 import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
+import { Route as AuthenticatedVolunteersRouteImport } from './routes/_authenticated/volunteers'
+import { Route as AuthenticatedVendorsRouteImport } from './routes/_authenticated/vendors'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedTimekeepingRouteImport } from './routes/_authenticated/timekeeping'
 import { Route as AuthenticatedShiftPatternsRouteImport } from './routes/_authenticated/shift-patterns'
@@ -178,6 +182,16 @@ const CareersIndexRoute = CareersIndexRouteImport.update({
   path: '/careers/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServeVolunteerRoute = ServeVolunteerRouteImport.update({
+  id: '/serve/volunteer',
+  path: '/serve/volunteer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServeVendorRoute = ServeVendorRouteImport.update({
+  id: '/serve/vendor',
+  path: '/serve/vendor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServeCandidateFilingRoute = ServeCandidateFilingRouteImport.update({
   id: '/serve/candidate-filing',
   path: '/serve/candidate-filing',
@@ -214,6 +228,16 @@ const AuthenticatedWorkerTypesRoute =
     path: '/worker-types',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedVolunteersRoute = AuthenticatedVolunteersRouteImport.update({
+  id: '/volunteers',
+  path: '/volunteers',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVendorsRoute = AuthenticatedVendorsRouteImport.update({
+  id: '/vendors',
+  path: '/vendors',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTrainingRoute = AuthenticatedTrainingRouteImport.update({
   id: '/training',
   path: '/training',
@@ -938,6 +962,8 @@ export interface FileRoutesByFullPath {
   '/shift-patterns': typeof AuthenticatedShiftPatternsRoute
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
+  '/vendors': typeof AuthenticatedVendorsRoute
+  '/volunteers': typeof AuthenticatedVolunteersRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
@@ -945,6 +971,8 @@ export interface FileRoutesByFullPath {
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
+  '/serve/vendor': typeof ServeVendorRoute
+  '/serve/volunteer': typeof ServeVolunteerRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
@@ -1073,12 +1101,16 @@ export interface FileRoutesByTo {
   '/shift-patterns': typeof AuthenticatedShiftPatternsRoute
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
+  '/vendors': typeof AuthenticatedVendorsRoute
+  '/volunteers': typeof AuthenticatedVolunteersRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/offer/$token': typeof OfferTokenRoute
   '/officials/$slug': typeof OfficialsSlugRoute
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
+  '/serve/vendor': typeof ServeVendorRoute
+  '/serve/volunteer': typeof ServeVolunteerRoute
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
   '/serve': typeof ServeIndexRoute
@@ -1209,6 +1241,8 @@ export interface FileRoutesById {
   '/_authenticated/shift-patterns': typeof AuthenticatedShiftPatternsRoute
   '/_authenticated/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
+  '/_authenticated/vendors': typeof AuthenticatedVendorsRoute
+  '/_authenticated/volunteers': typeof AuthenticatedVolunteersRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
   '/offer/$token': typeof OfferTokenRoute
@@ -1216,6 +1250,8 @@ export interface FileRoutesById {
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
+  '/serve/vendor': typeof ServeVendorRoute
+  '/serve/volunteer': typeof ServeVolunteerRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
@@ -1346,6 +1382,8 @@ export interface FileRouteTypes {
     | '/shift-patterns'
     | '/timekeeping'
     | '/training'
+    | '/vendors'
+    | '/volunteers'
     | '/worker-types'
     | '/careers/$slug'
     | '/offer/$token'
@@ -1353,6 +1391,8 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/serve/apply'
     | '/serve/candidate-filing'
+    | '/serve/vendor'
+    | '/serve/volunteer'
     | '/careers/'
     | '/officials/'
     | '/serve/'
@@ -1481,12 +1521,16 @@ export interface FileRouteTypes {
     | '/shift-patterns'
     | '/timekeeping'
     | '/training'
+    | '/vendors'
+    | '/volunteers'
     | '/worker-types'
     | '/offer/$token'
     | '/officials/$slug'
     | '/officials/print'
     | '/serve/apply'
     | '/serve/candidate-filing'
+    | '/serve/vendor'
+    | '/serve/volunteer'
     | '/careers'
     | '/officials'
     | '/serve'
@@ -1616,6 +1660,8 @@ export interface FileRouteTypes {
     | '/_authenticated/shift-patterns'
     | '/_authenticated/timekeeping'
     | '/_authenticated/training'
+    | '/_authenticated/vendors'
+    | '/_authenticated/volunteers'
     | '/_authenticated/worker-types'
     | '/careers/$slug'
     | '/offer/$token'
@@ -1623,6 +1669,8 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/serve/apply'
     | '/serve/candidate-filing'
+    | '/serve/vendor'
+    | '/serve/volunteer'
     | '/careers/'
     | '/officials/'
     | '/serve/'
@@ -1711,6 +1759,8 @@ export interface RootRouteChildren {
   OfficialsPrintRoute: typeof OfficialsPrintRoute
   ServeApplyRoute: typeof ServeApplyRoute
   ServeCandidateFilingRoute: typeof ServeCandidateFilingRoute
+  ServeVendorRoute: typeof ServeVendorRoute
+  ServeVolunteerRoute: typeof ServeVolunteerRoute
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
   ServeIndexRoute: typeof ServeIndexRoute
@@ -1791,6 +1841,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CareersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/serve/volunteer': {
+      id: '/serve/volunteer'
+      path: '/serve/volunteer'
+      fullPath: '/serve/volunteer'
+      preLoaderRoute: typeof ServeVolunteerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/serve/vendor': {
+      id: '/serve/vendor'
+      path: '/serve/vendor'
+      fullPath: '/serve/vendor'
+      preLoaderRoute: typeof ServeVendorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/serve/candidate-filing': {
       id: '/serve/candidate-filing'
       path: '/serve/candidate-filing'
@@ -1838,6 +1902,20 @@ declare module '@tanstack/react-router' {
       path: '/worker-types'
       fullPath: '/worker-types'
       preLoaderRoute: typeof AuthenticatedWorkerTypesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/volunteers': {
+      id: '/_authenticated/volunteers'
+      path: '/volunteers'
+      fullPath: '/volunteers'
+      preLoaderRoute: typeof AuthenticatedVolunteersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/vendors': {
+      id: '/_authenticated/vendors'
+      path: '/vendors'
+      fullPath: '/vendors'
+      preLoaderRoute: typeof AuthenticatedVendorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/training': {
@@ -2804,6 +2882,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedShiftPatternsRoute: typeof AuthenticatedShiftPatternsRoute
   AuthenticatedTimekeepingRoute: typeof AuthenticatedTimekeepingRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
+  AuthenticatedVendorsRoute: typeof AuthenticatedVendorsRoute
+  AuthenticatedVolunteersRoute: typeof AuthenticatedVolunteersRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
   AuthenticatedAdminApplicationTemplateRoute: typeof AuthenticatedAdminApplicationTemplateRoute
   AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
@@ -2894,6 +2974,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedShiftPatternsRoute: AuthenticatedShiftPatternsRoute,
   AuthenticatedTimekeepingRoute: AuthenticatedTimekeepingRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
+  AuthenticatedVendorsRoute: AuthenticatedVendorsRoute,
+  AuthenticatedVolunteersRoute: AuthenticatedVolunteersRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
   AuthenticatedAdminApplicationTemplateRoute:
     AuthenticatedAdminApplicationTemplateRoute,
@@ -2965,6 +3047,8 @@ const rootRouteChildren: RootRouteChildren = {
   OfficialsPrintRoute: OfficialsPrintRoute,
   ServeApplyRoute: ServeApplyRoute,
   ServeCandidateFilingRoute: ServeCandidateFilingRoute,
+  ServeVendorRoute: ServeVendorRoute,
+  ServeVolunteerRoute: ServeVolunteerRoute,
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
   ServeIndexRoute: ServeIndexRoute,

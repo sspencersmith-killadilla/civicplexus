@@ -8385,6 +8385,199 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_assignments: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          notes: string | null
+          project_name: string
+          role: string | null
+          start_date: string | null
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          project_name: string
+          role?: string | null
+          start_date?: string | null
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          project_name?: string
+          role?: string | null
+          start_date?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_assignments_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendors: {
+        Row: {
+          coi_expires_at: string | null
+          coi_path: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          contract_end: string | null
+          contract_start: string | null
+          contract_value: number | null
+          created_at: string
+          dba: string | null
+          department_id: string | null
+          id: string
+          insurance_verified: boolean
+          legal_name: string
+          notes: string | null
+          status: string
+          tax_id: string | null
+          updated_at: string
+          w9_path: string | null
+        }
+        Insert: {
+          coi_expires_at?: string | null
+          coi_path?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contract_end?: string | null
+          contract_start?: string | null
+          contract_value?: number | null
+          created_at?: string
+          dba?: string | null
+          department_id?: string | null
+          id?: string
+          insurance_verified?: boolean
+          legal_name: string
+          notes?: string | null
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+          w9_path?: string | null
+        }
+        Update: {
+          coi_expires_at?: string | null
+          coi_path?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contract_end?: string | null
+          contract_start?: string | null
+          contract_value?: number | null
+          created_at?: string
+          dba?: string | null
+          department_id?: string | null
+          id?: string
+          insurance_verified?: boolean
+          legal_name?: string
+          notes?: string | null
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+          w9_path?: string | null
+        }
+        Relationships: []
+      }
+      volunteer_hours: {
+        Row: {
+          activity: string | null
+          approved_by: string | null
+          created_at: string
+          hours: number
+          id: string
+          service_date: string
+          volunteer_id: string
+        }
+        Insert: {
+          activity?: string | null
+          approved_by?: string | null
+          created_at?: string
+          hours: number
+          id?: string
+          service_date: string
+          volunteer_id: string
+        }
+        Update: {
+          activity?: string | null
+          approved_by?: string | null
+          created_at?: string
+          hours?: number
+          id?: string
+          service_date?: string
+          volunteer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_hours_volunteer_id_fkey"
+            columns: ["volunteer_id"]
+            isOneToOne: false
+            referencedRelation: "volunteers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteers: {
+        Row: {
+          background_check_date: string | null
+          created_at: string
+          department_id: string | null
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          notes: string | null
+          phone: string | null
+          skills: string[]
+          status: string
+          updated_at: string
+          waiver_signed_at: string | null
+        }
+        Insert: {
+          background_check_date?: string | null
+          created_at?: string
+          department_id?: string | null
+          email?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          notes?: string | null
+          phone?: string | null
+          skills?: string[]
+          status?: string
+          updated_at?: string
+          waiver_signed_at?: string | null
+        }
+        Update: {
+          background_check_date?: string | null
+          created_at?: string
+          department_id?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          notes?: string | null
+          phone?: string | null
+          skills?: string[]
+          status?: string
+          updated_at?: string
+          waiver_signed_at?: string | null
+        }
+        Relationships: []
+      }
       worker_types: {
         Row: {
           created_at: string
