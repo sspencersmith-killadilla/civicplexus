@@ -128,6 +128,7 @@ import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/ba
 import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
 import { Route as AuthenticatedInterviewsAsyncIdRouteImport } from './routes/_authenticated/interviews.async.$id'
 import { Route as AuthenticatedInterviewsIdRoomRouteImport } from './routes/_authenticated/interviews.$id.room'
+import { Route as AuthenticatedAdminOfficialsApplicationsIdRouteImport } from './routes/_authenticated/admin-officials.applications.$id'
 import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim.v2.Users'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
 import { Route as ApiPublicOffersTokenRespondRouteImport } from './routes/api/public/offers/$token/respond'
@@ -793,6 +794,12 @@ const AuthenticatedInterviewsIdRoomRoute =
     path: '/room',
     getParentRoute: () => AuthenticatedInterviewsIdRoute,
   } as any)
+const AuthenticatedAdminOfficialsApplicationsIdRoute =
+  AuthenticatedAdminOfficialsApplicationsIdRouteImport.update({
+    id: '/applications/$id',
+    path: '/applications/$id',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
+  } as any)
 const ApiPublicScimV2UsersRoute = ApiPublicScimV2UsersRouteImport.update({
   id: '/api/public/scim/v2/Users',
   path: '/api/public/scim/v2/Users',
@@ -975,6 +982,7 @@ export interface FileRoutesByFullPath {
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
+  '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
@@ -1106,6 +1114,7 @@ export interface FileRoutesByTo {
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/candidate/$token': typeof CandidateTokenIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
+  '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
@@ -1240,6 +1249,7 @@ export interface FileRoutesById {
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
+  '/_authenticated/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/_authenticated/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/_authenticated/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/_authenticated/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
@@ -1374,6 +1384,7 @@ export interface FileRouteTypes {
     | '/templates/'
     | '/candidate/$token/'
     | '/careers/$slug/'
+    | '/admin-officials/applications/$id'
     | '/interviews/$id/room'
     | '/interviews/async/$id'
     | '/review-cycles/$id/calibration'
@@ -1505,6 +1516,7 @@ export interface FileRouteTypes {
     | '/templates'
     | '/candidate/$token'
     | '/careers/$slug'
+    | '/admin-officials/applications/$id'
     | '/interviews/$id/room'
     | '/interviews/async/$id'
     | '/review-cycles/$id/calibration'
@@ -1638,6 +1650,7 @@ export interface FileRouteTypes {
     | '/_authenticated/templates/'
     | '/candidate/$token/'
     | '/careers/$slug/'
+    | '/_authenticated/admin-officials/applications/$id'
     | '/_authenticated/interviews/$id/room'
     | '/_authenticated/interviews/async/$id'
     | '/_authenticated/review-cycles/$id/calibration'
@@ -2536,6 +2549,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInterviewsIdRoomRouteImport
       parentRoute: typeof AuthenticatedInterviewsIdRoute
     }
+    '/_authenticated/admin-officials/applications/$id': {
+      id: '/_authenticated/admin-officials/applications/$id'
+      path: '/applications/$id'
+      fullPath: '/admin-officials/applications/$id'
+      preLoaderRoute: typeof AuthenticatedAdminOfficialsApplicationsIdRouteImport
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
+    }
     '/api/public/scim/v2/Users': {
       id: '/api/public/scim/v2/Users'
       path: '/api/public/scim/v2/Users'
@@ -2628,6 +2648,7 @@ interface AuthenticatedAdminOfficialsRouteChildren {
   AuthenticatedAdminOfficialsOnboardingReportRoute: typeof AuthenticatedAdminOfficialsOnboardingReportRoute
   AuthenticatedAdminOfficialsOnboardingTemplatesRoute: typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   AuthenticatedAdminOfficialsPrintRoute: typeof AuthenticatedAdminOfficialsPrintRoute
+  AuthenticatedAdminOfficialsApplicationsIdRoute: typeof AuthenticatedAdminOfficialsApplicationsIdRoute
 }
 
 const AuthenticatedAdminOfficialsRouteChildren: AuthenticatedAdminOfficialsRouteChildren =
@@ -2640,6 +2661,8 @@ const AuthenticatedAdminOfficialsRouteChildren: AuthenticatedAdminOfficialsRoute
       AuthenticatedAdminOfficialsOnboardingTemplatesRoute,
     AuthenticatedAdminOfficialsPrintRoute:
       AuthenticatedAdminOfficialsPrintRoute,
+    AuthenticatedAdminOfficialsApplicationsIdRoute:
+      AuthenticatedAdminOfficialsApplicationsIdRoute,
   }
 
 const AuthenticatedAdminOfficialsRouteWithChildren =

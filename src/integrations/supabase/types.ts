@@ -483,6 +483,54 @@ export type Database = {
           },
         ]
       }
+      board_application_scores: {
+        Row: {
+          body_id: string
+          comments: string | null
+          created_at: string
+          id: string
+          score: number
+          scorer_user_id: string
+          submission_id: string
+          updated_at: string
+        }
+        Insert: {
+          body_id: string
+          comments?: string | null
+          created_at?: string
+          id?: string
+          score: number
+          scorer_user_id: string
+          submission_id: string
+          updated_at?: string
+        }
+        Update: {
+          body_id?: string
+          comments?: string | null
+          created_at?: string
+          id?: string
+          score?: number
+          scorer_user_id?: string
+          submission_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "board_application_scores_body_id_fkey"
+            columns: ["body_id"]
+            isOneToOne: false
+            referencedRelation: "official_bodies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "board_application_scores_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "board_application_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       board_application_submissions: {
         Row: {
           address: string | null
