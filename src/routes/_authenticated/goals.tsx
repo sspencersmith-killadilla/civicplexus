@@ -214,54 +214,97 @@ function GoalsPage() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        {(goalsQ.data ?? []).map((g) => {
-          const owner = g.employees as { first_name: string; last_name: string; department: string | null } | null;
-          const parent = (g as unknown as { parent: { title: string } | null }).parent;
+      {(() => {
+        type Row = { id: string; title: string; status: string; progress: number; description: string | null; target_date: string | null; parent_goal_id: string | null; employees: { first_name: string; last_name: string; department: string | null } | null };
+        const all = ((goalsQ.data ?? []) as unknown as Row[]);
+        const isArchived = (g: Row) => g.status === "completed" || g.status === "cancelled";
+        const active = all.filter((g) => !isArchived(g));
+        const archived = all.filter(isArchived);
+        const childrenOf = (list: Row[], pid: string | null) => list.filter((g) => (g.parent_goal_id ?? null) === pid);
+
+        const renderCard = (g: Row, depth: number) => {
+          const owner = g.employees;
           return (
-            <Card key={g.id} className="p-4">
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="min-w-0">
-                  <h4 className="font-medium flex items-center gap-2"><Target className="h-4 w-4 text-primary shrink-0" /> {g.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {owner ? `${owner.first_name} ${owner.last_name}` : "Owner unknown"}
-                    {g.target_date ? ` · target ${g.target_date}` : ""}
-                    {parent ? ` · child of "${parent.title}"` : ""}
-                  </p>
+            <div key={g.id} style={{ marginLeft: depth * 24 }} className={depth > 0 ? "border-l-2 border-primary/30 pl-3" : ""}>
+              <Card className="p-4">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="min-w-0">
+                    <h4 className="font-medium flex items-center gap-2"><Target className="h-4 w-4 text-primary shrink-0" /> {g.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {owner ? `${owner.first_name} ${owner.last_name}` : "Owner unknown"}
+                      {g.target_date ? ` · target ${g.target_date}` : ""}
+                    </p>
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded ${STATUS_COLORS[g.status] ?? ""}`}>{g.status}</span>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded ${STATUS_COLORS[g.status] ?? ""}`}>{g.status}</span>
-              </div>
-              {g.description && <p className="text-sm text-muted-foreground mb-3">{g.description}</p>}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs"><span className="text-muted-foreground flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Progress</span><span className="font-medium">{g.progress}%</span></div>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  defaultValue={g.progress}
-                  onMouseUp={(e) => {
-                    const v = Number((e.target as HTMLInputElement).value);
-                    updateProgress.mutate({ gid: g.id, progress: v, status: v >= 100 ? "completed" : g.status === "draft" ? "active" : undefined });
-                  }}
-                  onTouchEnd={(e) => {
-                    const v = Number((e.target as HTMLInputElement).value);
-                    updateProgress.mutate({ gid: g.id, progress: v, status: v >= 100 ? "completed" : undefined });
-                  }}
-                  className="w-full"
-                />
-              </div>
-              <div className="flex gap-2 mt-3">
-                <Button size="sm" variant="outline" onClick={() => updateProgress.mutate({ gid: g.id, progress: g.progress, status: "at_risk" })}>Flag at risk</Button>
-                <Button size="sm" variant="outline" onClick={() => updateProgress.mutate({ gid: g.id, progress: 100, status: "completed" })}>Mark complete</Button>
-              </div>
-            </Card>
+                {g.description && <p className="text-sm text-muted-foreground mb-3">{g.description}</p>}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs"><span className="text-muted-foreground flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Progress</span><span className="font-medium">{g.progress}%</span></div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    defaultValue={g.progress}
+                    disabled={isArchived(g)}
+                    onMouseUp={(e) => {
+                      const v = Number((e.target as HTMLInputElement).value);
+                      updateProgress.mutate({ gid: g.id, progress: v, status: v >= 100 ? "completed" : g.status === "draft" ? "active" : undefined });
+                    }}
+                    onTouchEnd={(e) => {
+                      const v = Number((e.target as HTMLInputElement).value);
+                      updateProgress.mutate({ gid: g.id, progress: v, status: v >= 100 ? "completed" : undefined });
+                    }}
+                    className="w-full"
+                  />
+                </div>
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  {!isArchived(g) && <Button size="sm" variant="outline" onClick={() => updateProgress.mutate({ gid: g.id, progress: g.progress, status: "at_risk" })}>Flag at risk</Button>}
+                  {!isArchived(g) && <Button size="sm" variant="outline" onClick={() => updateProgress.mutate({ gid: g.id, progress: 100, status: "completed" })}>Mark complete</Button>}
+                  {isArchived(g) && <Button size="sm" variant="outline" onClick={() => updateProgress.mutate({ gid: g.id, progress: g.progress, status: "active" })}>Reopen</Button>}
+                  <Button size="sm" variant="ghost" onClick={() => openSubgoalDialog(g.id)}><GitBranch className="h-3.5 w-3.5 mr-1" /> Create subgoal</Button>
+                </div>
+              </Card>
+              {childrenOf(active, g.id).map((c) => renderCard(c, depth + 1))}
+            </div>
           );
-        })}
-        {(goalsQ.data?.length ?? 0) === 0 && (
-          <Card className="p-8 text-center text-muted-foreground md:col-span-2">No goals yet. Add one above.</Card>
-        )}
-      </div>
+        };
+
+        const roots = childrenOf(active, null);
+        // Any active goal whose parent is archived/missing should still be reachable.
+        const activeIds = new Set(active.map((g) => g.id));
+        const orphans = active.filter((g) => g.parent_goal_id && !activeIds.has(g.parent_goal_id) && !roots.includes(g));
+
+        return (
+          <>
+            <div className="space-y-3">
+              {roots.map((g) => renderCard(g, 0))}
+              {orphans.map((g) => renderCard(g, 0))}
+              {active.length === 0 && (
+                <Card className="p-8 text-center text-muted-foreground">No active goals. Add one above.</Card>
+              )}
+            </div>
+
+            {archived.length > 0 && (
+              <div className="mt-8">
+                <button
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3"
+                  onClick={() => setShowArchived((v) => !v)}
+                >
+                  {showArchived ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  <Archive className="h-4 w-4" />
+                  Archived ({archived.length})
+                </button>
+                {showArchived && (
+                  <div className="space-y-3 opacity-80">
+                    {archived.map((g) => renderCard(g, 0))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        );
+      })()}
     </AppShell>
   );
 }
