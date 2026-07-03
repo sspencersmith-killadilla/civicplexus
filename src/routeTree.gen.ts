@@ -26,6 +26,7 @@ import { Route as OfferTokenRouteImport } from './routes/offer.$token'
 import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedVolunteersRouteImport } from './routes/_authenticated/volunteers'
+import { Route as AuthenticatedVolunteerJobsRouteImport } from './routes/_authenticated/volunteer-jobs'
 import { Route as AuthenticatedVendorsRouteImport } from './routes/_authenticated/vendors'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedTimekeepingRouteImport } from './routes/_authenticated/timekeeping'
@@ -92,9 +93,13 @@ import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authenticated/employees.index'
 import { Route as AuthenticatedCompCyclesIndexRouteImport } from './routes/_authenticated/comp-cycles.index'
 import { Route as AuthenticatedCascadesIndexRouteImport } from './routes/_authenticated/cascades.index'
+import { Route as ServeVolunteerJobsRouteImport } from './routes/serve.volunteer.jobs'
+import { Route as ServeVolunteerClockRouteImport } from './routes/serve.volunteer.clock'
 import { Route as ServeStatusTokenRouteImport } from './routes/serve.status.$token'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
 import { Route as CandidateTokenInterviewRouteImport } from './routes/candidate.$token.interview'
+import { Route as ApiPublicVolunteerSignupRouteImport } from './routes/api/public/volunteer-signup'
+import { Route as ApiPublicVolunteerClockRouteImport } from './routes/api/public/volunteer-clock'
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicBoardApplicationsRouteImport } from './routes/api/public/board-applications'
@@ -124,6 +129,7 @@ import { Route as AuthenticatedAdminOfficialsPrintRouteImport } from './routes/_
 import { Route as AuthenticatedAdminOfficialsOnboardingTemplatesRouteImport } from './routes/_authenticated/admin-officials.onboarding-templates'
 import { Route as AuthenticatedAdminOfficialsOnboardingReportRouteImport } from './routes/_authenticated/admin-officials.onboarding-report'
 import { Route as AuthenticatedAdminOfficialsArchiveRouteImport } from './routes/_authenticated/admin-officials.archive'
+import { Route as ServeVolunteerJobsSlugRouteImport } from './routes/serve.volunteer.jobs.$slug'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksOfflineReplayRouteImport } from './routes/api/public/hooks/offline-replay'
 import { Route as ApiPublicHooksLmsSyncRouteImport } from './routes/api/public/hooks/lms-sync'
@@ -233,6 +239,12 @@ const AuthenticatedVolunteersRoute = AuthenticatedVolunteersRouteImport.update({
   path: '/volunteers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedVolunteerJobsRoute =
+  AuthenticatedVolunteerJobsRouteImport.update({
+    id: '/volunteer-jobs',
+    path: '/volunteer-jobs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedVendorsRoute = AuthenticatedVendorsRouteImport.update({
   id: '/vendors',
   path: '/vendors',
@@ -596,6 +608,16 @@ const AuthenticatedCascadesIndexRoute =
     path: '/cascades/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ServeVolunteerJobsRoute = ServeVolunteerJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => ServeVolunteerRoute,
+} as any)
+const ServeVolunteerClockRoute = ServeVolunteerClockRouteImport.update({
+  id: '/clock',
+  path: '/clock',
+  getParentRoute: () => ServeVolunteerRoute,
+} as any)
 const ServeStatusTokenRoute = ServeStatusTokenRouteImport.update({
   id: '/serve/status/$token',
   path: '/serve/status/$token',
@@ -609,6 +631,17 @@ const CareersSlugApplyRoute = CareersSlugApplyRouteImport.update({
 const CandidateTokenInterviewRoute = CandidateTokenInterviewRouteImport.update({
   id: '/candidate/$token/interview',
   path: '/candidate/$token/interview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicVolunteerSignupRoute =
+  ApiPublicVolunteerSignupRouteImport.update({
+    id: '/api/public/volunteer-signup',
+    path: '/api/public/volunteer-signup',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicVolunteerClockRoute = ApiPublicVolunteerClockRouteImport.update({
+  id: '/api/public/volunteer-clock',
+  path: '/api/public/volunteer-clock',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicJobApplicationsRoute =
@@ -776,6 +809,11 @@ const AuthenticatedAdminOfficialsArchiveRoute =
     path: '/archive',
     getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
+const ServeVolunteerJobsSlugRoute = ServeVolunteerJobsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ServeVolunteerJobsRoute,
+} as any)
 const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
   id: '/api/public/hooks/reminders',
   path: '/api/public/hooks/reminders',
@@ -963,6 +1001,7 @@ export interface FileRoutesByFullPath {
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/vendors': typeof AuthenticatedVendorsRoute
+  '/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/volunteers': typeof AuthenticatedVolunteersRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
@@ -972,7 +1011,7 @@ export interface FileRoutesByFullPath {
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
   '/serve/vendor': typeof ServeVendorRoute
-  '/serve/volunteer': typeof ServeVolunteerRoute
+  '/serve/volunteer': typeof ServeVolunteerRouteWithChildren
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
@@ -1005,9 +1044,13 @@ export interface FileRoutesByFullPath {
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/api/public/volunteer-clock': typeof ApiPublicVolunteerClockRoute
+  '/api/public/volunteer-signup': typeof ApiPublicVolunteerSignupRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/serve/status/$token': typeof ServeStatusTokenRoute
+  '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
+  '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
   '/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -1036,6 +1079,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/serve/volunteer/jobs/$slug': typeof ServeVolunteerJobsSlugRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
@@ -1102,6 +1146,7 @@ export interface FileRoutesByTo {
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/vendors': typeof AuthenticatedVendorsRoute
+  '/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/volunteers': typeof AuthenticatedVolunteersRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/offer/$token': typeof OfferTokenRoute
@@ -1110,7 +1155,7 @@ export interface FileRoutesByTo {
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
   '/serve/vendor': typeof ServeVendorRoute
-  '/serve/volunteer': typeof ServeVolunteerRoute
+  '/serve/volunteer': typeof ServeVolunteerRouteWithChildren
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
   '/serve': typeof ServeIndexRoute
@@ -1143,9 +1188,13 @@ export interface FileRoutesByTo {
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/api/public/volunteer-clock': typeof ApiPublicVolunteerClockRoute
+  '/api/public/volunteer-signup': typeof ApiPublicVolunteerSignupRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/serve/status/$token': typeof ServeStatusTokenRoute
+  '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
+  '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
   '/cascades': typeof AuthenticatedCascadesIndexRoute
   '/comp-cycles': typeof AuthenticatedCompCyclesIndexRoute
   '/employees': typeof AuthenticatedEmployeesIndexRoute
@@ -1174,6 +1223,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/serve/volunteer/jobs/$slug': typeof ServeVolunteerJobsSlugRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
@@ -1242,6 +1292,7 @@ export interface FileRoutesById {
   '/_authenticated/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/vendors': typeof AuthenticatedVendorsRoute
+  '/_authenticated/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/_authenticated/volunteers': typeof AuthenticatedVolunteersRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
   '/careers/$slug': typeof CareersSlugRouteWithChildren
@@ -1251,7 +1302,7 @@ export interface FileRoutesById {
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
   '/serve/vendor': typeof ServeVendorRoute
-  '/serve/volunteer': typeof ServeVolunteerRoute
+  '/serve/volunteer': typeof ServeVolunteerRouteWithChildren
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
   '/serve/': typeof ServeIndexRoute
@@ -1284,9 +1335,13 @@ export interface FileRoutesById {
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
+  '/api/public/volunteer-clock': typeof ApiPublicVolunteerClockRoute
+  '/api/public/volunteer-signup': typeof ApiPublicVolunteerSignupRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
   '/serve/status/$token': typeof ServeStatusTokenRoute
+  '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
+  '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
   '/_authenticated/cascades/': typeof AuthenticatedCascadesIndexRoute
   '/_authenticated/comp-cycles/': typeof AuthenticatedCompCyclesIndexRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -1315,6 +1370,7 @@ export interface FileRoutesById {
   '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
+  '/serve/volunteer/jobs/$slug': typeof ServeVolunteerJobsSlugRoute
   '/api/public/candidate/$token/message': typeof ApiPublicCandidateTokenMessageRoute
   '/api/public/candidate/$token/status': typeof ApiPublicCandidateTokenStatusRoute
   '/api/public/interview/$token/accommodation': typeof ApiPublicInterviewTokenAccommodationRoute
@@ -1383,6 +1439,7 @@ export interface FileRouteTypes {
     | '/timekeeping'
     | '/training'
     | '/vendors'
+    | '/volunteer-jobs'
     | '/volunteers'
     | '/worker-types'
     | '/careers/$slug'
@@ -1425,9 +1482,13 @@ export interface FileRouteTypes {
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
+    | '/api/public/volunteer-clock'
+    | '/api/public/volunteer-signup'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
     | '/serve/status/$token'
+    | '/serve/volunteer/clock'
+    | '/serve/volunteer/jobs'
     | '/cascades/'
     | '/comp-cycles/'
     | '/employees/'
@@ -1456,6 +1517,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
+    | '/serve/volunteer/jobs/$slug'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/interview/$token/accommodation'
@@ -1522,6 +1584,7 @@ export interface FileRouteTypes {
     | '/timekeeping'
     | '/training'
     | '/vendors'
+    | '/volunteer-jobs'
     | '/volunteers'
     | '/worker-types'
     | '/offer/$token'
@@ -1563,9 +1626,13 @@ export interface FileRouteTypes {
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
+    | '/api/public/volunteer-clock'
+    | '/api/public/volunteer-signup'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
     | '/serve/status/$token'
+    | '/serve/volunteer/clock'
+    | '/serve/volunteer/jobs'
     | '/cascades'
     | '/comp-cycles'
     | '/employees'
@@ -1594,6 +1661,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
+    | '/serve/volunteer/jobs/$slug'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/interview/$token/accommodation'
@@ -1661,6 +1729,7 @@ export interface FileRouteTypes {
     | '/_authenticated/timekeeping'
     | '/_authenticated/training'
     | '/_authenticated/vendors'
+    | '/_authenticated/volunteer-jobs'
     | '/_authenticated/volunteers'
     | '/_authenticated/worker-types'
     | '/careers/$slug'
@@ -1703,9 +1772,13 @@ export interface FileRouteTypes {
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
+    | '/api/public/volunteer-clock'
+    | '/api/public/volunteer-signup'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
     | '/serve/status/$token'
+    | '/serve/volunteer/clock'
+    | '/serve/volunteer/jobs'
     | '/_authenticated/cascades/'
     | '/_authenticated/comp-cycles/'
     | '/_authenticated/employees/'
@@ -1734,6 +1807,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
+    | '/serve/volunteer/jobs/$slug'
     | '/api/public/candidate/$token/message'
     | '/api/public/candidate/$token/status'
     | '/api/public/interview/$token/accommodation'
@@ -1760,13 +1834,15 @@ export interface RootRouteChildren {
   ServeApplyRoute: typeof ServeApplyRoute
   ServeCandidateFilingRoute: typeof ServeCandidateFilingRoute
   ServeVendorRoute: typeof ServeVendorRoute
-  ServeVolunteerRoute: typeof ServeVolunteerRoute
+  ServeVolunteerRoute: typeof ServeVolunteerRouteWithChildren
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
   ServeIndexRoute: typeof ServeIndexRoute
   ApiPublicBoardApplicationsRoute: typeof ApiPublicBoardApplicationsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
+  ApiPublicVolunteerClockRoute: typeof ApiPublicVolunteerClockRoute
+  ApiPublicVolunteerSignupRoute: typeof ApiPublicVolunteerSignupRoute
   CandidateTokenInterviewRoute: typeof CandidateTokenInterviewRoute
   ServeStatusTokenRoute: typeof ServeStatusTokenRoute
   CandidateTokenIndexRoute: typeof CandidateTokenIndexRoute
@@ -1909,6 +1985,13 @@ declare module '@tanstack/react-router' {
       path: '/volunteers'
       fullPath: '/volunteers'
       preLoaderRoute: typeof AuthenticatedVolunteersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/volunteer-jobs': {
+      id: '/_authenticated/volunteer-jobs'
+      path: '/volunteer-jobs'
+      fullPath: '/volunteer-jobs'
+      preLoaderRoute: typeof AuthenticatedVolunteerJobsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vendors': {
@@ -2373,6 +2456,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCascadesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/serve/volunteer/jobs': {
+      id: '/serve/volunteer/jobs'
+      path: '/jobs'
+      fullPath: '/serve/volunteer/jobs'
+      preLoaderRoute: typeof ServeVolunteerJobsRouteImport
+      parentRoute: typeof ServeVolunteerRoute
+    }
+    '/serve/volunteer/clock': {
+      id: '/serve/volunteer/clock'
+      path: '/clock'
+      fullPath: '/serve/volunteer/clock'
+      preLoaderRoute: typeof ServeVolunteerClockRouteImport
+      parentRoute: typeof ServeVolunteerRoute
+    }
     '/serve/status/$token': {
       id: '/serve/status/$token'
       path: '/serve/status/$token'
@@ -2392,6 +2489,20 @@ declare module '@tanstack/react-router' {
       path: '/candidate/$token/interview'
       fullPath: '/candidate/$token/interview'
       preLoaderRoute: typeof CandidateTokenInterviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/volunteer-signup': {
+      id: '/api/public/volunteer-signup'
+      path: '/api/public/volunteer-signup'
+      fullPath: '/api/public/volunteer-signup'
+      preLoaderRoute: typeof ApiPublicVolunteerSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/volunteer-clock': {
+      id: '/api/public/volunteer-clock'
+      path: '/api/public/volunteer-clock'
+      fullPath: '/api/public/volunteer-clock'
+      preLoaderRoute: typeof ApiPublicVolunteerClockRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/job-applications': {
@@ -2596,6 +2707,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin-officials/archive'
       preLoaderRoute: typeof AuthenticatedAdminOfficialsArchiveRouteImport
       parentRoute: typeof AuthenticatedAdminOfficialsRoute
+    }
+    '/serve/volunteer/jobs/$slug': {
+      id: '/serve/volunteer/jobs/$slug'
+      path: '/$slug'
+      fullPath: '/serve/volunteer/jobs/$slug'
+      preLoaderRoute: typeof ServeVolunteerJobsSlugRouteImport
+      parentRoute: typeof ServeVolunteerJobsRoute
     }
     '/api/public/hooks/reminders': {
       id: '/api/public/hooks/reminders'
@@ -2883,6 +3001,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTimekeepingRoute: typeof AuthenticatedTimekeepingRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedVendorsRoute: typeof AuthenticatedVendorsRoute
+  AuthenticatedVolunteerJobsRoute: typeof AuthenticatedVolunteerJobsRoute
   AuthenticatedVolunteersRoute: typeof AuthenticatedVolunteersRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
   AuthenticatedAdminApplicationTemplateRoute: typeof AuthenticatedAdminApplicationTemplateRoute
@@ -2975,6 +3094,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTimekeepingRoute: AuthenticatedTimekeepingRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedVendorsRoute: AuthenticatedVendorsRoute,
+  AuthenticatedVolunteerJobsRoute: AuthenticatedVolunteerJobsRoute,
   AuthenticatedVolunteersRoute: AuthenticatedVolunteersRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
   AuthenticatedAdminApplicationTemplateRoute:
@@ -3036,6 +3156,31 @@ const CareersSlugRouteWithChildren = CareersSlugRoute._addFileChildren(
   CareersSlugRouteChildren,
 )
 
+interface ServeVolunteerJobsRouteChildren {
+  ServeVolunteerJobsSlugRoute: typeof ServeVolunteerJobsSlugRoute
+}
+
+const ServeVolunteerJobsRouteChildren: ServeVolunteerJobsRouteChildren = {
+  ServeVolunteerJobsSlugRoute: ServeVolunteerJobsSlugRoute,
+}
+
+const ServeVolunteerJobsRouteWithChildren =
+  ServeVolunteerJobsRoute._addFileChildren(ServeVolunteerJobsRouteChildren)
+
+interface ServeVolunteerRouteChildren {
+  ServeVolunteerClockRoute: typeof ServeVolunteerClockRoute
+  ServeVolunteerJobsRoute: typeof ServeVolunteerJobsRouteWithChildren
+}
+
+const ServeVolunteerRouteChildren: ServeVolunteerRouteChildren = {
+  ServeVolunteerClockRoute: ServeVolunteerClockRoute,
+  ServeVolunteerJobsRoute: ServeVolunteerJobsRouteWithChildren,
+}
+
+const ServeVolunteerRouteWithChildren = ServeVolunteerRoute._addFileChildren(
+  ServeVolunteerRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -3048,13 +3193,15 @@ const rootRouteChildren: RootRouteChildren = {
   ServeApplyRoute: ServeApplyRoute,
   ServeCandidateFilingRoute: ServeCandidateFilingRoute,
   ServeVendorRoute: ServeVendorRoute,
-  ServeVolunteerRoute: ServeVolunteerRoute,
+  ServeVolunteerRoute: ServeVolunteerRouteWithChildren,
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
   ServeIndexRoute: ServeIndexRoute,
   ApiPublicBoardApplicationsRoute: ApiPublicBoardApplicationsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
+  ApiPublicVolunteerClockRoute: ApiPublicVolunteerClockRoute,
+  ApiPublicVolunteerSignupRoute: ApiPublicVolunteerSignupRoute,
   CandidateTokenInterviewRoute: CandidateTokenInterviewRoute,
   ServeStatusTokenRoute: ServeStatusTokenRoute,
   CandidateTokenIndexRoute: CandidateTokenIndexRoute,

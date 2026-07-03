@@ -8426,6 +8426,48 @@ export type Database = {
           },
         ]
       }
+      vendor_form_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          schema: Json
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          schema?: Json
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          schema?: Json
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       vendors: {
         Row: {
           coi_expires_at: string | null
@@ -8439,6 +8481,8 @@ export type Database = {
           created_at: string
           dba: string | null
           department_id: string | null
+          form_responses: Json | null
+          form_template_id: string | null
           id: string
           insurance_verified: boolean
           legal_name: string
@@ -8460,6 +8504,8 @@ export type Database = {
           created_at?: string
           dba?: string | null
           department_id?: string | null
+          form_responses?: Json | null
+          form_template_id?: string | null
           id?: string
           insurance_verified?: boolean
           legal_name: string
@@ -8481,6 +8527,8 @@ export type Database = {
           created_at?: string
           dba?: string | null
           department_id?: string | null
+          form_responses?: Json | null
+          form_template_id?: string | null
           id?: string
           insurance_verified?: boolean
           legal_name?: string
@@ -8490,7 +8538,59 @@ export type Database = {
           updated_at?: string
           w9_path?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vendors_form_template_id_fkey"
+            columns: ["form_template_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_form_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_clock_events: {
+        Row: {
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          id: string
+          logged_by: string | null
+          method: string
+          notes: string | null
+          signup_id: string
+          updated_at: string
+        }
+        Insert: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          id?: string
+          logged_by?: string | null
+          method?: string
+          notes?: string | null
+          signup_id: string
+          updated_at?: string
+        }
+        Update: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          id?: string
+          logged_by?: string | null
+          method?: string
+          notes?: string | null
+          signup_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_clock_events_signup_id_fkey"
+            columns: ["signup_id"]
+            isOneToOne: false
+            referencedRelation: "volunteer_shift_signups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       volunteer_hours: {
         Row: {
@@ -8526,6 +8626,167 @@ export type Database = {
             columns: ["volunteer_id"]
             isOneToOne: false
             referencedRelation: "volunteers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_jobs: {
+        Row: {
+          coordinator_email: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          location: string | null
+          min_age: number | null
+          requires_background_check: boolean
+          requires_waiver: boolean
+          skills_required: string[] | null
+          slug: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          coordinator_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          min_age?: number | null
+          requires_background_check?: boolean
+          requires_waiver?: boolean
+          skills_required?: string[] | null
+          slug?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          coordinator_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          min_age?: number | null
+          requires_background_check?: boolean
+          requires_waiver?: boolean
+          skills_required?: string[] | null
+          slug?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      volunteer_shift_signups: {
+        Row: {
+          applicant_email: string | null
+          applicant_first_name: string
+          applicant_last_name: string
+          applicant_phone: string | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          id: string
+          message: string | null
+          pin_code: string | null
+          shift_id: string
+          status: string
+          updated_at: string
+          volunteer_id: string | null
+        }
+        Insert: {
+          applicant_email?: string | null
+          applicant_first_name: string
+          applicant_last_name: string
+          applicant_phone?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          pin_code?: string | null
+          shift_id: string
+          status?: string
+          updated_at?: string
+          volunteer_id?: string | null
+        }
+        Update: {
+          applicant_email?: string | null
+          applicant_first_name?: string
+          applicant_last_name?: string
+          applicant_phone?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          pin_code?: string | null
+          shift_id?: string
+          status?: string
+          updated_at?: string
+          volunteer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_shift_signups_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "volunteer_shifts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_shift_signups_volunteer_id_fkey"
+            columns: ["volunteer_id"]
+            isOneToOne: false
+            referencedRelation: "volunteers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_shifts: {
+        Row: {
+          capacity: number
+          created_at: string
+          ends_at: string
+          id: string
+          job_id: string
+          location: string | null
+          notes: string | null
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          ends_at: string
+          id?: string
+          job_id: string
+          location?: string | null
+          notes?: string | null
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          ends_at?: string
+          id?: string
+          job_id?: string
+          location?: string | null
+          notes?: string | null
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_shifts_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "volunteer_jobs"
             referencedColumns: ["id"]
           },
         ]
