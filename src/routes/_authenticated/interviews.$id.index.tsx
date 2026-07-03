@@ -14,7 +14,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { submitInterviewFeedback } from "@/lib/jobs.functions";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/interviews/$id")({ component: InterviewDetail });
+export const Route = createFileRoute("/_authenticated/interviews/$id/")({ component: InterviewDetail });
 
 function InterviewDetail() {
   const { id } = Route.useParams();

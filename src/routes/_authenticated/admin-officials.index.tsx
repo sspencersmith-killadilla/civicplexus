@@ -36,7 +36,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Paperclip, Eye, X, FileText } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/admin-officials")({ component: OfficialsAdmin });
+export const Route = createFileRoute("/_authenticated/admin-officials/")({ component: OfficialsAdmin });
 
 type Body = { id: string; slug: string; name: string; kind: string; comp_model: string; roster_public: boolean };
 

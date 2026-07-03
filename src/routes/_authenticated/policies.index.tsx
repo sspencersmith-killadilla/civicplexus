@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, ScrollText } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/policies")({ component: PoliciesPage });
+export const Route = createFileRoute("/_authenticated/policies/")({ component: PoliciesPage });
 
 function PoliciesPage() {
   const qc = useQueryClient();

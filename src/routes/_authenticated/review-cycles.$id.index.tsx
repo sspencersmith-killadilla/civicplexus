@@ -9,7 +9,7 @@ import { ArrowLeft, PlayCircle, Sliders, Lock, Bell, Download } from "lucide-rea
 import { toast } from "sonner";
 import { setCycleStatus, sendCycleReminder } from "@/lib/review-cycles.functions";
 
-export const Route = createFileRoute("/_authenticated/review-cycles/$id")({ component: CycleDetail });
+export const Route = createFileRoute("/_authenticated/review-cycles/$id/")({ component: CycleDetail });
 
 function CycleDetail() {
   const { id } = Route.useParams();
