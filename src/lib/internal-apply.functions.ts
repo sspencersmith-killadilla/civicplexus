@@ -66,14 +66,8 @@ export const buildInternalResume = createServerFn({ method: "POST" })
       context.supabase.from("goals")
         .select("title, category, target_date")
         .eq("owner_employee_id", emp.id).eq("status", "completed")
-        .order("target_date", { ascending: false }).limit: 10 as never,
+        .order("target_date", { ascending: false }).limit(10),
     ]);
-    // goals limit workaround (chain reset)
-    const goalRes2 = await context.supabase.from("goals")
-      .select("title, category, target_date")
-      .eq("owner_employee_id", emp.id).eq("status", "completed")
-      .order("target_date", { ascending: false }).limit(10);
-    void goalRes;
 
     return {
       header: {
@@ -112,7 +106,7 @@ export const buildInternalResume = createServerFn({ method: "POST" })
         period_end: (r as { review_period_end: string | null }).review_period_end,
         overall_rating: (r as { overall_rating: string | null }).overall_rating,
       }))},
-      accomplishments: { included: true, items: (goalRes2.data ?? []).map((g) => ({
+      accomplishments: { included: true, items: (goalRes.data ?? []).map((g) => ({
         title: (g as { title: string }).title,
         category: (g as { category: string | null }).category,
         target_date: (g as { target_date: string | null }).target_date,
