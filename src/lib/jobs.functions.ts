@@ -628,9 +628,18 @@ export const listPositionsForRequisition = createServerFn({ method: "GET" })
     }
     const { data, error } = await access.supabaseAdmin
       .from("positions")
-      .select("id, title, department, worker_type_id, status")
+      .select("id, title, department, worker_type_id, status, default_summary, default_essential_functions, default_ksa, default_qualifications, default_physical_demands, default_supplemental, default_benefits")
       .in("status", ["open", "filled"])
       .order("title", { ascending: true });
     if (error) throw new Error(error.message);
-    return (data ?? []) as Array<{ id: string; title: string; department: string | null; worker_type_id: string | null; status: string }>;
+    return (data ?? []) as Array<{
+      id: string; title: string; department: string | null; worker_type_id: string | null; status: string;
+      default_summary: string | null;
+      default_essential_functions: string | null;
+      default_ksa: string | null;
+      default_qualifications: string | null;
+      default_physical_demands: string | null;
+      default_supplemental: string | null;
+      default_benefits: string | null;
+    }>;
   });

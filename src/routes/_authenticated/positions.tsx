@@ -32,6 +32,13 @@ type Position = {
   reports_to_position_id: string | null;
   status: string;
   notes: string | null;
+  default_summary?: string | null;
+  default_essential_functions?: string | null;
+  default_ksa?: string | null;
+  default_qualifications?: string | null;
+  default_physical_demands?: string | null;
+  default_supplemental?: string | null;
+  default_benefits?: string | null;
 };
 
 type Headcount = {
@@ -294,9 +301,16 @@ function PositionDialog({
   const [reportsTo, setReportsTo] = useState<string | undefined>(editing?.reports_to_position_id ?? undefined);
   const [status, setStatus] = useState(editing?.status ?? "open");
   const [notes, setNotes] = useState(editing?.notes ?? "");
+  const [defSummary, setDefSummary] = useState(editing?.default_summary ?? "");
+  const [defEssential, setDefEssential] = useState(editing?.default_essential_functions ?? "");
+  const [defKsa, setDefKsa] = useState(editing?.default_ksa ?? "");
+  const [defQual, setDefQual] = useState(editing?.default_qualifications ?? "");
+  const [defPhys, setDefPhys] = useState(editing?.default_physical_demands ?? "");
+  const [defSupp, setDefSupp] = useState(editing?.default_supplemental ?? "");
+  const [defBenefits, setDefBenefits] = useState(editing?.default_benefits ?? "");
 
   return (
-    <DialogContent className="max-w-2xl">
+    <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
       <DialogHeader><DialogTitle>{editing ? "Edit position" : "New position"}</DialogTitle></DialogHeader>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2 col-span-2"><Label>Title</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Maintenance Worker II" /></div>
@@ -349,6 +363,18 @@ function PositionDialog({
           </Select>
         </div>
         <div className="space-y-2 col-span-2"><Label>Notes</Label><Textarea value={notes ?? ""} onChange={(e) => setNotes(e.target.value)} rows={3} /></div>
+
+        <div className="col-span-2 border-t pt-3 mt-1">
+          <h4 className="text-sm font-semibold mb-1">Default job description</h4>
+          <p className="text-xs text-muted-foreground mb-3">These pre-fill any new job posting for this classification. Recruiters can still edit per posting.</p>
+        </div>
+        <div className="space-y-2 col-span-2"><Label>Summary</Label><Textarea value={defSummary ?? ""} onChange={(e) => setDefSummary(e.target.value)} rows={2} /></div>
+        <div className="space-y-2 col-span-2"><Label>Essential functions</Label><Textarea value={defEssential ?? ""} onChange={(e) => setDefEssential(e.target.value)} rows={4} /></div>
+        <div className="space-y-2 col-span-2"><Label>Knowledge, skills, abilities & behaviors</Label><Textarea value={defKsa ?? ""} onChange={(e) => setDefKsa(e.target.value)} rows={3} /></div>
+        <div className="space-y-2 col-span-2"><Label>Qualifications</Label><Textarea value={defQual ?? ""} onChange={(e) => setDefQual(e.target.value)} rows={3} /></div>
+        <div className="space-y-2 col-span-2"><Label>Physical demands</Label><Textarea value={defPhys ?? ""} onChange={(e) => setDefPhys(e.target.value)} rows={2} /></div>
+        <div className="space-y-2 col-span-2"><Label>Supplemental information</Label><Textarea value={defSupp ?? ""} onChange={(e) => setDefSupp(e.target.value)} rows={2} /></div>
+        <div className="space-y-2 col-span-2"><Label>Benefits</Label><Textarea value={defBenefits ?? ""} onChange={(e) => setDefBenefits(e.target.value)} rows={2} /></div>
       </div>
       <DialogFooter>
         <Button
@@ -366,6 +392,13 @@ function PositionDialog({
               reports_to_position_id: reportsTo ?? null,
               status,
               notes: notes || null,
+              default_summary: defSummary || null,
+              default_essential_functions: defEssential || null,
+              default_ksa: defKsa || null,
+              default_qualifications: defQual || null,
+              default_physical_demands: defPhys || null,
+              default_supplemental: defSupp || null,
+              default_benefits: defBenefits || null,
             })
           }
         >
