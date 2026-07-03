@@ -129,6 +129,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/admin-modules", "Modules & Features", ToggleLeft, ["hr_admin"]),
     def("/admin-identity", "Identity & SSO", ShieldCheck, ["hr_admin"]),
     def("/admin-demo", "Demo Account", UserCog, ["hr_admin"]),
+    def("/admin-sql-reports", "SQL Reports", BarChart3, ["hr_admin"]),
   ]},
   { key: moduleKey("governance"), label: "Governance", items: [
     def("/admin-officials", "Elected & Boards", LandmarkIcon, ["hr_admin"]),
