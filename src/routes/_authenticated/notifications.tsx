@@ -1,41 +1,82 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Bell, Check, CheckCheck } from "lucide-react";
+import { Bell, Check, CheckCheck, Archive, ArchiveRestore } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/notifications")({ component: NotificationsPage });
 
 function NotificationsPage() {
   const qc = useQueryClient();
+  const [tab, setTab] = useState<"active" | "archived">("active");
   const { data, isLoading } = useQuery({
-    queryKey: ["notifications-all"],
-    queryFn: async () => (await supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(100)).data,
+    queryKey: ["notifications-all", tab],
+    queryFn: async () => {
+      const q = supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(200);
+      const filtered = tab === "archived" ? q.not("archived_at", "is", null) : q.is("archived_at", null);
+      return (await filtered).data;
+    },
   });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["notifications-all"] });
   const markAll = useMutation({
     mutationFn: async () => {
-      await supabase.from("notifications").update({ read_at: new Date().toISOString() }).is("read_at", null);
+      await supabase.from("notifications").update({ read_at: new Date().toISOString() }).is("read_at", null).is("archived_at", null);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications-all"] }),
+    onSuccess: invalidate,
+  });
+  const archiveAll = useMutation({
+    mutationFn: async () => {
+      const now = new Date().toISOString();
+      await supabase.from("notifications").update({ read_at: now, archived_at: now }).is("archived_at", null);
+    },
+    onSuccess: invalidate,
   });
   const markOne = useMutation({
     mutationFn: async (id: string) => { await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id); },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications-all"] }),
+    onSuccess: invalidate,
+  });
+  const archiveOne = useMutation({
+    mutationFn: async (id: string) => {
+      const now = new Date().toISOString();
+      await supabase.from("notifications").update({ read_at: now, archived_at: now }).eq("id", id);
+    },
+    onSuccess: invalidate,
+  });
+  const unarchiveOne = useMutation({
+    mutationFn: async (id: string) => {
+      await supabase.from("notifications").update({ archived_at: null }).eq("id", id);
+    },
+    onSuccess: invalidate,
   });
 
   return (
     <AppShell title="Notifications">
-      <div className="flex justify-between mb-4">
-        <p className="text-sm text-muted-foreground">Recent activity, reminders, and approvals.</p>
-        <Button variant="outline" size="sm" onClick={() => markAll.mutate()}><CheckCheck className="h-4 w-4 mr-2" /> Mark all read</Button>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-4">
+          <p className="text-sm text-muted-foreground">Recent activity, reminders, and approvals.</p>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as "active" | "archived")}>
+            <TabsList>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="archived">Archived</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+        {tab === "active" && (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => markAll.mutate()}><CheckCheck className="h-4 w-4 mr-2" /> Mark all read</Button>
+            <Button variant="outline" size="sm" onClick={() => archiveAll.mutate()}><Archive className="h-4 w-4 mr-2" /> Archive all</Button>
+          </div>
+        )}
       </div>
       <Card className="divide-y">
         {isLoading && <div className="p-6 text-sm text-muted-foreground">Loading…</div>}
         {!isLoading && !data?.length && (
-          <div className="p-10 text-center text-muted-foreground"><Bell className="h-8 w-8 mx-auto mb-2 opacity-40" /> Nothing yet.</div>
+          <div className="p-10 text-center text-muted-foreground"><Bell className="h-8 w-8 mx-auto mb-2 opacity-40" /> {tab === "archived" ? "No archived notifications." : "Nothing yet."}</div>
         )}
         {data?.map((n) => (
           <div key={n.id} className={`p-4 flex items-start gap-3 ${n.read_at ? "opacity-60" : ""}`}>
@@ -45,9 +86,17 @@ function NotificationsPage() {
               {n.body && <p className="text-sm text-muted-foreground">{n.body}</p>}
               <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}</p>
             </div>
-            {!n.read_at && (
-              <Button variant="ghost" size="sm" onClick={() => markOne.mutate(n.id)}><Check className="h-4 w-4" /></Button>
-            )}
+            <div className="flex gap-1">
+              {!n.read_at && !n.archived_at && (
+                <Button variant="ghost" size="sm" onClick={() => markOne.mutate(n.id)} title="Mark read"><Check className="h-4 w-4" /></Button>
+              )}
+              {!n.archived_at && (
+                <Button variant="ghost" size="sm" onClick={() => archiveOne.mutate(n.id)} title="Archive"><Archive className="h-4 w-4" /></Button>
+              )}
+              {n.archived_at && (
+                <Button variant="ghost" size="sm" onClick={() => unarchiveOne.mutate(n.id)} title="Restore"><ArchiveRestore className="h-4 w-4" /></Button>
+              )}
+            </div>
           </div>
         ))}
       </Card>
