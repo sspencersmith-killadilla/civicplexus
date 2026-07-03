@@ -235,6 +235,9 @@ function ApplicationsPanel() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">{r.status}</Badge>
+                  <Link to="/admin-officials/applications/$id" params={{ id: r.id }}>
+                    <Button size="sm" variant="outline">Open</Button>
+                  </Link>
                 </div>
               </div>
               {r.statement && <p className="text-xs whitespace-pre-wrap border-l-2 border-primary/40 pl-2">{r.statement}</p>}
