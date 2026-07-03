@@ -124,12 +124,41 @@ function Index() {
       </section>
 
       <footer className="border-t">
-        <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground flex flex-wrap justify-between items-center gap-4">
-          <p>© {new Date().getFullYear()} CivicPlexus. Built for public service.</p>
-          <div className="flex items-center gap-4">
-            <a href="/api/public/docs/user-guide" className="hover:text-foreground transition-colors">User Guide</a>
-            <a href="/api/public/docs/self-hosting" className="hover:text-foreground transition-colors">Self-Hosting Guide</a>
-            <Link to="/auth" className="hover:text-foreground transition-colors">Sign in</Link>
+        <div className="max-w-6xl mx-auto px-6 py-10 text-sm">
+          <div className="grid gap-8 md:grid-cols-4 mb-8">
+            <div>
+              <p className="font-semibold text-foreground mb-3">Apply & Hire</p>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><Link to="/serve/apply" className="hover:text-foreground">Job applications</Link></li>
+                <li><Link to="/serve" className="hover:text-foreground">Public portal home</Link></li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground mb-3">Volunteer</p>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><Link to="/serve/volunteer/jobs" className="hover:text-foreground">Open volunteer roles</Link></li>
+                <li><Link to="/serve/volunteer" className="hover:text-foreground">Volunteer sign-up</Link></li>
+                <li><Link to="/serve/volunteer/clock" className="hover:text-foreground">Volunteer clock in / out</Link></li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground mb-3">Vendors & Civic</p>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><Link to="/serve/vendor" className="hover:text-foreground">Vendor registration</Link></li>
+                <li><Link to="/serve/candidate-filing" className="hover:text-foreground">Candidate filing</Link></li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground mb-3">Resources</p>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><a href="/api/public/docs/user-guide" className="hover:text-foreground">User Guide</a></li>
+                <li><a href="/api/public/docs/self-hosting" className="hover:text-foreground">Self-Hosting Guide</a></li>
+                <li><Link to="/auth" className="hover:text-foreground">Sign in</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t pt-6 text-muted-foreground">
+            <p>© {new Date().getFullYear()} CivicPlexus. Built for public service.</p>
           </div>
         </div>
       </footer>
