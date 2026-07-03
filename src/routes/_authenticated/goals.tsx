@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Target, TrendingUp, GitBranch } from "lucide-react";
+import { Plus, Target, TrendingUp, GitBranch, ChevronDown, ChevronRight, Archive } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useServerFn } from "@tanstack/react-start";
@@ -119,10 +119,18 @@ function GoalsPage() {
       setCascadeOpen(false);
       setCascadeRows([{ owner_employee_id: "", title: "", weight: 1 }]);
       setCascadeParent("");
-      toast.success(`Cascaded ${r.inserted} goal(s)`);
+      toast.success(`Created ${r.inserted} subgoal(s)`);
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Cascade failed"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to create subgoals"),
   });
+
+  const openSubgoalDialog = (parentId: string) => {
+    setCascadeParent(parentId);
+    setCascadeRows([{ owner_employee_id: "", title: "", weight: 1 }]);
+    setCascadeOpen(true);
+  };
+
+  const [showArchived, setShowArchived] = useState(false);
 
   return (
     <AppShell title="Goals">
@@ -132,9 +140,9 @@ function GoalsPage() {
         </p>
         <div className="flex gap-2">
           <Dialog open={cascadeOpen} onOpenChange={setCascadeOpen}>
-            <DialogTrigger asChild><Button variant="outline"><GitBranch className="h-4 w-4 mr-2" /> Cascade</Button></DialogTrigger>
+            <DialogTrigger asChild><Button variant="outline"><GitBranch className="h-4 w-4 mr-2" /> Create subgoals</Button></DialogTrigger>
             <DialogContent className="max-w-2xl">
-              <DialogHeader><DialogTitle>Cascade from a parent goal</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>Create subgoals under a parent</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label>Parent goal</Label>
@@ -146,7 +154,7 @@ function GoalsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Child goals</Label>
+                  <Label>Subgoals</Label>
                   {cascadeRows.map((row, idx) => (
                     <div key={idx} className="grid grid-cols-12 gap-2">
                       <div className="col-span-4">
@@ -162,7 +170,7 @@ function GoalsPage() {
                   <Button size="sm" variant="ghost" onClick={() => setCascadeRows([...cascadeRows, { owner_employee_id: "", title: "", weight: 1 }])}>+ Add row</Button>
                 </div>
               </div>
-              <DialogFooter><Button disabled={doCascade.isPending} onClick={() => doCascade.mutate()}>{doCascade.isPending ? "Cascading…" : "Create children"}</Button></DialogFooter>
+              <DialogFooter><Button disabled={doCascade.isPending} onClick={() => doCascade.mutate()}>{doCascade.isPending ? "Creating…" : "Create subgoals"}</Button></DialogFooter>
             </DialogContent>
           </Dialog>
           <Dialog open={open} onOpenChange={setOpen}>
