@@ -75,10 +75,10 @@ function OfficialsAdmin() {
               const r = await exportClerkRosterCsv({ data: { include_history: true } });
               downloadCsv(r.csv, r.filename.replace(".csv", "-full-history.csv"));
             }}><Download className="h-4 w-4 mr-1" /> CSV (full history)</Button>
-            <Link to="/admin-officials/print"><Button size="sm" variant="outline"><Printer className="h-4 w-4 mr-1" /> PDF</Button></Link>
-            <Link to="/admin-officials/archive"><Button size="sm" variant="outline"><Archive className="h-4 w-4 mr-1" /> Archive</Button></Link>
-            <Link to="/admin-officials/onboarding-templates"><Button size="sm" variant="outline"><ClipboardList className="h-4 w-4 mr-1" /> Onboarding templates</Button></Link>
-            <Link to="/admin-officials/onboarding-report"><Button size="sm" variant="outline"><FileText className="h-4 w-4 mr-1" /> Onboarding report</Button></Link>
+            <Button asChild size="sm" variant="outline"><Link to="/admin-officials/print"><Printer className="h-4 w-4 mr-1" /> PDF</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link to="/admin-officials/archive"><Archive className="h-4 w-4 mr-1" /> Archive</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link to="/admin-officials/onboarding-templates"><ClipboardList className="h-4 w-4 mr-1" /> Onboarding templates</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link to="/admin-officials/onboarding-report"><FileText className="h-4 w-4 mr-1" /> Onboarding report</Link></Button>
             <BodyDialog onSaved={() => qc.invalidateQueries({ queryKey: ["officials-bodies"] })} />
           </div>
         </div>
@@ -213,9 +213,9 @@ function ApplicationsPanel() {
           </Select>
         </div>
         <div className="flex gap-2">
-          <Link to="/admin-officials/applications/compare">
-            <Button size="sm" variant="outline">Compare applicants</Button>
-          </Link>
+          <Button asChild size="sm" variant="outline">
+            <Link to="/admin-officials/applications/compare">Compare applicants</Link>
+          </Button>
           <Button size="sm" variant="outline" onClick={async () => {
             const r = await expFn(); downloadCsv(r.csv, r.filename);
           }}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
@@ -240,9 +240,9 @@ function ApplicationsPanel() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">{r.status}</Badge>
-                  <Link to="/admin-officials/applications/$id" params={{ id: r.id }}>
-                    <Button size="sm" variant="outline">Open</Button>
-                  </Link>
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/admin-officials/applications/$id" params={{ id: r.id }}>Open</Link>
+                  </Button>
                 </div>
               </div>
               {r.statement && <p className="text-xs whitespace-pre-wrap border-l-2 border-primary/40 pl-2">{r.statement}</p>}
