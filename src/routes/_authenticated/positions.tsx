@@ -32,6 +32,13 @@ type Position = {
   reports_to_position_id: string | null;
   status: string;
   notes: string | null;
+  default_summary?: string | null;
+  default_essential_functions?: string | null;
+  default_ksa?: string | null;
+  default_qualifications?: string | null;
+  default_physical_demands?: string | null;
+  default_supplemental?: string | null;
+  default_benefits?: string | null;
 };
 
 type Headcount = {
