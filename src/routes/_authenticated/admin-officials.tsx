@@ -212,9 +212,14 @@ function ApplicationsPanel() {
             </SelectContent>
           </Select>
         </div>
-        <Button size="sm" variant="outline" onClick={async () => {
-          const r = await expFn(); downloadCsv(r.csv, r.filename);
-        }}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
+        <div className="flex gap-2">
+          <Link to="/admin-officials/applications/compare">
+            <Button size="sm" variant="outline">Compare applicants</Button>
+          </Link>
+          <Button size="sm" variant="outline" onClick={async () => {
+            const r = await expFn(); downloadCsv(r.csv, r.filename);
+          }}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
+        </div>
       </div>
       {q.isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
       {!q.isLoading && shown.length === 0 && <p className="text-xs text-muted-foreground">No applications.</p>}
