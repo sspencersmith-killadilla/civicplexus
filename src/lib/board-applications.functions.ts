@@ -11,6 +11,15 @@ async function assertClerkOrHr(supabase: any, userId: string) {
   if (!data || data.length === 0) throw new Error("HR admin or City Clerk only");
 }
 
+async function isClerkOrHr(supabase: any, userId: string) {
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .in("role", ["hr_admin", "city_clerk"]);
+  return !!(data && data.length);
+}
+
 /** Public — list bodies currently accepting applications. */
 export const listBodiesAcceptingApplications = createServerFn({ method: "GET" }).handler(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
