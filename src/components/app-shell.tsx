@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LogOut, PanelLeftClose, PanelLeftOpen, Menu, ChevronDown, ChevronRight, Globe, Landmark, HandHeart, Briefcase, ExternalLink } from "lucide-react";
+import { LogOut, PanelLeftClose, PanelLeftOpen, Menu, ChevronDown, ChevronRight, Globe, Landmark, HandHeart, Briefcase, ExternalLink, FileText, Clock, Store, Vote, BookOpen, Server } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
@@ -74,6 +74,14 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     { to: "/officials", label: "Officials roster", icon: Landmark },
     { to: "/serve", label: "Serve on a board", icon: HandHeart },
     { to: "/careers", label: "Careers", icon: Briefcase },
+    { to: "/serve/apply", label: "Job applications", icon: FileText },
+    { to: "/serve/volunteer/jobs", label: "Volunteer roles", icon: HandHeart },
+    { to: "/serve/volunteer", label: "Volunteer sign-up", icon: HandHeart },
+    { to: "/serve/volunteer/clock", label: "Volunteer clock in/out", icon: Clock },
+    { to: "/serve/vendor", label: "Vendor registration", icon: Store },
+    { to: "/serve/candidate-filing", label: "Candidate filing", icon: Vote },
+    { to: "/api/public/docs/user-guide", label: "User Guide", icon: BookOpen },
+    { to: "/api/public/docs/self-hosting", label: "Self-Hosting Guide", icon: Server },
   ];
   const publicOpen = collapsed ? true : !collapsedGroups.has("__public__");
 
