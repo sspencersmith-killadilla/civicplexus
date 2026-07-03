@@ -6909,6 +6909,13 @@ export type Database = {
         Row: {
           budgeted_fte: number
           created_at: string
+          default_benefits: string | null
+          default_essential_functions: string | null
+          default_ksa: string | null
+          default_physical_demands: string | null
+          default_qualifications: string | null
+          default_summary: string | null
+          default_supplemental: string | null
           department: string | null
           flsa_class: string | null
           id: string
@@ -6926,6 +6933,13 @@ export type Database = {
         Insert: {
           budgeted_fte?: number
           created_at?: string
+          default_benefits?: string | null
+          default_essential_functions?: string | null
+          default_ksa?: string | null
+          default_physical_demands?: string | null
+          default_qualifications?: string | null
+          default_summary?: string | null
+          default_supplemental?: string | null
           department?: string | null
           flsa_class?: string | null
           id?: string
@@ -6943,6 +6957,13 @@ export type Database = {
         Update: {
           budgeted_fte?: number
           created_at?: string
+          default_benefits?: string | null
+          default_essential_functions?: string | null
+          default_ksa?: string | null
+          default_physical_demands?: string | null
+          default_qualifications?: string | null
+          default_summary?: string | null
+          default_supplemental?: string | null
           department?: string | null
           flsa_class?: string | null
           id?: string
