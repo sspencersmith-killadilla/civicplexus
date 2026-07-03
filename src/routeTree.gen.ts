@@ -70,6 +70,7 @@ import { Route as AuthenticatedCbaRouteImport } from './routes/_authenticated/cb
 import { Route as AuthenticatedBenefitsRouteImport } from './routes/_authenticated/benefits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
+import { Route as AuthenticatedAdminSqlReportsRouteImport } from './routes/_authenticated/admin-sql-reports'
 import { Route as AuthenticatedAdminPermissionsRouteImport } from './routes/_authenticated/admin-permissions'
 import { Route as AuthenticatedAdminOrgSettingsRouteImport } from './routes/_authenticated/admin-org-settings'
 import { Route as AuthenticatedAdminOfficialsRouteImport } from './routes/_authenticated/admin-officials'
@@ -482,6 +483,12 @@ const AuthenticatedApprovalsRoute = AuthenticatedApprovalsRouteImport.update({
   path: '/approvals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminSqlReportsRoute =
+  AuthenticatedAdminSqlReportsRouteImport.update({
+    id: '/admin-sql-reports',
+    path: '/admin-sql-reports',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminPermissionsRoute =
   AuthenticatedAdminPermissionsRouteImport.update({
     id: '/admin-permissions',
@@ -994,6 +1001,7 @@ export interface FileRoutesByFullPath {
   '/admin-officials': typeof AuthenticatedAdminOfficialsRouteWithChildren
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
+  '/admin-sql-reports': typeof AuthenticatedAdminSqlReportsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
@@ -1143,6 +1151,7 @@ export interface FileRoutesByTo {
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
+  '/admin-sql-reports': typeof AuthenticatedAdminSqlReportsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/benefits': typeof AuthenticatedBenefitsRoute
@@ -1291,6 +1300,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-officials': typeof AuthenticatedAdminOfficialsRouteWithChildren
   '/_authenticated/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/_authenticated/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
+  '/_authenticated/admin-sql-reports': typeof AuthenticatedAdminSqlReportsRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
@@ -1443,6 +1453,7 @@ export interface FileRouteTypes {
     | '/admin-officials'
     | '/admin-org-settings'
     | '/admin-permissions'
+    | '/admin-sql-reports'
     | '/approvals'
     | '/audit'
     | '/benefits'
@@ -1592,6 +1603,7 @@ export interface FileRouteTypes {
     | '/admin-modules'
     | '/admin-org-settings'
     | '/admin-permissions'
+    | '/admin-sql-reports'
     | '/approvals'
     | '/audit'
     | '/benefits'
@@ -1739,6 +1751,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-officials'
     | '/_authenticated/admin-org-settings'
     | '/_authenticated/admin-permissions'
+    | '/_authenticated/admin-sql-reports'
     | '/_authenticated/approvals'
     | '/_authenticated/audit'
     | '/_authenticated/benefits'
@@ -2350,6 +2363,13 @@ declare module '@tanstack/react-router' {
       path: '/approvals'
       fullPath: '/approvals'
       preLoaderRoute: typeof AuthenticatedApprovalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin-sql-reports': {
+      id: '/_authenticated/admin-sql-reports'
+      path: '/admin-sql-reports'
+      fullPath: '/admin-sql-reports'
+      preLoaderRoute: typeof AuthenticatedAdminSqlReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin-permissions': {
@@ -3061,6 +3081,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminOfficialsRoute: typeof AuthenticatedAdminOfficialsRouteWithChildren
   AuthenticatedAdminOrgSettingsRoute: typeof AuthenticatedAdminOrgSettingsRoute
   AuthenticatedAdminPermissionsRoute: typeof AuthenticatedAdminPermissionsRoute
+  AuthenticatedAdminSqlReportsRoute: typeof AuthenticatedAdminSqlReportsRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
@@ -3155,6 +3176,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedAdminOfficialsRouteWithChildren,
   AuthenticatedAdminOrgSettingsRoute: AuthenticatedAdminOrgSettingsRoute,
   AuthenticatedAdminPermissionsRoute: AuthenticatedAdminPermissionsRoute,
+  AuthenticatedAdminSqlReportsRoute: AuthenticatedAdminSqlReportsRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,

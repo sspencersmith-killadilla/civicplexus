@@ -7196,6 +7196,62 @@ export type Database = {
           },
         ]
       }
+      report_favorites: {
+        Row: {
+          created_at: string
+          report_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          report_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          report_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_favorites_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "saved_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_query_log: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          id: string
+          row_count: number | null
+          sql: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          row_count?: number | null
+          sql: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          row_count?: number | null
+          sql?: string
+        }
+        Relationships: []
+      }
       report_snapshots: {
         Row: {
           artifact_url: string | null
@@ -7417,6 +7473,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      saved_reports: {
+        Row: {
+          builder_state: Json | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_shared: boolean
+          name: string
+          sql: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          builder_state?: Json | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_shared?: boolean
+          name: string
+          sql: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          builder_state?: Json | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_shared?: boolean
+          name?: string
+          sql?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
       }
       schedule_patterns: {
         Row: {
@@ -9055,6 +9150,7 @@ export type Database = {
           source: string
         }[]
       }
+      get_report_schema: { Args: never; Returns: Json }
       has_permission: { Args: { _key: string }; Returns: boolean }
       hr_set_employee_status: {
         Args: {
@@ -9118,6 +9214,7 @@ export type Database = {
         Returns: string
       }
       restore_demo_changes: { Args: never; Returns: Json }
+      run_report_sql: { Args: { _limit?: number; _sql: string }; Returns: Json }
       update_my_employee_contact: {
         Args: { _personal_email?: string; _phone?: string }
         Returns: undefined
