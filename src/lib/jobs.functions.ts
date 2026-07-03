@@ -378,6 +378,9 @@ export const applyInternally = createServerFn({ method: "POST" })
     requisition_id: z.string().uuid(),
     cover_letter: z.string().trim().max(20000).optional(),
     notify_current_manager: z.boolean().default(true),
+    resume_snapshot: z.unknown().optional(),
+    supplemental_answers: z.record(z.string(), z.unknown()).optional(),
+    confidential_until_finalist: z.boolean().default(false),
   }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: emp, error: eErr } = await context.supabase
@@ -393,7 +396,10 @@ export const applyInternally = createServerFn({ method: "POST" })
         cover_letter: data.cover_letter ?? null,
         is_internal: true,
         internal_employee_id: emp.id,
-        notify_current_manager: data.notify_current_manager,
+        notify_current_manager: data.notify_current_manager && !data.confidential_until_finalist,
+        confidential_until_finalist: data.confidential_until_finalist,
+        internal_resume_snapshot: data.resume_snapshot ?? null,
+        supplemental_answers: data.supplemental_answers ?? null,
         source: "internal",
       } as never).select().single();
     if (error) throw new Error(error.message);
