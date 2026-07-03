@@ -8,6 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Bell, Check, CheckCheck, Archive, ArchiveRestore } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/notifications")({ component: NotificationsPage });
 
@@ -32,9 +38,22 @@ function NotificationsPage() {
   const archiveAll = useMutation({
     mutationFn: async () => {
       const now = new Date().toISOString();
-      await supabase.from("notifications").update({ read_at: now, archived_at: now }).is("archived_at", null);
+      const { data: rows, error } = await supabase
+        .from("notifications")
+        .update({ read_at: now, archived_at: now })
+        .is("archived_at", null)
+        .select("id");
+      if (error) throw error;
+      return rows?.length ?? 0;
     },
-    onSuccess: invalidate,
+    onSuccess: (count) => {
+      invalidate();
+      toast.success(
+        count ? `Archived ${count} notification${count === 1 ? "" : "s"}` : "Nothing to archive",
+        count ? { description: "Find them under the Archived tab to restore." } : undefined,
+      );
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Archive failed"),
   });
   const markOne = useMutation({
     mutationFn: async (id: string) => { await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id); },
@@ -69,7 +88,23 @@ function NotificationsPage() {
         {tab === "active" && (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => markAll.mutate()}><CheckCheck className="h-4 w-4 mr-2" /> Mark all read</Button>
-            <Button variant="outline" size="sm" onClick={() => archiveAll.mutate()}><Archive className="h-4 w-4 mr-2" /> Archive all</Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm"><Archive className="h-4 w-4 mr-2" /> Archive all</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Archive all notifications?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This marks every notification as read and moves it to the Archived tab. You can restore any of them later from there.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => archiveAll.mutate()}>Archive all</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         )}
       </div>
