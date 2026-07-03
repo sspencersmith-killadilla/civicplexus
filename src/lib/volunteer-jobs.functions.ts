@@ -219,6 +219,11 @@ export const kioskClock = createServerFn({ method: "POST" })
     action: z.enum(["in", "out"]),
   }).parse(i))
   .handler(async ({ data, context }) => {
+    const { data: signup } = await context.supabase
+      .from("volunteer_shift_signups").select("status").eq("id", data.signup_id).maybeSingle();
+    if (!signup || (signup as { status: string }).status !== "approved") {
+      throw new Error("Applicant is not approved for this shift yet");
+    }
     if (data.action === "in") {
       const { error } = await context.supabase.from("volunteer_clock_events").insert({
         signup_id: data.signup_id, method: "kiosk", logged_by: context.userId,
@@ -232,4 +237,70 @@ export const kioskClock = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
     }
     return { ok: true };
+  });
+
+export type TimesheetEntry = {
+  signup_id: string;
+  volunteer_name: string;
+  applicant_email: string | null;
+  job_title: string;
+  shift_starts_at: string | null;
+  shift_ends_at: string | null;
+  clock_in: string;
+  clock_out: string | null;
+  hours: number;
+  method: string;
+  notes: string | null;
+};
+
+/** Coordinator — generate a timesheet from clock events across a date range. */
+export const generateVolunteerTimesheet = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({
+    from: z.string(),
+    to: z.string(),
+    job_id: z.string().uuid().nullable().optional(),
+    include_open: z.boolean().default(false),
+  }).parse(i))
+  .handler(async ({ data, context }): Promise<{ entries: TimesheetEntry[]; totals: { total_hours: number; total_sessions: number; unique_volunteers: number } }> => {
+    let query = context.supabase
+      .from("volunteer_clock_events")
+      .select("id, clock_in, clock_out, method, notes, signup:volunteer_shift_signups(id, applicant_first_name, applicant_last_name, applicant_email, shift:volunteer_shifts(starts_at, ends_at, job_id, volunteer_jobs(title)))")
+      .gte("clock_in", data.from)
+      .lte("clock_in", data.to)
+      .order("clock_in", { ascending: true });
+    if (!data.include_open) query = query.not("clock_out", "is", null);
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+
+    type Row = {
+      id: string; clock_in: string; clock_out: string | null; method: string; notes: string | null;
+      signup: {
+        id: string; applicant_first_name: string; applicant_last_name: string; applicant_email: string | null;
+        shift: { starts_at: string | null; ends_at: string | null; job_id: string; volunteer_jobs: { title: string } | null } | null;
+      } | null;
+    };
+    const filtered = ((rows ?? []) as unknown as Row[]).filter((r) => !data.job_id || r.signup?.shift?.job_id === data.job_id);
+
+    const entries: TimesheetEntry[] = filtered.map((r) => {
+      const start = new Date(r.clock_in).getTime();
+      const end = r.clock_out ? new Date(r.clock_out).getTime() : Date.now();
+      const hours = Math.max(0, Math.round(((end - start) / 3600000) * 100) / 100);
+      return {
+        signup_id: r.signup?.id ?? "",
+        volunteer_name: r.signup ? `${r.signup.applicant_first_name} ${r.signup.applicant_last_name}` : "—",
+        applicant_email: r.signup?.applicant_email ?? null,
+        job_title: r.signup?.shift?.volunteer_jobs?.title ?? "—",
+        shift_starts_at: r.signup?.shift?.starts_at ?? null,
+        shift_ends_at: r.signup?.shift?.ends_at ?? null,
+        clock_in: r.clock_in,
+        clock_out: r.clock_out,
+        hours,
+        method: r.method,
+        notes: r.notes,
+      };
+    });
+    const total_hours = Math.round(entries.reduce((s, e) => s + e.hours, 0) * 100) / 100;
+    const unique_volunteers = new Set(entries.map((e) => e.signup_id).filter(Boolean)).size;
+    return { entries, totals: { total_hours, total_sessions: entries.length, unique_volunteers } };
   });
