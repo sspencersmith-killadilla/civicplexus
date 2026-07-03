@@ -12,13 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, CalendarPlus, Trash2, Check, X, KeyRound } from "lucide-react";
+import { Plus, CalendarPlus, Trash2, Check, X, KeyRound, FileText, Download, Printer } from "lucide-react";
 import { toast } from "sonner";
 import {
   listVolunteerJobs, upsertVolunteerJob, deleteVolunteerJob,
   listShiftsForJob, upsertShift, deleteShift,
   listAllSignups, decideSignup, listClockEvents,
-  kioskSearchSignups, kioskClock,
+  kioskSearchSignups, kioskClock, generateVolunteerTimesheet, type TimesheetEntry,
 } from "@/lib/volunteer-jobs.functions";
 
 export const Route = createFileRoute("/_authenticated/volunteer-jobs")({
@@ -155,9 +155,170 @@ function VolunteerJobsAdmin() {
         </div>
       </Card>
 
+      <TimesheetSection jobs={(jobs ?? []) as Array<{ id: string; title: string }>} />
+
       {shiftsFor && <ShiftsDialog job={shiftsFor} onClose={() => setShiftsFor(null)} />}
       {kioskOpen && <KioskDialog onClose={() => setKioskOpen(false)} />}
     </AppShell>
+  );
+}
+
+function toIsoStart(d: string) { return new Date(d + "T00:00:00").toISOString(); }
+function toIsoEnd(d: string) { return new Date(d + "T23:59:59.999").toISOString(); }
+function fmtDT(iso: string | null) { return iso ? new Date(iso).toLocaleString() : "—"; }
+
+function csvEscape(v: unknown) {
+  const s = v === null || v === undefined ? "" : String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function downloadCsv(entries: TimesheetEntry[], from: string, to: string) {
+  const header = ["Volunteer", "Email", "Job", "Clock in", "Clock out", "Hours", "Method", "Notes"];
+  const rows = entries.map((e) => [e.volunteer_name, e.applicant_email ?? "", e.job_title, fmtDT(e.clock_in), fmtDT(e.clock_out), e.hours.toFixed(2), e.method, e.notes ?? ""]);
+  const csv = [header, ...rows].map((r) => r.map(csvEscape).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `volunteer-timesheet-${from}_to_${to}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function printPdf(entries: TimesheetEntry[], totals: { total_hours: number; total_sessions: number; unique_volunteers: number }, from: string, to: string, jobLabel: string) {
+  const w = window.open("", "_blank", "width=900,height=700");
+  if (!w) { toast.error("Popup blocked — allow popups to export PDF"); return; }
+  const html = `<!doctype html><html><head><title>Volunteer Timesheet ${from} to ${to}</title>
+    <style>
+      body{font-family:system-ui,-apple-system,sans-serif;color:#111;margin:32px;font-size:12px}
+      h1{font-size:18px;margin:0 0 4px}
+      .meta{color:#555;margin-bottom:16px}
+      .totals{display:flex;gap:24px;margin:12px 0 20px;padding:12px;background:#f5f5f5;border-radius:6px}
+      .totals div{font-size:11px;color:#555}
+      .totals strong{display:block;font-size:16px;color:#111;margin-top:2px}
+      table{width:100%;border-collapse:collapse}
+      th,td{padding:6px 8px;text-align:left;border-bottom:1px solid #ddd;vertical-align:top}
+      th{background:#f8f8f8;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#555}
+      tr:nth-child(even) td{background:#fafafa}
+      @media print{body{margin:16mm}}
+    </style></head><body>
+    <h1>Volunteer Timesheet</h1>
+    <div class="meta">${from} → ${to} · ${jobLabel} · Generated ${new Date().toLocaleString()}</div>
+    <div class="totals">
+      <div>Total hours <strong>${totals.total_hours.toFixed(2)}</strong></div>
+      <div>Sessions <strong>${totals.total_sessions}</strong></div>
+      <div>Volunteers <strong>${totals.unique_volunteers}</strong></div>
+    </div>
+    <table><thead><tr><th>Volunteer</th><th>Job</th><th>Clock in</th><th>Clock out</th><th>Hours</th><th>Method</th></tr></thead><tbody>
+    ${entries.map((e) => `<tr><td>${escapeHtml(e.volunteer_name)}${e.applicant_email ? `<div style="color:#888;font-size:10px">${escapeHtml(e.applicant_email)}</div>` : ""}</td><td>${escapeHtml(e.job_title)}</td><td>${escapeHtml(fmtDT(e.clock_in))}</td><td>${escapeHtml(fmtDT(e.clock_out))}</td><td>${e.hours.toFixed(2)}</td><td>${escapeHtml(e.method)}</td></tr>`).join("")}
+    ${entries.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:#888;padding:20px">No clock entries in this range.</td></tr>' : ""}
+    </tbody></table>
+    <script>window.onload=()=>{window.focus();window.print();}</script>
+    </body></html>`;
+  w.document.write(html);
+  w.document.close();
+}
+
+function escapeHtml(s: string) { return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!)); }
+
+function TimesheetSection({ jobs }: { jobs: Array<{ id: string; title: string }> }) {
+  const generate = useServerFn(generateVolunteerTimesheet);
+  const today = new Date();
+  const twoWeeksAgo = new Date(today.getTime() - 13 * 86400000);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const [from, setFrom] = useState(iso(twoWeeksAgo));
+  const [to, setTo] = useState(iso(today));
+  const [jobId, setJobId] = useState<string>("");
+  const [includeOpen, setIncludeOpen] = useState(false);
+  const [result, setResult] = useState<{ entries: TimesheetEntry[]; totals: { total_hours: number; total_sessions: number; unique_volunteers: number } } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function run() {
+    setLoading(true);
+    try {
+      const r = await generate({ data: { from: toIsoStart(from), to: toIsoEnd(to), job_id: jobId || null, include_open: includeOpen } });
+      setResult(r);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to generate");
+    } finally { setLoading(false); }
+  }
+
+  const jobLabel = jobId ? (jobs.find((j) => j.id === jobId)?.title ?? "Job") : "All jobs";
+
+  return (
+    <>
+      <h2 className="mt-10 mb-3 text-lg font-semibold flex items-center gap-2"><FileText className="h-5 w-5" /> Timesheets</h2>
+      <Card className="p-4 space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-5 items-end">
+          <div>
+            <Label className="text-xs">From</Label>
+            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-xs">To</Label>
+            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-xs">Job (optional)</Label>
+            <select className="w-full border rounded h-9 px-2 bg-background text-sm" value={jobId} onChange={(e) => setJobId(e.target.value)}>
+              <option value="">All jobs</option>
+              {jobs.map((j) => <option key={j.id} value={j.id}>{j.title}</option>)}
+            </select>
+          </div>
+          <label className="flex items-center gap-2 text-sm pb-2">
+            <input type="checkbox" checked={includeOpen} onChange={(e) => setIncludeOpen(e.target.checked)} />
+            Include open sessions
+          </label>
+          <Button onClick={run} disabled={loading}>{loading ? "Generating…" : "Generate timesheet"}</Button>
+        </div>
+
+        {result && (
+          <>
+            <div className="flex flex-wrap gap-4 items-center pt-2 border-t">
+              <div className="text-sm"><span className="text-muted-foreground">Total hours: </span><span className="font-semibold">{result.totals.total_hours.toFixed(2)}</span></div>
+              <div className="text-sm"><span className="text-muted-foreground">Sessions: </span><span className="font-semibold">{result.totals.total_sessions}</span></div>
+              <div className="text-sm"><span className="text-muted-foreground">Volunteers: </span><span className="font-semibold">{result.totals.unique_volunteers}</span></div>
+              <div className="ml-auto flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => downloadCsv(result.entries, from, to)} disabled={result.entries.length === 0}>
+                  <Download className="h-4 w-4 mr-1" /> CSV
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => printPdf(result.entries, result.totals, from, to, jobLabel)} disabled={result.entries.length === 0}>
+                  <Printer className="h-4 w-4 mr-1" /> PDF
+                </Button>
+              </div>
+            </div>
+            <div className="max-h-96 overflow-auto border rounded">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 sticky top-0">
+                  <tr>
+                    <th className="text-left p-2">Volunteer</th>
+                    <th className="text-left p-2">Job</th>
+                    <th className="text-left p-2">Clock in</th>
+                    <th className="text-left p-2">Clock out</th>
+                    <th className="text-right p-2">Hours</th>
+                    <th className="text-left p-2">Method</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.entries.map((e, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="p-2">{e.volunteer_name}{e.applicant_email && <div className="text-xs text-muted-foreground">{e.applicant_email}</div>}</td>
+                      <td className="p-2">{e.job_title}</td>
+                      <td className="p-2">{fmtDT(e.clock_in)}</td>
+                      <td className="p-2">{e.clock_out ? fmtDT(e.clock_out) : <span className="text-amber-700">in progress</span>}</td>
+                      <td className="p-2 text-right font-mono">{e.hours.toFixed(2)}</td>
+                      <td className="p-2">{e.method}</td>
+                    </tr>
+                  ))}
+                  {result.entries.length === 0 && (
+                    <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">No entries in this range.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+        {!result && <p className="text-xs text-muted-foreground">Pick a date range and click Generate. Only closed clock-out sessions count toward totals unless you include open ones.</p>}
+      </Card>
+    </>
   );
 }
 
