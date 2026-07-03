@@ -40,6 +40,7 @@ import { Route as AuthenticatedProvisioningRouteImport } from './routes/_authent
 import { Route as AuthenticatedPreboardingRouteImport } from './routes/_authenticated/preboarding'
 import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
 import { Route as AuthenticatedPolicyCampaignsRouteImport } from './routes/_authenticated/policy-campaigns'
+import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedOshaRouteImport } from './routes/_authenticated/osha'
 import { Route as AuthenticatedOrgChartRouteImport } from './routes/_authenticated/org-chart'
 import { Route as AuthenticatedOneOnOneTemplatesRouteImport } from './routes/_authenticated/one-on-one-templates'
@@ -71,6 +72,7 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedAdminPermissionsRouteImport } from './routes/_authenticated/admin-permissions'
 import { Route as AuthenticatedAdminOrgSettingsRouteImport } from './routes/_authenticated/admin-org-settings'
+import { Route as AuthenticatedAdminOfficialsRouteImport } from './routes/_authenticated/admin-officials'
 import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authenticated/admin-modules'
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
 import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authenticated/admin-identity'
@@ -107,6 +109,7 @@ import { Route as ApiPublicBoardApplicationsRouteImport } from './routes/api/pub
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
+import { Route as AuthenticatedReviewCyclesIdRouteImport } from './routes/_authenticated/review-cycles.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
 import { Route as AuthenticatedPayrollProfilesRouteImport } from './routes/_authenticated/payroll.profiles'
 import { Route as AuthenticatedPayrollIdRouteImport } from './routes/_authenticated/payroll.$id'
@@ -114,6 +117,7 @@ import { Route as AuthenticatedPafIdRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
 import { Route as AuthenticatedLeaveIdRouteImport } from './routes/_authenticated/leave.$id'
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
+import { Route as AuthenticatedInterviewsIdRouteImport } from './routes/_authenticated/interviews.$id'
 import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
@@ -317,6 +321,11 @@ const AuthenticatedPolicyCampaignsRoute =
     path: '/policy-campaigns',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
+  id: '/policies',
+  path: '/policies',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOshaRoute = AuthenticatedOshaRouteImport.update({
   id: '/osha',
   path: '/osha',
@@ -485,6 +494,12 @@ const AuthenticatedAdminOrgSettingsRoute =
     path: '/admin-org-settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminOfficialsRoute =
+  AuthenticatedAdminOfficialsRouteImport.update({
+    id: '/admin-officials',
+    path: '/admin-officials',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminModulesRoute =
   AuthenticatedAdminModulesRouteImport.update({
     id: '/admin-modules',
@@ -538,9 +553,9 @@ const AuthenticatedReviewCyclesIndexRoute =
   } as any)
 const AuthenticatedPoliciesIndexRoute =
   AuthenticatedPoliciesIndexRouteImport.update({
-    id: '/policies/',
-    path: '/policies/',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedPoliciesRoute,
   } as any)
 const AuthenticatedPayrollIndexRoute =
   AuthenticatedPayrollIndexRouteImport.update({
@@ -612,9 +627,9 @@ const AuthenticatedCascadesIndexRoute =
   } as any)
 const AuthenticatedAdminOfficialsIndexRoute =
   AuthenticatedAdminOfficialsIndexRouteImport.update({
-    id: '/admin-officials/',
-    path: '/admin-officials/',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
 const ServeVolunteerJobsRoute = ServeVolunteerJobsRouteImport.update({
   id: '/jobs',
@@ -686,10 +701,16 @@ const AuthenticatedReviewsIdRoute = AuthenticatedReviewsIdRouteImport.update({
   path: '/reviews/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReviewCyclesIdRoute =
+  AuthenticatedReviewCyclesIdRouteImport.update({
+    id: '/review-cycles/$id',
+    path: '/review-cycles/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPoliciesIdRoute = AuthenticatedPoliciesIdRouteImport.update({
-  id: '/policies/$id',
-  path: '/policies/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedPoliciesRoute,
 } as any)
 const AuthenticatedPayrollProfilesRoute =
   AuthenticatedPayrollProfilesRouteImport.update({
@@ -723,6 +744,12 @@ const AuthenticatedJobsIdRoute = AuthenticatedJobsIdRouteImport.update({
   path: '/jobs/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInterviewsIdRoute =
+  AuthenticatedInterviewsIdRouteImport.update({
+    id: '/interviews/$id',
+    path: '/interviews/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedGrievancesIdRoute =
   AuthenticatedGrievancesIdRouteImport.update({
     id: '/grievances/$id',
@@ -783,39 +810,39 @@ const AuthenticatedAdminApplicationTemplateRoute =
   } as any)
 const AuthenticatedAdminOfficialsPrintRoute =
   AuthenticatedAdminOfficialsPrintRouteImport.update({
-    id: '/admin-officials/print',
-    path: '/admin-officials/print',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/print',
+    path: '/print',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
 const AuthenticatedAdminOfficialsOnboardingTemplatesRoute =
   AuthenticatedAdminOfficialsOnboardingTemplatesRouteImport.update({
-    id: '/admin-officials/onboarding-templates',
-    path: '/admin-officials/onboarding-templates',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/onboarding-templates',
+    path: '/onboarding-templates',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
 const AuthenticatedAdminOfficialsOnboardingReportRoute =
   AuthenticatedAdminOfficialsOnboardingReportRouteImport.update({
-    id: '/admin-officials/onboarding-report',
-    path: '/admin-officials/onboarding-report',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/onboarding-report',
+    path: '/onboarding-report',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
 const AuthenticatedAdminOfficialsArchiveRoute =
   AuthenticatedAdminOfficialsArchiveRouteImport.update({
-    id: '/admin-officials/archive',
-    path: '/admin-officials/archive',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/archive',
+    path: '/archive',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
 const AuthenticatedReviewCyclesIdIndexRoute =
   AuthenticatedReviewCyclesIdIndexRouteImport.update({
-    id: '/review-cycles/$id/',
-    path: '/review-cycles/$id/',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedReviewCyclesIdRoute,
   } as any)
 const AuthenticatedInterviewsIdIndexRoute =
   AuthenticatedInterviewsIdIndexRouteImport.update({
-    id: '/interviews/$id/',
-    path: '/interviews/$id/',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedInterviewsIdRoute,
   } as any)
 const ServeVolunteerJobsSlugRoute = ServeVolunteerJobsSlugRouteImport.update({
   id: '/$slug',
@@ -856,9 +883,9 @@ const ApiPublicBadgeSerialRoute = ApiPublicBadgeSerialRouteImport.update({
 } as any)
 const AuthenticatedReviewCyclesIdCalibrationRoute =
   AuthenticatedReviewCyclesIdCalibrationRouteImport.update({
-    id: '/review-cycles/$id/calibration',
-    path: '/review-cycles/$id/calibration',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/calibration',
+    path: '/calibration',
+    getParentRoute: () => AuthenticatedReviewCyclesIdRoute,
   } as any)
 const AuthenticatedInterviewsAsyncIdRoute =
   AuthenticatedInterviewsAsyncIdRouteImport.update({
@@ -868,21 +895,21 @@ const AuthenticatedInterviewsAsyncIdRoute =
   } as any)
 const AuthenticatedInterviewsIdRoomRoute =
   AuthenticatedInterviewsIdRoomRouteImport.update({
-    id: '/interviews/$id/room',
-    path: '/interviews/$id/room',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/room',
+    path: '/room',
+    getParentRoute: () => AuthenticatedInterviewsIdRoute,
   } as any)
 const AuthenticatedAdminOfficialsApplicationsCompareRoute =
   AuthenticatedAdminOfficialsApplicationsCompareRouteImport.update({
-    id: '/admin-officials/applications/compare',
-    path: '/admin-officials/applications/compare',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/applications/compare',
+    path: '/applications/compare',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
 const AuthenticatedAdminOfficialsApplicationsIdRoute =
   AuthenticatedAdminOfficialsApplicationsIdRouteImport.update({
-    id: '/admin-officials/applications/$id',
-    path: '/admin-officials/applications/$id',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/applications/$id',
+    path: '/applications/$id',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
   } as any)
 const ApiPublicScimV2UsersRoute = ApiPublicScimV2UsersRouteImport.update({
   id: '/api/public/scim/v2/Users',
@@ -964,6 +991,7 @@ export interface FileRoutesByFullPath {
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
+  '/admin-officials': typeof AuthenticatedAdminOfficialsRouteWithChildren
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -995,6 +1023,7 @@ export interface FileRoutesByFullPath {
   '/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/org-chart': typeof AuthenticatedOrgChartRoute
   '/osha': typeof AuthenticatedOshaRoute
+  '/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/preboarding': typeof AuthenticatedPreboardingRoute
@@ -1036,6 +1065,7 @@ export interface FileRoutesByFullPath {
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
+  '/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -1043,6 +1073,7 @@ export interface FileRoutesByFullPath {
   '/payroll/$id': typeof AuthenticatedPayrollIdRoute
   '/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
+  '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -1257,6 +1288,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/_authenticated/admin-modules': typeof AuthenticatedAdminModulesRoute
+  '/_authenticated/admin-officials': typeof AuthenticatedAdminOfficialsRouteWithChildren
   '/_authenticated/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
   '/_authenticated/admin-permissions': typeof AuthenticatedAdminPermissionsRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
@@ -1288,6 +1320,7 @@ export interface FileRoutesById {
   '/_authenticated/one-on-one-templates': typeof AuthenticatedOneOnOneTemplatesRoute
   '/_authenticated/org-chart': typeof AuthenticatedOrgChartRoute
   '/_authenticated/osha': typeof AuthenticatedOshaRoute
+  '/_authenticated/policies': typeof AuthenticatedPoliciesRouteWithChildren
   '/_authenticated/policy-campaigns': typeof AuthenticatedPolicyCampaignsRoute
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
   '/_authenticated/preboarding': typeof AuthenticatedPreboardingRoute
@@ -1329,6 +1362,7 @@ export interface FileRoutesById {
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
+  '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/_authenticated/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -1336,6 +1370,7 @@ export interface FileRoutesById {
   '/_authenticated/payroll/$id': typeof AuthenticatedPayrollIdRoute
   '/_authenticated/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
+  '/_authenticated/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
@@ -1405,6 +1440,7 @@ export interface FileRouteTypes {
     | '/admin-identity'
     | '/admin-migration'
     | '/admin-modules'
+    | '/admin-officials'
     | '/admin-org-settings'
     | '/admin-permissions'
     | '/approvals'
@@ -1436,6 +1472,7 @@ export interface FileRouteTypes {
     | '/one-on-one-templates'
     | '/org-chart'
     | '/osha'
+    | '/policies'
     | '/policy-campaigns'
     | '/positions'
     | '/preboarding'
@@ -1477,6 +1514,7 @@ export interface FileRouteTypes {
     | '/employees/import'
     | '/forms/$key'
     | '/grievances/$id'
+    | '/interviews/$id'
     | '/jobs/$id'
     | '/leave/$id'
     | '/one-on-ones/$id'
@@ -1484,6 +1522,7 @@ export interface FileRouteTypes {
     | '/payroll/$id'
     | '/payroll/profiles'
     | '/policies/$id'
+    | '/review-cycles/$id'
     | '/reviews/$id'
     | '/templates/$id'
     | '/transcript/$employeeId'
@@ -1697,6 +1736,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-identity'
     | '/_authenticated/admin-migration'
     | '/_authenticated/admin-modules'
+    | '/_authenticated/admin-officials'
     | '/_authenticated/admin-org-settings'
     | '/_authenticated/admin-permissions'
     | '/_authenticated/approvals'
@@ -1728,6 +1768,7 @@ export interface FileRouteTypes {
     | '/_authenticated/one-on-one-templates'
     | '/_authenticated/org-chart'
     | '/_authenticated/osha'
+    | '/_authenticated/policies'
     | '/_authenticated/policy-campaigns'
     | '/_authenticated/positions'
     | '/_authenticated/preboarding'
@@ -1769,6 +1810,7 @@ export interface FileRouteTypes {
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
     | '/_authenticated/grievances/$id'
+    | '/_authenticated/interviews/$id'
     | '/_authenticated/jobs/$id'
     | '/_authenticated/leave/$id'
     | '/_authenticated/one-on-ones/$id'
@@ -1776,6 +1818,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payroll/$id'
     | '/_authenticated/payroll/profiles'
     | '/_authenticated/policies/$id'
+    | '/_authenticated/review-cycles/$id'
     | '/_authenticated/reviews/$id'
     | '/_authenticated/templates/$id'
     | '/_authenticated/transcript/$employeeId'
@@ -2099,6 +2142,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPolicyCampaignsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/policies': {
+      id: '/_authenticated/policies'
+      path: '/policies'
+      fullPath: '/policies'
+      preLoaderRoute: typeof AuthenticatedPoliciesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/osha': {
       id: '/_authenticated/osha'
       path: '/osha'
@@ -2316,6 +2366,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrgSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin-officials': {
+      id: '/_authenticated/admin-officials'
+      path: '/admin-officials'
+      fullPath: '/admin-officials'
+      preLoaderRoute: typeof AuthenticatedAdminOfficialsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin-modules': {
       id: '/_authenticated/admin-modules'
       path: '/admin-modules'
@@ -2381,10 +2438,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/policies/': {
       id: '/_authenticated/policies/'
-      path: '/policies'
+      path: '/'
       fullPath: '/policies/'
       preLoaderRoute: typeof AuthenticatedPoliciesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedPoliciesRoute
     }
     '/_authenticated/payroll/': {
       id: '/_authenticated/payroll/'
@@ -2472,10 +2529,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/admin-officials/': {
       id: '/_authenticated/admin-officials/'
-      path: '/admin-officials'
+      path: '/'
       fullPath: '/admin-officials/'
       preLoaderRoute: typeof AuthenticatedAdminOfficialsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
     '/serve/volunteer/jobs': {
       id: '/serve/volunteer/jobs'
@@ -2568,12 +2625,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/review-cycles/$id': {
+      id: '/_authenticated/review-cycles/$id'
+      path: '/review-cycles/$id'
+      fullPath: '/review-cycles/$id'
+      preLoaderRoute: typeof AuthenticatedReviewCyclesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/policies/$id': {
       id: '/_authenticated/policies/$id'
-      path: '/policies/$id'
+      path: '/$id'
       fullPath: '/policies/$id'
       preLoaderRoute: typeof AuthenticatedPoliciesIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedPoliciesRoute
     }
     '/_authenticated/payroll/profiles': {
       id: '/_authenticated/payroll/profiles'
@@ -2615,6 +2679,13 @@ declare module '@tanstack/react-router' {
       path: '/jobs/$id'
       fullPath: '/jobs/$id'
       preLoaderRoute: typeof AuthenticatedJobsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/interviews/$id': {
+      id: '/_authenticated/interviews/$id'
+      path: '/interviews/$id'
+      fullPath: '/interviews/$id'
+      preLoaderRoute: typeof AuthenticatedInterviewsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/grievances/$id': {
@@ -2689,45 +2760,45 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/admin-officials/print': {
       id: '/_authenticated/admin-officials/print'
-      path: '/admin-officials/print'
+      path: '/print'
       fullPath: '/admin-officials/print'
       preLoaderRoute: typeof AuthenticatedAdminOfficialsPrintRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
     '/_authenticated/admin-officials/onboarding-templates': {
       id: '/_authenticated/admin-officials/onboarding-templates'
-      path: '/admin-officials/onboarding-templates'
+      path: '/onboarding-templates'
       fullPath: '/admin-officials/onboarding-templates'
       preLoaderRoute: typeof AuthenticatedAdminOfficialsOnboardingTemplatesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
     '/_authenticated/admin-officials/onboarding-report': {
       id: '/_authenticated/admin-officials/onboarding-report'
-      path: '/admin-officials/onboarding-report'
+      path: '/onboarding-report'
       fullPath: '/admin-officials/onboarding-report'
       preLoaderRoute: typeof AuthenticatedAdminOfficialsOnboardingReportRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
     '/_authenticated/admin-officials/archive': {
       id: '/_authenticated/admin-officials/archive'
-      path: '/admin-officials/archive'
+      path: '/archive'
       fullPath: '/admin-officials/archive'
       preLoaderRoute: typeof AuthenticatedAdminOfficialsArchiveRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
     '/_authenticated/review-cycles/$id/': {
       id: '/_authenticated/review-cycles/$id/'
-      path: '/review-cycles/$id'
+      path: '/'
       fullPath: '/review-cycles/$id/'
       preLoaderRoute: typeof AuthenticatedReviewCyclesIdIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedReviewCyclesIdRoute
     }
     '/_authenticated/interviews/$id/': {
       id: '/_authenticated/interviews/$id/'
-      path: '/interviews/$id'
+      path: '/'
       fullPath: '/interviews/$id/'
       preLoaderRoute: typeof AuthenticatedInterviewsIdIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedInterviewsIdRoute
     }
     '/serve/volunteer/jobs/$slug': {
       id: '/serve/volunteer/jobs/$slug'
@@ -2780,10 +2851,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/review-cycles/$id/calibration': {
       id: '/_authenticated/review-cycles/$id/calibration'
-      path: '/review-cycles/$id/calibration'
+      path: '/calibration'
       fullPath: '/review-cycles/$id/calibration'
       preLoaderRoute: typeof AuthenticatedReviewCyclesIdCalibrationRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedReviewCyclesIdRoute
     }
     '/_authenticated/interviews/async/$id': {
       id: '/_authenticated/interviews/async/$id'
@@ -2794,24 +2865,24 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/interviews/$id/room': {
       id: '/_authenticated/interviews/$id/room'
-      path: '/interviews/$id/room'
+      path: '/room'
       fullPath: '/interviews/$id/room'
       preLoaderRoute: typeof AuthenticatedInterviewsIdRoomRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedInterviewsIdRoute
     }
     '/_authenticated/admin-officials/applications/compare': {
       id: '/_authenticated/admin-officials/applications/compare'
-      path: '/admin-officials/applications/compare'
+      path: '/applications/compare'
       fullPath: '/admin-officials/applications/compare'
       preLoaderRoute: typeof AuthenticatedAdminOfficialsApplicationsCompareRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
     '/_authenticated/admin-officials/applications/$id': {
       id: '/_authenticated/admin-officials/applications/$id'
-      path: '/admin-officials/applications/$id'
+      path: '/applications/$id'
       fullPath: '/admin-officials/applications/$id'
       preLoaderRoute: typeof AuthenticatedAdminOfficialsApplicationsIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
     }
     '/api/public/scim/v2/Users': {
       id: '/api/public/scim/v2/Users'
@@ -2900,11 +2971,94 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminOfficialsRouteChildren {
+  AuthenticatedAdminOfficialsArchiveRoute: typeof AuthenticatedAdminOfficialsArchiveRoute
+  AuthenticatedAdminOfficialsOnboardingReportRoute: typeof AuthenticatedAdminOfficialsOnboardingReportRoute
+  AuthenticatedAdminOfficialsOnboardingTemplatesRoute: typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
+  AuthenticatedAdminOfficialsPrintRoute: typeof AuthenticatedAdminOfficialsPrintRoute
+  AuthenticatedAdminOfficialsIndexRoute: typeof AuthenticatedAdminOfficialsIndexRoute
+  AuthenticatedAdminOfficialsApplicationsIdRoute: typeof AuthenticatedAdminOfficialsApplicationsIdRoute
+  AuthenticatedAdminOfficialsApplicationsCompareRoute: typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
+}
+
+const AuthenticatedAdminOfficialsRouteChildren: AuthenticatedAdminOfficialsRouteChildren =
+  {
+    AuthenticatedAdminOfficialsArchiveRoute:
+      AuthenticatedAdminOfficialsArchiveRoute,
+    AuthenticatedAdminOfficialsOnboardingReportRoute:
+      AuthenticatedAdminOfficialsOnboardingReportRoute,
+    AuthenticatedAdminOfficialsOnboardingTemplatesRoute:
+      AuthenticatedAdminOfficialsOnboardingTemplatesRoute,
+    AuthenticatedAdminOfficialsPrintRoute:
+      AuthenticatedAdminOfficialsPrintRoute,
+    AuthenticatedAdminOfficialsIndexRoute:
+      AuthenticatedAdminOfficialsIndexRoute,
+    AuthenticatedAdminOfficialsApplicationsIdRoute:
+      AuthenticatedAdminOfficialsApplicationsIdRoute,
+    AuthenticatedAdminOfficialsApplicationsCompareRoute:
+      AuthenticatedAdminOfficialsApplicationsCompareRoute,
+  }
+
+const AuthenticatedAdminOfficialsRouteWithChildren =
+  AuthenticatedAdminOfficialsRoute._addFileChildren(
+    AuthenticatedAdminOfficialsRouteChildren,
+  )
+
+interface AuthenticatedPoliciesRouteChildren {
+  AuthenticatedPoliciesIdRoute: typeof AuthenticatedPoliciesIdRoute
+  AuthenticatedPoliciesIndexRoute: typeof AuthenticatedPoliciesIndexRoute
+}
+
+const AuthenticatedPoliciesRouteChildren: AuthenticatedPoliciesRouteChildren = {
+  AuthenticatedPoliciesIdRoute: AuthenticatedPoliciesIdRoute,
+  AuthenticatedPoliciesIndexRoute: AuthenticatedPoliciesIndexRoute,
+}
+
+const AuthenticatedPoliciesRouteWithChildren =
+  AuthenticatedPoliciesRoute._addFileChildren(
+    AuthenticatedPoliciesRouteChildren,
+  )
+
+interface AuthenticatedInterviewsIdRouteChildren {
+  AuthenticatedInterviewsIdRoomRoute: typeof AuthenticatedInterviewsIdRoomRoute
+  AuthenticatedInterviewsIdIndexRoute: typeof AuthenticatedInterviewsIdIndexRoute
+}
+
+const AuthenticatedInterviewsIdRouteChildren: AuthenticatedInterviewsIdRouteChildren =
+  {
+    AuthenticatedInterviewsIdRoomRoute: AuthenticatedInterviewsIdRoomRoute,
+    AuthenticatedInterviewsIdIndexRoute: AuthenticatedInterviewsIdIndexRoute,
+  }
+
+const AuthenticatedInterviewsIdRouteWithChildren =
+  AuthenticatedInterviewsIdRoute._addFileChildren(
+    AuthenticatedInterviewsIdRouteChildren,
+  )
+
+interface AuthenticatedReviewCyclesIdRouteChildren {
+  AuthenticatedReviewCyclesIdCalibrationRoute: typeof AuthenticatedReviewCyclesIdCalibrationRoute
+  AuthenticatedReviewCyclesIdIndexRoute: typeof AuthenticatedReviewCyclesIdIndexRoute
+}
+
+const AuthenticatedReviewCyclesIdRouteChildren: AuthenticatedReviewCyclesIdRouteChildren =
+  {
+    AuthenticatedReviewCyclesIdCalibrationRoute:
+      AuthenticatedReviewCyclesIdCalibrationRoute,
+    AuthenticatedReviewCyclesIdIndexRoute:
+      AuthenticatedReviewCyclesIdIndexRoute,
+  }
+
+const AuthenticatedReviewCyclesIdRouteWithChildren =
+  AuthenticatedReviewCyclesIdRoute._addFileChildren(
+    AuthenticatedReviewCyclesIdRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminDemoRoute: typeof AuthenticatedAdminDemoRoute
   AuthenticatedAdminIdentityRoute: typeof AuthenticatedAdminIdentityRoute
   AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
   AuthenticatedAdminModulesRoute: typeof AuthenticatedAdminModulesRoute
+  AuthenticatedAdminOfficialsRoute: typeof AuthenticatedAdminOfficialsRouteWithChildren
   AuthenticatedAdminOrgSettingsRoute: typeof AuthenticatedAdminOrgSettingsRoute
   AuthenticatedAdminPermissionsRoute: typeof AuthenticatedAdminPermissionsRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
@@ -2936,6 +3090,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOneOnOneTemplatesRoute: typeof AuthenticatedOneOnOneTemplatesRoute
   AuthenticatedOrgChartRoute: typeof AuthenticatedOrgChartRoute
   AuthenticatedOshaRoute: typeof AuthenticatedOshaRoute
+  AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRouteWithChildren
   AuthenticatedPolicyCampaignsRoute: typeof AuthenticatedPolicyCampaignsRoute
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
   AuthenticatedPreboardingRoute: typeof AuthenticatedPreboardingRoute
@@ -2952,10 +3107,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedVolunteerJobsRoute: typeof AuthenticatedVolunteerJobsRoute
   AuthenticatedVolunteersRoute: typeof AuthenticatedVolunteersRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
-  AuthenticatedAdminOfficialsArchiveRoute: typeof AuthenticatedAdminOfficialsArchiveRoute
-  AuthenticatedAdminOfficialsOnboardingReportRoute: typeof AuthenticatedAdminOfficialsOnboardingReportRoute
-  AuthenticatedAdminOfficialsOnboardingTemplatesRoute: typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
-  AuthenticatedAdminOfficialsPrintRoute: typeof AuthenticatedAdminOfficialsPrintRoute
   AuthenticatedAdminApplicationTemplateRoute: typeof AuthenticatedAdminApplicationTemplateRoute
   AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
   AuthenticatedCompCyclesIdRoute: typeof AuthenticatedCompCyclesIdRoute
@@ -2966,17 +3117,17 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
+  AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRouteWithChildren
   AuthenticatedJobsIdRoute: typeof AuthenticatedJobsIdRoute
   AuthenticatedLeaveIdRoute: typeof AuthenticatedLeaveIdRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedPafIdRoute: typeof AuthenticatedPafIdRoute
   AuthenticatedPayrollIdRoute: typeof AuthenticatedPayrollIdRoute
   AuthenticatedPayrollProfilesRoute: typeof AuthenticatedPayrollProfilesRoute
-  AuthenticatedPoliciesIdRoute: typeof AuthenticatedPoliciesIdRoute
+  AuthenticatedReviewCyclesIdRoute: typeof AuthenticatedReviewCyclesIdRouteWithChildren
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedTranscriptEmployeeIdRoute: typeof AuthenticatedTranscriptEmployeeIdRoute
-  AuthenticatedAdminOfficialsIndexRoute: typeof AuthenticatedAdminOfficialsIndexRoute
   AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
   AuthenticatedCompCyclesIndexRoute: typeof AuthenticatedCompCyclesIndexRoute
   AuthenticatedEmployeesIndexRoute: typeof AuthenticatedEmployeesIndexRoute
@@ -2989,17 +3140,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOneOnOnesIndexRoute: typeof AuthenticatedOneOnOnesIndexRoute
   AuthenticatedPafIndexRoute: typeof AuthenticatedPafIndexRoute
   AuthenticatedPayrollIndexRoute: typeof AuthenticatedPayrollIndexRoute
-  AuthenticatedPoliciesIndexRoute: typeof AuthenticatedPoliciesIndexRoute
   AuthenticatedReviewCyclesIndexRoute: typeof AuthenticatedReviewCyclesIndexRoute
   AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
-  AuthenticatedAdminOfficialsApplicationsIdRoute: typeof AuthenticatedAdminOfficialsApplicationsIdRoute
-  AuthenticatedAdminOfficialsApplicationsCompareRoute: typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
-  AuthenticatedInterviewsIdRoomRoute: typeof AuthenticatedInterviewsIdRoomRoute
   AuthenticatedInterviewsAsyncIdRoute: typeof AuthenticatedInterviewsAsyncIdRoute
-  AuthenticatedReviewCyclesIdCalibrationRoute: typeof AuthenticatedReviewCyclesIdCalibrationRoute
-  AuthenticatedInterviewsIdIndexRoute: typeof AuthenticatedInterviewsIdIndexRoute
-  AuthenticatedReviewCyclesIdIndexRoute: typeof AuthenticatedReviewCyclesIdIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -3007,6 +3151,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminIdentityRoute: AuthenticatedAdminIdentityRoute,
   AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
   AuthenticatedAdminModulesRoute: AuthenticatedAdminModulesRoute,
+  AuthenticatedAdminOfficialsRoute:
+    AuthenticatedAdminOfficialsRouteWithChildren,
   AuthenticatedAdminOrgSettingsRoute: AuthenticatedAdminOrgSettingsRoute,
   AuthenticatedAdminPermissionsRoute: AuthenticatedAdminPermissionsRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
@@ -3038,6 +3184,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOneOnOneTemplatesRoute: AuthenticatedOneOnOneTemplatesRoute,
   AuthenticatedOrgChartRoute: AuthenticatedOrgChartRoute,
   AuthenticatedOshaRoute: AuthenticatedOshaRoute,
+  AuthenticatedPoliciesRoute: AuthenticatedPoliciesRouteWithChildren,
   AuthenticatedPolicyCampaignsRoute: AuthenticatedPolicyCampaignsRoute,
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
   AuthenticatedPreboardingRoute: AuthenticatedPreboardingRoute,
@@ -3054,13 +3201,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedVolunteerJobsRoute: AuthenticatedVolunteerJobsRoute,
   AuthenticatedVolunteersRoute: AuthenticatedVolunteersRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
-  AuthenticatedAdminOfficialsArchiveRoute:
-    AuthenticatedAdminOfficialsArchiveRoute,
-  AuthenticatedAdminOfficialsOnboardingReportRoute:
-    AuthenticatedAdminOfficialsOnboardingReportRoute,
-  AuthenticatedAdminOfficialsOnboardingTemplatesRoute:
-    AuthenticatedAdminOfficialsOnboardingTemplatesRoute,
-  AuthenticatedAdminOfficialsPrintRoute: AuthenticatedAdminOfficialsPrintRoute,
   AuthenticatedAdminApplicationTemplateRoute:
     AuthenticatedAdminApplicationTemplateRoute,
   AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
@@ -3072,18 +3212,19 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
+  AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRouteWithChildren,
   AuthenticatedJobsIdRoute: AuthenticatedJobsIdRoute,
   AuthenticatedLeaveIdRoute: AuthenticatedLeaveIdRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedPafIdRoute: AuthenticatedPafIdRoute,
   AuthenticatedPayrollIdRoute: AuthenticatedPayrollIdRoute,
   AuthenticatedPayrollProfilesRoute: AuthenticatedPayrollProfilesRoute,
-  AuthenticatedPoliciesIdRoute: AuthenticatedPoliciesIdRoute,
+  AuthenticatedReviewCyclesIdRoute:
+    AuthenticatedReviewCyclesIdRouteWithChildren,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedTranscriptEmployeeIdRoute:
     AuthenticatedTranscriptEmployeeIdRoute,
-  AuthenticatedAdminOfficialsIndexRoute: AuthenticatedAdminOfficialsIndexRoute,
   AuthenticatedCascadesIndexRoute: AuthenticatedCascadesIndexRoute,
   AuthenticatedCompCyclesIndexRoute: AuthenticatedCompCyclesIndexRoute,
   AuthenticatedEmployeesIndexRoute: AuthenticatedEmployeesIndexRoute,
@@ -3096,20 +3237,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOneOnOnesIndexRoute: AuthenticatedOneOnOnesIndexRoute,
   AuthenticatedPafIndexRoute: AuthenticatedPafIndexRoute,
   AuthenticatedPayrollIndexRoute: AuthenticatedPayrollIndexRoute,
-  AuthenticatedPoliciesIndexRoute: AuthenticatedPoliciesIndexRoute,
   AuthenticatedReviewCyclesIndexRoute: AuthenticatedReviewCyclesIndexRoute,
   AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
-  AuthenticatedAdminOfficialsApplicationsIdRoute:
-    AuthenticatedAdminOfficialsApplicationsIdRoute,
-  AuthenticatedAdminOfficialsApplicationsCompareRoute:
-    AuthenticatedAdminOfficialsApplicationsCompareRoute,
-  AuthenticatedInterviewsIdRoomRoute: AuthenticatedInterviewsIdRoomRoute,
   AuthenticatedInterviewsAsyncIdRoute: AuthenticatedInterviewsAsyncIdRoute,
-  AuthenticatedReviewCyclesIdCalibrationRoute:
-    AuthenticatedReviewCyclesIdCalibrationRoute,
-  AuthenticatedInterviewsIdIndexRoute: AuthenticatedInterviewsIdIndexRoute,
-  AuthenticatedReviewCyclesIdIndexRoute: AuthenticatedReviewCyclesIdIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
