@@ -64,7 +64,12 @@ function ServeIndex() {
             </div>
           )}
         </section>
-        <section className="pt-6 border-t">
+        <section className="pt-6 border-t grid gap-3 sm:grid-cols-3">
+          <Link to="/serve/volunteer/jobs" className="block"><Card className="p-4 hover:bg-accent/50"><h3 className="font-medium">Volunteer</h3><p className="text-xs text-muted-foreground mt-1">Browse volunteer roles and shifts.</p></Card></Link>
+          <Link to="/serve/vendor" className="block"><Card className="p-4 hover:bg-accent/50"><h3 className="font-medium">Vendor / contractor</h3><p className="text-xs text-muted-foreground mt-1">Register your business.</p></Card></Link>
+          <Link to="/serve/candidate-filing" className="block"><Card className="p-4 hover:bg-accent/50"><h3 className="font-medium">Candidate filing</h3><p className="text-xs text-muted-foreground mt-1">Run for elected office.</p></Card></Link>
+        </section>
+        <section className="pt-6 border-t hidden">
           <h2 className="text-sm font-medium mb-2">Running for elected office?</h2>
           <p className="text-sm text-muted-foreground mb-3">
             Candidates for council or mayor can file the required paperwork with the City Clerk.

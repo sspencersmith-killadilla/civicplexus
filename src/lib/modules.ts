@@ -66,7 +66,9 @@ export const MODULE_REGISTRY: ModuleDef[] = [
   ]},
   { key: moduleKey("civic-workforce"), label: "Volunteers & Vendors", items: [
     def("/volunteers", "Volunteers", HeartHandshake, ["hr_admin", "hiring_manager", "supervisor"]),
+    def("/volunteer-jobs", "Volunteer Jobs & Shifts", HeartHandshake, ["hr_admin", "hiring_manager", "supervisor"]),
     def("/vendors", "Vendors & Contractors", Briefcase, ["hr_admin", "hiring_manager"]),
+    def("/vendor-forms", "Vendor Application Forms", FileSignature, ["hr_admin"]),
   ]},
   { key: moduleKey("workflow"), label: "Workflow", items: [
     def("/worker-types", "Worker Types", Briefcase, ["hr_admin"]),
