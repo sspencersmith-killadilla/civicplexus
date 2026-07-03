@@ -22,6 +22,8 @@ import { HistoryAttachments } from "@/components/history-attachments";
 import { Badge } from "@/components/ui/badge";
 import { Download, History as HistoryIcon } from "lucide-react";
 import { getMyHrContext } from "@/lib/employee-directory.functions";
+import { listMyInternalApplications, withdrawMyApplication } from "@/lib/internal-apply.functions";
+import { Briefcase } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR });
 
@@ -72,6 +74,15 @@ function MyHR() {
       setCompleteFor(null); setCompleteForm({ score: "", notes: "", file: null });
       qc.invalidateQueries({ queryKey: ["my-training"] });
     },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const myAppsFn = useServerFn(listMyInternalApplications);
+  const withdrawFn = useServerFn(withdrawMyApplication);
+  const myAppsQ = useQuery({ queryKey: ["my-internal-apps"], queryFn: () => myAppsFn() });
+  const withdraw = useMutation({
+    mutationFn: (application_id: string) => withdrawFn({ data: { application_id } }),
+    onSuccess: () => { toast.success("Application withdrawn"); qc.invalidateQueries({ queryKey: ["my-internal-apps"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
