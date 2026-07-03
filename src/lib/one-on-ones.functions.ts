@@ -13,17 +13,33 @@ async function oneOnOneAccess(userId: string) {
   ]);
   const roleSet = new Set(((roles ?? []) as Array<{ role: string }>).map((r) => r.role));
   const permSet = new Set(((perms ?? []) as Array<{ permission_key: string }>).map((p) => p.permission_key));
-  const { data: deptAdmins } = await supabaseAdmin
-    .from("department_admins").select("department").eq("user_id", userId);
+  const employeeId = (me as { id?: string } | null)?.id ?? null;
+  // Chain of command: walk DOWN the org tree from this user's employee node.
+  const chain = new Set<string>();
+  if (employeeId) {
+    const stack = [employeeId];
+    const seen = new Set<string>([employeeId]);
+    while (stack.length) {
+      const parent = stack.pop()!;
+      const { data: kids } = await supabaseAdmin
+        .from("employees").select("id").eq("manager_id", parent);
+      for (const k of (kids ?? []) as Array<{ id: string }>) {
+        if (!seen.has(k.id)) {
+          seen.add(k.id);
+          chain.add(k.id);
+          stack.push(k.id);
+        }
+      }
+    }
+  }
   return {
     supabaseAdmin,
     roles: roleSet,
     perms: permSet,
     isHr: roleSet.has("hr_admin"),
-    canManage: roleSet.has("hr_admin") || permSet.has("one_on_ones.manage"),
-    canReadChain: roleSet.has("hr_admin") || permSet.has("one_on_ones.read.reports"),
-    employeeId: (me as { id?: string } | null)?.id ?? null,
-    departments: new Set(((deptAdmins ?? []) as Array<{ department: string }>).map((d) => d.department)),
+    canManage: roleSet.has("hr_admin"),
+    employeeId,
+    chain,
   };
 }
 
