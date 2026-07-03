@@ -1,52 +1,64 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireHrAdmin } from "@/lib/role-check.server";
 
-async function assertHrAdmin(ctx: { supabase: ReturnType<typeof requireSupabaseAuth>["_"] extends never ? never : any; userId: string }) {
-  const { data, error } = await (ctx.supabase as any).rpc("has_role", { _user_id: ctx.userId, _role: "hr_admin" });
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Only HR admins can use SQL reports");
-}
+export type ReportRunResult = {
+  rows: Array<Record<string, unknown>>;
+  row_count: number;
+  duration_ms: number;
+  limit_applied: number;
+  truncated: boolean;
+};
 
 export const runReportSql = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { sql: string; limit?: number }) =>
     z.object({ sql: z.string().min(1).max(50_000), limit: z.number().int().min(1).max(10_000).optional() }).parse(d),
   )
-  .handler(async ({ data, context }) => {
-    await assertHrAdmin(context as any);
-    const { data: result, error } = await (context.supabase as any).rpc("run_report_sql", {
-      _sql: data.sql,
-      _limit: data.limit ?? 1000,
-    });
+  .handler(async ({ data, context }): Promise<ReportRunResult> => {
+    await requireHrAdmin(context.supabase, context.userId);
+    const { data: result, error } = await (context.supabase as unknown as { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> })
+      .rpc("run_report_sql", { _sql: data.sql, _limit: data.limit ?? 1000 });
     if (error) throw new Error(error.message);
-    return result as { rows: Record<string, unknown>[]; row_count: number; duration_ms: number; limit_applied: number; truncated: boolean };
+    return result as ReportRunResult;
   });
 
 export const getReportSchema = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertHrAdmin(context as any);
-    const { data, error } = await (context.supabase as any).rpc("get_report_schema");
+    await requireHrAdmin(context.supabase, context.userId);
+    const { data, error } = await (context.supabase as unknown as { rpc: (name: string) => Promise<{ data: unknown; error: { message: string } | null }> })
+      .rpc("get_report_schema");
     if (error) throw new Error(error.message);
     return data as {
-      tables: { table_name: string; columns: { name: string; type: string; nullable: boolean }[] }[];
-      foreign_keys: { table: string; column: string; references_table: string; references_column: string }[];
+      tables: Array<{ table_name: string; columns: Array<{ name: string; type: string; nullable: boolean }> }>;
+      foreign_keys: Array<{ table: string; column: string; references_table: string; references_column: string }>;
     };
   });
 
 export const listSavedReports = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertHrAdmin(context as any);
+    await requireHrAdmin(context.supabase, context.userId);
+    const sb = context.supabase as unknown as {
+      from: (t: string) => {
+        select: (c: string) => {
+          order?: (col: string, opts: { ascending: boolean }) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
+          eq?: (col: string, val: string) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
+        };
+      };
+    };
     const [{ data: reports, error: rErr }, { data: favs, error: fErr }] = await Promise.all([
-      (context.supabase as any).from("saved_reports").select("*").order("updated_at", { ascending: false }),
-      (context.supabase as any).from("report_favorites").select("report_id").eq("user_id", context.userId),
+      (context.supabase.from("saved_reports") as any).select("*").order("updated_at", { ascending: false }),
+      (context.supabase.from("report_favorites") as any).select("report_id").eq("user_id", context.userId),
     ]);
+    void sb;
     if (rErr) throw new Error(rErr.message);
     if (fErr) throw new Error(fErr.message);
-    const favSet = new Set((favs ?? []).map((r: { report_id: string }) => r.report_id));
-    return (reports ?? []).map((r: Record<string, unknown>) => ({ ...r, is_favorite: favSet.has(r.id as string) }));
+    const favSet = new Set((favs as Array<{ report_id: string }> | null ?? []).map((r) => r.report_id));
+    type SavedReportRow = { id: string; name: string; description: string | null; sql: string; builder_state: Record<string, unknown> | null; is_shared: boolean; tags: string[]; created_by: string; created_at: string; updated_at: string };
+    return (reports as SavedReportRow[] | null ?? []).map((r) => ({ ...r, is_favorite: favSet.has(r.id) }));
   });
 
 export const saveReport = createServerFn({ method: "POST" })
@@ -71,7 +83,7 @@ export const saveReport = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertHrAdmin(context as any);
+    await requireHrAdmin(context.supabase, context.userId);
     const payload = {
       name: data.name,
       description: data.description ?? null,
@@ -81,23 +93,23 @@ export const saveReport = createServerFn({ method: "POST" })
       tags: data.tags ?? [],
     };
     if (data.id) {
-      const { data: row, error } = await (context.supabase as any)
-        .from("saved_reports").update(payload).eq("id", data.id).select().single();
+      const { data: row, error } = await (context.supabase.from("saved_reports") as any)
+        .update(payload).eq("id", data.id).select().single();
       if (error) throw new Error(error.message);
-      return row;
+      return row as Record<string, unknown>;
     }
-    const { data: row, error } = await (context.supabase as any)
-      .from("saved_reports").insert({ ...payload, created_by: context.userId }).select().single();
+    const { data: row, error } = await (context.supabase.from("saved_reports") as any)
+      .insert({ ...payload, created_by: context.userId }).select().single();
     if (error) throw new Error(error.message);
-    return row;
+    return row as Record<string, unknown>;
   });
 
 export const deleteSavedReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertHrAdmin(context as any);
-    const { error } = await (context.supabase as any).from("saved_reports").delete().eq("id", data.id);
+    await requireHrAdmin(context.supabase, context.userId);
+    const { error } = await (context.supabase.from("saved_reports") as any).delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -108,13 +120,13 @@ export const toggleFavoriteReport = createServerFn({ method: "POST" })
     z.object({ report_id: z.string().uuid(), on: z.boolean() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertHrAdmin(context as any);
+    await requireHrAdmin(context.supabase, context.userId);
     if (data.on) {
-      const { error } = await (context.supabase as any).from("report_favorites")
+      const { error } = await (context.supabase.from("report_favorites") as any)
         .upsert({ user_id: context.userId, report_id: data.report_id });
       if (error) throw new Error(error.message);
     } else {
-      const { error } = await (context.supabase as any).from("report_favorites")
+      const { error } = await (context.supabase.from("report_favorites") as any)
         .delete().eq("user_id", context.userId).eq("report_id", data.report_id);
       if (error) throw new Error(error.message);
     }
@@ -124,9 +136,9 @@ export const toggleFavoriteReport = createServerFn({ method: "POST" })
 export const listReportQueryLog = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertHrAdmin(context as any);
-    const { data, error } = await (context.supabase as any)
-      .from("report_query_log").select("*").order("created_at", { ascending: false }).limit(100);
+    await requireHrAdmin(context.supabase, context.userId);
+    const { data, error } = await (context.supabase.from("report_query_log") as any)
+      .select("*").order("created_at", { ascending: false }).limit(100);
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return (data ?? []) as Array<{ id: string; actor_id: string | null; sql: string; row_count: number | null; duration_ms: number | null; error: string | null; created_at: string }>;
   });
