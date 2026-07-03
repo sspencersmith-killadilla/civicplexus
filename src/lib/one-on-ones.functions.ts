@@ -141,25 +141,7 @@ export const listOneOnOneSessions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const access = await oneOnOneAccess(context.userId);
-    const reportIds = new Set<string>();
-    if (access.canReadChain && access.employeeId) {
-      const stack = [access.employeeId];
-      const seen = new Set<string>(stack);
-      while (stack.length) {
-        const parent = stack.pop()!;
-        const { data: kids } = await access.supabaseAdmin
-          .from("employees")
-          .select("id")
-          .eq("manager_id", parent);
-        for (const kid of (kids ?? []) as Array<{ id: string }>) {
-          if (!seen.has(kid.id)) {
-            seen.add(kid.id);
-            reportIds.add(kid.id);
-            stack.push(kid.id);
-          }
-        }
-      }
-    }
+    const reportIds = access.chain;
     const { data, error } = await access.supabaseAdmin
       .from("one_on_ones")
       .select("id,title,short_code,status,scheduled_at,manager_user_id,employee_id,created_at, employees(first_name,last_name,department,user_id,manager_id)")
@@ -176,9 +158,7 @@ export const listOneOnOneSessions = createServerFn({ method: "GET" })
       const emp = s.employees;
       if (!emp) return false;
       if (emp.user_id === context.userId) return true;
-      if (access.employeeId && emp.manager_id === access.employeeId) return true;
       if (s.employee_id && reportIds.has(s.employee_id)) return true;
-      if (emp.department && access.departments.has(emp.department)) return true;
       return false;
     }).map((s) => ({
       id: s.id,
