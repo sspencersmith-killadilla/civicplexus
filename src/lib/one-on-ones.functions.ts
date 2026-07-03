@@ -185,16 +185,15 @@ export const createOneOnOneSession = createServerFn({ method: "POST" })
     if (data.employee_id && !access.canManage) {
       const { data: emp } = await access.supabaseAdmin
         .from("employees")
-        .select("id, user_id, manager_id, department")
+        .select("id, user_id")
         .eq("id", data.employee_id)
         .maybeSingle();
-      const target = emp as { user_id: string | null; manager_id: string | null; department: string | null } | null;
+      const target = emp as { id: string; user_id: string | null } | null;
       const allowed = !!target && (
         target.user_id === context.userId ||
-        (!!access.employeeId && target.manager_id === access.employeeId) ||
-        (!!target.department && access.departments.has(target.department))
+        access.chain.has(target.id)
       );
-      if (!allowed) throw new Error("Not authorized to schedule a 1-on-1 with this employee");
+      if (!allowed) throw new Error("You can only schedule 1-on-1s with people in your chain of command.");
     }
     const code = Math.random().toString(36).slice(2, 8).toUpperCase();
     const { data: row, error } = await access.supabaseAdmin
