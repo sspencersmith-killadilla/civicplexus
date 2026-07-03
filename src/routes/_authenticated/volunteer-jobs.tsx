@@ -12,13 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, CalendarPlus, Trash2, Check, X, KeyRound } from "lucide-react";
+import { Plus, CalendarPlus, Trash2, Check, X, KeyRound, FileText, Download, Printer } from "lucide-react";
 import { toast } from "sonner";
 import {
   listVolunteerJobs, upsertVolunteerJob, deleteVolunteerJob,
   listShiftsForJob, upsertShift, deleteShift,
   listAllSignups, decideSignup, listClockEvents,
-  kioskSearchSignups, kioskClock,
+  kioskSearchSignups, kioskClock, generateVolunteerTimesheet, type TimesheetEntry,
 } from "@/lib/volunteer-jobs.functions";
 
 export const Route = createFileRoute("/_authenticated/volunteer-jobs")({
