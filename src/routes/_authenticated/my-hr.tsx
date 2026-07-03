@@ -22,6 +22,8 @@ import { HistoryAttachments } from "@/components/history-attachments";
 import { Badge } from "@/components/ui/badge";
 import { Download, History as HistoryIcon } from "lucide-react";
 import { getMyHrContext } from "@/lib/employee-directory.functions";
+import { listMyInternalApplications, withdrawMyApplication } from "@/lib/internal-apply.functions";
+import { Briefcase } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR });
 
@@ -72,6 +74,15 @@ function MyHR() {
       setCompleteFor(null); setCompleteForm({ score: "", notes: "", file: null });
       qc.invalidateQueries({ queryKey: ["my-training"] });
     },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const myAppsFn = useServerFn(listMyInternalApplications);
+  const withdrawFn = useServerFn(withdrawMyApplication);
+  const myAppsQ = useQuery({ queryKey: ["my-internal-apps"], queryFn: () => myAppsFn() });
+  const withdraw = useMutation({
+    mutationFn: (application_id: string) => withdrawFn({ data: { application_id } }),
+    onSuccess: () => { toast.success("Application withdrawn"); qc.invalidateQueries({ queryKey: ["my-internal-apps"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -356,6 +367,33 @@ function MyHR() {
               </Link>
             )}
           </div>
+        </section>
+
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-medium flex items-center gap-2"><Briefcase className="h-4 w-4 text-primary" /> My internal applications</h3>
+            <Link to="/internal-careers"><Button size="sm" variant="outline">Browse open roles</Button></Link>
+          </div>
+          <Card className="divide-y">
+            {(myAppsQ.data ?? []).map((a) => (
+              <div key={a.id} className="p-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{a.job_requisitions?.title ?? "—"}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {a.job_requisitions?.department ?? ""} · Applied {new Date(a.created_at).toLocaleDateString()}
+                    {a.confidential_until_finalist ? " · Confidential" : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs px-2 py-0.5 rounded bg-muted capitalize">{a.status}</span>
+                  {!["hired","rejected","withdrawn"].includes(a.status) && (
+                    <Button size="sm" variant="ghost" onClick={() => { if (confirm("Withdraw this application?")) withdraw.mutate(a.id); }}>Withdraw</Button>
+                  )}
+                </div>
+              </div>
+            ))}
+            {(myAppsQ.data?.length ?? 0) === 0 && <p className="p-4 text-sm text-muted-foreground">You haven't applied to any internal roles yet.</p>}
+          </Card>
         </section>
       </div>
 

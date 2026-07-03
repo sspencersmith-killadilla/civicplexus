@@ -3659,11 +3659,13 @@ export type Database = {
         Row: {
           answers: Json
           applicant_name: string
+          confidential_until_finalist: boolean
           cover_letter: string | null
           created_at: string
           email: string
           id: string
           internal_employee_id: string | null
+          internal_resume_snapshot: Json | null
           is_internal: boolean
           notes: string | null
           notify_current_manager: boolean
@@ -3680,11 +3682,13 @@ export type Database = {
         Insert: {
           answers?: Json
           applicant_name: string
+          confidential_until_finalist?: boolean
           cover_letter?: string | null
           created_at?: string
           email: string
           id?: string
           internal_employee_id?: string | null
+          internal_resume_snapshot?: Json | null
           is_internal?: boolean
           notes?: string | null
           notify_current_manager?: boolean
@@ -3701,11 +3705,13 @@ export type Database = {
         Update: {
           answers?: Json
           applicant_name?: string
+          confidential_until_finalist?: boolean
           cover_letter?: string | null
           created_at?: string
           email?: string
           id?: string
           internal_employee_id?: string | null
+          internal_resume_snapshot?: Json | null
           is_internal?: boolean
           notes?: string | null
           notify_current_manager?: boolean
