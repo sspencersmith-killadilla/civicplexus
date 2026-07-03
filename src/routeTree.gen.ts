@@ -17,6 +17,7 @@ import { Route as ServeIndexRouteImport } from './routes/serve.index'
 import { Route as OfficialsIndexRouteImport } from './routes/officials.index'
 import { Route as CareersIndexRouteImport } from './routes/careers.index'
 import { Route as ServeVolunteerRouteImport } from './routes/serve.volunteer'
+import { Route as ServeVendorRouteImport } from './routes/serve.vendor'
 import { Route as ServeCandidateFilingRouteImport } from './routes/serve.candidate-filing'
 import { Route as ServeApplyRouteImport } from './routes/serve.apply'
 import { Route as OfficialsPrintRouteImport } from './routes/officials.print'
@@ -184,6 +185,11 @@ const CareersIndexRoute = CareersIndexRouteImport.update({
 const ServeVolunteerRoute = ServeVolunteerRouteImport.update({
   id: '/serve/volunteer',
   path: '/serve/volunteer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServeVendorRoute = ServeVendorRouteImport.update({
+  id: '/serve/vendor',
+  path: '/serve/vendor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServeCandidateFilingRoute = ServeCandidateFilingRouteImport.update({
@@ -965,6 +971,7 @@ export interface FileRoutesByFullPath {
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
+  '/serve/vendor': typeof ServeVendorRoute
   '/serve/volunteer': typeof ServeVolunteerRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
@@ -1102,6 +1109,7 @@ export interface FileRoutesByTo {
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
+  '/serve/vendor': typeof ServeVendorRoute
   '/serve/volunteer': typeof ServeVolunteerRoute
   '/careers': typeof CareersIndexRoute
   '/officials': typeof OfficialsIndexRoute
@@ -1242,6 +1250,7 @@ export interface FileRoutesById {
   '/officials/print': typeof OfficialsPrintRoute
   '/serve/apply': typeof ServeApplyRoute
   '/serve/candidate-filing': typeof ServeCandidateFilingRoute
+  '/serve/vendor': typeof ServeVendorRoute
   '/serve/volunteer': typeof ServeVolunteerRoute
   '/careers/': typeof CareersIndexRoute
   '/officials/': typeof OfficialsIndexRoute
@@ -1382,6 +1391,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/serve/apply'
     | '/serve/candidate-filing'
+    | '/serve/vendor'
     | '/serve/volunteer'
     | '/careers/'
     | '/officials/'
@@ -1519,6 +1529,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/serve/apply'
     | '/serve/candidate-filing'
+    | '/serve/vendor'
     | '/serve/volunteer'
     | '/careers'
     | '/officials'
@@ -1658,6 +1669,7 @@ export interface FileRouteTypes {
     | '/officials/print'
     | '/serve/apply'
     | '/serve/candidate-filing'
+    | '/serve/vendor'
     | '/serve/volunteer'
     | '/careers/'
     | '/officials/'
@@ -1747,6 +1759,7 @@ export interface RootRouteChildren {
   OfficialsPrintRoute: typeof OfficialsPrintRoute
   ServeApplyRoute: typeof ServeApplyRoute
   ServeCandidateFilingRoute: typeof ServeCandidateFilingRoute
+  ServeVendorRoute: typeof ServeVendorRoute
   ServeVolunteerRoute: typeof ServeVolunteerRoute
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
@@ -1833,6 +1846,13 @@ declare module '@tanstack/react-router' {
       path: '/serve/volunteer'
       fullPath: '/serve/volunteer'
       preLoaderRoute: typeof ServeVolunteerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/serve/vendor': {
+      id: '/serve/vendor'
+      path: '/serve/vendor'
+      fullPath: '/serve/vendor'
+      preLoaderRoute: typeof ServeVendorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/serve/candidate-filing': {
@@ -3027,6 +3047,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfficialsPrintRoute: OfficialsPrintRoute,
   ServeApplyRoute: ServeApplyRoute,
   ServeCandidateFilingRoute: ServeCandidateFilingRoute,
+  ServeVendorRoute: ServeVendorRoute,
   ServeVolunteerRoute: ServeVolunteerRoute,
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,

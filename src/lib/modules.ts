@@ -64,6 +64,10 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/id-badge-templates", "ID Badge Templates", BadgeCheck, ["hr_admin"]),
       def("/org-chart", "Org Chart", Network, ["hr_admin", "hiring_manager", "supervisor", "it_admin", "employee"]),
   ]},
+  { key: moduleKey("civic-workforce"), label: "Volunteers & Vendors", items: [
+    def("/volunteers", "Volunteers", HeartHandshake, ["hr_admin", "hiring_manager", "supervisor"]),
+    def("/vendors", "Vendors & Contractors", Briefcase, ["hr_admin", "hiring_manager"]),
+  ]},
   { key: moduleKey("workflow"), label: "Workflow", items: [
     def("/worker-types", "Worker Types", Briefcase, ["hr_admin"]),
     def("/templates", "Templates", ListChecks, ["hr_admin"]),
