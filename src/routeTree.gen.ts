@@ -128,6 +128,7 @@ import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/ba
 import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
 import { Route as AuthenticatedInterviewsAsyncIdRouteImport } from './routes/_authenticated/interviews.async.$id'
 import { Route as AuthenticatedInterviewsIdRoomRouteImport } from './routes/_authenticated/interviews.$id.room'
+import { Route as AuthenticatedAdminOfficialsApplicationsCompareRouteImport } from './routes/_authenticated/admin-officials.applications.compare'
 import { Route as AuthenticatedAdminOfficialsApplicationsIdRouteImport } from './routes/_authenticated/admin-officials.applications.$id'
 import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim.v2.Users'
 import { Route as ApiPublicOffersTokenViewRouteImport } from './routes/api/public/offers/$token/view'
@@ -794,6 +795,12 @@ const AuthenticatedInterviewsIdRoomRoute =
     path: '/room',
     getParentRoute: () => AuthenticatedInterviewsIdRoute,
   } as any)
+const AuthenticatedAdminOfficialsApplicationsCompareRoute =
+  AuthenticatedAdminOfficialsApplicationsCompareRouteImport.update({
+    id: '/applications/compare',
+    path: '/applications/compare',
+    getParentRoute: () => AuthenticatedAdminOfficialsRoute,
+  } as any)
 const AuthenticatedAdminOfficialsApplicationsIdRoute =
   AuthenticatedAdminOfficialsApplicationsIdRouteImport.update({
     id: '/applications/$id',
@@ -983,6 +990,7 @@ export interface FileRoutesByFullPath {
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
+  '/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
   '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
@@ -1115,6 +1123,7 @@ export interface FileRoutesByTo {
   '/candidate/$token': typeof CandidateTokenIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
+  '/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
   '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
@@ -1250,6 +1259,7 @@ export interface FileRoutesById {
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/_authenticated/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
+  '/_authenticated/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
   '/_authenticated/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/_authenticated/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/_authenticated/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
@@ -1385,6 +1395,7 @@ export interface FileRouteTypes {
     | '/candidate/$token/'
     | '/careers/$slug/'
     | '/admin-officials/applications/$id'
+    | '/admin-officials/applications/compare'
     | '/interviews/$id/room'
     | '/interviews/async/$id'
     | '/review-cycles/$id/calibration'
@@ -1517,6 +1528,7 @@ export interface FileRouteTypes {
     | '/candidate/$token'
     | '/careers/$slug'
     | '/admin-officials/applications/$id'
+    | '/admin-officials/applications/compare'
     | '/interviews/$id/room'
     | '/interviews/async/$id'
     | '/review-cycles/$id/calibration'
@@ -1651,6 +1663,7 @@ export interface FileRouteTypes {
     | '/candidate/$token/'
     | '/careers/$slug/'
     | '/_authenticated/admin-officials/applications/$id'
+    | '/_authenticated/admin-officials/applications/compare'
     | '/_authenticated/interviews/$id/room'
     | '/_authenticated/interviews/async/$id'
     | '/_authenticated/review-cycles/$id/calibration'
@@ -2549,6 +2562,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInterviewsIdRoomRouteImport
       parentRoute: typeof AuthenticatedInterviewsIdRoute
     }
+    '/_authenticated/admin-officials/applications/compare': {
+      id: '/_authenticated/admin-officials/applications/compare'
+      path: '/applications/compare'
+      fullPath: '/admin-officials/applications/compare'
+      preLoaderRoute: typeof AuthenticatedAdminOfficialsApplicationsCompareRouteImport
+      parentRoute: typeof AuthenticatedAdminOfficialsRoute
+    }
     '/_authenticated/admin-officials/applications/$id': {
       id: '/_authenticated/admin-officials/applications/$id'
       path: '/applications/$id'
@@ -2649,6 +2669,7 @@ interface AuthenticatedAdminOfficialsRouteChildren {
   AuthenticatedAdminOfficialsOnboardingTemplatesRoute: typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   AuthenticatedAdminOfficialsPrintRoute: typeof AuthenticatedAdminOfficialsPrintRoute
   AuthenticatedAdminOfficialsApplicationsIdRoute: typeof AuthenticatedAdminOfficialsApplicationsIdRoute
+  AuthenticatedAdminOfficialsApplicationsCompareRoute: typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
 }
 
 const AuthenticatedAdminOfficialsRouteChildren: AuthenticatedAdminOfficialsRouteChildren =
@@ -2663,6 +2684,8 @@ const AuthenticatedAdminOfficialsRouteChildren: AuthenticatedAdminOfficialsRoute
       AuthenticatedAdminOfficialsPrintRoute,
     AuthenticatedAdminOfficialsApplicationsIdRoute:
       AuthenticatedAdminOfficialsApplicationsIdRoute,
+    AuthenticatedAdminOfficialsApplicationsCompareRoute:
+      AuthenticatedAdminOfficialsApplicationsCompareRoute,
   }
 
 const AuthenticatedAdminOfficialsRouteWithChildren =
