@@ -115,6 +115,7 @@ import { Route as AuthenticatedComplianceTcoleRouteImport } from './routes/_auth
 import { Route as AuthenticatedComplianceNewHireRouteImport } from './routes/_authenticated/compliance.new-hire'
 import { Route as AuthenticatedCompCyclesIdRouteImport } from './routes/_authenticated/comp-cycles.$id'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
+import { Route as AuthenticatedAdminApplicationTemplateRouteImport } from './routes/_authenticated/admin.application-template'
 import { Route as AuthenticatedAdminOfficialsPrintRouteImport } from './routes/_authenticated/admin-officials.print'
 import { Route as AuthenticatedAdminOfficialsOnboardingTemplatesRouteImport } from './routes/_authenticated/admin-officials.onboarding-templates'
 import { Route as AuthenticatedAdminOfficialsOnboardingReportRouteImport } from './routes/_authenticated/admin-officials.onboarding-report'
@@ -721,6 +722,12 @@ const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
   path: '/cascades/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminApplicationTemplateRoute =
+  AuthenticatedAdminApplicationTemplateRouteImport.update({
+    id: '/admin/application-template',
+    path: '/admin/application-template',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminOfficialsPrintRoute =
   AuthenticatedAdminOfficialsPrintRouteImport.update({
     id: '/print',
@@ -945,6 +952,7 @@ export interface FileRoutesByFullPath {
   '/admin-officials/onboarding-report': typeof AuthenticatedAdminOfficialsOnboardingReportRoute
   '/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
+  '/admin/application-template': typeof AuthenticatedAdminApplicationTemplateRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1078,6 +1086,7 @@ export interface FileRoutesByTo {
   '/admin-officials/onboarding-report': typeof AuthenticatedAdminOfficialsOnboardingReportRoute
   '/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
+  '/admin/application-template': typeof AuthenticatedAdminApplicationTemplateRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1214,6 +1223,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-officials/onboarding-report': typeof AuthenticatedAdminOfficialsOnboardingReportRoute
   '/_authenticated/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/_authenticated/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
+  '/_authenticated/admin/application-template': typeof AuthenticatedAdminApplicationTemplateRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/_authenticated/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1350,6 +1360,7 @@ export interface FileRouteTypes {
     | '/admin-officials/onboarding-report'
     | '/admin-officials/onboarding-templates'
     | '/admin-officials/print'
+    | '/admin/application-template'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1483,6 +1494,7 @@ export interface FileRouteTypes {
     | '/admin-officials/onboarding-report'
     | '/admin-officials/onboarding-templates'
     | '/admin-officials/print'
+    | '/admin/application-template'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1618,6 +1630,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-officials/onboarding-report'
     | '/_authenticated/admin-officials/onboarding-templates'
     | '/_authenticated/admin-officials/print'
+    | '/_authenticated/admin/application-template'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
     | '/_authenticated/compliance/new-hire'
@@ -2471,6 +2484,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCascadesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/application-template': {
+      id: '/_authenticated/admin/application-template'
+      path: '/admin/application-template'
+      fullPath: '/admin/application-template'
+      preLoaderRoute: typeof AuthenticatedAdminApplicationTemplateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin-officials/print': {
       id: '/_authenticated/admin-officials/print'
       path: '/print'
@@ -2785,6 +2805,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTimekeepingRoute: typeof AuthenticatedTimekeepingRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
+  AuthenticatedAdminApplicationTemplateRoute: typeof AuthenticatedAdminApplicationTemplateRoute
   AuthenticatedCascadesIdRoute: typeof AuthenticatedCascadesIdRoute
   AuthenticatedCompCyclesIdRoute: typeof AuthenticatedCompCyclesIdRoute
   AuthenticatedComplianceNewHireRoute: typeof AuthenticatedComplianceNewHireRoute
@@ -2874,6 +2895,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTimekeepingRoute: AuthenticatedTimekeepingRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
+  AuthenticatedAdminApplicationTemplateRoute:
+    AuthenticatedAdminApplicationTemplateRoute,
   AuthenticatedCascadesIdRoute: AuthenticatedCascadesIdRoute,
   AuthenticatedCompCyclesIdRoute: AuthenticatedCompCyclesIdRoute,
   AuthenticatedComplianceNewHireRoute: AuthenticatedComplianceNewHireRoute,

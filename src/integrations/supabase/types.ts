@@ -118,6 +118,33 @@ export type Database = {
           },
         ]
       }
+      application_form_templates: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          schema: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          schema?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          schema?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       application_messages: {
         Row: {
           application_id: string
@@ -3647,6 +3674,7 @@ export type Database = {
           resume_url: string | null
           source: string | null
           status: string
+          supplemental_answers: Json
           updated_at: string
         }
         Insert: {
@@ -3667,6 +3695,7 @@ export type Database = {
           resume_url?: string | null
           source?: string | null
           status?: string
+          supplemental_answers?: Json
           updated_at?: string
         }
         Update: {
@@ -3687,6 +3716,7 @@ export type Database = {
           resume_url?: string | null
           source?: string | null
           status?: string
+          supplemental_answers?: Json
           updated_at?: string
         }
         Relationships: [
@@ -3824,6 +3854,60 @@ export type Database = {
             columns: ["worker_type_id"]
             isOneToOne: false
             referencedRelation: "worker_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_supplemental_questions: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          label: string
+          options: Json | null
+          required: boolean
+          requisition_id: string
+          sort_order: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          label: string
+          options?: Json | null
+          required?: boolean
+          requisition_id: string
+          sort_order?: number
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string
+          options?: Json | null
+          required?: boolean
+          requisition_id?: string
+          sort_order?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_supplemental_questions_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "job_requisitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_supplemental_questions_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "job_requisitions_public"
             referencedColumns: ["id"]
           },
         ]

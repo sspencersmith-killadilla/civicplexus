@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, CheckCircle2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { getActiveApplicationTemplate, listSupplementalQuestions } from "@/lib/application-templates.functions";
 
 const jobQuery = (slug: string) => queryOptions({
   queryKey: ["public-careers", slug],
@@ -42,9 +44,20 @@ function ApplyPage() {
   const [ready, setReady] = useState(false);
   const [honey, setHoney] = useState("");
   const [selfId, setSelfId] = useState({ gender: "", race_ethnicity: "", veteran_status: "", disability_status: "", declined: false });
+  const [template, setTemplate] = useState<any>(null);
+  const [supplementals, setSupplementals] = useState<any[]>([]);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [suppAnswers, setSuppAnswers] = useState<Record<string, any>>({});
   const [submitted, setSubmitted] = useState<{ id: string; portal_path: string; portal_url: string; portal_expires_at: string } | null>(null);
 
-  useEffect(() => setReady(true), []);
+  const tplFn = useServerFn(getActiveApplicationTemplate);
+  const suppFn = useServerFn(listSupplementalQuestions);
+
+  useEffect(() => {
+    setReady(true);
+    tplFn().then((t) => setTemplate(t)).catch(() => {});
+    suppFn({ data: { requisition_id: j.id } }).then((rows) => setSupplementals(rows ?? [])).catch(() => {});
+  }, [j.id]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,6 +65,22 @@ function ApplyPage() {
     if (!form.name.trim() || !form.email.trim()) {
       toast.error("Name and email are required");
       return;
+    }
+    // Required base template fields
+    for (const s of (template?.schema?.sections ?? [])) {
+      for (const f of (s.fields ?? [])) {
+        if (f.required && (answers[f.key] === undefined || answers[f.key] === "" || answers[f.key] === null)) {
+          toast.error(`Missing required field: ${f.label}`);
+          return;
+        }
+      }
+    }
+    // Required supplementals
+    for (const q of supplementals) {
+      if (q.required && (suppAnswers[q.key] === undefined || suppAnswers[q.key] === "" || suppAnswers[q.key] === null)) {
+        toast.error(`Please answer: ${q.label}`);
+        return;
+      }
     }
     setSubmitting(true);
     try {
@@ -62,6 +91,8 @@ function ApplyPage() {
       fd.append("phone", form.phone);
       fd.append("cover_letter", form.cover_letter);
       if (file) fd.append("resume", file);
+      if (Object.keys(answers).length) fd.append("answers", JSON.stringify(answers));
+      if (Object.keys(suppAnswers).length) fd.append("supplemental_answers", JSON.stringify(suppAnswers));
       if (selfId.declined || selfId.gender || selfId.race_ethnicity || selfId.veteran_status || selfId.disability_status) {
         fd.append("self_id", JSON.stringify(selfId));
       }
@@ -132,6 +163,34 @@ function ApplyPage() {
             <div><Label>Resume (PDF, DOC, DOCX)</Label><Input type="file" accept=".pdf,.doc,.docx" onChange={(e)=>setFile(e.target.files?.[0] ?? null)} /></div>
             <div><Label>Cover letter</Label><Textarea rows={6} value={form.cover_letter} onChange={(e)=>setForm({...form, cover_letter: e.target.value})} /></div>
 
+            {template?.schema?.sections?.map((s: any, si: number) => (
+              <section key={si} className="space-y-3 border-t pt-4">
+                <h3 className="text-sm font-semibold">{s.title}</h3>
+                {(s.fields ?? []).map((f: any) => (
+                  <DynamicField
+                    key={f.key}
+                    field={f}
+                    value={answers[f.key]}
+                    onChange={(v: any) => setAnswers((a) => ({ ...a, [f.key]: v }))}
+                  />
+                ))}
+              </section>
+            ))}
+
+            {supplementals.length > 0 && (
+              <section className="space-y-3 border-t pt-4">
+                <h3 className="text-sm font-semibold">Supplemental questions</h3>
+                {supplementals.map((q) => (
+                  <DynamicField
+                    key={q.key}
+                    field={q}
+                    value={suppAnswers[q.key]}
+                    onChange={(v: any) => setSuppAnswers((a) => ({ ...a, [q.key]: v }))}
+                  />
+                ))}
+              </section>
+            )}
+
             <details className="border rounded p-4 bg-secondary/30">
               <summary className="text-sm font-medium cursor-pointer">Voluntary self-identification (optional, EEO-4)</summary>
               <p className="text-xs text-muted-foreground mt-2 mb-3">
@@ -174,6 +233,34 @@ function ApplyPage() {
         </>
         )}
       </main>
+    </div>
+  );
+}
+
+function DynamicField({ field, value, onChange }: { field: any; value: any; onChange: (v: any) => void }) {
+  const v = value ?? "";
+  const opts: Array<{ value: string; label: string }> = field.options ?? [];
+  return (
+    <div>
+      <Label>{field.label}{field.required && " *"}</Label>
+      {field.type === "textarea" ? (
+        <Textarea value={v} onChange={(e) => onChange(e.target.value)} />
+      ) : field.type === "boolean" ? (
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} /> Yes
+        </label>
+      ) : field.type === "select" ? (
+        <select className="w-full border rounded h-9 px-2 bg-background" value={v} onChange={(e) => onChange(e.target.value)}>
+          <option value="">—</option>
+          {opts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      ) : (
+        <Input
+          type={field.type === "number" ? "number" : field.type === "date" ? "date" : field.type === "email" ? "email" : field.type === "tel" ? "tel" : "text"}
+          value={v}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
     </div>
   );
 }
