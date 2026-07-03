@@ -336,13 +336,23 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
               value={form.position_id}
               onChange={(e) => {
                 const pid = e.target.value;
-                const pos = (positionsQ.data ?? []).find((p) => p.id === pid);
+                const pos = (positionsQ.data ?? []).find((p) => p.id === pid) as any;
                 setForm({
                   ...form,
                   position_id: pid,
                   title: pos?.title ?? form.title,
                   department: pos?.department ?? form.department,
+                  summary: pos?.default_summary ?? form.summary,
+                  essential_functions: pos?.default_essential_functions ?? form.essential_functions,
+                  ksa: pos?.default_ksa ?? form.ksa,
+                  qualifications: pos?.default_qualifications ?? form.qualifications,
+                  physical_demands: pos?.default_physical_demands ?? form.physical_demands,
+                  supplemental: pos?.default_supplemental ?? form.supplemental,
+                  benefits: pos?.default_benefits ?? form.benefits,
                 });
+                if (pos && (pos.default_summary || pos.default_essential_functions || pos.default_qualifications)) {
+                  toast.message("Pre-filled from position defaults", { description: "Edit any field for this posting." });
+                }
               }}
             >
               <option value="">— Custom (no classification) —</option>
