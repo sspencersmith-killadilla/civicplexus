@@ -81,6 +81,7 @@ import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authentica
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as CandidateTokenIndexRouteImport } from './routes/candidate.$token.index'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
+import { Route as AuthenticatedTeamsIndexRouteImport } from './routes/_authenticated/teams.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
 import { Route as AuthenticatedReviewCyclesIndexRouteImport } from './routes/_authenticated/review-cycles.index'
 import { Route as AuthenticatedPoliciesIndexRouteImport } from './routes/_authenticated/policies.index'
@@ -548,6 +549,11 @@ const AuthenticatedTemplatesIndexRoute =
     path: '/templates/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTeamsIndexRoute = AuthenticatedTeamsIndexRouteImport.update({
+  id: '/teams/',
+  path: '/teams/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReviewsIndexRoute =
   AuthenticatedReviewsIndexRouteImport.update({
     id: '/reviews/',
@@ -1125,6 +1131,7 @@ export interface FileRoutesByFullPath {
   '/policies/': typeof AuthenticatedPoliciesIndexRoute
   '/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
+  '/teams/': typeof AuthenticatedTeamsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
@@ -1273,6 +1280,7 @@ export interface FileRoutesByTo {
   '/policies': typeof AuthenticatedPoliciesIndexRoute
   '/review-cycles': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
+  '/teams': typeof AuthenticatedTeamsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/candidate/$token': typeof CandidateTokenIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
@@ -1428,6 +1436,7 @@ export interface FileRoutesById {
   '/_authenticated/policies/': typeof AuthenticatedPoliciesIndexRoute
   '/_authenticated/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
+  '/_authenticated/teams/': typeof AuthenticatedTeamsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
@@ -1583,6 +1592,7 @@ export interface FileRouteTypes {
     | '/policies/'
     | '/review-cycles/'
     | '/reviews/'
+    | '/teams/'
     | '/templates/'
     | '/candidate/$token/'
     | '/careers/$slug/'
@@ -1731,6 +1741,7 @@ export interface FileRouteTypes {
     | '/policies'
     | '/review-cycles'
     | '/reviews'
+    | '/teams'
     | '/templates'
     | '/candidate/$token'
     | '/careers/$slug'
@@ -1885,6 +1896,7 @@ export interface FileRouteTypes {
     | '/_authenticated/policies/'
     | '/_authenticated/review-cycles/'
     | '/_authenticated/reviews/'
+    | '/_authenticated/teams/'
     | '/_authenticated/templates/'
     | '/candidate/$token/'
     | '/careers/$slug/'
@@ -2465,6 +2477,13 @@ declare module '@tanstack/react-router' {
       path: '/templates'
       fullPath: '/templates/'
       preLoaderRoute: typeof AuthenticatedTemplatesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/teams/': {
+      id: '/_authenticated/teams/'
+      path: '/teams'
+      fullPath: '/teams/'
+      preLoaderRoute: typeof AuthenticatedTeamsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reviews/': {
@@ -3216,6 +3235,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPayrollIndexRoute: typeof AuthenticatedPayrollIndexRoute
   AuthenticatedReviewCyclesIndexRoute: typeof AuthenticatedReviewCyclesIndexRoute
   AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
+  AuthenticatedTeamsIndexRoute: typeof AuthenticatedTeamsIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
   AuthenticatedInterviewsAsyncIdRoute: typeof AuthenticatedInterviewsAsyncIdRoute
 }
@@ -3315,6 +3335,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPayrollIndexRoute: AuthenticatedPayrollIndexRoute,
   AuthenticatedReviewCyclesIndexRoute: AuthenticatedReviewCyclesIndexRoute,
   AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
+  AuthenticatedTeamsIndexRoute: AuthenticatedTeamsIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
   AuthenticatedInterviewsAsyncIdRoute: AuthenticatedInterviewsAsyncIdRoute,
 }
