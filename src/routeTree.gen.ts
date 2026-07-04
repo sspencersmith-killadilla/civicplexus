@@ -146,6 +146,7 @@ import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/ba
 import { Route as AuthenticatedReviewCyclesIdCalibrationRouteImport } from './routes/_authenticated/review-cycles.$id.calibration'
 import { Route as AuthenticatedInterviewsAsyncIdRouteImport } from './routes/_authenticated/interviews.async.$id'
 import { Route as AuthenticatedInterviewsIdRoomRouteImport } from './routes/_authenticated/interviews.$id.room'
+import { Route as AuthenticatedFormsKeyEditRouteImport } from './routes/_authenticated/forms.$key.edit'
 import { Route as AuthenticatedAdminOfficialsApplicationsCompareRouteImport } from './routes/_authenticated/admin-officials.applications.compare'
 import { Route as AuthenticatedAdminOfficialsApplicationsIdRouteImport } from './routes/_authenticated/admin-officials.applications.$id'
 import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim.v2.Users'
@@ -912,6 +913,12 @@ const AuthenticatedInterviewsIdRoomRoute =
     path: '/room',
     getParentRoute: () => AuthenticatedInterviewsIdRoute,
   } as any)
+const AuthenticatedFormsKeyEditRoute =
+  AuthenticatedFormsKeyEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthenticatedFormsKeyRoute,
+  } as any)
 const AuthenticatedAdminOfficialsApplicationsCompareRoute =
   AuthenticatedAdminOfficialsApplicationsCompareRouteImport.update({
     id: '/applications/compare',
@@ -1077,7 +1084,7 @@ export interface FileRoutesByFullPath {
   '/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
   '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
-  '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/forms/$key': typeof AuthenticatedFormsKeyRouteWithChildren
   '/forms/new': typeof AuthenticatedFormsNewRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
@@ -1123,6 +1130,7 @@ export interface FileRoutesByFullPath {
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
+  '/forms/$key/edit': typeof AuthenticatedFormsKeyEditRoute
   '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
@@ -1226,7 +1234,7 @@ export interface FileRoutesByTo {
   '/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
   '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
-  '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/forms/$key': typeof AuthenticatedFormsKeyRouteWithChildren
   '/forms/new': typeof AuthenticatedFormsNewRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
@@ -1270,6 +1278,7 @@ export interface FileRoutesByTo {
   '/careers/$slug': typeof CareersSlugIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
+  '/forms/$key/edit': typeof AuthenticatedFormsKeyEditRoute
   '/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
@@ -1378,7 +1387,7 @@ export interface FileRoutesById {
   '/_authenticated/compliance/tmrs': typeof AuthenticatedComplianceTmrsRoute
   '/_authenticated/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
-  '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRouteWithChildren
   '/_authenticated/forms/new': typeof AuthenticatedFormsNewRoute
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
@@ -1424,6 +1433,7 @@ export interface FileRoutesById {
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/_authenticated/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/_authenticated/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
+  '/_authenticated/forms/$key/edit': typeof AuthenticatedFormsKeyEditRoute
   '/_authenticated/interviews/$id/room': typeof AuthenticatedInterviewsIdRoomRoute
   '/_authenticated/interviews/async/$id': typeof AuthenticatedInterviewsAsyncIdRoute
   '/_authenticated/review-cycles/$id/calibration': typeof AuthenticatedReviewCyclesIdCalibrationRoute
@@ -1578,6 +1588,7 @@ export interface FileRouteTypes {
     | '/careers/$slug/'
     | '/admin-officials/applications/$id'
     | '/admin-officials/applications/compare'
+    | '/forms/$key/edit'
     | '/interviews/$id/room'
     | '/interviews/async/$id'
     | '/review-cycles/$id/calibration'
@@ -1725,6 +1736,7 @@ export interface FileRouteTypes {
     | '/careers/$slug'
     | '/admin-officials/applications/$id'
     | '/admin-officials/applications/compare'
+    | '/forms/$key/edit'
     | '/interviews/$id/room'
     | '/interviews/async/$id'
     | '/review-cycles/$id/calibration'
@@ -1878,6 +1890,7 @@ export interface FileRouteTypes {
     | '/careers/$slug/'
     | '/_authenticated/admin-officials/applications/$id'
     | '/_authenticated/admin-officials/applications/compare'
+    | '/_authenticated/forms/$key/edit'
     | '/_authenticated/interviews/$id/room'
     | '/_authenticated/interviews/async/$id'
     | '/_authenticated/review-cycles/$id/calibration'
@@ -2909,6 +2922,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInterviewsIdRoomRouteImport
       parentRoute: typeof AuthenticatedInterviewsIdRoute
     }
+    '/_authenticated/forms/$key/edit': {
+      id: '/_authenticated/forms/$key/edit'
+      path: '/edit'
+      fullPath: '/forms/$key/edit'
+      preLoaderRoute: typeof AuthenticatedFormsKeyEditRouteImport
+      parentRoute: typeof AuthenticatedFormsKeyRoute
+    }
     '/_authenticated/admin-officials/applications/compare': {
       id: '/_authenticated/admin-officials/applications/compare'
       path: '/applications/compare'
@@ -3058,6 +3078,19 @@ const AuthenticatedPoliciesRouteWithChildren =
     AuthenticatedPoliciesRouteChildren,
   )
 
+interface AuthenticatedFormsKeyRouteChildren {
+  AuthenticatedFormsKeyEditRoute: typeof AuthenticatedFormsKeyEditRoute
+}
+
+const AuthenticatedFormsKeyRouteChildren: AuthenticatedFormsKeyRouteChildren = {
+  AuthenticatedFormsKeyEditRoute: AuthenticatedFormsKeyEditRoute,
+}
+
+const AuthenticatedFormsKeyRouteWithChildren =
+  AuthenticatedFormsKeyRoute._addFileChildren(
+    AuthenticatedFormsKeyRouteChildren,
+  )
+
 interface AuthenticatedInterviewsIdRouteChildren {
   AuthenticatedInterviewsIdRoomRoute: typeof AuthenticatedInterviewsIdRoomRoute
   AuthenticatedInterviewsIdIndexRoute: typeof AuthenticatedInterviewsIdIndexRoute
@@ -3155,7 +3188,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedComplianceTmrsRoute: typeof AuthenticatedComplianceTmrsRoute
   AuthenticatedEmployeesIdRoute: typeof AuthenticatedEmployeesIdRoute
   AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
-  AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
+  AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRouteWithChildren
   AuthenticatedFormsNewRoute: typeof AuthenticatedFormsNewRoute
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
   AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRouteWithChildren
@@ -3252,7 +3285,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedComplianceTmrsRoute: AuthenticatedComplianceTmrsRoute,
   AuthenticatedEmployeesIdRoute: AuthenticatedEmployeesIdRoute,
   AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
-  AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
+  AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRouteWithChildren,
   AuthenticatedFormsNewRoute: AuthenticatedFormsNewRoute,
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
   AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRouteWithChildren,
