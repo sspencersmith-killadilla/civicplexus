@@ -14,7 +14,7 @@ export type FormMetadata = {
   title: string;
   description: string;
   jurisdiction: string;
-  version: number;
+  version: string;
   requires_signature: boolean;
 };
 
@@ -26,7 +26,7 @@ export function validateSchema(meta: FormMetadata, schema: FormSchema): string[]
   if (!/^[a-z0-9_-]+$/.test(meta.key)) errs.push("Key must be lowercase letters, numbers, dashes or underscores.");
   if (!meta.title.trim()) errs.push("Title is required.");
   if (!meta.jurisdiction.trim()) errs.push("Jurisdiction is required.");
-  if (!Number.isFinite(meta.version) || meta.version < 1) errs.push("Version must be ≥ 1.");
+  if (!meta.version.trim()) errs.push("Version is required.");
   if (!schema.sections.length) errs.push("Add at least one section.");
   const fieldKeys = new Set<string>();
   schema.sections.forEach((s, si) => {
@@ -133,8 +133,9 @@ export function FormSchemaEditor({
             </div>
             <div>
               <Label>Version</Label>
-              <Input type="number" min={1} value={meta.version}
-                onChange={(e) => setMeta({ ...meta, version: Number(e.target.value) || 1 })} />
+              <Input value={meta.version}
+                onChange={(e) => setMeta({ ...meta, version: e.target.value })}
+                placeholder="1" />
             </div>
             <div className="sm:col-span-2">
               <Label>Title</Label>
