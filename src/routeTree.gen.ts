@@ -79,6 +79,7 @@ import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
 import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authenticated/admin-identity'
 import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin-demo'
+import { Route as ServeApplicantIndexRouteImport } from './routes/serve.applicant.index'
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as CandidateTokenIndexRouteImport } from './routes/candidate.$token.index'
 import { Route as AuthenticatedVolunteerIndexRouteImport } from './routes/_authenticated/volunteer.index'
@@ -103,6 +104,7 @@ import { Route as AuthenticatedAdminOfficialsIndexRouteImport } from './routes/_
 import { Route as ServeVolunteerJobsRouteImport } from './routes/serve.volunteer.jobs'
 import { Route as ServeVolunteerClockRouteImport } from './routes/serve.volunteer.clock'
 import { Route as ServeStatusTokenRouteImport } from './routes/serve.status.$token'
+import { Route as ServeApplicantSigninRouteImport } from './routes/serve.applicant.signin'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
 import { Route as CandidateTokenInterviewRouteImport } from './routes/candidate.$token.interview'
 import { Route as ApiPublicVolunteerSignupRouteImport } from './routes/api/public/volunteer-signup'
@@ -110,6 +112,7 @@ import { Route as ApiPublicVolunteerClockRouteImport } from './routes/api/public
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicBoardApplicationsRouteImport } from './routes/api/public/board-applications'
+import { Route as ApiPublicApplicantPortalRouteImport } from './routes/api/public/applicant-portal'
 import { Route as AuthenticatedVolunteerProfileRouteImport } from './routes/_authenticated/volunteer.profile'
 import { Route as AuthenticatedVolunteerFindRouteImport } from './routes/_authenticated/volunteer.find'
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
@@ -544,6 +547,11 @@ const AuthenticatedAdminDemoRoute = AuthenticatedAdminDemoRouteImport.update({
   path: '/admin-demo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ServeApplicantIndexRoute = ServeApplicantIndexRouteImport.update({
+  id: '/serve/applicant/',
+  path: '/serve/applicant/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CareersSlugIndexRoute = CareersSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -678,6 +686,11 @@ const ServeStatusTokenRoute = ServeStatusTokenRouteImport.update({
   path: '/serve/status/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServeApplicantSigninRoute = ServeApplicantSigninRouteImport.update({
+  id: '/serve/applicant/signin',
+  path: '/serve/applicant/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CareersSlugApplyRoute = CareersSlugApplyRouteImport.update({
   id: '/apply',
   path: '/apply',
@@ -714,6 +727,12 @@ const ApiPublicBoardApplicationsRoute =
   ApiPublicBoardApplicationsRouteImport.update({
     id: '/api/public/board-applications',
     path: '/api/public/board-applications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicApplicantPortalRoute =
+  ApiPublicApplicantPortalRouteImport.update({
+    id: '/api/public/applicant-portal',
+    path: '/api/public/applicant-portal',
     getParentRoute: () => rootRouteImport,
   } as any)
 const AuthenticatedVolunteerProfileRoute =
@@ -1149,6 +1168,7 @@ export interface FileRoutesByFullPath {
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/volunteer/find': typeof AuthenticatedVolunteerFindRoute
   '/volunteer/profile': typeof AuthenticatedVolunteerProfileRoute
+  '/api/public/applicant-portal': typeof ApiPublicApplicantPortalRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
@@ -1156,6 +1176,7 @@ export interface FileRoutesByFullPath {
   '/api/public/volunteer-signup': typeof ApiPublicVolunteerSignupRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/applicant/signin': typeof ServeApplicantSigninRoute
   '/serve/status/$token': typeof ServeStatusTokenRoute
   '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
   '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
@@ -1180,6 +1201,7 @@ export interface FileRoutesByFullPath {
   '/volunteer/': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
+  '/serve/applicant/': typeof ServeApplicantIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
   '/forms/$key/edit': typeof AuthenticatedFormsKeyEditRoute
@@ -1303,6 +1325,7 @@ export interface FileRoutesByTo {
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/volunteer/find': typeof AuthenticatedVolunteerFindRoute
   '/volunteer/profile': typeof AuthenticatedVolunteerProfileRoute
+  '/api/public/applicant-portal': typeof ApiPublicApplicantPortalRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
@@ -1310,6 +1333,7 @@ export interface FileRoutesByTo {
   '/api/public/volunteer-signup': typeof ApiPublicVolunteerSignupRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/applicant/signin': typeof ServeApplicantSigninRoute
   '/serve/status/$token': typeof ServeStatusTokenRoute
   '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
   '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
@@ -1334,6 +1358,7 @@ export interface FileRoutesByTo {
   '/volunteer': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token': typeof CandidateTokenIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
+  '/serve/applicant': typeof ServeApplicantIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
   '/forms/$key/edit': typeof AuthenticatedFormsKeyEditRoute
@@ -1465,6 +1490,7 @@ export interface FileRoutesById {
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/_authenticated/volunteer/find': typeof AuthenticatedVolunteerFindRoute
   '/_authenticated/volunteer/profile': typeof AuthenticatedVolunteerProfileRoute
+  '/api/public/applicant-portal': typeof ApiPublicApplicantPortalRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
@@ -1472,6 +1498,7 @@ export interface FileRoutesById {
   '/api/public/volunteer-signup': typeof ApiPublicVolunteerSignupRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/applicant/signin': typeof ServeApplicantSigninRoute
   '/serve/status/$token': typeof ServeStatusTokenRoute
   '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
   '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
@@ -1496,6 +1523,7 @@ export interface FileRoutesById {
   '/_authenticated/volunteer/': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
+  '/serve/applicant/': typeof ServeApplicantIndexRoute
   '/_authenticated/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/_authenticated/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
   '/_authenticated/forms/$key/edit': typeof AuthenticatedFormsKeyEditRoute
@@ -1627,6 +1655,7 @@ export interface FileRouteTypes {
     | '/transcript/$employeeId'
     | '/volunteer/find'
     | '/volunteer/profile'
+    | '/api/public/applicant-portal'
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
@@ -1634,6 +1663,7 @@ export interface FileRouteTypes {
     | '/api/public/volunteer-signup'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/applicant/signin'
     | '/serve/status/$token'
     | '/serve/volunteer/clock'
     | '/serve/volunteer/jobs'
@@ -1658,6 +1688,7 @@ export interface FileRouteTypes {
     | '/volunteer/'
     | '/candidate/$token/'
     | '/careers/$slug/'
+    | '/serve/applicant/'
     | '/admin-officials/applications/$id'
     | '/admin-officials/applications/compare'
     | '/forms/$key/edit'
@@ -1781,6 +1812,7 @@ export interface FileRouteTypes {
     | '/transcript/$employeeId'
     | '/volunteer/find'
     | '/volunteer/profile'
+    | '/api/public/applicant-portal'
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
@@ -1788,6 +1820,7 @@ export interface FileRouteTypes {
     | '/api/public/volunteer-signup'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/applicant/signin'
     | '/serve/status/$token'
     | '/serve/volunteer/clock'
     | '/serve/volunteer/jobs'
@@ -1812,6 +1845,7 @@ export interface FileRouteTypes {
     | '/volunteer'
     | '/candidate/$token'
     | '/careers/$slug'
+    | '/serve/applicant'
     | '/admin-officials/applications/$id'
     | '/admin-officials/applications/compare'
     | '/forms/$key/edit'
@@ -1942,6 +1976,7 @@ export interface FileRouteTypes {
     | '/_authenticated/transcript/$employeeId'
     | '/_authenticated/volunteer/find'
     | '/_authenticated/volunteer/profile'
+    | '/api/public/applicant-portal'
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
@@ -1949,6 +1984,7 @@ export interface FileRouteTypes {
     | '/api/public/volunteer-signup'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/applicant/signin'
     | '/serve/status/$token'
     | '/serve/volunteer/clock'
     | '/serve/volunteer/jobs'
@@ -1973,6 +2009,7 @@ export interface FileRouteTypes {
     | '/_authenticated/volunteer/'
     | '/candidate/$token/'
     | '/careers/$slug/'
+    | '/serve/applicant/'
     | '/_authenticated/admin-officials/applications/$id'
     | '/_authenticated/admin-officials/applications/compare'
     | '/_authenticated/forms/$key/edit'
@@ -2018,14 +2055,17 @@ export interface RootRouteChildren {
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
   ServeIndexRoute: typeof ServeIndexRoute
+  ApiPublicApplicantPortalRoute: typeof ApiPublicApplicantPortalRoute
   ApiPublicBoardApplicationsRoute: typeof ApiPublicBoardApplicationsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
   ApiPublicVolunteerClockRoute: typeof ApiPublicVolunteerClockRoute
   ApiPublicVolunteerSignupRoute: typeof ApiPublicVolunteerSignupRoute
   CandidateTokenInterviewRoute: typeof CandidateTokenInterviewRoute
+  ServeApplicantSigninRoute: typeof ServeApplicantSigninRoute
   ServeStatusTokenRoute: typeof ServeStatusTokenRoute
   CandidateTokenIndexRoute: typeof CandidateTokenIndexRoute
+  ServeApplicantIndexRoute: typeof ServeApplicantIndexRoute
   ApiPublicBadgeSerialRoute: typeof ApiPublicBadgeSerialRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
@@ -2538,6 +2578,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDemoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/serve/applicant/': {
+      id: '/serve/applicant/'
+      path: '/serve/applicant'
+      fullPath: '/serve/applicant/'
+      preLoaderRoute: typeof ServeApplicantIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/careers/$slug/': {
       id: '/careers/$slug/'
       path: '/'
@@ -2706,6 +2753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServeStatusTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/serve/applicant/signin': {
+      id: '/serve/applicant/signin'
+      path: '/serve/applicant/signin'
+      fullPath: '/serve/applicant/signin'
+      preLoaderRoute: typeof ServeApplicantSigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/careers/$slug/apply': {
       id: '/careers/$slug/apply'
       path: '/apply'
@@ -2753,6 +2807,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/board-applications'
       fullPath: '/api/public/board-applications'
       preLoaderRoute: typeof ApiPublicBoardApplicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/applicant-portal': {
+      id: '/api/public/applicant-portal'
+      path: '/api/public/applicant-portal'
+      fullPath: '/api/public/applicant-portal'
+      preLoaderRoute: typeof ApiPublicApplicantPortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/volunteer/profile': {
@@ -3537,14 +3598,17 @@ const rootRouteChildren: RootRouteChildren = {
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
   ServeIndexRoute: ServeIndexRoute,
+  ApiPublicApplicantPortalRoute: ApiPublicApplicantPortalRoute,
   ApiPublicBoardApplicationsRoute: ApiPublicBoardApplicationsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,
   ApiPublicVolunteerClockRoute: ApiPublicVolunteerClockRoute,
   ApiPublicVolunteerSignupRoute: ApiPublicVolunteerSignupRoute,
   CandidateTokenInterviewRoute: CandidateTokenInterviewRoute,
+  ServeApplicantSigninRoute: ServeApplicantSigninRoute,
   ServeStatusTokenRoute: ServeStatusTokenRoute,
   CandidateTokenIndexRoute: CandidateTokenIndexRoute,
+  ServeApplicantIndexRoute: ServeApplicantIndexRoute,
   ApiPublicBadgeSerialRoute: ApiPublicBadgeSerialRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
