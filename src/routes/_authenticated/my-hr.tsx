@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp, Cake, PartyPopper, Target, Clock } from "lucide-react";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp, Cake, PartyPopper, Target, Clock, ChevronDown } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
 import { getDirectReportTaskCounts } from "@/lib/my-team.functions";
@@ -58,6 +59,35 @@ const TEAM_STATUS_COLOR: Record<string, string> = {
   complete: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
   archived: "bg-muted text-muted-foreground line-through",
 };
+
+function CollapsibleSection({
+  title,
+  icon,
+  children,
+  rightActions,
+  defaultOpen = true,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  rightActions?: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <div className="flex items-center justify-between mb-3">
+        <CollapsibleTrigger className="flex items-center gap-2 group cursor-pointer">
+          {icon}
+          <h3 className="font-medium">{title}</h3>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </CollapsibleTrigger>
+        {rightActions}
+      </div>
+      <CollapsibleContent>{children}</CollapsibleContent>
+    </Collapsible>
+  );
+}
 
 function PersonAvatar({ photoPath, name, size, fetchUrl }: { photoPath: string | null; name: string; size: number; fetchUrl: (args: { data: { path: string } }) => Promise<{ url: string }> }) {
   const { data: url } = useQuery({
@@ -224,31 +254,32 @@ function MyHR() {
   return (
     <AppShell title="My HR">
       <div className="space-y-6">
-        <Card className="p-5">
-          <div className="flex items-center gap-4">
-            <PersonAvatar photoPath={empQ.data?.photo_path ?? null} name={empQ.data ? `${empQ.data.first_name} ${empQ.data.last_name}` : ""} size={64} fetchUrl={photoUrlFn} />
-            <div className="min-w-0">
-              <h2 className="text-lg font-medium truncate">Welcome{empQ.data ? `, ${empQ.data.first_name}` : ""}</h2>
-              <p className="text-sm text-muted-foreground mt-0.5 truncate">
-                {empQ.data ? `${empQ.data.job_title ?? "—"} · ${empQ.data.department ?? "—"}` : "Loading your profile…"}
-              </p>
-              {empQ.data?.start_date && (
-                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {formatTenure(empQ.data.start_date) ? `${formatTenure(empQ.data.start_date)} with the city` : ""}
-                  <span className="opacity-60">· since {empQ.data.start_date}</span>
+        <CollapsibleSection title="Profile" icon={<UserIcon className="h-4 w-4 text-primary" />}>
+          <Card className="p-5">
+            <div className="flex items-center gap-4">
+              <PersonAvatar photoPath={empQ.data?.photo_path ?? null} name={empQ.data ? `${empQ.data.first_name} ${empQ.data.last_name}` : ""} size={64} fetchUrl={photoUrlFn} />
+              <div className="min-w-0">
+                <h2 className="text-lg font-medium truncate">Welcome{empQ.data ? `, ${empQ.data.first_name}` : ""}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                  {empQ.data ? `${empQ.data.job_title ?? "—"} · ${empQ.data.department ?? "—"}` : "Loading your profile…"}
                 </p>
-              )}
-              {empQ.data?.id && (
-                <Link to="/employees/$id" params={{ id: empQ.data.id }} className="text-xs text-primary hover:underline">View my profile →</Link>
-              )}
+                {empQ.data?.start_date && (
+                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formatTenure(empQ.data.start_date) ? `${formatTenure(empQ.data.start_date)} with the city` : ""}
+                    <span className="opacity-60">· since {empQ.data.start_date}</span>
+                  </p>
+                )}
+                {empQ.data?.id && (
+                  <Link to="/employees/$id" params={{ id: empQ.data.id }} className="text-xs text-primary hover:underline">View my profile →</Link>
+                )}
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </CollapsibleSection>
 
         {empQ.data && (
-          <section>
-            <h3 className="font-medium mb-3 flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> My team</h3>
+          <CollapsibleSection title="My team" icon={<Users className="h-4 w-4 text-primary" />}>
             <div className="grid md:grid-cols-2 gap-4">
               <Card className="p-4">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1 mb-2"><ChevronUp className="h-3 w-3" /> Reports to</div>
@@ -294,15 +325,15 @@ function MyHR() {
                 )}
               </Card>
             </div>
-          </section>
+          </CollapsibleSection>
         )}
 
         {empQ.data && (
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> My goals</h3>
-              <Link to="/goals"><Button size="sm" variant="outline">All goals</Button></Link>
-            </div>
+          <CollapsibleSection
+            title="My goals"
+            icon={<Target className="h-4 w-4 text-primary" />}
+            rightActions={<Link to="/goals"><Button size="sm" variant="outline">All goals</Button></Link>}
+          >
             <Card className="divide-y">
               {(myGoalsQ.data ?? []).map((g) => (
                 <Link key={g.id} to="/goals" className="block p-3 hover:bg-muted/40">
@@ -324,15 +355,15 @@ function MyHR() {
                 <p className="p-4 text-sm text-muted-foreground">No active goals. Talk with your supervisor to set some.</p>
               )}
             </Card>
-          </section>
+          </CollapsibleSection>
         )}
 
         {empQ.data && (
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> My cross-functional teams</h3>
-              <Link to="/teams"><Button size="sm" variant="outline">All teams</Button></Link>
-            </div>
+          <CollapsibleSection
+            title="My cross-functional teams"
+            icon={<Users className="h-4 w-4 text-primary" />}
+            rightActions={<Link to="/teams"><Button size="sm" variant="outline">All teams</Button></Link>}
+          >
             <div className="grid gap-3 md:grid-cols-2">
               {(myTeamsQ.data ?? []).filter((m) => m.teams).map((m) => (
                 <Link key={m.teams!.id} to="/teams/$id" params={{ id: m.teams!.id }}>
@@ -357,7 +388,7 @@ function MyHR() {
                 </Card>
               )}
             </div>
-          </section>
+          </CollapsibleSection>
         )}
 
         {empQ.data && (reportsQ.data?.length ?? 0) > 0 && (() => {
@@ -386,8 +417,7 @@ function MyHR() {
           const fmt = (d: Date) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
           const label = (n: number) => (n === 0 ? "today" : n === 1 ? "tomorrow" : `in ${n} days`);
           return (
-            <section>
-              <h3 className="font-medium mb-3 flex items-center gap-2"><PartyPopper className="h-4 w-4 text-primary" /> Upcoming celebrations</h3>
+            <CollapsibleSection title="Upcoming celebrations" icon={<PartyPopper className="h-4 w-4 text-primary" />}>
               <Card className="divide-y">
                 {items.map((it, i) => (
                   <Link key={i} to="/employees/$id" params={{ id: it.id }} className="flex items-center gap-3 p-3 hover:bg-muted/40">
@@ -406,15 +436,15 @@ function MyHR() {
                 ))}
               </Card>
               <p className="text-xs text-muted-foreground mt-2">Showing the next {horizon} days. Birthdays come from each employee's date of birth on file; HR can edit it on the employee record.</p>
-            </section>
+            </CollapsibleSection>
           );
         })()}
 
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /> Leave balances</h3>
-            <Link to="/leave"><Button size="sm" variant="outline"><Plus className="h-4 w-4 mr-1" /> Request leave</Button></Link>
-          </div>
+        <CollapsibleSection
+          title="Leave balances"
+          icon={<CalendarDays className="h-4 w-4 text-primary" />}
+          rightActions={<Link to="/leave"><Button size="sm" variant="outline"><Plus className="h-4 w-4 mr-1" /> Request leave</Button></Link>}
+        >
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {(balancesQ.data ?? []).map((b, i) => (
               <Card key={i} className="p-4">
@@ -430,10 +460,9 @@ function MyHR() {
               <p className="text-sm text-muted-foreground">No leave plans yet. Ask HR to enroll you.</p>
             )}
           </div>
-        </section>
+        </CollapsibleSection>
 
-        <section>
-          <h3 className="font-medium mb-3 flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /> Recent leave requests</h3>
+        <CollapsibleSection title="Recent leave requests" icon={<CalendarDays className="h-4 w-4 text-primary" />}>
           <Card className="divide-y">
             {(reqsQ.data ?? []).map((r) => (
               <Link key={r.id} to="/leave/$id" params={{ id: r.id }} className="block p-3 hover:bg-muted/40">
@@ -448,11 +477,10 @@ function MyHR() {
             ))}
             {(reqsQ.data?.length ?? 0) === 0 && <p className="p-4 text-sm text-muted-foreground">No requests yet.</p>}
           </Card>
-        </section>
+        </CollapsibleSection>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <section>
-            <h3 className="font-medium mb-3 flex items-center gap-2"><GraduationCap className="h-4 w-4 text-primary" /> Training due</h3>
+          <CollapsibleSection title="Training due" icon={<GraduationCap className="h-4 w-4 text-primary" />}>
             <Card className="divide-y">
               {(trainingQ.data ?? []).map((t) => {
                 const overdue = t.due_date && new Date(t.due_date) < new Date();
@@ -472,20 +500,18 @@ function MyHR() {
               })}
               {(trainingQ.data?.length ?? 0) === 0 && <p className="p-4 text-sm text-muted-foreground">All current.</p>}
             </Card>
-          </section>
-          <section>
-            <h3 className="font-medium mb-3 flex items-center gap-2"><ScrollText className="h-4 w-4 text-primary" /> Policies to review</h3>
+          </CollapsibleSection>
+          <CollapsibleSection title="Policies to review" icon={<ScrollText className="h-4 w-4 text-primary" />}>
             <Card className="divide-y">
               {(acksQ.data ?? []).map((p) => (
                 <Link key={p.id} to="/policies/$id" params={{ id: p.id }} className="block p-3 text-sm hover:bg-muted/40">{p.title}</Link>
               ))}
               {(acksQ.data?.length ?? 0) === 0 && <p className="p-4 text-sm text-muted-foreground">No policies.</p>}
             </Card>
-          </section>
+          </CollapsibleSection>
         </div>
 
-        <section>
-          <h3 className="font-medium mb-3 flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary" /> Quick links</h3>
+        <CollapsibleSection title="Quick links" icon={<ShieldAlert className="h-4 w-4 text-primary" />}>
           <div className="flex flex-wrap gap-2">
             <Link to="/grievances"><Button size="sm" variant="outline">File a grievance</Button></Link>
             <Link to="/policies"><Button size="sm" variant="outline">All policies</Button></Link>
@@ -497,13 +523,13 @@ function MyHR() {
               </Link>
             )}
           </div>
-        </section>
+        </CollapsibleSection>
 
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium flex items-center gap-2"><Briefcase className="h-4 w-4 text-primary" /> My internal applications</h3>
-            <Link to="/internal-careers"><Button size="sm" variant="outline">Browse open roles</Button></Link>
-          </div>
+        <CollapsibleSection
+          title="My internal applications"
+          icon={<Briefcase className="h-4 w-4 text-primary" />}
+          rightActions={<Link to="/internal-careers"><Button size="sm" variant="outline">Browse open roles</Button></Link>}
+        >
           <Card className="divide-y">
             {(myAppsQ.data ?? []).map((a) => (
               <div key={a.id} className="p-3 flex items-center justify-between gap-3">
@@ -524,61 +550,63 @@ function MyHR() {
             ))}
             {(myAppsQ.data?.length ?? 0) === 0 && <p className="p-4 text-sm text-muted-foreground">You haven't applied to any internal roles yet.</p>}
           </Card>
-        </section>
-      </div>
+        </CollapsibleSection>
 
-      {empQ.data?.id && (
-        <Card className="p-5 mt-6">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h2 className="font-medium flex items-center gap-2"><HistoryIcon className="h-4 w-4" /> My personnel history</h2>
-            <div className="flex items-center gap-2">
-              <Select value={historyFilter} onValueChange={setHistoryFilter}>
-                <SelectTrigger className="w-44 h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {[
-                    ["all", "All events"],
-                    ["hire", "Hire"],
-                    ["status", "Status"],
-                    ["compensation", "Compensation"],
-                    ["paf", "PAF"],
-                    ["review", "Reviews"],
-                    ["training", "Training"],
-                    ["provisioning", "Provisioning"],
-                    ["grievance", "Grievances"],
-                    ["audit", "Other audit"],
-                  ].map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="sm" onClick={exportMyHistoryCsv} disabled={!filteredHistory.length}>
-                <Download className="h-4 w-4 mr-2" /> Export CSV
-              </Button>
-            </div>
-          </div>
-          {!historyQ.data ? (
-            <p className="text-sm text-muted-foreground">Loading history…</p>
-          ) : filteredHistory.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No events recorded.</p>
-          ) : (
-            <ol className="relative border-l ml-2 space-y-4">
-              {filteredHistory.map((e, idx) => (
-                <li key={idx} className="pl-4 ml-2">
-                  <span className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full bg-primary" />
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="text-sm font-medium">{e.title}</p>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(e.at).toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="outline" className="text-[10px] capitalize">{e.category}</Badge>
-                    {e.actor && <span className="text-xs text-muted-foreground">by {e.actor}</span>}
-                  </div>
-                  {e.detail && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{e.detail}</p>}
-                  <HistoryAttachments employeeId={empQ.data!.id} attachments={e.attachments} />
-                </li>
-              ))}
-            </ol>
-          )}
-        </Card>
-      )}
+        {empQ.data?.id && (
+          <CollapsibleSection title="My personnel history" icon={<HistoryIcon className="h-4 w-4 text-primary" />}>
+            <Card className="p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h2 className="font-medium flex items-center gap-2"><HistoryIcon className="h-4 w-4" /> My personnel history</h2>
+                <div className="flex items-center gap-2">
+                  <Select value={historyFilter} onValueChange={setHistoryFilter}>
+                    <SelectTrigger className="w-44 h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[
+                        ["all", "All events"],
+                        ["hire", "Hire"],
+                        ["status", "Status"],
+                        ["compensation", "Compensation"],
+                        ["paf", "PAF"],
+                        ["review", "Reviews"],
+                        ["training", "Training"],
+                        ["provisioning", "Provisioning"],
+                        ["grievance", "Grievances"],
+                        ["audit", "Other audit"],
+                      ].map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm" onClick={exportMyHistoryCsv} disabled={!filteredHistory.length}>
+                    <Download className="h-4 w-4 mr-2" /> Export CSV
+                  </Button>
+                </div>
+              </div>
+              {!historyQ.data ? (
+                <p className="text-sm text-muted-foreground">Loading history…</p>
+              ) : filteredHistory.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No events recorded.</p>
+              ) : (
+                <ol className="relative border-l ml-2 space-y-4">
+                  {filteredHistory.map((e, idx) => (
+                    <li key={idx} className="pl-4 ml-2">
+                      <span className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full bg-primary" />
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <p className="text-sm font-medium">{e.title}</p>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(e.at).toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-[10px] capitalize">{e.category}</Badge>
+                        {e.actor && <span className="text-xs text-muted-foreground">by {e.actor}</span>}
+                      </div>
+                      {e.detail && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{e.detail}</p>}
+                      <HistoryAttachments employeeId={empQ.data!.id} attachments={e.attachments} />
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </Card>
+          </CollapsibleSection>
+        )}
+      </div>
 
       <Dialog open={!!completeFor} onOpenChange={(o) => !o && setCompleteFor(null)}>
         <DialogContent>
