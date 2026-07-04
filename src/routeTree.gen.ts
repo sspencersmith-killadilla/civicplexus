@@ -110,6 +110,7 @@ import { Route as ApiPublicVolunteerClockRouteImport } from './routes/api/public
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicBoardApplicationsRouteImport } from './routes/api/public/board-applications'
+import { Route as ApiPublicApplicantPortalRouteImport } from './routes/api/public/applicant-portal'
 import { Route as AuthenticatedVolunteerProfileRouteImport } from './routes/_authenticated/volunteer.profile'
 import { Route as AuthenticatedVolunteerFindRouteImport } from './routes/_authenticated/volunteer.find'
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
@@ -716,6 +717,12 @@ const ApiPublicBoardApplicationsRoute =
     path: '/api/public/board-applications',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicApplicantPortalRoute =
+  ApiPublicApplicantPortalRouteImport.update({
+    id: '/api/public/applicant-portal',
+    path: '/api/public/applicant-portal',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedVolunteerProfileRoute =
   AuthenticatedVolunteerProfileRouteImport.update({
     id: '/profile',
@@ -1149,6 +1156,7 @@ export interface FileRoutesByFullPath {
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/volunteer/find': typeof AuthenticatedVolunteerFindRoute
   '/volunteer/profile': typeof AuthenticatedVolunteerProfileRoute
+  '/api/public/applicant-portal': typeof ApiPublicApplicantPortalRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
@@ -1303,6 +1311,7 @@ export interface FileRoutesByTo {
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/volunteer/find': typeof AuthenticatedVolunteerFindRoute
   '/volunteer/profile': typeof AuthenticatedVolunteerProfileRoute
+  '/api/public/applicant-portal': typeof ApiPublicApplicantPortalRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
@@ -1465,6 +1474,7 @@ export interface FileRoutesById {
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/_authenticated/volunteer/find': typeof AuthenticatedVolunteerFindRoute
   '/_authenticated/volunteer/profile': typeof AuthenticatedVolunteerProfileRoute
+  '/api/public/applicant-portal': typeof ApiPublicApplicantPortalRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
@@ -1627,6 +1637,7 @@ export interface FileRouteTypes {
     | '/transcript/$employeeId'
     | '/volunteer/find'
     | '/volunteer/profile'
+    | '/api/public/applicant-portal'
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
@@ -1781,6 +1792,7 @@ export interface FileRouteTypes {
     | '/transcript/$employeeId'
     | '/volunteer/find'
     | '/volunteer/profile'
+    | '/api/public/applicant-portal'
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
@@ -1942,6 +1954,7 @@ export interface FileRouteTypes {
     | '/_authenticated/transcript/$employeeId'
     | '/_authenticated/volunteer/find'
     | '/_authenticated/volunteer/profile'
+    | '/api/public/applicant-portal'
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
@@ -2018,6 +2031,7 @@ export interface RootRouteChildren {
   CareersIndexRoute: typeof CareersIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
   ServeIndexRoute: typeof ServeIndexRoute
+  ApiPublicApplicantPortalRoute: typeof ApiPublicApplicantPortalRoute
   ApiPublicBoardApplicationsRoute: typeof ApiPublicBoardApplicationsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicJobApplicationsRoute: typeof ApiPublicJobApplicationsRoute
@@ -2753,6 +2767,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/board-applications'
       fullPath: '/api/public/board-applications'
       preLoaderRoute: typeof ApiPublicBoardApplicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/applicant-portal': {
+      id: '/api/public/applicant-portal'
+      path: '/api/public/applicant-portal'
+      fullPath: '/api/public/applicant-portal'
+      preLoaderRoute: typeof ApiPublicApplicantPortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/volunteer/profile': {
@@ -3537,6 +3558,7 @@ const rootRouteChildren: RootRouteChildren = {
   CareersIndexRoute: CareersIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
   ServeIndexRoute: ServeIndexRoute,
+  ApiPublicApplicantPortalRoute: ApiPublicApplicantPortalRoute,
   ApiPublicBoardApplicationsRoute: ApiPublicBoardApplicationsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicJobApplicationsRoute: ApiPublicJobApplicationsRoute,

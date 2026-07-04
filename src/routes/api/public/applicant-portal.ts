@@ -109,7 +109,7 @@ export const Route = createFileRoute("/api/public/applicant-portal")({
           }
 
           if (body.op === "contact") {
-            const patch: Record<string, string | null> = {};
+            const patch: { applicant_email?: string | null; applicant_phone?: string | null } = {};
             if (body.email !== undefined) patch.applicant_email = body.email ?? null;
             if (body.phone !== undefined) patch.applicant_phone = body.phone ?? null;
             if (Object.keys(patch).length === 0) return Response.json({ ok: true });
