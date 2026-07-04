@@ -18,7 +18,7 @@ function NewForm() {
   const { data: me } = useCurrentUser();
   const navigate = useNavigate();
   const [meta, setMeta] = useState<FormMetadata>({
-    key: "", title: "", description: "", jurisdiction: "federal", version: 1, requires_signature: false,
+    key: "", title: "", description: "", jurisdiction: "federal", version: "1", requires_signature: false,
   });
   const [schema, setSchema] = useState<FormSchema>({ sections: [{ title: "Section 1", fields: [] }] });
 
