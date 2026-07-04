@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -11,17 +11,22 @@ import markAsset from "@/assets/civicplexus-mark.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — CivicPlexus" }, { name: "description", content: "Sign in or create your CivicPlexus account." }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    volunteer: search.volunteer === 1 || search.volunteer === "1" || search.volunteer === true ? 1 : undefined,
+  }),
   component: AuthPage,
 });
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const search = useSearch({ from: "/auth" }) as { volunteer?: 1 };
+  const volunteerIntent = search.volunteer === 1;
+  const [mode, setMode] = useState<"signin" | "signup">(volunteerIntent ? "signup" : "signin");
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [asVolunteer, setAsVolunteer] = useState(false);
+  const [asVolunteer, setAsVolunteer] = useState(volunteerIntent);
 
   async function routeAfterAuth(userId: string) {
     // Staff (any role) → staff dashboard. Otherwise → volunteer portal if they have or want a volunteer profile.
