@@ -73,7 +73,7 @@ function VendorFormsAdmin() {
         </p>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> New form</Button></DialogTrigger>
-          <FormBuilder editing={editing} onSubmit={(t) => save.mutate(t)} saving={save.isPending} />
+          <FormBuilder key={editing?.id ?? "new"} editing={editing} onSubmit={(t) => save.mutate(t)} saving={save.isPending} />
         </Dialog>
       </div>
 

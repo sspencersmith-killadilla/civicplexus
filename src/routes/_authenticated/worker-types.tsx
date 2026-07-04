@@ -87,7 +87,7 @@ function WorkerTypesPage() {
         {isHR && (
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> New worker type</Button></DialogTrigger>
-            <WorkerTypeDialog editing={editing} onSubmit={(f) => save.mutate(f)} saving={save.isPending} />
+            <WorkerTypeDialog key={editing?.id ?? "new"} editing={editing} onSubmit={(f) => save.mutate(f)} saving={save.isPending} />
           </Dialog>
         )}
       </div>
