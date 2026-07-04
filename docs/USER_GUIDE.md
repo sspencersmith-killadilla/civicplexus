@@ -404,6 +404,7 @@ The guided tour mirrors the in-app overlay. Each stop names the route, what to l
 15. **1-on-1 Templates** (`/one-on-one-templates`) — HR admins clone, edit, and publish the manager + employee prompt sets.
 16. **Cascades** (`/cascades`) — org-wide directives with team responses and an AI rollup summary.
 17. **Goals & OKRs** (`/goals`) — employee and team goals tied back to review cycles.
+18. **Cross-Functional Teams** (`/teams`) — self-organizing, cross-departmental teams with charter, members, nested weighted goals, deliverables, meetings, decisions, and an activity feed. Any employee can create a team; visibility is private (members + HR admins).
 18. **Timekeeping** (`/timekeeping`) — clock in/out, weekly totals, OT and comp-time. *Try:* edit your exempt weekly schedule or approve a non-exempt timesheet.
 19. **Public Safety Shift Patterns** (`/shift-patterns`) — multi-week rotations with 207(k) thresholds.
 20. **Compensation Cycles** (`/comp-cycles`) — run merit and market adjustment cycles with proposals and FLSA checks.
