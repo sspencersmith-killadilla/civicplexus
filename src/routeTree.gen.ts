@@ -110,6 +110,7 @@ import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicBoardApplicationsRouteImport } from './routes/api/public/board-applications'
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
+import { Route as AuthenticatedTeamsNewRouteImport } from './routes/_authenticated/teams.new'
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedReviewCyclesIdRouteImport } from './routes/_authenticated/review-cycles.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
@@ -711,6 +712,11 @@ const AuthenticatedTemplatesIdRoute =
     path: '/templates/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTeamsNewRoute = AuthenticatedTeamsNewRouteImport.update({
+  id: '/teams/new',
+  path: '/teams/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReviewsIdRoute = AuthenticatedReviewsIdRouteImport.update({
   id: '/reviews/$id',
   path: '/reviews/$id',
@@ -1103,6 +1109,7 @@ export interface FileRoutesByFullPath {
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
+  '/teams/new': typeof AuthenticatedTeamsNewRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
@@ -1252,6 +1259,7 @@ export interface FileRoutesByTo {
   '/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
+  '/teams/new': typeof AuthenticatedTeamsNewRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
@@ -1408,6 +1416,7 @@ export interface FileRoutesById {
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
+  '/_authenticated/teams/new': typeof AuthenticatedTeamsNewRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
@@ -1564,6 +1573,7 @@ export interface FileRouteTypes {
     | '/policies/$id'
     | '/review-cycles/$id'
     | '/reviews/$id'
+    | '/teams/new'
     | '/templates/$id'
     | '/transcript/$employeeId'
     | '/api/public/board-applications'
@@ -1713,6 +1723,7 @@ export interface FileRouteTypes {
     | '/payroll/profiles'
     | '/policies/$id'
     | '/reviews/$id'
+    | '/teams/new'
     | '/templates/$id'
     | '/transcript/$employeeId'
     | '/api/public/board-applications'
@@ -1868,6 +1879,7 @@ export interface FileRouteTypes {
     | '/_authenticated/policies/$id'
     | '/_authenticated/review-cycles/$id'
     | '/_authenticated/reviews/$id'
+    | '/_authenticated/teams/new'
     | '/_authenticated/templates/$id'
     | '/_authenticated/transcript/$employeeId'
     | '/api/public/board-applications'
@@ -2682,6 +2694,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemplatesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/teams/new': {
+      id: '/_authenticated/teams/new'
+      path: '/teams/new'
+      fullPath: '/teams/new'
+      preLoaderRoute: typeof AuthenticatedTeamsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/reviews/$id': {
       id: '/_authenticated/reviews/$id'
       path: '/reviews/$id'
@@ -3219,6 +3238,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPayrollProfilesRoute: typeof AuthenticatedPayrollProfilesRoute
   AuthenticatedReviewCyclesIdRoute: typeof AuthenticatedReviewCyclesIdRouteWithChildren
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
+  AuthenticatedTeamsNewRoute: typeof AuthenticatedTeamsNewRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedTranscriptEmployeeIdRoute: typeof AuthenticatedTranscriptEmployeeIdRoute
   AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
@@ -3318,6 +3338,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReviewCyclesIdRoute:
     AuthenticatedReviewCyclesIdRouteWithChildren,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
+  AuthenticatedTeamsNewRoute: AuthenticatedTeamsNewRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedTranscriptEmployeeIdRoute:
     AuthenticatedTranscriptEmployeeIdRoute,
