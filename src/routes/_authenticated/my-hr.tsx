@@ -193,6 +193,34 @@ function MyHR() {
     },
   });
 
+  const myGoalsQ = useQuery({
+    queryKey: ["my-hr-goals", empQ.data?.id],
+    enabled: !!empQ.data?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("goals")
+        .select("id, title, category, status, progress, target_date")
+        .eq("owner_employee_id", empQ.data!.id)
+        .not("status", "in", "(completed,cancelled)")
+        .order("target_date", { ascending: true, nullsFirst: false })
+        .limit(10);
+      if (error) throw error;
+      return (data ?? []) as Array<{ id: string; title: string; category: string | null; status: string; progress: number | null; target_date: string | null }>;
+    },
+  });
+
+  const myTeamsQ = useQuery({
+    queryKey: ["my-hr-teams", empQ.data?.id],
+    enabled: !!empQ.data?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("team_members")
+        .select("role, allocation_pct, joined_at, teams(id, name, status, purpose, target_end_date)")
+        .eq("employee_id", empQ.data!.id)
+        .is("left_at", null);
+      if (error) throw error;
+      return (data ?? []) as Array<{ role: string; allocation_pct: number | null; joined_at: string | null; teams: { id: string; name: string; status: string; purpose: string | null; target_end_date: string | null } | null }>;
+    },
+  });
+
   return (
     <AppShell title="My HR">
       <div className="space-y-6">
