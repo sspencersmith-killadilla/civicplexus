@@ -41,6 +41,7 @@ export function VolunteerPublicHeader({ title, subtitle }: Props) {
             </>
           ) : signedIn === false ? (
             <>
+              <Button asChild variant="ghost" size="sm"><Link to="/serve/applicant/signin">Applicant sign-in (PIN)</Link></Button>
               <Button asChild variant="ghost" size="sm"><Link to="/auth">Sign in</Link></Button>
               <Button asChild size="sm"><Link to="/auth" search={{ volunteer: 1 }}>Create volunteer account</Link></Button>
             </>
