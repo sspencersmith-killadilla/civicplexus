@@ -27,6 +27,7 @@ import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedVolunteersRouteImport } from './routes/_authenticated/volunteers'
 import { Route as AuthenticatedVolunteerJobsRouteImport } from './routes/_authenticated/volunteer-jobs'
+import { Route as AuthenticatedVolunteerRouteImport } from './routes/_authenticated/volunteer'
 import { Route as AuthenticatedVendorsRouteImport } from './routes/_authenticated/vendors'
 import { Route as AuthenticatedVendorFormsRouteImport } from './routes/_authenticated/vendor-forms'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
@@ -256,6 +257,11 @@ const AuthenticatedVolunteerJobsRoute =
     path: '/volunteer-jobs',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedVolunteerRoute = AuthenticatedVolunteerRouteImport.update({
+  id: '/volunteer',
+  path: '/volunteer',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedVendorsRoute = AuthenticatedVendorsRouteImport.update({
   id: '/vendors',
   path: '/vendors',
@@ -1076,6 +1082,7 @@ export interface FileRoutesByFullPath {
   '/training': typeof AuthenticatedTrainingRoute
   '/vendor-forms': typeof AuthenticatedVendorFormsRoute
   '/vendors': typeof AuthenticatedVendorsRoute
+  '/volunteer': typeof AuthenticatedVolunteerRoute
   '/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/volunteers': typeof AuthenticatedVolunteersRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -1230,6 +1237,7 @@ export interface FileRoutesByTo {
   '/training': typeof AuthenticatedTrainingRoute
   '/vendor-forms': typeof AuthenticatedVendorFormsRoute
   '/vendors': typeof AuthenticatedVendorsRoute
+  '/volunteer': typeof AuthenticatedVolunteerRoute
   '/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/volunteers': typeof AuthenticatedVolunteersRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -1385,6 +1393,7 @@ export interface FileRoutesById {
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/vendor-forms': typeof AuthenticatedVendorFormsRoute
   '/_authenticated/vendors': typeof AuthenticatedVendorsRoute
+  '/_authenticated/volunteer': typeof AuthenticatedVolunteerRoute
   '/_authenticated/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/_authenticated/volunteers': typeof AuthenticatedVolunteersRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -1543,6 +1552,7 @@ export interface FileRouteTypes {
     | '/training'
     | '/vendor-forms'
     | '/vendors'
+    | '/volunteer'
     | '/volunteer-jobs'
     | '/volunteers'
     | '/worker-types'
@@ -1697,6 +1707,7 @@ export interface FileRouteTypes {
     | '/training'
     | '/vendor-forms'
     | '/vendors'
+    | '/volunteer'
     | '/volunteer-jobs'
     | '/volunteers'
     | '/worker-types'
@@ -1851,6 +1862,7 @@ export interface FileRouteTypes {
     | '/_authenticated/training'
     | '/_authenticated/vendor-forms'
     | '/_authenticated/vendors'
+    | '/_authenticated/volunteer'
     | '/_authenticated/volunteer-jobs'
     | '/_authenticated/volunteers'
     | '/_authenticated/worker-types'
@@ -2123,6 +2135,13 @@ declare module '@tanstack/react-router' {
       path: '/volunteer-jobs'
       fullPath: '/volunteer-jobs'
       preLoaderRoute: typeof AuthenticatedVolunteerJobsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/volunteer': {
+      id: '/_authenticated/volunteer'
+      path: '/volunteer'
+      fullPath: '/volunteer'
+      preLoaderRoute: typeof AuthenticatedVolunteerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vendors': {
@@ -3234,6 +3253,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedVendorFormsRoute: typeof AuthenticatedVendorFormsRoute
   AuthenticatedVendorsRoute: typeof AuthenticatedVendorsRoute
+  AuthenticatedVolunteerRoute: typeof AuthenticatedVolunteerRoute
   AuthenticatedVolunteerJobsRoute: typeof AuthenticatedVolunteerJobsRoute
   AuthenticatedVolunteersRoute: typeof AuthenticatedVolunteersRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
@@ -3333,6 +3353,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedVendorFormsRoute: AuthenticatedVendorFormsRoute,
   AuthenticatedVendorsRoute: AuthenticatedVendorsRoute,
+  AuthenticatedVolunteerRoute: AuthenticatedVolunteerRoute,
   AuthenticatedVolunteerJobsRoute: AuthenticatedVolunteerJobsRoute,
   AuthenticatedVolunteersRoute: AuthenticatedVolunteersRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
