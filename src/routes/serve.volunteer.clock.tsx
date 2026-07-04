@@ -1,11 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Clock, LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut } from "lucide-react";
+import { VolunteerPublicHeader } from "@/components/volunteer-public-header";
 
 export const Route = createFileRoute("/serve/volunteer/clock")({
   head: () => ({
@@ -27,6 +29,11 @@ function ClockPortal() {
   const [signup, setSignup] = useState<Signup | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setSignedIn(!!data.user));
+  }, []);
 
   async function lookup(e: React.FormEvent) {
     e.preventDefault(); setBusy(true);
@@ -48,16 +55,17 @@ function ClockPortal() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="max-w-xl mx-auto px-6 py-8 flex items-center gap-3">
-          <Clock className="h-7 w-7 text-primary" />
-          <div>
-            <h1 className="font-serif text-2xl tracking-tight">Volunteer clock in / out</h1>
-            <p className="text-muted-foreground text-sm">Enter your last name and PIN you received in your approval email.</p>
-          </div>
-        </div>
-      </header>
+      <VolunteerPublicHeader
+        title="Volunteer clock in / out"
+        subtitle="Signed-in volunteers can clock in from their portal. Or use last name + PIN on a shared kiosk."
+      />
       <main className="max-w-xl mx-auto px-6 py-8">
+        {signedIn && (
+          <Card className="p-4 mb-4 flex items-center justify-between gap-3 bg-primary/5">
+            <p className="text-sm">You're signed in — clock in and out from your volunteer portal.</p>
+            <Button asChild size="sm"><Link to="/volunteer">Open portal</Link></Button>
+          </Card>
+        )}
         {!signup ? (
           <Card className="p-6">
             <form onSubmit={lookup} className="space-y-3">
