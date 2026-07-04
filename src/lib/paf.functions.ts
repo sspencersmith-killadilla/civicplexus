@@ -163,6 +163,19 @@ export const submitPaf = createServerFn({ method: "POST" })
       }
     }
 
+    // Defense in depth: re-verify authorization via the security-definer RPC that
+    // encodes the same rules used by RLS on personnel_actions.
+    {
+      const { data: allowed, error: authzErr } = await context.supabase.rpc(
+        "can_initiate_paf_for",
+        { _employee_id: data.employee_id, _uid: context.userId } as never,
+      );
+      if (authzErr) throw new Error(authzErr.message);
+      if (!allowed) {
+        throw new Error("Forbidden: you are not authorized to initiate a PAF for this employee");
+      }
+    }
+
     // employees.manager_id references public.employees(id) — resolve to the supervisor's auth user_id.
     let managerUserId: string | null = null;
     if (emp.manager_id) {
