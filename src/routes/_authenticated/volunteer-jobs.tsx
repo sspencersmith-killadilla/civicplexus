@@ -88,7 +88,7 @@ function VolunteerJobsAdmin() {
           <Button variant="outline" onClick={() => setKioskOpen(true)}>Kiosk</Button>
           <Dialog open={dialogOpen} onOpenChange={(v) => { setDialogOpen(v); if (!v) setEditing(null); }}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> New job</Button></DialogTrigger>
-            <JobDialog editing={editing} onSubmit={(f) => saveJob.mutate(f)} saving={saveJob.isPending} />
+            <JobDialog key={editing?.id ?? "new"} editing={editing} onSubmit={(f) => saveJob.mutate(f)} saving={saveJob.isPending} />
           </Dialog>
         </div>
       </div>
