@@ -314,6 +314,61 @@ Each module chapter lists:
 
 ---
 
+## Cross-Functional Teams
+
+**What** — Self-organizing teams that pull members from any department to tackle a specific goal (e.g., "AI Evaluation Team", "Downtown Revitalization"). Each team has a charter, members, nested goals, deliverables, meetings, decisions, and an activity feed.
+**Who** — 👤 👥 🧑‍💼 (any employee can create a team; HR admins see all teams)
+**Where** — Sidebar → Coaching → **Cross-Functional Teams**
+
+### Create a team
+
+1. Click **New team**, name it, pick a sponsor, and write a one-line purpose.
+2. You are auto-added as **lead**. The team is **private** — only members and HR admins can see it.
+
+### Charter
+
+1. Open a team → **Charter** tab.
+2. Fill in mission, scope, success criteria, out-of-scope items, and stakeholders.
+3. Leads and HR admins can edit; members read-only.
+
+### Members
+
+1. **Members** tab → **Add member**.
+2. Search across the whole org — no department restriction.
+3. Assign a role: `lead`, `co-lead`, `member`, or `advisor`.
+4. Any member can **Leave team** from their own row.
+
+### Team goals (nested)
+
+1. **Goals** tab → **New goal**. Add sub-goals under any goal with a **weight** — parent progress rolls up automatically.
+2. Drag the progress slider on any leaf goal; each change is logged to the updates feed.
+3. Set target dates so goals show up on the team dashboard's timeline.
+
+### Deliverables, meetings, decisions
+
+- **Deliverables** — trackable outputs with owner, due date, and status.
+- **Meetings** — log a meeting with attendees and notes; auto-posts to the feed.
+- **Decisions** — record a decision with rationale so future members can trace the "why".
+
+### Updates feed & links
+
+- **Updates** — chronological activity log: member changes, deliverable status flips, decisions, meeting logs, and posted updates.
+- **Links** — pin external URLs (shared drives, dashboards, project boards).
+
+### Visibility & permissions
+
+| Action | Lead / co-lead | Member | HR admin |
+| --- | --- | --- | --- |
+| Edit charter | ✅ | ❌ | ✅ |
+| Add / remove members | ✅ | Self-leave only | ✅ |
+| Create goals & deliverables | ✅ | ✅ | ✅ |
+| Update progress | ✅ | ✅ | ✅ |
+| View team | ✅ | ✅ | ✅ (all teams) |
+
+Non-members cannot see the team at all — it will not appear in listings or search.
+
+---
+
 ## 1-on-1s
 
 **What** — Structured recurring meetings between employee and supervisor.
