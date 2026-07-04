@@ -60,6 +60,7 @@ function SqlReportsPage() {
   const [activeReportId, setActiveReportId] = useState<string | null>(null);
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveForm, setSaveForm] = useState({ name: "", description: "", is_shared: false });
+  const [tab, setTab] = useState<string>("editor");
 
   const schemaQuery = useQuery({ queryKey: ["sql-reports", "schema"], queryFn: () => schemaFn(), staleTime: 300_000 });
   const savedQuery = useQuery({ queryKey: ["sql-reports", "saved"], queryFn: () => listFn(), staleTime: 30_000 });
@@ -101,6 +102,7 @@ function SqlReportsPage() {
     setActiveReportId(r.id);
     setResult(null);
     setRunError(null);
+    setTab("editor");
   }
 
   function exportCsv() {
@@ -117,7 +119,7 @@ function SqlReportsPage() {
 
   return (
     <AppShell title="SQL Reports">
-      <Tabs defaultValue="editor" className="space-y-6">
+      <Tabs value={tab} onValueChange={setTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="editor">Editor</TabsTrigger>
           <TabsTrigger value="saved">Saved reports</TabsTrigger>
