@@ -109,16 +109,18 @@ export const saveSupplementalQuestions = createServerFn({ method: "POST" })
     if (keepIds.length) delQ = delQ.not("id", "in", `(${keepIds.map((i) => `"${i}"`).join(",")})`);
     await delQ;
     if (data.questions.length) {
-      const rows = data.questions.map((q, idx) => ({
-        id: q.id ?? undefined,
-        requisition_id: data.requisition_id,
-        key: q.key,
-        label: q.label,
-        type: q.type,
-        options: q.options ?? null,
-        required: q.required,
-        sort_order: q.sort_order ?? idx,
-      }));
+      const rows = data.questions.map((q, idx) => {
+        const base = {
+          requisition_id: data.requisition_id,
+          key: q.key,
+          label: q.label,
+          type: q.type,
+          options: q.options ?? null,
+          required: q.required,
+          sort_order: q.sort_order ?? idx,
+        };
+        return q.id ? { id: q.id, ...base } : base;
+      });
       const { error } = await context.supabase.from("job_supplemental_questions").upsert(rows as never, { onConflict: "id" } as never);
       if (error) throw new Error(error.message);
     }
