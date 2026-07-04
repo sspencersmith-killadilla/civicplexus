@@ -81,6 +81,7 @@ import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin-demo'
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as CandidateTokenIndexRouteImport } from './routes/candidate.$token.index'
+import { Route as AuthenticatedVolunteerIndexRouteImport } from './routes/_authenticated/volunteer.index'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedTeamsIndexRouteImport } from './routes/_authenticated/teams.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
@@ -551,6 +552,12 @@ const CandidateTokenIndexRoute = CandidateTokenIndexRouteImport.update({
   path: '/candidate/$token/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedVolunteerIndexRoute =
+  AuthenticatedVolunteerIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedVolunteerRoute,
+  } as any)
 const AuthenticatedTemplatesIndexRoute =
   AuthenticatedTemplatesIndexRouteImport.update({
     id: '/templates/',
@@ -1082,7 +1089,7 @@ export interface FileRoutesByFullPath {
   '/training': typeof AuthenticatedTrainingRoute
   '/vendor-forms': typeof AuthenticatedVendorFormsRoute
   '/vendors': typeof AuthenticatedVendorsRoute
-  '/volunteer': typeof AuthenticatedVolunteerRoute
+  '/volunteer': typeof AuthenticatedVolunteerRouteWithChildren
   '/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/volunteers': typeof AuthenticatedVolunteersRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -1154,6 +1161,7 @@ export interface FileRoutesByFullPath {
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/teams/': typeof AuthenticatedTeamsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
+  '/volunteer/': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
@@ -1237,7 +1245,6 @@ export interface FileRoutesByTo {
   '/training': typeof AuthenticatedTrainingRoute
   '/vendor-forms': typeof AuthenticatedVendorFormsRoute
   '/vendors': typeof AuthenticatedVendorsRoute
-  '/volunteer': typeof AuthenticatedVolunteerRoute
   '/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/volunteers': typeof AuthenticatedVolunteersRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -1306,6 +1313,7 @@ export interface FileRoutesByTo {
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/teams': typeof AuthenticatedTeamsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
+  '/volunteer': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token': typeof CandidateTokenIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
@@ -1393,7 +1401,7 @@ export interface FileRoutesById {
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/vendor-forms': typeof AuthenticatedVendorFormsRoute
   '/_authenticated/vendors': typeof AuthenticatedVendorsRoute
-  '/_authenticated/volunteer': typeof AuthenticatedVolunteerRoute
+  '/_authenticated/volunteer': typeof AuthenticatedVolunteerRouteWithChildren
   '/_authenticated/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/_authenticated/volunteers': typeof AuthenticatedVolunteersRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -1465,6 +1473,7 @@ export interface FileRoutesById {
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/teams/': typeof AuthenticatedTeamsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
+  '/_authenticated/volunteer/': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/_authenticated/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
@@ -1624,6 +1633,7 @@ export interface FileRouteTypes {
     | '/reviews/'
     | '/teams/'
     | '/templates/'
+    | '/volunteer/'
     | '/candidate/$token/'
     | '/careers/$slug/'
     | '/admin-officials/applications/$id'
@@ -1707,7 +1717,6 @@ export interface FileRouteTypes {
     | '/training'
     | '/vendor-forms'
     | '/vendors'
-    | '/volunteer'
     | '/volunteer-jobs'
     | '/volunteers'
     | '/worker-types'
@@ -1776,6 +1785,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/teams'
     | '/templates'
+    | '/volunteer'
     | '/candidate/$token'
     | '/careers/$slug'
     | '/admin-officials/applications/$id'
@@ -1934,6 +1944,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reviews/'
     | '/_authenticated/teams/'
     | '/_authenticated/templates/'
+    | '/_authenticated/volunteer/'
     | '/candidate/$token/'
     | '/careers/$slug/'
     | '/_authenticated/admin-officials/applications/$id'
@@ -2514,6 +2525,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/candidate/$token/'
       preLoaderRoute: typeof CandidateTokenIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/volunteer/': {
+      id: '/_authenticated/volunteer/'
+      path: '/'
+      fullPath: '/volunteer/'
+      preLoaderRoute: typeof AuthenticatedVolunteerIndexRouteImport
+      parentRoute: typeof AuthenticatedVolunteerRoute
     }
     '/_authenticated/templates/': {
       id: '/_authenticated/templates/'
@@ -3154,6 +3172,20 @@ const AuthenticatedPoliciesRouteWithChildren =
     AuthenticatedPoliciesRouteChildren,
   )
 
+interface AuthenticatedVolunteerRouteChildren {
+  AuthenticatedVolunteerIndexRoute: typeof AuthenticatedVolunteerIndexRoute
+}
+
+const AuthenticatedVolunteerRouteChildren: AuthenticatedVolunteerRouteChildren =
+  {
+    AuthenticatedVolunteerIndexRoute: AuthenticatedVolunteerIndexRoute,
+  }
+
+const AuthenticatedVolunteerRouteWithChildren =
+  AuthenticatedVolunteerRoute._addFileChildren(
+    AuthenticatedVolunteerRouteChildren,
+  )
+
 interface AuthenticatedFormsKeyRouteChildren {
   AuthenticatedFormsKeyEditRoute: typeof AuthenticatedFormsKeyEditRoute
 }
@@ -3253,7 +3285,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedVendorFormsRoute: typeof AuthenticatedVendorFormsRoute
   AuthenticatedVendorsRoute: typeof AuthenticatedVendorsRoute
-  AuthenticatedVolunteerRoute: typeof AuthenticatedVolunteerRoute
+  AuthenticatedVolunteerRoute: typeof AuthenticatedVolunteerRouteWithChildren
   AuthenticatedVolunteerJobsRoute: typeof AuthenticatedVolunteerJobsRoute
   AuthenticatedVolunteersRoute: typeof AuthenticatedVolunteersRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
@@ -3353,7 +3385,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedVendorFormsRoute: AuthenticatedVendorFormsRoute,
   AuthenticatedVendorsRoute: AuthenticatedVendorsRoute,
-  AuthenticatedVolunteerRoute: AuthenticatedVolunteerRoute,
+  AuthenticatedVolunteerRoute: AuthenticatedVolunteerRouteWithChildren,
   AuthenticatedVolunteerJobsRoute: AuthenticatedVolunteerJobsRoute,
   AuthenticatedVolunteersRoute: AuthenticatedVolunteersRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
