@@ -297,6 +297,69 @@ function MyHR() {
           </section>
         )}
 
+        {empQ.data && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> My goals</h3>
+              <Link to="/goals"><Button size="sm" variant="outline">All goals</Button></Link>
+            </div>
+            <Card className="divide-y">
+              {(myGoalsQ.data ?? []).map((g) => (
+                <Link key={g.id} to="/goals" className="block p-3 hover:bg-muted/40">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{g.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {g.category ?? "—"}{g.target_date ? ` · due ${g.target_date}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-muted-foreground">{g.progress ?? 0}%</span>
+                      <span className={`text-xs px-2 py-0.5 rounded ${GOAL_STATUS_COLOR[g.status] ?? "bg-muted"}`}>{g.status.replace("_", " ")}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+              {(myGoalsQ.data?.length ?? 0) === 0 && (
+                <p className="p-4 text-sm text-muted-foreground">No active goals. Talk with your supervisor to set some.</p>
+              )}
+            </Card>
+          </section>
+        )}
+
+        {empQ.data && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> My cross-functional teams</h3>
+              <Link to="/teams"><Button size="sm" variant="outline">All teams</Button></Link>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {(myTeamsQ.data ?? []).filter((m) => m.teams).map((m) => (
+                <Link key={m.teams!.id} to="/teams/$id" params={{ id: m.teams!.id }}>
+                  <Card className="p-4 hover:border-primary transition-colors h-full">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <p className="text-sm font-medium truncate">{m.teams!.name}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded ${TEAM_STATUS_COLOR[m.teams!.status] ?? "bg-muted"}`}>{m.teams!.status}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      Your role: {m.role}{m.allocation_pct != null ? ` · ${m.allocation_pct}% time` : ""}
+                    </p>
+                    {m.teams!.purpose && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{m.teams!.purpose}</p>}
+                    {m.teams!.target_end_date && (
+                      <p className="text-xs text-muted-foreground mt-1">Target: {m.teams!.target_end_date}</p>
+                    )}
+                  </Card>
+                </Link>
+              ))}
+              {(myTeamsQ.data?.filter((m) => m.teams).length ?? 0) === 0 && (
+                <Card className="p-4 text-sm text-muted-foreground md:col-span-2">
+                  You're not on any cross-functional teams. <Link to="/teams" className="text-primary hover:underline">Browse or start one →</Link>
+                </Card>
+              )}
+            </div>
+          </section>
+        )}
+
         {empQ.data && (reportsQ.data?.length ?? 0) > 0 && (() => {
           type Celeb = { id: string; name: string; kind: "birthday" | "anniversary"; date: Date; years: number | null; daysAway: number };
           const today = new Date(); today.setHours(0, 0, 0, 0);
