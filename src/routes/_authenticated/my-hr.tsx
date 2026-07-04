@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp, Cake, PartyPopper } from "lucide-react";
+import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp, Cake, PartyPopper, Target, Clock } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
 import { getDirectReportTaskCounts } from "@/lib/my-team.functions";
@@ -26,6 +26,38 @@ import { listMyInternalApplications, withdrawMyApplication } from "@/lib/interna
 import { Briefcase } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR });
+
+function formatTenure(startDate: string | null | undefined): string | null {
+  if (!startDate) return null;
+  const start = new Date(startDate + "T00:00:00");
+  if (Number.isNaN(start.getTime())) return null;
+  const now = new Date();
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
+  if (now.getDate() < start.getDate()) months -= 1;
+  if (months < 0) { years -= 1; months += 12; }
+  if (years <= 0 && months <= 0) return "Just started";
+  const parts: string[] = [];
+  if (years > 0) parts.push(`${years} yr${years === 1 ? "" : "s"}`);
+  if (months > 0) parts.push(`${months} mo${months === 1 ? "" : "s"}`);
+  return parts.join(" ");
+}
+
+const GOAL_STATUS_COLOR: Record<string, string> = {
+  active: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
+  at_risk: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  completed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  draft: "bg-muted text-muted-foreground",
+  cancelled: "bg-muted text-muted-foreground line-through",
+};
+
+const TEAM_STATUS_COLOR: Record<string, string> = {
+  forming: "bg-muted text-muted-foreground",
+  active: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
+  paused: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  complete: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  archived: "bg-muted text-muted-foreground line-through",
+};
 
 function PersonAvatar({ photoPath, name, size, fetchUrl }: { photoPath: string | null; name: string; size: number; fetchUrl: (args: { data: { path: string } }) => Promise<{ url: string }> }) {
   const { data: url } = useQuery({
@@ -161,6 +193,34 @@ function MyHR() {
     },
   });
 
+  const myGoalsQ = useQuery({
+    queryKey: ["my-hr-goals", empQ.data?.id],
+    enabled: !!empQ.data?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("goals")
+        .select("id, title, category, status, progress, target_date")
+        .eq("owner_employee_id", empQ.data!.id)
+        .not("status", "in", "(completed,cancelled)")
+        .order("target_date", { ascending: true, nullsFirst: false })
+        .limit(10);
+      if (error) throw error;
+      return (data ?? []) as Array<{ id: string; title: string; category: string | null; status: string; progress: number | null; target_date: string | null }>;
+    },
+  });
+
+  const myTeamsQ = useQuery({
+    queryKey: ["my-hr-teams", empQ.data?.id],
+    enabled: !!empQ.data?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("team_members")
+        .select("role, allocation_pct, joined_at, teams(id, name, status, purpose, target_end_date)")
+        .eq("employee_id", empQ.data!.id)
+        .is("left_at", null);
+      if (error) throw error;
+      return (data ?? []) as Array<{ role: string; allocation_pct: number | null; joined_at: string | null; teams: { id: string; name: string; status: string; purpose: string | null; target_end_date: string | null } | null }>;
+    },
+  });
+
   return (
     <AppShell title="My HR">
       <div className="space-y-6">
@@ -172,6 +232,13 @@ function MyHR() {
               <p className="text-sm text-muted-foreground mt-0.5 truncate">
                 {empQ.data ? `${empQ.data.job_title ?? "—"} · ${empQ.data.department ?? "—"}` : "Loading your profile…"}
               </p>
+              {empQ.data?.start_date && (
+                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {formatTenure(empQ.data.start_date) ? `${formatTenure(empQ.data.start_date)} with the city` : ""}
+                  <span className="opacity-60">· since {empQ.data.start_date}</span>
+                </p>
+              )}
               {empQ.data?.id && (
                 <Link to="/employees/$id" params={{ id: empQ.data.id }} className="text-xs text-primary hover:underline">View my profile →</Link>
               )}
@@ -226,6 +293,69 @@ function MyHR() {
                   </div>
                 )}
               </Card>
+            </div>
+          </section>
+        )}
+
+        {empQ.data && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> My goals</h3>
+              <Link to="/goals"><Button size="sm" variant="outline">All goals</Button></Link>
+            </div>
+            <Card className="divide-y">
+              {(myGoalsQ.data ?? []).map((g) => (
+                <Link key={g.id} to="/goals" className="block p-3 hover:bg-muted/40">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{g.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {g.category ?? "—"}{g.target_date ? ` · due ${g.target_date}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-muted-foreground">{g.progress ?? 0}%</span>
+                      <span className={`text-xs px-2 py-0.5 rounded ${GOAL_STATUS_COLOR[g.status] ?? "bg-muted"}`}>{g.status.replace("_", " ")}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+              {(myGoalsQ.data?.length ?? 0) === 0 && (
+                <p className="p-4 text-sm text-muted-foreground">No active goals. Talk with your supervisor to set some.</p>
+              )}
+            </Card>
+          </section>
+        )}
+
+        {empQ.data && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> My cross-functional teams</h3>
+              <Link to="/teams"><Button size="sm" variant="outline">All teams</Button></Link>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {(myTeamsQ.data ?? []).filter((m) => m.teams).map((m) => (
+                <Link key={m.teams!.id} to="/teams/$id" params={{ id: m.teams!.id }}>
+                  <Card className="p-4 hover:border-primary transition-colors h-full">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <p className="text-sm font-medium truncate">{m.teams!.name}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded ${TEAM_STATUS_COLOR[m.teams!.status] ?? "bg-muted"}`}>{m.teams!.status}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      Your role: {m.role}{m.allocation_pct != null ? ` · ${m.allocation_pct}% time` : ""}
+                    </p>
+                    {m.teams!.purpose && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{m.teams!.purpose}</p>}
+                    {m.teams!.target_end_date && (
+                      <p className="text-xs text-muted-foreground mt-1">Target: {m.teams!.target_end_date}</p>
+                    )}
+                  </Card>
+                </Link>
+              ))}
+              {(myTeamsQ.data?.filter((m) => m.teams).length ?? 0) === 0 && (
+                <Card className="p-4 text-sm text-muted-foreground md:col-span-2">
+                  You're not on any cross-functional teams. <Link to="/teams" className="text-primary hover:underline">Browse or start one →</Link>
+                </Card>
+              )}
             </div>
           </section>
         )}
