@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp, Cake, PartyPopper } from "lucide-react";
+import { CalendarDays, GraduationCap, ScrollText, ShieldAlert, Plus, FileText, User as UserIcon, Users, ChevronUp, Cake, PartyPopper, Target, Clock } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getEmployeePhotoUrl } from "@/lib/employee-photos.functions";
 import { getDirectReportTaskCounts } from "@/lib/my-team.functions";
@@ -26,6 +26,38 @@ import { listMyInternalApplications, withdrawMyApplication } from "@/lib/interna
 import { Briefcase } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/my-hr")({ component: MyHR });
+
+function formatTenure(startDate: string | null | undefined): string | null {
+  if (!startDate) return null;
+  const start = new Date(startDate + "T00:00:00");
+  if (Number.isNaN(start.getTime())) return null;
+  const now = new Date();
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
+  if (now.getDate() < start.getDate()) months -= 1;
+  if (months < 0) { years -= 1; months += 12; }
+  if (years <= 0 && months <= 0) return "Just started";
+  const parts: string[] = [];
+  if (years > 0) parts.push(`${years} yr${years === 1 ? "" : "s"}`);
+  if (months > 0) parts.push(`${months} mo${months === 1 ? "" : "s"}`);
+  return parts.join(" ");
+}
+
+const GOAL_STATUS_COLOR: Record<string, string> = {
+  active: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
+  at_risk: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  completed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  draft: "bg-muted text-muted-foreground",
+  cancelled: "bg-muted text-muted-foreground line-through",
+};
+
+const TEAM_STATUS_COLOR: Record<string, string> = {
+  forming: "bg-muted text-muted-foreground",
+  active: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
+  paused: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  complete: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  archived: "bg-muted text-muted-foreground line-through",
+};
 
 function PersonAvatar({ photoPath, name, size, fetchUrl }: { photoPath: string | null; name: string; size: number; fetchUrl: (args: { data: { path: string } }) => Promise<{ url: string }> }) {
   const { data: url } = useQuery({
