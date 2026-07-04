@@ -103,7 +103,7 @@ export const Route = createFileRoute("/api/public/board-applications")({
           }
 
           const { generateToken, getAppBaseUrl } = await import("@/lib/candidate-tokens.server");
-          const { token } = generateToken();
+          const { token, hash } = generateToken();
 
           const { data: sub, error: insErr } = await supabaseAdmin
             .from("board_application_submissions")
@@ -124,7 +124,10 @@ export const Route = createFileRoute("/api/public/board-applications")({
               cover_letter_path: coverPath,
               form_data: parsed.form_data ?? {},
               status: "submitted",
-              status_token: token,
+              // Store only the hash so a database leak cannot be used to look up
+              // an applicant's PII via /serve/status/<token>. The applicant keeps
+              // the raw token in the status URL returned below.
+              status_token: hash,
             } as never)
             .select("id")
             .single();
