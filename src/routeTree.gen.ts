@@ -79,6 +79,7 @@ import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
 import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authenticated/admin-identity'
 import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin-demo'
+import { Route as ServeApplicantIndexRouteImport } from './routes/serve.applicant.index'
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as CandidateTokenIndexRouteImport } from './routes/candidate.$token.index'
 import { Route as AuthenticatedVolunteerIndexRouteImport } from './routes/_authenticated/volunteer.index'
@@ -545,6 +546,11 @@ const AuthenticatedAdminDemoRoute = AuthenticatedAdminDemoRouteImport.update({
   id: '/admin-demo',
   path: '/admin-demo',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ServeApplicantIndexRoute = ServeApplicantIndexRouteImport.update({
+  id: '/serve/applicant/',
+  path: '/serve/applicant/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CareersSlugIndexRoute = CareersSlugIndexRouteImport.update({
   id: '/',
@@ -1195,6 +1201,7 @@ export interface FileRoutesByFullPath {
   '/volunteer/': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
+  '/serve/applicant/': typeof ServeApplicantIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
   '/forms/$key/edit': typeof AuthenticatedFormsKeyEditRoute
@@ -1351,6 +1358,7 @@ export interface FileRoutesByTo {
   '/volunteer': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token': typeof CandidateTokenIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
+  '/serve/applicant': typeof ServeApplicantIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
   '/forms/$key/edit': typeof AuthenticatedFormsKeyEditRoute
@@ -1515,6 +1523,7 @@ export interface FileRoutesById {
   '/_authenticated/volunteer/': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
+  '/serve/applicant/': typeof ServeApplicantIndexRoute
   '/_authenticated/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
   '/_authenticated/admin-officials/applications/compare': typeof AuthenticatedAdminOfficialsApplicationsCompareRoute
   '/_authenticated/forms/$key/edit': typeof AuthenticatedFormsKeyEditRoute
@@ -1679,6 +1688,7 @@ export interface FileRouteTypes {
     | '/volunteer/'
     | '/candidate/$token/'
     | '/careers/$slug/'
+    | '/serve/applicant/'
     | '/admin-officials/applications/$id'
     | '/admin-officials/applications/compare'
     | '/forms/$key/edit'
@@ -1835,6 +1845,7 @@ export interface FileRouteTypes {
     | '/volunteer'
     | '/candidate/$token'
     | '/careers/$slug'
+    | '/serve/applicant'
     | '/admin-officials/applications/$id'
     | '/admin-officials/applications/compare'
     | '/forms/$key/edit'
@@ -1998,6 +2009,7 @@ export interface FileRouteTypes {
     | '/_authenticated/volunteer/'
     | '/candidate/$token/'
     | '/careers/$slug/'
+    | '/serve/applicant/'
     | '/_authenticated/admin-officials/applications/$id'
     | '/_authenticated/admin-officials/applications/compare'
     | '/_authenticated/forms/$key/edit'
@@ -2053,6 +2065,7 @@ export interface RootRouteChildren {
   ServeApplicantSigninRoute: typeof ServeApplicantSigninRoute
   ServeStatusTokenRoute: typeof ServeStatusTokenRoute
   CandidateTokenIndexRoute: typeof CandidateTokenIndexRoute
+  ServeApplicantIndexRoute: typeof ServeApplicantIndexRoute
   ApiPublicBadgeSerialRoute: typeof ApiPublicBadgeSerialRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
@@ -2564,6 +2577,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin-demo'
       preLoaderRoute: typeof AuthenticatedAdminDemoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/serve/applicant/': {
+      id: '/serve/applicant/'
+      path: '/serve/applicant'
+      fullPath: '/serve/applicant/'
+      preLoaderRoute: typeof ServeApplicantIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/careers/$slug/': {
       id: '/careers/$slug/'
@@ -3588,6 +3608,7 @@ const rootRouteChildren: RootRouteChildren = {
   ServeApplicantSigninRoute: ServeApplicantSigninRoute,
   ServeStatusTokenRoute: ServeStatusTokenRoute,
   CandidateTokenIndexRoute: CandidateTokenIndexRoute,
+  ServeApplicantIndexRoute: ServeApplicantIndexRoute,
   ApiPublicBadgeSerialRoute: ApiPublicBadgeSerialRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
