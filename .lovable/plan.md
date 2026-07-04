@@ -1,69 +1,65 @@
+# Add volunteer sign-in to the public volunteer pages
 
-# Cross-Functional Teams
+## The problem
 
-Self-organizing, cross-department teams (e.g. "AI Evaluation Team") with a full workspace: charter, members with roles, team goals + subgoals, deliverables, meetings/decisions, an updates feed, and links/files. Any employee can create a team. Visibility is private to members + HR admins.
+All `/serve/volunteer*` pages still behave like anonymous intake:
 
-## User-facing surfaces
+- `/serve/volunteer` renders the old "Submit application" form and never mentions the new volunteer accounts.
+- `/serve/volunteer/jobs` shows a small "Create a volunteer account" text link but no sign-in affordance.
+- `/serve/volunteer/clock` only offers last-name + PIN kiosk lookup — no way for a signed-in volunteer to self-clock.
+- The `/auth` page has a volunteer checkbox, but nothing on the public volunteer pages routes users to it, so volunteers can't discover the sign-in / sign-up flow.
 
-New nav entry **Teams** (under `/_authenticated/teams`):
-- `teams.index.tsx` — list of teams the signed-in user is a member of, plus (for HR admins) an "All teams" toggle. "New team" button.
-- `teams.new.tsx` — create a team (name, purpose one-liner, sponsor employee, target end date). Creator becomes `lead`.
-- `teams.$id.tsx` — team workspace with tabs:
-  - **Charter** — mission, scope (in/out), success metrics, sponsor, start/end, status (`forming | active | paused | complete | archived`). Editable by leads.
-  - **Members** — add/remove employees, assign role (`sponsor | lead | member`), optional allocation % and skills. Leads manage; members can leave.
-  - **Goals** — team-level goals with subgoals (weighted rollup, same UX as current Goals). Each subgoal has an owner (team member) and optional due date.
-  - **Deliverables** — title, description, owner, due date, status (`todo | in_progress | blocked | done | cancelled`), optional linked goal.
-  - **Meetings & decisions** — meeting log (date, title, notes markdown, attendees) and standalone decisions (title, decided_at, decided_by, rationale).
-  - **Updates** — chronological feed: comments + auto-events (member joined, deliverable done, goal progress, decision recorded).
-  - **Files & links** — URL bookmarks + uploaded documents (reusing `documents` bucket pattern).
-- Cross-links: an employee's profile lists teams they're on; each team goal shows on the owner's Goals page tagged "Team: X".
+## Changes
 
-## Data model (new tables in `public`)
+### 1. Shared header for `/serve/volunteer*` pages
 
-- `teams` — name, slug, purpose, mission, scope_in, scope_out, success_metrics (jsonb), sponsor_employee_id, status, start_date, target_end_date, created_by.
-- `team_members` — team_id, employee_id, role enum(`sponsor|lead|member`), allocation_pct, skills text[], joined_at, left_at. Unique (team_id, employee_id) where left_at is null.
-- `team_goals` — team_id, parent_goal_id (self-fk for subgoals), owner_member_id (nullable for team-level roots), title, description, target_date, weight, progress int, status enum(`draft|active|at_risk|completed|cancelled`), created_by. Rollup trigger analogous to existing `tg_goal_rollup`.
-- `team_goal_updates` — goal_id, author_id, progress, status, note.
-- `team_deliverables` — team_id, title, description, owner_member_id, linked_goal_id, due_date, status, completed_at.
-- `team_meetings` — team_id, meeting_date, title, notes_md, attendee_member_ids uuid[], created_by.
-- `team_decisions` — team_id, title, rationale, decided_at, decided_by, linked_meeting_id.
-- `team_updates` — team_id, kind enum(`comment|member_joined|member_left|goal_progress|deliverable_status|decision|charter_change`), author_id, body_md, payload jsonb, created_at.
-- `team_links` — team_id, label, url, added_by.
-- `team_documents` — team_id, document_id (fk to existing `documents`).
+Add a small reusable `VolunteerPublicHeader` (new file `src/components/volunteer-public-header.tsx`) that renders on all three public volunteer pages:
 
-All tables: GRANT to authenticated + service_role (no anon). RLS enabled.
+- Left: "Volunteer with the city" title + subtitle.
+- Right (session-aware, uses `supabase.auth.getUser()` + `onAuthStateChange`):
+  - Signed out → **Sign in** and **Create volunteer account** buttons that link to `/auth` (with `?volunteer=1` for the create button).
+  - Signed in → **Go to my volunteer portal** button linking to `/volunteer`, plus a **Sign out** link.
 
-## Access model
+### 2. `/serve/volunteer` becomes a landing page, not an intake form
 
-Security-definer helper `public.is_team_member(_team_id, _uid)` (checks active `team_members` row). `public.is_team_lead(_team_id, _uid)` (role in `sponsor|lead`).
+Rewrite `src/routes/serve.volunteer.tsx`:
 
-Policies (typical):
-- SELECT on every team_* table: `is_team_member(team_id, auth.uid()) OR has_role(auth.uid(),'hr_admin')`.
-- INSERT `teams`: any authenticated user; trigger auto-inserts a `team_members` row for creator with role `lead`.
-- INSERT/UPDATE on other tables: `is_team_member(...)`; UPDATE/DELETE of charter/members restricted to `is_team_lead(...)` or HR admin.
-- `team_members` INSERT: leads only; self-DELETE (leave) allowed for own row.
-- Auto-append `team_updates` rows via triggers on member changes, deliverable status, goal progress, decisions.
+- Hero explaining volunteering + the new account model.
+- Primary CTA: **Create volunteer account** → `/auth?volunteer=1`.
+- Secondary CTA: **Sign in** → `/auth`.
+- Tertiary link: **Browse open opportunities** → `/serve/volunteer/jobs`.
+- Remove the anonymous "insert into volunteers" form entirely — profile creation now happens inside the signed-in portal at `/volunteer/profile`.
+- If the user is already signed in and has (or is) a volunteer, redirect to `/volunteer`.
 
-## Server functions
+### 3. `/serve/volunteer/jobs` — clearer sign-in CTA
 
-`src/lib/teams.functions.ts` (all `requireSupabaseAuth`):
-- `createTeam({ name, purpose, sponsor_employee_id?, target_end_date? })` — inserts team + creator as lead in a single transaction (via `supabaseAdmin` after authz check).
-- `addTeamMembers({ team_id, members:[{employee_id, role, allocation_pct?}] })` — lead only.
-- `updateCharter({ team_id, patch })` — lead only; logs `charter_change` update.
-- `cascadeTeamGoal({ parent_goal_id, children:[...] })` — mirrors existing `cascadeGoal`.
-- `updateTeamGoalProgress({ goal_id, progress, status? })` — writes to `team_goal_updates` and lets rollup trigger update parent.
-- `logMeeting`, `recordDecision`, `postUpdate`, `addLink`, `attachDocument`, `leaveTeam`.
+Update `src/routes/serve.volunteer.jobs.tsx`:
 
-Read paths use browser client + RLS for lists in each tab.
+- Mount the shared header.
+- Replace the inline text link with the header's Sign in / Create account buttons.
+- When signed in, each shift's "Sign up" button links straight into `/volunteer/find` (already implemented).
 
-## UI implementation notes
+### 4. `/serve/volunteer/clock` — offer self-service clock for signed-in volunteers
 
-- Reuse `AppShell`, shadcn `Tabs`, `Dialog`, `Card`, `Select`, `Textarea`.
-- New shared `TeamGoalTree` component modeled on the recursive renderer in `goals.tsx`, but sourced from `team_goals` with per-team scoping.
-- `useCurrentTeam(id)` hook returns team + caller's `team_members.role` for gating buttons.
-- Add nav item to `app-shell.tsx` (Users icon, "Teams"), visible to all authenticated users.
-- Empty states for each tab; skeletons via existing patterns.
+Update `src/routes/serve.volunteer.clock.tsx`:
 
-## Out of scope for v1 (call out to user)
+- Mount the shared header.
+- If signed in as a volunteer, show a banner: "You're signed in — use your portal to clock in and out" with a button to `/volunteer`.
+- Keep the last-name + PIN kiosk lookup as the fallback for shared kiosks / walk-ups.
 
-Formal RACI matrices per deliverable, Slack/Teams integrations, org-wide public browsing, budget tracking. These can layer on later without schema breaks.
+### 5. `/auth` — honor `?volunteer=1`
+
+Update `src/routes/auth.tsx`:
+
+- Read a `volunteer` search param; when present, default `mode = "signup"` and pre-check the "I'm signing up as a volunteer" box.
+- No change to redirect logic (`routeAfterAuth` already sends volunteers to `/volunteer`).
+
+## Files touched
+
+- `src/components/volunteer-public-header.tsx` (new)
+- `src/routes/serve.volunteer.tsx` (rewritten — landing page)
+- `src/routes/serve.volunteer.jobs.tsx` (header swap)
+- `src/routes/serve.volunteer.clock.tsx` (header + signed-in banner)
+- `src/routes/auth.tsx` (respect `?volunteer=1`)
+
+No database, RLS, or server-function changes — the volunteer portal, `volunteers.user_id`, and sign-up flow are already in place.
