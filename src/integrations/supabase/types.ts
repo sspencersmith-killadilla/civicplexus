@@ -7988,6 +7988,501 @@ export type Database = {
           },
         ]
       }
+      team_decisions: {
+        Row: {
+          created_at: string
+          decided_at: string
+          decided_by: string
+          id: string
+          linked_meeting_id: string | null
+          rationale: string | null
+          team_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string
+          decided_by: string
+          id?: string
+          linked_meeting_id?: string | null
+          rationale?: string | null
+          team_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string
+          decided_by?: string
+          id?: string
+          linked_meeting_id?: string | null
+          rationale?: string | null
+          team_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_decisions_linked_meeting_id_fkey"
+            columns: ["linked_meeting_id"]
+            isOneToOne: false
+            referencedRelation: "team_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_decisions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_deliverables: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          due_date: string | null
+          id: string
+          linked_goal_id: string | null
+          owner_member_id: string | null
+          status: Database["public"]["Enums"]["team_deliverable_status"]
+          team_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          linked_goal_id?: string | null
+          owner_member_id?: string | null
+          status?: Database["public"]["Enums"]["team_deliverable_status"]
+          team_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          linked_goal_id?: string | null
+          owner_member_id?: string | null
+          status?: Database["public"]["Enums"]["team_deliverable_status"]
+          team_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_deliverables_linked_goal_id_fkey"
+            columns: ["linked_goal_id"]
+            isOneToOne: false
+            referencedRelation: "team_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_deliverables_owner_member_id_fkey"
+            columns: ["owner_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_deliverables_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_documents: {
+        Row: {
+          added_by: string
+          created_at: string
+          document_id: string
+          id: string
+          team_id: string
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          document_id: string
+          id?: string
+          team_id: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_documents_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_documents_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_goal_updates: {
+        Row: {
+          author_id: string
+          created_at: string
+          goal_id: string
+          id: string
+          note: string | null
+          progress: number | null
+          status: Database["public"]["Enums"]["team_goal_status"] | null
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          goal_id: string
+          id?: string
+          note?: string | null
+          progress?: number | null
+          status?: Database["public"]["Enums"]["team_goal_status"] | null
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          goal_id?: string
+          id?: string
+          note?: string | null
+          progress?: number | null
+          status?: Database["public"]["Enums"]["team_goal_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_goal_updates_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "team_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_goals: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          owner_member_id: string | null
+          parent_goal_id: string | null
+          progress: number
+          status: Database["public"]["Enums"]["team_goal_status"]
+          target_date: string | null
+          team_id: string
+          title: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          owner_member_id?: string | null
+          parent_goal_id?: string | null
+          progress?: number
+          status?: Database["public"]["Enums"]["team_goal_status"]
+          target_date?: string | null
+          team_id: string
+          title: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          owner_member_id?: string | null
+          parent_goal_id?: string | null
+          progress?: number
+          status?: Database["public"]["Enums"]["team_goal_status"]
+          target_date?: string | null
+          team_id?: string
+          title?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_goals_owner_member_id_fkey"
+            columns: ["owner_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_goals_parent_goal_id_fkey"
+            columns: ["parent_goal_id"]
+            isOneToOne: false
+            referencedRelation: "team_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_goals_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_links: {
+        Row: {
+          added_by: string
+          created_at: string
+          id: string
+          label: string
+          team_id: string
+          url: string
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          id?: string
+          label: string
+          team_id: string
+          url: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          id?: string
+          label?: string
+          team_id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_links_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_meetings: {
+        Row: {
+          attendee_member_ids: string[]
+          created_at: string
+          created_by: string
+          id: string
+          meeting_date: string
+          notes_md: string | null
+          team_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          attendee_member_ids?: string[]
+          created_at?: string
+          created_by: string
+          id?: string
+          meeting_date: string
+          notes_md?: string | null
+          team_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          attendee_member_ids?: string[]
+          created_at?: string
+          created_by?: string
+          id?: string
+          meeting_date?: string
+          notes_md?: string | null
+          team_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_meetings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          allocation_pct: number | null
+          created_at: string
+          employee_id: string
+          id: string
+          joined_at: string
+          left_at: string | null
+          role: Database["public"]["Enums"]["team_member_role"]
+          skills: string[]
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          allocation_pct?: number | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          role?: Database["public"]["Enums"]["team_member_role"]
+          skills?: string[]
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          allocation_pct?: number | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          role?: Database["public"]["Enums"]["team_member_role"]
+          skills?: string[]
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_updates: {
+        Row: {
+          author_id: string | null
+          body_md: string | null
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["team_update_kind"]
+          payload: Json
+          team_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          body_md?: string | null
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["team_update_kind"]
+          payload?: Json
+          team_id: string
+        }
+        Update: {
+          author_id?: string | null
+          body_md?: string | null
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["team_update_kind"]
+          payload?: Json
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_updates_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          mission: string | null
+          name: string
+          purpose: string | null
+          scope_in: string | null
+          scope_out: string | null
+          slug: string
+          sponsor_employee_id: string | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["team_status"]
+          success_metrics: Json
+          target_end_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          mission?: string | null
+          name: string
+          purpose?: string | null
+          scope_in?: string | null
+          scope_out?: string | null
+          slug: string
+          sponsor_employee_id?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["team_status"]
+          success_metrics?: Json
+          target_end_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          mission?: string | null
+          name?: string
+          purpose?: string | null
+          scope_in?: string | null
+          scope_out?: string | null
+          slug?: string
+          sponsor_employee_id?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["team_status"]
+          success_metrics?: Json
+          target_end_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_sponsor_employee_id_fkey"
+            columns: ["sponsor_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       template_tasks: {
         Row: {
           assignee: Database["public"]["Enums"]["task_assignee"]
@@ -9077,8 +9572,16 @@ export type Database = {
         Returns: boolean
       }
       can_manage_officials: { Args: { _uid: string }; Returns: boolean }
+      can_manage_team: {
+        Args: { _team_id: string; _uid: string }
+        Returns: boolean
+      }
       can_view_paf: {
         Args: { _paf_id: string; _uid: string }
+        Returns: boolean
+      }
+      can_view_team: {
+        Args: { _team_id: string; _uid: string }
         Returns: boolean
       }
       check_position_budget: {
@@ -9172,6 +9675,14 @@ export type Database = {
       is_iv_manager: { Args: { _uid: string }; Returns: boolean }
       is_panelist_for_interview: {
         Args: { _interview: string; _user: string }
+        Returns: boolean
+      }
+      is_team_lead: {
+        Args: { _team_id: string; _uid: string }
+        Returns: boolean
+      }
+      is_team_member: {
+        Args: { _team_id: string; _uid: string }
         Returns: boolean
       }
       mark_my_training_started: {
@@ -9334,6 +9845,29 @@ export type Database = {
         | "complete"
         | "skipped"
         | "blocked"
+      team_deliverable_status:
+        | "todo"
+        | "in_progress"
+        | "blocked"
+        | "done"
+        | "cancelled"
+      team_goal_status:
+        | "draft"
+        | "active"
+        | "at_risk"
+        | "completed"
+        | "cancelled"
+      team_member_role: "sponsor" | "lead" | "member"
+      team_status: "forming" | "active" | "paused" | "complete" | "archived"
+      team_update_kind:
+        | "comment"
+        | "member_joined"
+        | "member_left"
+        | "goal_progress"
+        | "deliverable_status"
+        | "decision"
+        | "charter_change"
+        | "meeting_logged"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -9583,6 +10117,32 @@ export const Constants = {
         "other",
       ],
       task_status: ["pending", "in_progress", "complete", "skipped", "blocked"],
+      team_deliverable_status: [
+        "todo",
+        "in_progress",
+        "blocked",
+        "done",
+        "cancelled",
+      ],
+      team_goal_status: [
+        "draft",
+        "active",
+        "at_risk",
+        "completed",
+        "cancelled",
+      ],
+      team_member_role: ["sponsor", "lead", "member"],
+      team_status: ["forming", "active", "paused", "complete", "archived"],
+      team_update_kind: [
+        "comment",
+        "member_joined",
+        "member_left",
+        "goal_progress",
+        "deliverable_status",
+        "decision",
+        "charter_change",
+        "meeting_logged",
+      ],
     },
   },
 } as const

@@ -1,46 +1,69 @@
-# Add "New Form" to the Forms Library
 
-Today the Forms Library is read-only — form definitions can only be added via SQL. This plan adds an in-app editor so HR admins can create, edit, and version forms directly.
+# Cross-Functional Teams
 
-## Access control
-- Existing DB policy `form_defs_hr_write` already restricts writes to HR — no schema/RLS changes needed.
-- UI actions (New / Edit) are shown only when the current user has the HR role. Non-HR users continue to see the read-only library.
+Self-organizing, cross-department teams (e.g. "AI Evaluation Team") with a full workspace: charter, members with roles, team goals + subgoals, deliverables, meetings/decisions, an updates feed, and links/files. Any employee can create a team. Visibility is private to members + HR admins.
 
-## Pages / UX
+## User-facing surfaces
 
-1. **Forms Library (`/forms`)** — add a top-right **"New form"** button (HR only). Each card gets an **Edit** action (HR only) alongside Preview.
+New nav entry **Teams** (under `/_authenticated/teams`):
+- `teams.index.tsx` — list of teams the signed-in user is a member of, plus (for HR admins) an "All teams" toggle. "New team" button.
+- `teams.new.tsx` — create a team (name, purpose one-liner, sponsor employee, target end date). Creator becomes `lead`.
+- `teams.$id.tsx` — team workspace with tabs:
+  - **Charter** — mission, scope (in/out), success metrics, sponsor, start/end, status (`forming | active | paused | complete | archived`). Editable by leads.
+  - **Members** — add/remove employees, assign role (`sponsor | lead | member`), optional allocation % and skills. Leads manage; members can leave.
+  - **Goals** — team-level goals with subgoals (weighted rollup, same UX as current Goals). Each subgoal has an owner (team member) and optional due date.
+  - **Deliverables** — title, description, owner, due date, status (`todo | in_progress | blocked | done | cancelled`), optional linked goal.
+  - **Meetings & decisions** — meeting log (date, title, notes markdown, attendees) and standalone decisions (title, decided_at, decided_by, rationale).
+  - **Updates** — chronological feed: comments + auto-events (member joined, deliverable done, goal progress, decision recorded).
+  - **Files & links** — URL bookmarks + uploaded documents (reusing `documents` bucket pattern).
+- Cross-links: an employee's profile lists teams they're on; each team goal shows on the owner's Goals page tagged "Team: X".
 
-2. **New route `/forms/new`** and **`/forms/$key/edit`** — the same editor component in create vs. edit mode. Layout:
-   - **Left pane – Metadata & Schema Builder**
-     - Metadata: `key` (slug, locked once created), `title`, `description`, `jurisdiction` (federal / state / local / other), `version` (number, defaults to 1 on new; on edit, an "Save as new version" toggle bumps it), `requires_signature` (switch).
-     - Sections list: add/rename/reorder/delete sections.
-     - Fields per section: add/reorder/delete. Per-field editor for `key`, `label`, `type` (text, email, tel, date, number, select, boolean, textarea), `required`, `sensitive`, and `options` (when `type = select`).
-     - "Edit as JSON" collapsible fallback for power users — validates against the `FormSchema` shape before switching back.
-   - **Right pane – Live Preview** — renders the current schema through the existing `<FormRunner>` in `readOnly` mode so HR sees exactly what employees will see.
+## Data model (new tables in `public`)
 
-3. **Save behavior**
-   - Create: insert into `form_definitions` with `version = 1`.
-   - Edit (same version): update the existing row.
-   - Edit (save as new version): insert a new row with the same `key` and `version + 1`. The library already surfaces the highest version per key on the detail page; the library list will be updated to de-duplicate by `key` and show the latest version.
+- `teams` — name, slug, purpose, mission, scope_in, scope_out, success_metrics (jsonb), sponsor_employee_id, status, start_date, target_end_date, created_by.
+- `team_members` — team_id, employee_id, role enum(`sponsor|lead|member`), allocation_pct, skills text[], joined_at, left_at. Unique (team_id, employee_id) where left_at is null.
+- `team_goals` — team_id, parent_goal_id (self-fk for subgoals), owner_member_id (nullable for team-level roots), title, description, target_date, weight, progress int, status enum(`draft|active|at_risk|completed|cancelled`), created_by. Rollup trigger analogous to existing `tg_goal_rollup`.
+- `team_goal_updates` — goal_id, author_id, progress, status, note.
+- `team_deliverables` — team_id, title, description, owner_member_id, linked_goal_id, due_date, status, completed_at.
+- `team_meetings` — team_id, meeting_date, title, notes_md, attendee_member_ids uuid[], created_by.
+- `team_decisions` — team_id, title, rationale, decided_at, decided_by, linked_meeting_id.
+- `team_updates` — team_id, kind enum(`comment|member_joined|member_left|goal_progress|deliverable_status|decision|charter_change`), author_id, body_md, payload jsonb, created_at.
+- `team_links` — team_id, label, url, added_by.
+- `team_documents` — team_id, document_id (fk to existing `documents`).
 
-4. **Validation before save**
-   - `key` matches `^[a-z0-9_-]+$` and is unique per version.
-   - At least one section with at least one field.
-   - Every field has a non-empty `key` and `label`; field keys unique within the form.
-   - `select` fields must have ≥ 1 option.
+All tables: GRANT to authenticated + service_role (no anon). RLS enabled.
 
-## Technical details
+## Access model
 
-- New files:
-  - `src/routes/_authenticated/forms.new.tsx`
-  - `src/routes/_authenticated/forms.$key.edit.tsx`
-  - `src/components/form-schema-editor.tsx` (shared builder)
-- Modify:
-  - `src/routes/_authenticated/forms.index.tsx` — add HR-gated "New form" button and Edit action; de-dupe by `key` showing latest `version`.
-- Data layer: use the browser Supabase client directly (writes are already RLS-gated to HR). No new server functions required.
-- HR check: reuse existing `useCurrentUser` / role hook already used elsewhere (verify during implementation) to conditionally render admin actions.
-- No database migration.
+Security-definer helper `public.is_team_member(_team_id, _uid)` (checks active `team_members` row). `public.is_team_lead(_team_id, _uid)` (role in `sponsor|lead`).
 
-## Out of scope
-- Field types beyond those already supported by `FormRunner` (no file upload, no repeatable groups, no conditional logic).
-- Archiving/deleting form definitions (referential integrity with `form_submissions` makes this a separate feature).
+Policies (typical):
+- SELECT on every team_* table: `is_team_member(team_id, auth.uid()) OR has_role(auth.uid(),'hr_admin')`.
+- INSERT `teams`: any authenticated user; trigger auto-inserts a `team_members` row for creator with role `lead`.
+- INSERT/UPDATE on other tables: `is_team_member(...)`; UPDATE/DELETE of charter/members restricted to `is_team_lead(...)` or HR admin.
+- `team_members` INSERT: leads only; self-DELETE (leave) allowed for own row.
+- Auto-append `team_updates` rows via triggers on member changes, deliverable status, goal progress, decisions.
+
+## Server functions
+
+`src/lib/teams.functions.ts` (all `requireSupabaseAuth`):
+- `createTeam({ name, purpose, sponsor_employee_id?, target_end_date? })` — inserts team + creator as lead in a single transaction (via `supabaseAdmin` after authz check).
+- `addTeamMembers({ team_id, members:[{employee_id, role, allocation_pct?}] })` — lead only.
+- `updateCharter({ team_id, patch })` — lead only; logs `charter_change` update.
+- `cascadeTeamGoal({ parent_goal_id, children:[...] })` — mirrors existing `cascadeGoal`.
+- `updateTeamGoalProgress({ goal_id, progress, status? })` — writes to `team_goal_updates` and lets rollup trigger update parent.
+- `logMeeting`, `recordDecision`, `postUpdate`, `addLink`, `attachDocument`, `leaveTeam`.
+
+Read paths use browser client + RLS for lists in each tab.
+
+## UI implementation notes
+
+- Reuse `AppShell`, shadcn `Tabs`, `Dialog`, `Card`, `Select`, `Textarea`.
+- New shared `TeamGoalTree` component modeled on the recursive renderer in `goals.tsx`, but sourced from `team_goals` with per-team scoping.
+- `useCurrentTeam(id)` hook returns team + caller's `team_members.role` for gating buttons.
+- Add nav item to `app-shell.tsx` (Users icon, "Teams"), visible to all authenticated users.
+- Empty states for each tab; skeletons via existing patterns.
+
+## Out of scope for v1 (call out to user)
+
+Formal RACI matrices per deliverable, Slack/Teams integrations, org-wide public browsing, budget tracking. These can layer on later without schema breaks.

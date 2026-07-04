@@ -81,6 +81,7 @@ import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authentica
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as CandidateTokenIndexRouteImport } from './routes/candidate.$token.index'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
+import { Route as AuthenticatedTeamsIndexRouteImport } from './routes/_authenticated/teams.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
 import { Route as AuthenticatedReviewCyclesIndexRouteImport } from './routes/_authenticated/review-cycles.index'
 import { Route as AuthenticatedPoliciesIndexRouteImport } from './routes/_authenticated/policies.index'
@@ -109,6 +110,8 @@ import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicBoardApplicationsRouteImport } from './routes/api/public/board-applications'
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
+import { Route as AuthenticatedTeamsNewRouteImport } from './routes/_authenticated/teams.new'
+import { Route as AuthenticatedTeamsIdRouteImport } from './routes/_authenticated/teams.$id'
 import { Route as AuthenticatedReviewsIdRouteImport } from './routes/_authenticated/reviews.$id'
 import { Route as AuthenticatedReviewCyclesIdRouteImport } from './routes/_authenticated/review-cycles.$id'
 import { Route as AuthenticatedPoliciesIdRouteImport } from './routes/_authenticated/policies.$id'
@@ -548,6 +551,11 @@ const AuthenticatedTemplatesIndexRoute =
     path: '/templates/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTeamsIndexRoute = AuthenticatedTeamsIndexRouteImport.update({
+  id: '/teams/',
+  path: '/teams/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReviewsIndexRoute =
   AuthenticatedReviewsIndexRouteImport.update({
     id: '/reviews/',
@@ -705,6 +713,16 @@ const AuthenticatedTemplatesIdRoute =
     path: '/templates/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTeamsNewRoute = AuthenticatedTeamsNewRouteImport.update({
+  id: '/teams/new',
+  path: '/teams/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTeamsIdRoute = AuthenticatedTeamsIdRouteImport.update({
+  id: '/teams/$id',
+  path: '/teams/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReviewsIdRoute = AuthenticatedReviewsIdRouteImport.update({
   id: '/reviews/$id',
   path: '/reviews/$id',
@@ -1097,6 +1115,8 @@ export interface FileRoutesByFullPath {
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
+  '/teams/$id': typeof AuthenticatedTeamsIdRoute
+  '/teams/new': typeof AuthenticatedTeamsNewRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
@@ -1125,6 +1145,7 @@ export interface FileRoutesByFullPath {
   '/policies/': typeof AuthenticatedPoliciesIndexRoute
   '/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
+  '/teams/': typeof AuthenticatedTeamsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
@@ -1245,6 +1266,8 @@ export interface FileRoutesByTo {
   '/payroll/profiles': typeof AuthenticatedPayrollProfilesRoute
   '/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/reviews/$id': typeof AuthenticatedReviewsIdRoute
+  '/teams/$id': typeof AuthenticatedTeamsIdRoute
+  '/teams/new': typeof AuthenticatedTeamsNewRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
@@ -1273,6 +1296,7 @@ export interface FileRoutesByTo {
   '/policies': typeof AuthenticatedPoliciesIndexRoute
   '/review-cycles': typeof AuthenticatedReviewCyclesIndexRoute
   '/reviews': typeof AuthenticatedReviewsIndexRoute
+  '/teams': typeof AuthenticatedTeamsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/candidate/$token': typeof CandidateTokenIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
@@ -1400,6 +1424,8 @@ export interface FileRoutesById {
   '/_authenticated/policies/$id': typeof AuthenticatedPoliciesIdRoute
   '/_authenticated/review-cycles/$id': typeof AuthenticatedReviewCyclesIdRouteWithChildren
   '/_authenticated/reviews/$id': typeof AuthenticatedReviewsIdRoute
+  '/_authenticated/teams/$id': typeof AuthenticatedTeamsIdRoute
+  '/_authenticated/teams/new': typeof AuthenticatedTeamsNewRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
@@ -1428,6 +1454,7 @@ export interface FileRoutesById {
   '/_authenticated/policies/': typeof AuthenticatedPoliciesIndexRoute
   '/_authenticated/review-cycles/': typeof AuthenticatedReviewCyclesIndexRoute
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
+  '/_authenticated/teams/': typeof AuthenticatedTeamsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
@@ -1555,6 +1582,8 @@ export interface FileRouteTypes {
     | '/policies/$id'
     | '/review-cycles/$id'
     | '/reviews/$id'
+    | '/teams/$id'
+    | '/teams/new'
     | '/templates/$id'
     | '/transcript/$employeeId'
     | '/api/public/board-applications'
@@ -1583,6 +1612,7 @@ export interface FileRouteTypes {
     | '/policies/'
     | '/review-cycles/'
     | '/reviews/'
+    | '/teams/'
     | '/templates/'
     | '/candidate/$token/'
     | '/careers/$slug/'
@@ -1703,6 +1733,8 @@ export interface FileRouteTypes {
     | '/payroll/profiles'
     | '/policies/$id'
     | '/reviews/$id'
+    | '/teams/$id'
+    | '/teams/new'
     | '/templates/$id'
     | '/transcript/$employeeId'
     | '/api/public/board-applications'
@@ -1731,6 +1763,7 @@ export interface FileRouteTypes {
     | '/policies'
     | '/review-cycles'
     | '/reviews'
+    | '/teams'
     | '/templates'
     | '/candidate/$token'
     | '/careers/$slug'
@@ -1857,6 +1890,8 @@ export interface FileRouteTypes {
     | '/_authenticated/policies/$id'
     | '/_authenticated/review-cycles/$id'
     | '/_authenticated/reviews/$id'
+    | '/_authenticated/teams/$id'
+    | '/_authenticated/teams/new'
     | '/_authenticated/templates/$id'
     | '/_authenticated/transcript/$employeeId'
     | '/api/public/board-applications'
@@ -1885,6 +1920,7 @@ export interface FileRouteTypes {
     | '/_authenticated/policies/'
     | '/_authenticated/review-cycles/'
     | '/_authenticated/reviews/'
+    | '/_authenticated/teams/'
     | '/_authenticated/templates/'
     | '/candidate/$token/'
     | '/careers/$slug/'
@@ -2467,6 +2503,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemplatesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/teams/': {
+      id: '/_authenticated/teams/'
+      path: '/teams'
+      fullPath: '/teams/'
+      preLoaderRoute: typeof AuthenticatedTeamsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/reviews/': {
       id: '/_authenticated/reviews/'
       path: '/reviews'
@@ -2661,6 +2704,20 @@ declare module '@tanstack/react-router' {
       path: '/templates/$id'
       fullPath: '/templates/$id'
       preLoaderRoute: typeof AuthenticatedTemplatesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/teams/new': {
+      id: '/_authenticated/teams/new'
+      path: '/teams/new'
+      fullPath: '/teams/new'
+      preLoaderRoute: typeof AuthenticatedTeamsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/teams/$id': {
+      id: '/_authenticated/teams/$id'
+      path: '/teams/$id'
+      fullPath: '/teams/$id'
+      preLoaderRoute: typeof AuthenticatedTeamsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reviews/$id': {
@@ -3200,6 +3257,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPayrollProfilesRoute: typeof AuthenticatedPayrollProfilesRoute
   AuthenticatedReviewCyclesIdRoute: typeof AuthenticatedReviewCyclesIdRouteWithChildren
   AuthenticatedReviewsIdRoute: typeof AuthenticatedReviewsIdRoute
+  AuthenticatedTeamsIdRoute: typeof AuthenticatedTeamsIdRoute
+  AuthenticatedTeamsNewRoute: typeof AuthenticatedTeamsNewRoute
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
   AuthenticatedTranscriptEmployeeIdRoute: typeof AuthenticatedTranscriptEmployeeIdRoute
   AuthenticatedCascadesIndexRoute: typeof AuthenticatedCascadesIndexRoute
@@ -3216,6 +3275,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPayrollIndexRoute: typeof AuthenticatedPayrollIndexRoute
   AuthenticatedReviewCyclesIndexRoute: typeof AuthenticatedReviewCyclesIndexRoute
   AuthenticatedReviewsIndexRoute: typeof AuthenticatedReviewsIndexRoute
+  AuthenticatedTeamsIndexRoute: typeof AuthenticatedTeamsIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
   AuthenticatedInterviewsAsyncIdRoute: typeof AuthenticatedInterviewsAsyncIdRoute
 }
@@ -3298,6 +3358,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReviewCyclesIdRoute:
     AuthenticatedReviewCyclesIdRouteWithChildren,
   AuthenticatedReviewsIdRoute: AuthenticatedReviewsIdRoute,
+  AuthenticatedTeamsIdRoute: AuthenticatedTeamsIdRoute,
+  AuthenticatedTeamsNewRoute: AuthenticatedTeamsNewRoute,
   AuthenticatedTemplatesIdRoute: AuthenticatedTemplatesIdRoute,
   AuthenticatedTranscriptEmployeeIdRoute:
     AuthenticatedTranscriptEmployeeIdRoute,
@@ -3315,6 +3377,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPayrollIndexRoute: AuthenticatedPayrollIndexRoute,
   AuthenticatedReviewCyclesIndexRoute: AuthenticatedReviewCyclesIndexRoute,
   AuthenticatedReviewsIndexRoute: AuthenticatedReviewsIndexRoute,
+  AuthenticatedTeamsIndexRoute: AuthenticatedTeamsIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
   AuthenticatedInterviewsAsyncIdRoute: AuthenticatedInterviewsAsyncIdRoute,
 }

@@ -82,6 +82,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/one-on-ones", "1-on-1s", MessagesSquare, ["hr_admin", "hiring_manager", "supervisor", "employee"]),
     def("/one-on-one-templates", "1-on-1 Templates", MessagesSquare, ["hr_admin"]),
     def("/goals", "Goals", Target, ["hr_admin", "hiring_manager", "supervisor", "employee"]),
+    def("/teams", "Cross-Functional Teams", Users, ["hr_admin", "hiring_manager", "supervisor", "employee"]),
     def("/reviews", "Reviews", ClipboardCheck, ["hr_admin", "hiring_manager", "supervisor", "employee"]),
     def("/review-cycles", "Review Cycles", CalendarDays, ["hr_admin"]),
     def("/cascades", "Cascades", Megaphone, ["hr_admin", "hiring_manager", "supervisor"]),
