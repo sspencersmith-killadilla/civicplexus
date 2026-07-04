@@ -120,6 +120,7 @@ import { Route as AuthenticatedLeaveIdRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
 import { Route as AuthenticatedInterviewsIdRouteImport } from './routes/_authenticated/interviews.$id'
 import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
+import { Route as AuthenticatedFormsNewRouteImport } from './routes/_authenticated/forms.new'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
 import { Route as AuthenticatedEmployeesImportRouteImport } from './routes/_authenticated/employees.import'
 import { Route as AuthenticatedEmployeesIdRouteImport } from './routes/_authenticated/employees.$id'
@@ -763,6 +764,11 @@ const AuthenticatedGrievancesIdRoute =
     path: '/grievances/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFormsNewRoute = AuthenticatedFormsNewRouteImport.update({
+  id: '/forms/new',
+  path: '/forms/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFormsKeyRoute = AuthenticatedFormsKeyRouteImport.update({
   id: '/forms/$key',
   path: '/forms/$key',
@@ -1072,6 +1078,7 @@ export interface FileRoutesByFullPath {
   '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/forms/new': typeof AuthenticatedFormsNewRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
@@ -1220,6 +1227,7 @@ export interface FileRoutesByTo {
   '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/forms/new': typeof AuthenticatedFormsNewRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
@@ -1371,6 +1379,7 @@ export interface FileRoutesById {
   '/_authenticated/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/_authenticated/employees/import': typeof AuthenticatedEmployeesImportRoute
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRoute
+  '/_authenticated/forms/new': typeof AuthenticatedFormsNewRoute
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
   '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
@@ -1524,6 +1533,7 @@ export interface FileRouteTypes {
     | '/employees/$id'
     | '/employees/import'
     | '/forms/$key'
+    | '/forms/new'
     | '/grievances/$id'
     | '/interviews/$id'
     | '/jobs/$id'
@@ -1672,6 +1682,7 @@ export interface FileRouteTypes {
     | '/employees/$id'
     | '/employees/import'
     | '/forms/$key'
+    | '/forms/new'
     | '/grievances/$id'
     | '/jobs/$id'
     | '/leave/$id'
@@ -1822,6 +1833,7 @@ export interface FileRouteTypes {
     | '/_authenticated/employees/$id'
     | '/_authenticated/employees/import'
     | '/_authenticated/forms/$key'
+    | '/_authenticated/forms/new'
     | '/_authenticated/grievances/$id'
     | '/_authenticated/interviews/$id'
     | '/_authenticated/jobs/$id'
@@ -2715,6 +2727,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGrievancesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/forms/new': {
+      id: '/_authenticated/forms/new'
+      path: '/forms/new'
+      fullPath: '/forms/new'
+      preLoaderRoute: typeof AuthenticatedFormsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/forms/$key': {
       id: '/_authenticated/forms/$key'
       path: '/forms/$key'
@@ -3137,6 +3156,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEmployeesIdRoute: typeof AuthenticatedEmployeesIdRoute
   AuthenticatedEmployeesImportRoute: typeof AuthenticatedEmployeesImportRoute
   AuthenticatedFormsKeyRoute: typeof AuthenticatedFormsKeyRoute
+  AuthenticatedFormsNewRoute: typeof AuthenticatedFormsNewRoute
   AuthenticatedGrievancesIdRoute: typeof AuthenticatedGrievancesIdRoute
   AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRouteWithChildren
   AuthenticatedJobsIdRoute: typeof AuthenticatedJobsIdRoute
@@ -3233,6 +3253,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEmployeesIdRoute: AuthenticatedEmployeesIdRoute,
   AuthenticatedEmployeesImportRoute: AuthenticatedEmployeesImportRoute,
   AuthenticatedFormsKeyRoute: AuthenticatedFormsKeyRoute,
+  AuthenticatedFormsNewRoute: AuthenticatedFormsNewRoute,
   AuthenticatedGrievancesIdRoute: AuthenticatedGrievancesIdRoute,
   AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRouteWithChildren,
   AuthenticatedJobsIdRoute: AuthenticatedJobsIdRoute,
