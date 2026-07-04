@@ -21,30 +21,56 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [asVolunteer, setAsVolunteer] = useState(false);
+
+  async function routeAfterAuth(userId: string) {
+    // Staff (any role) → staff dashboard. Otherwise → volunteer portal if they have or want a volunteer profile.
+    const [{ data: roles }, { data: vol }] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", userId).limit(1),
+      supabase.from("volunteers").select("id").eq("user_id", userId).limit(1),
+    ]);
+    const hasStaffRole = (roles ?? []).length > 0;
+    const isVolunteer = (vol ?? []).length > 0 || asVolunteer;
+    if (!hasStaffRole && isVolunteer) {
+      navigate({ to: "/volunteer", replace: true });
+    } else {
+      navigate({ to: "/dashboard", replace: true });
+    }
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard", replace: true });
+      if (data.user) routeAfterAuth(data.user.id);
     });
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function onEmail(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data: signup, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin + "/dashboard", data: { full_name: fullName } },
+          options: {
+            emailRedirectTo: window.location.origin + (asVolunteer ? "/volunteer" : "/dashboard"),
+            data: { full_name: fullName, kind: asVolunteer ? "volunteer" : "staff" },
+          },
         });
         if (error) throw error;
         toast.success("Account created. You're signed in.");
+        if (signup.user && asVolunteer) {
+          navigate({ to: "/volunteer/profile", replace: true });
+          return;
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      navigate({ to: "/dashboard", replace: true });
+      const { data: u } = await supabase.auth.getUser();
+      if (u.user) await routeAfterAuth(u.user.id);
+      else navigate({ to: "/dashboard", replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
     } finally {
@@ -54,14 +80,16 @@ function AuthPage() {
 
   async function onGoogle() {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/dashboard" });
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + (asVolunteer ? "/volunteer" : "/dashboard") });
     if (result.error) {
       toast.error("Google sign-in failed");
       setLoading(false);
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
+    const { data: u } = await supabase.auth.getUser();
+    if (u.user) await routeAfterAuth(u.user.id);
+    else navigate({ to: "/dashboard", replace: true });
   }
 
   return (
@@ -95,6 +123,13 @@ function AuthPage() {
                   <Label htmlFor="name">Full name</Label>
                   <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required={mode === "signup"} />
                 </div>
+                <label className="flex items-start gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" className="mt-1" checked={asVolunteer} onChange={(e) => setAsVolunteer(e.target.checked)} />
+                  <span>
+                    I'm signing up as a <strong>volunteer</strong> to register for shifts.
+                    <span className="block text-xs text-muted-foreground">Staff members should leave this unchecked.</span>
+                  </span>
+                </label>
               </TabsContent>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
