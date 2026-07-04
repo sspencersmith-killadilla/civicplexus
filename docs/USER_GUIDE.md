@@ -303,6 +303,18 @@ Pre-built reports: time-to-hire, time-to-fill, headcount by department, turnover
 
 Roles live in `public.user_roles`. The `private.has_role(uid, role)` security-definer function backs every RLS policy.
 
+### Team-scoped access (Cross-Functional Teams)
+
+Cross-functional teams (`/teams`) use **membership-based access** rather than roles:
+
+| Team role | Granted by | Can |
+| --- | --- | --- |
+| `lead` / `co-lead` | Creator (auto) or another lead | Edit charter, add/remove members, close team |
+| `member` | Any lead | Create/edit goals, deliverables, meetings, decisions, updates, links |
+| `advisor` | Any lead | Same as member (labelled for reporting only) |
+
+RLS is enforced by two security-definer helpers: `can_view_team(team_id, uid)` (member or `hr_admin`) and `can_manage_team(team_id, uid)` (lead/co-lead or `hr_admin`). Non-members cannot see or query the team.
+
 ---
 
 ## 10. Operating cadence
