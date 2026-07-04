@@ -164,6 +164,7 @@ function PositionsPage() {
               <Button><Plus className="h-4 w-4 mr-2" /> New position</Button>
             </DialogTrigger>
             <PositionDialog
+              key={editing?.id ?? "new"}
               editing={editing}
               positions={positionsQ.data ?? []}
               workerTypes={workerTypesQ.data ?? []}
