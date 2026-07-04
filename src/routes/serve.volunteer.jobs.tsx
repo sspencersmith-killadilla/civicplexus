@@ -30,7 +30,7 @@ function VolunteerJobsList() {
           <HeartHandshake className="h-8 w-8 text-primary" />
           <div>
             <h1 className="font-serif text-3xl tracking-tight">Volunteer opportunities</h1>
-            <p className="text-muted-foreground mt-2">Sign up for a specific role and shift. A coordinator will approve you and send a PIN for clock-in.</p>
+            <p className="text-muted-foreground mt-2">Browse open shifts below. <Link to="/auth" className="text-primary underline">Create a volunteer account</Link> to register for shifts and clock in.</p>
           </div>
         </div>
       </header>
@@ -73,7 +73,7 @@ function VolunteerJobsList() {
           </Card>
         ))}
         <div className="pt-4 text-sm">
-          <Link to="/serve/volunteer/clock" className="text-primary underline">Already approved? Clock in →</Link>
+          <Link to="/auth" className="text-primary underline">Sign in to register or clock in →</Link>
         </div>
       </main>
     </div>
