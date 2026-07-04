@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { listPublicVolunteerJobs } from "@/lib/volunteer-jobs.functions";
 import { getMyVolunteerProfile, listMySignups, registerForShift } from "@/lib/volunteer-portal.functions";
 
-export const Route = createFileRoute("/_authenticated/volunteer/jobs")({
+export const Route = createFileRoute("/_authenticated/volunteer/find")({
   component: BrowseJobs,
 });
 

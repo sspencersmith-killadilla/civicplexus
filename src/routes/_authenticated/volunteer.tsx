@@ -31,7 +31,7 @@ function VolunteerLayout() {
         </div>
         <nav className="max-w-4xl mx-auto px-6 pb-3 flex gap-2">
           {tab("/volunteer", "My shifts")}
-          {tab("/volunteer/jobs", "Browse opportunities")}
+          {tab("/volunteer/find", "Browse opportunities")}
           {tab("/volunteer/profile", "Profile")}
         </nav>
       </header>

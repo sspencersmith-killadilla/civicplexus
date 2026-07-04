@@ -67,14 +67,14 @@ function MyShifts() {
           </div>
           <div className="text-xs text-muted-foreground mt-1">Status: {statusBadge(profile.data.status)}</div>
         </div>
-        <Button variant="outline" asChild size="sm"><Link to="/volunteer/jobs">Find a shift</Link></Button>
+        <Button variant="outline" asChild size="sm"><Link to="/volunteer/find">Find a shift</Link></Button>
       </Card>
 
       <div>
         <h2 className="font-serif text-lg mb-3">My sign-ups</h2>
         {rows.length === 0 ? (
           <Card className="p-8 text-center text-sm text-muted-foreground">
-            You haven't registered for any shifts yet. <Link to="/volunteer/jobs" className="text-primary underline">Browse opportunities</Link>.
+            You haven't registered for any shifts yet. <Link to="/volunteer/find" className="text-primary underline">Browse opportunities</Link>.
           </Card>
         ) : (
           <div className="space-y-2">
