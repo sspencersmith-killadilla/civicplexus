@@ -9,10 +9,12 @@ const getStatus = createServerFn({ method: "GET" })
   .inputValidator((i: unknown) => z.object({ token: z.string().min(10) }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { hashToken } = await import("@/lib/candidate-tokens.server");
+    const tokenHash = hashToken(data.token);
     const { data: sub } = await supabaseAdmin
       .from("board_application_submissions")
       .select("first_name,last_name,status,created_at,decided_at,decision_notes, board_application_interests(is_primary, official_bodies(name))")
-      .eq("status_token", data.token)
+      .eq("status_token", tokenHash)
       .maybeSingle();
     return sub;
   });
