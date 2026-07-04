@@ -9404,6 +9404,7 @@ export type Database = {
           skills: string[]
           status: string
           updated_at: string
+          user_id: string | null
           waiver_signed_at: string | null
         }
         Insert: {
@@ -9419,6 +9420,7 @@ export type Database = {
           skills?: string[]
           status?: string
           updated_at?: string
+          user_id?: string | null
           waiver_signed_at?: string | null
         }
         Update: {
@@ -9434,6 +9436,7 @@ export type Database = {
           skills?: string[]
           status?: string
           updated_at?: string
+          user_id?: string | null
           waiver_signed_at?: string | null
         }
         Relationships: []

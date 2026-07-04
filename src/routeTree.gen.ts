@@ -27,6 +27,7 @@ import { Route as CareersSlugRouteImport } from './routes/careers.$slug'
 import { Route as AuthenticatedWorkerTypesRouteImport } from './routes/_authenticated/worker-types'
 import { Route as AuthenticatedVolunteersRouteImport } from './routes/_authenticated/volunteers'
 import { Route as AuthenticatedVolunteerJobsRouteImport } from './routes/_authenticated/volunteer-jobs'
+import { Route as AuthenticatedVolunteerRouteImport } from './routes/_authenticated/volunteer'
 import { Route as AuthenticatedVendorsRouteImport } from './routes/_authenticated/vendors'
 import { Route as AuthenticatedVendorFormsRouteImport } from './routes/_authenticated/vendor-forms'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
@@ -80,6 +81,7 @@ import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin-demo'
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as CandidateTokenIndexRouteImport } from './routes/candidate.$token.index'
+import { Route as AuthenticatedVolunteerIndexRouteImport } from './routes/_authenticated/volunteer.index'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedTeamsIndexRouteImport } from './routes/_authenticated/teams.index'
 import { Route as AuthenticatedReviewsIndexRouteImport } from './routes/_authenticated/reviews.index'
@@ -108,6 +110,8 @@ import { Route as ApiPublicVolunteerClockRouteImport } from './routes/api/public
 import { Route as ApiPublicJobApplicationsRouteImport } from './routes/api/public/job-applications'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicBoardApplicationsRouteImport } from './routes/api/public/board-applications'
+import { Route as AuthenticatedVolunteerProfileRouteImport } from './routes/_authenticated/volunteer.profile'
+import { Route as AuthenticatedVolunteerJobsRouteImport } from './routes/_authenticated/volunteer.jobs'
 import { Route as AuthenticatedTranscriptEmployeeIdRouteImport } from './routes/_authenticated/transcript.$employeeId'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedTeamsNewRouteImport } from './routes/_authenticated/teams.new'
@@ -256,6 +260,11 @@ const AuthenticatedVolunteerJobsRoute =
     path: '/volunteer-jobs',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedVolunteerRoute = AuthenticatedVolunteerRouteImport.update({
+  id: '/volunteer',
+  path: '/volunteer',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedVendorsRoute = AuthenticatedVendorsRouteImport.update({
   id: '/vendors',
   path: '/vendors',
@@ -545,6 +554,12 @@ const CandidateTokenIndexRoute = CandidateTokenIndexRouteImport.update({
   path: '/candidate/$token/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedVolunteerIndexRoute =
+  AuthenticatedVolunteerIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedVolunteerRoute,
+  } as any)
 const AuthenticatedTemplatesIndexRoute =
   AuthenticatedTemplatesIndexRouteImport.update({
     id: '/templates/',
@@ -700,6 +715,18 @@ const ApiPublicBoardApplicationsRoute =
     id: '/api/public/board-applications',
     path: '/api/public/board-applications',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedVolunteerProfileRoute =
+  AuthenticatedVolunteerProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedVolunteerRoute,
+  } as any)
+const AuthenticatedVolunteerJobsRoute =
+  AuthenticatedVolunteerJobsRouteImport.update({
+    id: '/jobs',
+    path: '/jobs',
+    getParentRoute: () => AuthenticatedVolunteerRoute,
   } as any)
 const AuthenticatedTranscriptEmployeeIdRoute =
   AuthenticatedTranscriptEmployeeIdRouteImport.update({
@@ -1076,6 +1103,7 @@ export interface FileRoutesByFullPath {
   '/training': typeof AuthenticatedTrainingRoute
   '/vendor-forms': typeof AuthenticatedVendorFormsRoute
   '/vendors': typeof AuthenticatedVendorsRoute
+  '/volunteer': typeof AuthenticatedVolunteerRouteWithChildren
   '/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/volunteers': typeof AuthenticatedVolunteersRoute
   '/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -1119,6 +1147,8 @@ export interface FileRoutesByFullPath {
   '/teams/new': typeof AuthenticatedTeamsNewRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
+  '/volunteer/jobs': typeof AuthenticatedVolunteerJobsRoute
+  '/volunteer/profile': typeof AuthenticatedVolunteerProfileRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
@@ -1147,6 +1177,7 @@ export interface FileRoutesByFullPath {
   '/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/teams/': typeof AuthenticatedTeamsIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
+  '/volunteer/': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
@@ -1270,6 +1301,8 @@ export interface FileRoutesByTo {
   '/teams/new': typeof AuthenticatedTeamsNewRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
+  '/volunteer/jobs': typeof AuthenticatedVolunteerJobsRoute
+  '/volunteer/profile': typeof AuthenticatedVolunteerProfileRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
@@ -1298,6 +1331,7 @@ export interface FileRoutesByTo {
   '/reviews': typeof AuthenticatedReviewsIndexRoute
   '/teams': typeof AuthenticatedTeamsIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
+  '/volunteer': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token': typeof CandidateTokenIndexRoute
   '/careers/$slug': typeof CareersSlugIndexRoute
   '/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
@@ -1385,6 +1419,7 @@ export interface FileRoutesById {
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/vendor-forms': typeof AuthenticatedVendorFormsRoute
   '/_authenticated/vendors': typeof AuthenticatedVendorsRoute
+  '/_authenticated/volunteer': typeof AuthenticatedVolunteerRouteWithChildren
   '/_authenticated/volunteer-jobs': typeof AuthenticatedVolunteerJobsRoute
   '/_authenticated/volunteers': typeof AuthenticatedVolunteersRoute
   '/_authenticated/worker-types': typeof AuthenticatedWorkerTypesRoute
@@ -1428,6 +1463,8 @@ export interface FileRoutesById {
   '/_authenticated/teams/new': typeof AuthenticatedTeamsNewRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/transcript/$employeeId': typeof AuthenticatedTranscriptEmployeeIdRoute
+  '/_authenticated/volunteer/jobs': typeof AuthenticatedVolunteerJobsRoute
+  '/_authenticated/volunteer/profile': typeof AuthenticatedVolunteerProfileRoute
   '/api/public/board-applications': typeof ApiPublicBoardApplicationsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/job-applications': typeof ApiPublicJobApplicationsRoute
@@ -1456,6 +1493,7 @@ export interface FileRoutesById {
   '/_authenticated/reviews/': typeof AuthenticatedReviewsIndexRoute
   '/_authenticated/teams/': typeof AuthenticatedTeamsIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
+  '/_authenticated/volunteer/': typeof AuthenticatedVolunteerIndexRoute
   '/candidate/$token/': typeof CandidateTokenIndexRoute
   '/careers/$slug/': typeof CareersSlugIndexRoute
   '/_authenticated/admin-officials/applications/$id': typeof AuthenticatedAdminOfficialsApplicationsIdRoute
@@ -1543,6 +1581,7 @@ export interface FileRouteTypes {
     | '/training'
     | '/vendor-forms'
     | '/vendors'
+    | '/volunteer'
     | '/volunteer-jobs'
     | '/volunteers'
     | '/worker-types'
@@ -1586,6 +1625,8 @@ export interface FileRouteTypes {
     | '/teams/new'
     | '/templates/$id'
     | '/transcript/$employeeId'
+    | '/volunteer/jobs'
+    | '/volunteer/profile'
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
@@ -1614,6 +1655,7 @@ export interface FileRouteTypes {
     | '/reviews/'
     | '/teams/'
     | '/templates/'
+    | '/volunteer/'
     | '/candidate/$token/'
     | '/careers/$slug/'
     | '/admin-officials/applications/$id'
@@ -1737,6 +1779,8 @@ export interface FileRouteTypes {
     | '/teams/new'
     | '/templates/$id'
     | '/transcript/$employeeId'
+    | '/volunteer/jobs'
+    | '/volunteer/profile'
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
@@ -1765,6 +1809,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/teams'
     | '/templates'
+    | '/volunteer'
     | '/candidate/$token'
     | '/careers/$slug'
     | '/admin-officials/applications/$id'
@@ -1851,6 +1896,7 @@ export interface FileRouteTypes {
     | '/_authenticated/training'
     | '/_authenticated/vendor-forms'
     | '/_authenticated/vendors'
+    | '/_authenticated/volunteer'
     | '/_authenticated/volunteer-jobs'
     | '/_authenticated/volunteers'
     | '/_authenticated/worker-types'
@@ -1894,6 +1940,8 @@ export interface FileRouteTypes {
     | '/_authenticated/teams/new'
     | '/_authenticated/templates/$id'
     | '/_authenticated/transcript/$employeeId'
+    | '/_authenticated/volunteer/jobs'
+    | '/_authenticated/volunteer/profile'
     | '/api/public/board-applications'
     | '/api/public/health'
     | '/api/public/job-applications'
@@ -1922,6 +1970,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reviews/'
     | '/_authenticated/teams/'
     | '/_authenticated/templates/'
+    | '/_authenticated/volunteer/'
     | '/candidate/$token/'
     | '/careers/$slug/'
     | '/_authenticated/admin-officials/applications/$id'
@@ -2123,6 +2172,13 @@ declare module '@tanstack/react-router' {
       path: '/volunteer-jobs'
       fullPath: '/volunteer-jobs'
       preLoaderRoute: typeof AuthenticatedVolunteerJobsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/volunteer': {
+      id: '/_authenticated/volunteer'
+      path: '/volunteer'
+      fullPath: '/volunteer'
+      preLoaderRoute: typeof AuthenticatedVolunteerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vendors': {
@@ -2496,6 +2552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CandidateTokenIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/volunteer/': {
+      id: '/_authenticated/volunteer/'
+      path: '/'
+      fullPath: '/volunteer/'
+      preLoaderRoute: typeof AuthenticatedVolunteerIndexRouteImport
+      parentRoute: typeof AuthenticatedVolunteerRoute
+    }
     '/_authenticated/templates/': {
       id: '/_authenticated/templates/'
       path: '/templates'
@@ -2691,6 +2754,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/board-applications'
       preLoaderRoute: typeof ApiPublicBoardApplicationsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/volunteer/profile': {
+      id: '/_authenticated/volunteer/profile'
+      path: '/profile'
+      fullPath: '/volunteer/profile'
+      preLoaderRoute: typeof AuthenticatedVolunteerProfileRouteImport
+      parentRoute: typeof AuthenticatedVolunteerRoute
+    }
+    '/_authenticated/volunteer/jobs': {
+      id: '/_authenticated/volunteer/jobs'
+      path: '/jobs'
+      fullPath: '/volunteer/jobs'
+      preLoaderRoute: typeof AuthenticatedVolunteerJobsRouteImport
+      parentRoute: typeof AuthenticatedVolunteerRoute
     }
     '/_authenticated/transcript/$employeeId': {
       id: '/_authenticated/transcript/$employeeId'
@@ -3135,6 +3212,24 @@ const AuthenticatedPoliciesRouteWithChildren =
     AuthenticatedPoliciesRouteChildren,
   )
 
+interface AuthenticatedVolunteerRouteChildren {
+  AuthenticatedVolunteerJobsRoute: typeof AuthenticatedVolunteerJobsRoute
+  AuthenticatedVolunteerProfileRoute: typeof AuthenticatedVolunteerProfileRoute
+  AuthenticatedVolunteerIndexRoute: typeof AuthenticatedVolunteerIndexRoute
+}
+
+const AuthenticatedVolunteerRouteChildren: AuthenticatedVolunteerRouteChildren =
+  {
+    AuthenticatedVolunteerJobsRoute: AuthenticatedVolunteerJobsRoute,
+    AuthenticatedVolunteerProfileRoute: AuthenticatedVolunteerProfileRoute,
+    AuthenticatedVolunteerIndexRoute: AuthenticatedVolunteerIndexRoute,
+  }
+
+const AuthenticatedVolunteerRouteWithChildren =
+  AuthenticatedVolunteerRoute._addFileChildren(
+    AuthenticatedVolunteerRouteChildren,
+  )
+
 interface AuthenticatedFormsKeyRouteChildren {
   AuthenticatedFormsKeyEditRoute: typeof AuthenticatedFormsKeyEditRoute
 }
@@ -3234,6 +3329,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedVendorFormsRoute: typeof AuthenticatedVendorFormsRoute
   AuthenticatedVendorsRoute: typeof AuthenticatedVendorsRoute
+  AuthenticatedVolunteerRoute: typeof AuthenticatedVolunteerRouteWithChildren
   AuthenticatedVolunteerJobsRoute: typeof AuthenticatedVolunteerJobsRoute
   AuthenticatedVolunteersRoute: typeof AuthenticatedVolunteersRoute
   AuthenticatedWorkerTypesRoute: typeof AuthenticatedWorkerTypesRoute
@@ -3333,6 +3429,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedVendorFormsRoute: AuthenticatedVendorFormsRoute,
   AuthenticatedVendorsRoute: AuthenticatedVendorsRoute,
+  AuthenticatedVolunteerRoute: AuthenticatedVolunteerRouteWithChildren,
   AuthenticatedVolunteerJobsRoute: AuthenticatedVolunteerJobsRoute,
   AuthenticatedVolunteersRoute: AuthenticatedVolunteersRoute,
   AuthenticatedWorkerTypesRoute: AuthenticatedWorkerTypesRoute,
