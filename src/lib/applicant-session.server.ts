@@ -27,6 +27,7 @@ export async function getApplicantSession() {
 
 export async function readApplicantIdentity(): Promise<ApplicantSessionData | null> {
   const s = await getApplicantSession();
-  if (!s.data?.signup_id) return null;
-  return s.data;
+  const d = s.data as Partial<ApplicantSessionData>;
+  if (!d?.signup_id || !d.last_name) return null;
+  return { signup_id: d.signup_id, last_name: d.last_name, email: d.email ?? null };
 }
