@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
 import { z } from "zod";
+import { VolunteerPublicHeader } from "@/components/volunteer-public-header";
 
 export const Route = createFileRoute("/serve/volunteer/jobs/$slug")({
   validateSearch: (s: Record<string, unknown>) => z.object({ shift: z.string().optional() }).parse(s),
@@ -41,12 +42,15 @@ function ApplyPage() {
 
   if (!job) return <p className="p-6">Role not found.</p>;
   if (done) return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-background">
-      <Card className="max-w-md p-8 text-center">
-        <CheckCircle2 className="h-10 w-10 mx-auto text-emerald-600" />
-        <h1 className="font-serif text-2xl mt-4">Application submitted.</h1>
-        <p className="text-muted-foreground mt-2 text-sm">A coordinator will review and email you an approval and a 4-digit PIN for clock-in.</p>
-      </Card>
+    <div className="min-h-screen bg-background">
+      <VolunteerPublicHeader title="Volunteer" />
+      <div className="flex items-center justify-center p-6">
+        <Card className="max-w-md p-8 text-center">
+          <CheckCircle2 className="h-10 w-10 mx-auto text-emerald-600" />
+          <h1 className="font-serif text-2xl mt-4">Application submitted.</h1>
+          <p className="text-muted-foreground mt-2 text-sm">A coordinator will review and email you an approval and a 4-digit PIN for clock-in.</p>
+        </Card>
+      </div>
     </div>
   );
 
@@ -66,13 +70,12 @@ function ApplyPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="max-w-3xl mx-auto px-6 py-8">
-          <h1 className="font-serif text-3xl tracking-tight">{job.title}</h1>
-          {job.location && <p className="text-sm text-muted-foreground mt-1">{job.location}</p>}
-          {job.description && <p className="text-sm mt-3 whitespace-pre-wrap">{job.description}</p>}
+      <VolunteerPublicHeader title={job.title} subtitle={job.location ?? undefined} />
+      {job.description && (
+        <div className="max-w-3xl mx-auto px-6 pt-6">
+          <p className="text-sm whitespace-pre-wrap">{job.description}</p>
         </div>
-      </header>
+      )}
       <main className="max-w-3xl mx-auto px-6 py-8">
         <Card className="p-6">
           <form onSubmit={submit} className="space-y-4">
