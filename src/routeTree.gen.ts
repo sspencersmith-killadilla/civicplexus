@@ -103,6 +103,7 @@ import { Route as AuthenticatedAdminOfficialsIndexRouteImport } from './routes/_
 import { Route as ServeVolunteerJobsRouteImport } from './routes/serve.volunteer.jobs'
 import { Route as ServeVolunteerClockRouteImport } from './routes/serve.volunteer.clock'
 import { Route as ServeStatusTokenRouteImport } from './routes/serve.status.$token'
+import { Route as ServeApplicantSigninRouteImport } from './routes/serve.applicant.signin'
 import { Route as CareersSlugApplyRouteImport } from './routes/careers.$slug.apply'
 import { Route as CandidateTokenInterviewRouteImport } from './routes/candidate.$token.interview'
 import { Route as ApiPublicVolunteerSignupRouteImport } from './routes/api/public/volunteer-signup'
@@ -679,6 +680,11 @@ const ServeStatusTokenRoute = ServeStatusTokenRouteImport.update({
   path: '/serve/status/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServeApplicantSigninRoute = ServeApplicantSigninRouteImport.update({
+  id: '/serve/applicant/signin',
+  path: '/serve/applicant/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CareersSlugApplyRoute = CareersSlugApplyRouteImport.update({
   id: '/apply',
   path: '/apply',
@@ -1164,6 +1170,7 @@ export interface FileRoutesByFullPath {
   '/api/public/volunteer-signup': typeof ApiPublicVolunteerSignupRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/applicant/signin': typeof ServeApplicantSigninRoute
   '/serve/status/$token': typeof ServeStatusTokenRoute
   '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
   '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
@@ -1319,6 +1326,7 @@ export interface FileRoutesByTo {
   '/api/public/volunteer-signup': typeof ApiPublicVolunteerSignupRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/applicant/signin': typeof ServeApplicantSigninRoute
   '/serve/status/$token': typeof ServeStatusTokenRoute
   '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
   '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
@@ -1482,6 +1490,7 @@ export interface FileRoutesById {
   '/api/public/volunteer-signup': typeof ApiPublicVolunteerSignupRoute
   '/candidate/$token/interview': typeof CandidateTokenInterviewRoute
   '/careers/$slug/apply': typeof CareersSlugApplyRoute
+  '/serve/applicant/signin': typeof ServeApplicantSigninRoute
   '/serve/status/$token': typeof ServeStatusTokenRoute
   '/serve/volunteer/clock': typeof ServeVolunteerClockRoute
   '/serve/volunteer/jobs': typeof ServeVolunteerJobsRouteWithChildren
@@ -1645,6 +1654,7 @@ export interface FileRouteTypes {
     | '/api/public/volunteer-signup'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/applicant/signin'
     | '/serve/status/$token'
     | '/serve/volunteer/clock'
     | '/serve/volunteer/jobs'
@@ -1800,6 +1810,7 @@ export interface FileRouteTypes {
     | '/api/public/volunteer-signup'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/applicant/signin'
     | '/serve/status/$token'
     | '/serve/volunteer/clock'
     | '/serve/volunteer/jobs'
@@ -1962,6 +1973,7 @@ export interface FileRouteTypes {
     | '/api/public/volunteer-signup'
     | '/candidate/$token/interview'
     | '/careers/$slug/apply'
+    | '/serve/applicant/signin'
     | '/serve/status/$token'
     | '/serve/volunteer/clock'
     | '/serve/volunteer/jobs'
@@ -2038,6 +2050,7 @@ export interface RootRouteChildren {
   ApiPublicVolunteerClockRoute: typeof ApiPublicVolunteerClockRoute
   ApiPublicVolunteerSignupRoute: typeof ApiPublicVolunteerSignupRoute
   CandidateTokenInterviewRoute: typeof CandidateTokenInterviewRoute
+  ServeApplicantSigninRoute: typeof ServeApplicantSigninRoute
   ServeStatusTokenRoute: typeof ServeStatusTokenRoute
   CandidateTokenIndexRoute: typeof CandidateTokenIndexRoute
   ApiPublicBadgeSerialRoute: typeof ApiPublicBadgeSerialRoute
@@ -2718,6 +2731,13 @@ declare module '@tanstack/react-router' {
       path: '/serve/status/$token'
       fullPath: '/serve/status/$token'
       preLoaderRoute: typeof ServeStatusTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/serve/applicant/signin': {
+      id: '/serve/applicant/signin'
+      path: '/serve/applicant/signin'
+      fullPath: '/serve/applicant/signin'
+      preLoaderRoute: typeof ServeApplicantSigninRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/careers/$slug/apply': {
@@ -3565,6 +3585,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicVolunteerClockRoute: ApiPublicVolunteerClockRoute,
   ApiPublicVolunteerSignupRoute: ApiPublicVolunteerSignupRoute,
   CandidateTokenInterviewRoute: CandidateTokenInterviewRoute,
+  ServeApplicantSigninRoute: ServeApplicantSigninRoute,
   ServeStatusTokenRoute: ServeStatusTokenRoute,
   CandidateTokenIndexRoute: CandidateTokenIndexRoute,
   ApiPublicBadgeSerialRoute: ApiPublicBadgeSerialRoute,
