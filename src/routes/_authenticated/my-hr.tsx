@@ -204,6 +204,13 @@ function MyHR() {
               <p className="text-sm text-muted-foreground mt-0.5 truncate">
                 {empQ.data ? `${empQ.data.job_title ?? "—"} · ${empQ.data.department ?? "—"}` : "Loading your profile…"}
               </p>
+              {empQ.data?.start_date && (
+                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {formatTenure(empQ.data.start_date) ? `${formatTenure(empQ.data.start_date)} with the city` : ""}
+                  <span className="opacity-60">· since {empQ.data.start_date}</span>
+                </p>
+              )}
               {empQ.data?.id && (
                 <Link to="/employees/$id" params={{ id: empQ.data.id }} className="text-xs text-primary hover:underline">View my profile →</Link>
               )}
