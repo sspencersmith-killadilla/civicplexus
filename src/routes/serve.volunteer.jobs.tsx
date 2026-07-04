@@ -3,7 +3,8 @@ import { listPublicVolunteerJobs } from "@/lib/volunteer-jobs.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { HeartHandshake, Clock, MapPin } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
+import { VolunteerPublicHeader } from "@/components/volunteer-public-header";
 
 export const Route = createFileRoute("/serve/volunteer/jobs")({
   head: () => ({
@@ -25,15 +26,10 @@ function VolunteerJobsList() {
   const jobs = useLoaderData({ from: "/serve/volunteer/jobs" }) as Job[];
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="max-w-4xl mx-auto px-6 py-10 flex items-start gap-4">
-          <HeartHandshake className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="font-serif text-3xl tracking-tight">Volunteer opportunities</h1>
-            <p className="text-muted-foreground mt-2">Browse open shifts below. <Link to="/auth" className="text-primary underline">Create a volunteer account</Link> to register for shifts and clock in.</p>
-          </div>
-        </div>
-      </header>
+      <VolunteerPublicHeader
+        title="Volunteer opportunities"
+        subtitle="Browse open shifts. Sign in or create a volunteer account to register."
+      />
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-4">
         {jobs.length === 0 ? (
           <Card className="p-8 text-center text-sm text-muted-foreground">No open volunteer roles right now. Check back soon.</Card>
@@ -72,9 +68,6 @@ function VolunteerJobsList() {
             </div>
           </Card>
         ))}
-        <div className="pt-4 text-sm">
-          <Link to="/auth" className="text-primary underline">Sign in to register or clock in →</Link>
-        </div>
       </main>
     </div>
   );
