@@ -10,6 +10,8 @@ const TemplatePatch = z.object({
   body: z.string().min(2).max(20000),
   description: z.string().max(500).optional().nullable(),
   active: z.boolean().default(true),
+  category: z.string().max(60).optional().nullable(),
+  is_custom: z.boolean().optional(),
 });
 
 export const listEmailTemplates = createServerFn({ method: "GET" })
@@ -17,7 +19,43 @@ export const listEmailTemplates = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase.from("email_templates" as never).select("*").order("template_key");
     if (error) throw new Error(error.message);
-    return (data ?? []) as Array<{ id: string; template_key: string; name: string; subject: string; body: string; description: string | null; active: boolean; updated_at: string }>;
+    return (data ?? []) as Array<{ id: string; template_key: string; name: string; subject: string; body: string; description: string | null; active: boolean; updated_at: string; is_custom?: boolean; category?: string | null }>;
+  });
+
+export const deleteEmailTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    // Only allow deleting custom templates
+    const { data: tpl } = await context.supabase.from("email_templates" as never).select("id, is_custom").eq("id", data.id).maybeSingle();
+    if (!tpl) throw new Error("Not found");
+    if (!(tpl as { is_custom?: boolean }).is_custom) throw new Error("Built-in templates cannot be deleted");
+    const { error } = await context.supabase.from("email_templates" as never).delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const duplicateEmailTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), new_key: z.string().min(2).max(60) }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { data: tpl, error: fErr } = await context.supabase.from("email_templates" as never).select("*").eq("id", data.id).maybeSingle();
+    if (fErr) throw new Error(fErr.message);
+    if (!tpl) throw new Error("Not found");
+    const t = tpl as { name: string; subject: string; body: string; description: string | null; category: string | null };
+    const { error } = await context.supabase.from("email_templates" as never).insert({
+      template_key: data.new_key,
+      name: `${t.name} (copy)`,
+      subject: t.subject,
+      body: t.body,
+      description: t.description,
+      category: t.category,
+      active: true,
+      is_custom: true,
+      updated_by: context.userId,
+    } as never);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 export const upsertEmailTemplate = createServerFn({ method: "POST" })
