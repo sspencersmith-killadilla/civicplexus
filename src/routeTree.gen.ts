@@ -32,6 +32,7 @@ import { Route as AuthenticatedVendorsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedVendorFormsRouteImport } from './routes/_authenticated/vendor-forms'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedTimekeepingRouteImport } from './routes/_authenticated/timekeeping'
+import { Route as AuthenticatedTeamEquipmentRouteImport } from './routes/_authenticated/team-equipment'
 import { Route as AuthenticatedShiftPatternsRouteImport } from './routes/_authenticated/shift-patterns'
 import { Route as AuthenticatedSetupRouteImport } from './routes/_authenticated/setup'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -48,6 +49,7 @@ import { Route as AuthenticatedOneOnOneTemplatesRouteImport } from './routes/_au
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
+import { Route as AuthenticatedMyEquipmentRouteImport } from './routes/_authenticated/my-equipment'
 import { Route as AuthenticatedLmsImportsRouteImport } from './routes/_authenticated/lms-imports'
 import { Route as AuthenticatedInterviewKitsRouteImport } from './routes/_authenticated/interview-kits'
 import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_authenticated/internal-careers'
@@ -295,6 +297,12 @@ const AuthenticatedTimekeepingRoute =
     path: '/timekeeping',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTeamEquipmentRoute =
+  AuthenticatedTeamEquipmentRouteImport.update({
+    id: '/team-equipment',
+    path: '/team-equipment',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedShiftPatternsRoute =
   AuthenticatedShiftPatternsRouteImport.update({
     id: '/shift-patterns',
@@ -382,6 +390,12 @@ const AuthenticatedMyHrRoute = AuthenticatedMyHrRouteImport.update({
   path: '/my-hr',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMyEquipmentRoute =
+  AuthenticatedMyEquipmentRouteImport.update({
+    id: '/my-equipment',
+    path: '/my-equipment',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLmsImportsRoute = AuthenticatedLmsImportsRouteImport.update({
   id: '/lms-imports',
   path: '/lms-imports',
@@ -1139,6 +1153,7 @@ export interface FileRoutesByFullPath {
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/lms-imports': typeof AuthenticatedLmsImportsRoute
+  '/my-equipment': typeof AuthenticatedMyEquipmentRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
@@ -1155,6 +1170,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/setup': typeof AuthenticatedSetupRoute
   '/shift-patterns': typeof AuthenticatedShiftPatternsRoute
+  '/team-equipment': typeof AuthenticatedTeamEquipmentRoute
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/vendor-forms': typeof AuthenticatedVendorFormsRoute
@@ -1305,6 +1321,7 @@ export interface FileRoutesByTo {
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/lms-imports': typeof AuthenticatedLmsImportsRoute
+  '/my-equipment': typeof AuthenticatedMyEquipmentRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
@@ -1320,6 +1337,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/setup': typeof AuthenticatedSetupRoute
   '/shift-patterns': typeof AuthenticatedShiftPatternsRoute
+  '/team-equipment': typeof AuthenticatedTeamEquipmentRoute
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/vendor-forms': typeof AuthenticatedVendorFormsRoute
@@ -1470,6 +1488,7 @@ export interface FileRoutesById {
   '/_authenticated/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/_authenticated/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/_authenticated/lms-imports': typeof AuthenticatedLmsImportsRoute
+  '/_authenticated/my-equipment': typeof AuthenticatedMyEquipmentRoute
   '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
@@ -1486,6 +1505,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/setup': typeof AuthenticatedSetupRoute
   '/_authenticated/shift-patterns': typeof AuthenticatedShiftPatternsRoute
+  '/_authenticated/team-equipment': typeof AuthenticatedTeamEquipmentRoute
   '/_authenticated/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/vendor-forms': typeof AuthenticatedVendorFormsRoute
@@ -1640,6 +1660,7 @@ export interface FileRouteTypes {
     | '/internal-careers'
     | '/interview-kits'
     | '/lms-imports'
+    | '/my-equipment'
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
@@ -1656,6 +1677,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/setup'
     | '/shift-patterns'
+    | '/team-equipment'
     | '/timekeeping'
     | '/training'
     | '/vendor-forms'
@@ -1806,6 +1828,7 @@ export interface FileRouteTypes {
     | '/internal-careers'
     | '/interview-kits'
     | '/lms-imports'
+    | '/my-equipment'
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
@@ -1821,6 +1844,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/setup'
     | '/shift-patterns'
+    | '/team-equipment'
     | '/timekeeping'
     | '/training'
     | '/vendor-forms'
@@ -1970,6 +1994,7 @@ export interface FileRouteTypes {
     | '/_authenticated/internal-careers'
     | '/_authenticated/interview-kits'
     | '/_authenticated/lms-imports'
+    | '/_authenticated/my-equipment'
     | '/_authenticated/my-hr'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
@@ -1986,6 +2011,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/setup'
     | '/_authenticated/shift-patterns'
+    | '/_authenticated/team-equipment'
     | '/_authenticated/timekeeping'
     | '/_authenticated/training'
     | '/_authenticated/vendor-forms'
@@ -2311,6 +2337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTimekeepingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/team-equipment': {
+      id: '/_authenticated/team-equipment'
+      path: '/team-equipment'
+      fullPath: '/team-equipment'
+      preLoaderRoute: typeof AuthenticatedTeamEquipmentRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/shift-patterns': {
       id: '/_authenticated/shift-patterns'
       path: '/shift-patterns'
@@ -2421,6 +2454,13 @@ declare module '@tanstack/react-router' {
       path: '/my-hr'
       fullPath: '/my-hr'
       preLoaderRoute: typeof AuthenticatedMyHrRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/my-equipment': {
+      id: '/_authenticated/my-equipment'
+      path: '/my-equipment'
+      fullPath: '/my-equipment'
+      preLoaderRoute: typeof AuthenticatedMyEquipmentRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lms-imports': {
@@ -3487,6 +3527,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInternalCareersRoute: typeof AuthenticatedInternalCareersRoute
   AuthenticatedInterviewKitsRoute: typeof AuthenticatedInterviewKitsRoute
   AuthenticatedLmsImportsRoute: typeof AuthenticatedLmsImportsRoute
+  AuthenticatedMyEquipmentRoute: typeof AuthenticatedMyEquipmentRoute
   AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
@@ -3503,6 +3544,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSetupRoute: typeof AuthenticatedSetupRoute
   AuthenticatedShiftPatternsRoute: typeof AuthenticatedShiftPatternsRoute
+  AuthenticatedTeamEquipmentRoute: typeof AuthenticatedTeamEquipmentRoute
   AuthenticatedTimekeepingRoute: typeof AuthenticatedTimekeepingRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedVendorFormsRoute: typeof AuthenticatedVendorFormsRoute
@@ -3590,6 +3632,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInternalCareersRoute: AuthenticatedInternalCareersRoute,
   AuthenticatedInterviewKitsRoute: AuthenticatedInterviewKitsRoute,
   AuthenticatedLmsImportsRoute: AuthenticatedLmsImportsRoute,
+  AuthenticatedMyEquipmentRoute: AuthenticatedMyEquipmentRoute,
   AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
@@ -3606,6 +3649,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSetupRoute: AuthenticatedSetupRoute,
   AuthenticatedShiftPatternsRoute: AuthenticatedShiftPatternsRoute,
+  AuthenticatedTeamEquipmentRoute: AuthenticatedTeamEquipmentRoute,
   AuthenticatedTimekeepingRoute: AuthenticatedTimekeepingRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedVendorFormsRoute: AuthenticatedVendorFormsRoute,

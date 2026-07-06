@@ -45,6 +45,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/my-hr", "My HR", MeIcon, ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate", "supervisor"]),
     def("/notifications", "Notifications", Bell, ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"]),
     def("/preboarding", "My Onboarding", FileText, ["candidate", "employee"]),
+    def("/my-equipment", "My Equipment", Package, ["hr_admin", "hiring_manager", "supervisor", "it_admin", "employee"]),
     def("/help", "Help & Docs", BookOpen, ["hr_admin", "hiring_manager", "it_admin", "employee", "candidate"]),
   ]},
   { key: moduleKey("time-leave"), label: "Time & Leave", items: [
@@ -62,6 +63,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/offboarding", "Offboarding", DoorOpen, ["hr_admin"]),
     def("/benefits", "Benefits", HeartHandshake, ["hr_admin"]),
     def("/equipment", "Equipment & PPE", Package, ["hr_admin", "hiring_manager"]),
+    def("/team-equipment", "Team Equipment", Package, ["hr_admin", "hiring_manager", "supervisor"]),
     def("/id-badge-templates", "ID Badge Templates", BadgeCheck, ["hr_admin"]),
       def("/org-chart", "Org Chart", Network, ["hr_admin", "hiring_manager", "supervisor", "it_admin", "employee"]),
   ]},
