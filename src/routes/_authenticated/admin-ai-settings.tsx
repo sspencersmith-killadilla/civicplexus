@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Save, Sparkles } from "lucide-react";
+import { Save, Sparkles, KeyRound, Copy, ExternalLink } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { getAiSettings, updateAiSettings, AI_FEATURES, AI_MODEL_CATALOG, type AiFeatureKey } from "@/lib/ai-settings.functions";
 
@@ -105,10 +106,16 @@ function AiSettingsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div><Label>Secret name</Label><Input value={byok.secret_name} onChange={(e) => setByok({ ...byok, secret_name: e.target.value })} placeholder="OPENAI_API_KEY" /></div>
+              <div>
+                <Label>Secret name</Label>
+                <div className="flex gap-2">
+                  <Input value={byok.secret_name} onChange={(e) => setByok({ ...byok, secret_name: e.target.value })} placeholder="OPENAI_API_KEY" />
+                  <AddSecretDialog secretName={byok.secret_name} />
+                </div>
+              </div>
               </div>
               <div><Label>Base URL (optional)</Label><Input value={byok.base_url} onChange={(e) => setByok({ ...byok, base_url: e.target.value })} placeholder="https://api.openai.com/v1" /></div>
-              <p className="text-xs text-muted-foreground">Add the secret in your project settings before saving. Not all features will honor BYOK — this is a preview.</p>
+            <p className="text-xs text-muted-foreground">Use "Add secret" above to store the API key before saving. Not all features will honor BYOK — this is a preview.</p>
             </div>
           )}
         </Card>
@@ -118,5 +125,40 @@ function AiSettingsPage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function AddSecretDialog({ secretName }: { secretName: string }) {
+  const [open, setOpen] = useState(false);
+  const name = (secretName || "OPENAI_API_KEY").trim();
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(name); toast.success(`Copied "${name}"`); }
+    catch { toast.error("Copy failed"); }
+  };
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button type="button" variant="outline"><KeyRound className="h-4 w-4 mr-1" />Add secret</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Store the API key as a backend secret</DialogTitle></DialogHeader>
+        <div className="space-y-3 text-sm">
+          <p>API keys are stored in the Lovable Cloud backend so they never ship in the browser bundle. Add it in the editor, then come back here and save.</p>
+          <ol className="list-decimal ml-5 space-y-1">
+            <li>Open this project in the Lovable editor.</li>
+            <li>Click the <span className="font-medium">Cloud</span> panel (top-right) → <span className="font-medium">Secrets</span>.</li>
+            <li>Add a secret named <code className="bg-muted px-1 py-0.5 rounded">{name}</code> and paste your provider's API key.</li>
+            <li>Return to this page and click <span className="font-medium">Save settings</span>.</li>
+          </ol>
+          <div className="flex gap-2 pt-2">
+            <Button type="button" variant="outline" size="sm" onClick={copy}><Copy className="h-4 w-4 mr-1" />Copy secret name</Button>
+            <Button asChild type="button" variant="outline" size="sm">
+              <a href="https://docs.lovable.dev/features/cloud#secrets" target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4 mr-1" />Docs</a>
+            </Button>
+          </div>
+        </div>
+        <DialogFooter><Button onClick={() => setOpen(false)}>Done</Button></DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
