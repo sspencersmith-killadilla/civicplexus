@@ -15,7 +15,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Plus, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Plus, AlertTriangle, ShieldCheck, Archive, ArchiveRestore } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/vendors")({
@@ -37,6 +37,7 @@ type Vendor = {
   coi_expires_at: string | null;
   insurance_verified: boolean;
   notes: string | null;
+  archived_at: string | null;
 };
 type Assignment = { id: string; vendor_id: string; project_name: string; role: string | null; start_date: string | null; end_date: string | null };
 
@@ -48,6 +49,8 @@ function VendorsPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Vendor | null>(null);
   const [assignFor, setAssignFor] = useState<Vendor | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["vendors"],
@@ -76,10 +79,25 @@ function VendorsPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
 
+  const archive = useMutation({
+    mutationFn: async ({ id, archive }: { id: string; archive: boolean }) => {
+      const { error } = await sb.from("vendors").update({ archived_at: archive ? new Date().toISOString() : null }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["vendors"] }); toast.success("Updated"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
   const now = Date.now();
   const daysUntil = (d?: string | null) => d ? Math.floor((new Date(d).getTime() - now) / 86400000) : null;
 
-  const expiringSoon = (items ?? []).filter((v) => {
+  const visible = (items ?? []).filter((v) => {
+    if (!showArchived && v.archived_at) return false;
+    if (showArchived && !v.archived_at) return false;
+    if (statusFilter !== "all" && v.status !== statusFilter) return false;
+    return true;
+  });
+  const expiringSoon = visible.filter((v) => {
     const d = daysUntil(v.coi_expires_at);
     return d !== null && d <= 30;
   });
@@ -97,6 +115,21 @@ function VendorsPage() {
         </Dialog>
       </div>
 
+      <Card className="p-3 mb-4 flex flex-wrap items-center gap-3 text-xs">
+        <span className="font-medium text-muted-foreground">Status:</span>
+        {["all","active","pending","suspended","closed"].map((s) => (
+          <button key={s} onClick={() => setStatusFilter(s)}
+            className={`px-2 py-0.5 rounded-full border ${statusFilter === s ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+            {s}
+          </button>
+        ))}
+        <label className="flex items-center gap-1 ml-auto">
+          <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
+          Show archived
+        </label>
+        <span className="text-muted-foreground">{visible.length} vendor{visible.length === 1 ? "" : "s"}</span>
+      </Card>
+
       {expiringSoon.length > 0 && (
         <Card className="p-4 mb-4 border-amber-300 bg-amber-50/50">
           <div className="flex items-center gap-2 text-amber-700 font-medium text-sm mb-2">
@@ -110,11 +143,11 @@ function VendorsPage() {
         </Card>
       )}
 
-      {isLoading ? <p className="text-muted-foreground">Loading…</p> : (items?.length ?? 0) === 0 ? (
+      {isLoading ? <p className="text-muted-foreground">Loading…</p> : visible.length === 0 ? (
         <Card className="p-8 text-center text-sm text-muted-foreground">No vendors yet.</Card>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
-          {items!.map((v) => {
+          {visible.map((v) => {
             const d = daysUntil(v.coi_expires_at);
             return (
               <Card key={v.id} className="p-4">
@@ -140,6 +173,11 @@ function VendorsPage() {
                 <div className="mt-3 flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => { setEditing(v); setOpen(true); }}>Edit</Button>
                   <Button size="sm" variant="ghost" onClick={() => setAssignFor(v)}>Assignments</Button>
+                  {v.archived_at ? (
+                    <Button size="sm" variant="ghost" onClick={() => archive.mutate({ id: v.id, archive: false })}><ArchiveRestore className="h-3 w-3 mr-1" /> Restore</Button>
+                  ) : (
+                    <Button size="sm" variant="ghost" onClick={() => archive.mutate({ id: v.id, archive: true })}><Archive className="h-3 w-3 mr-1" /> Archive</Button>
+                  )}
                 </div>
               </Card>
             );
