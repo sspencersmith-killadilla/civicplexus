@@ -1,4 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { KitsPage } from "@/components/interview-kits-page";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_authenticated/interview-kits")({ component: KitsPage });
+export const Route = createFileRoute("/_authenticated/interview-kits")({
+  beforeLoad: () => {
+    throw redirect({ to: "/hiring/interview-kits" });
+  },
+});
