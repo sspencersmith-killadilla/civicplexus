@@ -91,7 +91,8 @@ If there are no clear action items, return an empty array.
 
 Return ONLY a JSON array. Do not wrap it in markdown.
 Each array item must be shaped like:
-{"text":"specific action item","due_date":"YYYY-MM-DD or null","assignee":"manager|employee|other or null"}
+{"text":"specific action item","due_date":"YYYY-MM-DD","assignee":"manager"}
+Use null for due_date when there is no explicit date, and null for assignee when the owner is unclear.
 
 Notes:
 ${combined}`;
@@ -115,7 +116,7 @@ ${combined}`;
         session_id: data.session_id,
         text: i.text.slice(0, 500),
         due_date: i.due_date && /^\d{4}-\d{2}-\d{2}$/.test(i.due_date) ? i.due_date : null,
-        assignee_label: i.assignee ?? null,
+        assignee_label: i.assignee && ["manager", "employee", "other"].includes(i.assignee) ? i.assignee : null,
         created_by: context.userId,
       }));
     if (!rows.length) return { inserted: 0, items: [] };
