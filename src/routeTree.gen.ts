@@ -48,6 +48,7 @@ import { Route as AuthenticatedOneOnOneTemplatesRouteImport } from './routes/_au
 import { Route as AuthenticatedOffboardingRouteImport } from './routes/_authenticated/offboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMyHrRouteImport } from './routes/_authenticated/my-hr'
+import { Route as AuthenticatedMyEquipmentRouteImport } from './routes/_authenticated/my-equipment'
 import { Route as AuthenticatedLmsImportsRouteImport } from './routes/_authenticated/lms-imports'
 import { Route as AuthenticatedInterviewKitsRouteImport } from './routes/_authenticated/interview-kits'
 import { Route as AuthenticatedInternalCareersRouteImport } from './routes/_authenticated/internal-careers'
@@ -382,6 +383,12 @@ const AuthenticatedMyHrRoute = AuthenticatedMyHrRouteImport.update({
   path: '/my-hr',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMyEquipmentRoute =
+  AuthenticatedMyEquipmentRouteImport.update({
+    id: '/my-equipment',
+    path: '/my-equipment',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLmsImportsRoute = AuthenticatedLmsImportsRouteImport.update({
   id: '/lms-imports',
   path: '/lms-imports',
@@ -1139,6 +1146,7 @@ export interface FileRoutesByFullPath {
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/lms-imports': typeof AuthenticatedLmsImportsRoute
+  '/my-equipment': typeof AuthenticatedMyEquipmentRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
@@ -1305,6 +1313,7 @@ export interface FileRoutesByTo {
   '/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/lms-imports': typeof AuthenticatedLmsImportsRoute
+  '/my-equipment': typeof AuthenticatedMyEquipmentRoute
   '/my-hr': typeof AuthenticatedMyHrRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/offboarding': typeof AuthenticatedOffboardingRoute
@@ -1470,6 +1479,7 @@ export interface FileRoutesById {
   '/_authenticated/internal-careers': typeof AuthenticatedInternalCareersRoute
   '/_authenticated/interview-kits': typeof AuthenticatedInterviewKitsRoute
   '/_authenticated/lms-imports': typeof AuthenticatedLmsImportsRoute
+  '/_authenticated/my-equipment': typeof AuthenticatedMyEquipmentRoute
   '/_authenticated/my-hr': typeof AuthenticatedMyHrRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/offboarding': typeof AuthenticatedOffboardingRoute
@@ -1640,6 +1650,7 @@ export interface FileRouteTypes {
     | '/internal-careers'
     | '/interview-kits'
     | '/lms-imports'
+    | '/my-equipment'
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
@@ -1806,6 +1817,7 @@ export interface FileRouteTypes {
     | '/internal-careers'
     | '/interview-kits'
     | '/lms-imports'
+    | '/my-equipment'
     | '/my-hr'
     | '/notifications'
     | '/offboarding'
@@ -1970,6 +1982,7 @@ export interface FileRouteTypes {
     | '/_authenticated/internal-careers'
     | '/_authenticated/interview-kits'
     | '/_authenticated/lms-imports'
+    | '/_authenticated/my-equipment'
     | '/_authenticated/my-hr'
     | '/_authenticated/notifications'
     | '/_authenticated/offboarding'
@@ -2421,6 +2434,13 @@ declare module '@tanstack/react-router' {
       path: '/my-hr'
       fullPath: '/my-hr'
       preLoaderRoute: typeof AuthenticatedMyHrRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/my-equipment': {
+      id: '/_authenticated/my-equipment'
+      path: '/my-equipment'
+      fullPath: '/my-equipment'
+      preLoaderRoute: typeof AuthenticatedMyEquipmentRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lms-imports': {
@@ -3487,6 +3507,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInternalCareersRoute: typeof AuthenticatedInternalCareersRoute
   AuthenticatedInterviewKitsRoute: typeof AuthenticatedInterviewKitsRoute
   AuthenticatedLmsImportsRoute: typeof AuthenticatedLmsImportsRoute
+  AuthenticatedMyEquipmentRoute: typeof AuthenticatedMyEquipmentRoute
   AuthenticatedMyHrRoute: typeof AuthenticatedMyHrRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOffboardingRoute: typeof AuthenticatedOffboardingRoute
@@ -3590,6 +3611,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInternalCareersRoute: AuthenticatedInternalCareersRoute,
   AuthenticatedInterviewKitsRoute: AuthenticatedInterviewKitsRoute,
   AuthenticatedLmsImportsRoute: AuthenticatedLmsImportsRoute,
+  AuthenticatedMyEquipmentRoute: AuthenticatedMyEquipmentRoute,
   AuthenticatedMyHrRoute: AuthenticatedMyHrRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOffboardingRoute: AuthenticatedOffboardingRoute,
