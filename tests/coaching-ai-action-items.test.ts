@@ -80,21 +80,15 @@ function makeSupabase(state: FakeState) {
       table === "one_on_one_agenda_notes" ? [...state.agenda] :
       table === "one_on_one_notes"        ? [...state.notes] :
       state.session ? [state.session] : [];
-    const filters: Array<(r: any) => boolean> = [];
     const q: any = {
       select: () => q,
       order: () => q,
-      eq: (col: string, val: unknown) => {
-        filters.push((r) => r?.[col] === val);
-        return q;
-      },
+      eq: (_col: string, _val: unknown) => q,
       maybeSingle: () => {
-        const filtered = rows.filter((r) => filters.every((f) => f(r)));
-        return Promise.resolve({ data: filtered[0] ?? null, error: null });
+        return Promise.resolve({ data: rows[0] ?? null, error: null });
       },
       then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => {
-        const filtered = rows.filter((r) => filters.every((f) => f(r)));
-        return Promise.resolve({ data: filtered, error: null }).then(resolve, reject);
+        return Promise.resolve({ data: rows, error: null }).then(resolve, reject);
       },
     };
     return q;
