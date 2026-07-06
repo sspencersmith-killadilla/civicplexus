@@ -413,6 +413,12 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
             </div>
           </div>
           <div>
+            <Label>Icon (shown in listings)</Label>
+            <div className="mt-1">
+              <IconPicker value={form.icon} onChange={(name) => setForm({ ...form, icon: name })} />
+            </div>
+          </div>
+          <div>
             <div className="flex items-center justify-between">
               <Label>Position summary</Label>
               <Button
