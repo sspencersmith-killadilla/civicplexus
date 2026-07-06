@@ -2319,10 +2319,12 @@ export type Database = {
           cost: number | null
           created_at: string
           employee_id: string
+          expected_return_at: string | null
           id: string
           issued_at: string | null
           item_id: string
           notes: string | null
+          quantity: number
           returned_at: string | null
           size: string | null
           status: string
@@ -2333,10 +2335,12 @@ export type Database = {
           cost?: number | null
           created_at?: string
           employee_id: string
+          expected_return_at?: string | null
           id?: string
           issued_at?: string | null
           item_id: string
           notes?: string | null
+          quantity?: number
           returned_at?: string | null
           size?: string | null
           status?: string
@@ -2347,10 +2351,12 @@ export type Database = {
           cost?: number | null
           created_at?: string
           employee_id?: string
+          expected_return_at?: string | null
           id?: string
           issued_at?: string | null
           item_id?: string
           notes?: string | null
+          quantity?: number
           returned_at?: string | null
           size?: string | null
           status?: string
