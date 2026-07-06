@@ -175,6 +175,48 @@ function PafIndex() {
                 </Button>
               </div>
             </div>
+            <div className="border-t pt-3 mt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Additional action lines</p>
+                <span className="text-xs text-muted-foreground">{extraLines.length} added</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Combine multiple actions on one PAF. Each line will be reviewable individually by approvers.</p>
+              {extraLines.length > 0 && (
+                <ul className="space-y-1 text-sm">
+                  {extraLines.map((l, idx) => (
+                    <li key={idx} className="flex items-center justify-between border rounded px-2 py-1.5">
+                      <span>{l.action_type.replace(/_/g, " ")} · eff. {l.effective_date} · {Object.keys(l.after_values).length} field(s)</span>
+                      <Button size="sm" variant="ghost" onClick={() => setExtraLines(extraLines.filter((_, i) => i !== idx))}>Remove</Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Action type</Label>
+                  <Select value={extraDraft.action_type} onValueChange={(v) => setExtraDraft({ ...extraDraft, action_type: v as typeof ACTIONS[number] })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {ACTIONS.map((a) => <SelectItem key={a} value={a}>{a.replace(/_/g, " ")}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label className="text-xs">Effective</Label><Input type="date" value={extraDraft.effective_date} onChange={(e) => setExtraDraft({ ...extraDraft, effective_date: e.target.value })} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div><Label className="text-xs">New title</Label><Input value={extraDraft.new_job_title} onChange={(e) => setExtraDraft({ ...extraDraft, new_job_title: e.target.value })} /></div>
+                <div><Label className="text-xs">New department</Label><Input value={extraDraft.new_department} onChange={(e) => setExtraDraft({ ...extraDraft, new_department: e.target.value })} /></div>
+              </div>
+              {extraDraft.action_type === "pay_change" && (
+                <div><Label className="text-xs">New annual base ($)</Label><Input type="number" value={extraDraft.new_base_annual} onChange={(e) => setExtraDraft({ ...extraDraft, new_base_annual: e.target.value })} /></div>
+              )}
+              <div className="flex justify-end">
+                <Button size="sm" variant="outline" disabled={!extraDraft.effective_date} onClick={() => {
+                  setExtraLines([...extraLines, { action_type: extraDraft.action_type, effective_date: extraDraft.effective_date, after_values: draftAfterValues() }]);
+                  setExtraDraft({ action_type: "pay_change", effective_date: "", new_job_title: "", new_department: "", new_base_annual: "" });
+                }}><Plus className="h-3 w-3 mr-1" /> Add line</Button>
+              </div>
+            </div>
           </DialogContent>
           </Dialog>
           )}
