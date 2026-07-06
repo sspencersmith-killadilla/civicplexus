@@ -133,6 +133,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/admin-demo", "Demo Account", UserCog, ["hr_admin"]),
     def("/admin-sql-reports", "SQL Reports", BarChart3, ["hr_admin"]),
     def("/admin-ai-settings", "AI Settings", Sparkles, ["hr_admin", "it_admin"]),
+    def("/admin-lms", "LMS Connections", GraduationCap, ["hr_admin", "it_admin"]),
   ]},
   { key: moduleKey("governance"), label: "Governance", items: [
     def("/admin-officials", "Elected & Boards", LandmarkIcon, ["hr_admin"]),
