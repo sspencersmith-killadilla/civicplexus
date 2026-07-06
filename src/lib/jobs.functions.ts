@@ -89,10 +89,10 @@ export const listJobRequisitions = createServerFn({ method: "GET" })
     const access = await getHiringAccessContext(context.userId);
     const { data, error } = await access.supabaseAdmin
       .from("job_requisitions")
-      .select("id, title, department, status, slug, posted_at, internal_only, requested_by, hiring_manager_id, created_at")
+      .select("id, title, department, status, slug, posted_at, internal_only, requested_by, hiring_manager_id, created_at, icon")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return ((data ?? []) as Array<{ id: string; title: string; department: string | null; status: string; slug: string | null; posted_at: string | null; internal_only: boolean; requested_by: string | null; hiring_manager_id: string | null; created_at: string }> )
+    return ((data ?? []) as Array<{ id: string; title: string; department: string | null; status: string; slug: string | null; posted_at: string | null; internal_only: boolean; requested_by: string | null; hiring_manager_id: string | null; created_at: string; icon: string | null }> )
       .filter((r) => canSeeReq(r, context.userId, access))
       .map(({ requested_by, hiring_manager_id, created_at, ...r }) => {
         void requested_by; void hiring_manager_id; void created_at;
