@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -14,8 +13,6 @@ import { Plus, Trash2, GripVertical, Video, MessagesSquare } from "lucide-react"
 import { toast } from "sonner";
 import { listInterviewKits, upsertInterviewKit, deleteInterviewKit } from "@/lib/interview-kits.functions";
 
-export const Route = createFileRoute("/_authenticated/interview-kits")({ component: KitsPage });
-
 type Question = { id: string; prompt: string; think_seconds: number; max_answer_seconds: number; allow_retake: boolean };
 type Rubric = { id: string; label: string; description?: string };
 type Kit = {
@@ -24,7 +21,7 @@ type Kit = {
 };
 const EMPTY: Kit = { name: "", kind: "one_way", description: "", questions: [], rubric: [], default_retention_days: 90, ai_assist_default: false, is_active: true };
 
-function KitsPage() {
+export function KitsPage() {
   const qc = useQueryClient();
   const { data: kits = [] } = useQuery({ queryKey: ["interview-kits"], queryFn: () => listInterviewKits() });
   const [editing, setEditing] = useState<Kit | null>(null);
