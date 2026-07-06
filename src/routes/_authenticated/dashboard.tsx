@@ -135,7 +135,7 @@ function Dashboard() {
       {isHR && (
         <div className="mt-8 grid sm:grid-cols-3 gap-4">
           <FeatureCard to="/forms" helpAnchor="forms-library" icon={FileSignature} title="Forms Library" desc="I-9, W-4, direct deposit, emergency contact — versioned and signable." />
-          <FeatureCard to="/documents" helpAnchor="document-vault" icon={FolderLock} title="Document Vault" desc="Encrypted private storage with signed-URL access for IDs and certs." />
+          <FeatureCard to="/documents" helpAnchor="documents" icon={FolderLock} title="Document Vault" desc="Encrypted private storage with signed-URL access for IDs and certs." />
           <FeatureCard to="/provisioning" helpAnchor="it-provisioning" icon={Server} title="IT Provisioning" desc="Kanban for accounts, badges, equipment — ready to wire to Entra/Okta." />
         </div>
       )}
