@@ -229,6 +229,7 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
     supplemental: "",
     benefits: "",
     internal_only: false,
+    icon: "" as string,
   });
   const [reqId, setReqId] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
@@ -246,6 +247,7 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
     mutationFn: async () => {
       const payload = {
         title: form.title,
+        icon: form.icon || null,
         department: form.department || null,
         position_id: form.position_id || null,
         location: form.location || null,
@@ -408,6 +410,12 @@ function RequisitionWizard({ onDone }: { onDone: () => void }) {
                 <input type="checkbox" checked={form.internal_only} onChange={(e) => setForm({ ...form, internal_only: e.target.checked })} />
                 Internal mobility only
               </label>
+            </div>
+          </div>
+          <div>
+            <Label>Icon (shown in listings)</Label>
+            <div className="mt-1">
+              <IconPicker value={form.icon} onChange={(name) => setForm({ ...form, icon: name })} />
             </div>
           </div>
           <div>

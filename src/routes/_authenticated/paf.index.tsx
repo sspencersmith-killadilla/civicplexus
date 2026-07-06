@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { submitPaf, repairPafChains, listPafs, listPafEmployees } from "@/lib/paf.functions";
+import { addPafLine } from "@/lib/paf-lines.functions";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/paf/")({ component: PafIndex });
@@ -28,6 +29,7 @@ function PafIndex() {
   const repair = useServerFn(repairPafChains);
   const listPafsFn = useServerFn(listPafs);
   const listEmployeesFn = useServerFn(listPafEmployees);
+  const addLine = useServerFn(addPafLine);
   const [open, setOpen] = useState(false);
   const { data: me } = useCurrentUser();
   const isHR = hasRole(me?.roles, "hr_admin");
@@ -62,9 +64,21 @@ function PafIndex() {
     new_job_title: "", new_department: "", new_manager_id: "",
     new_base_annual: "", separation_reason: "voluntary", rehire_eligible: true,
   });
+  type ExtraLine = { action_type: typeof ACTIONS[number]; effective_date: string; after_values: Record<string, unknown> };
+  const [extraLines, setExtraLines] = useState<ExtraLine[]>([]);
+  const [extraDraft, setExtraDraft] = useState<{ action_type: typeof ACTIONS[number]; effective_date: string; new_job_title: string; new_department: string; new_base_annual: string }>({
+    action_type: "pay_change", effective_date: "", new_job_title: "", new_department: "", new_base_annual: "",
+  });
+  const draftAfterValues = () => {
+    const av: Record<string, unknown> = {};
+    if (extraDraft.new_job_title) av.job_title = extraDraft.new_job_title;
+    if (extraDraft.new_department) av.department = extraDraft.new_department;
+    if (extraDraft.action_type === "pay_change" && extraDraft.new_base_annual) av.base_annual = Number(extraDraft.new_base_annual);
+    return av;
+  };
 
   const send = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const after: Record<string, unknown> = {};
       if (form.new_job_title) after.job_title = form.new_job_title;
       if (form.new_department) after.department = form.new_department;
@@ -77,12 +91,16 @@ function PafIndex() {
       if (form.action_type === "pay_change" && form.new_base_annual) {
         after.base_annual = Number(form.new_base_annual);
       }
-      return submit({ data: {
+      const created = await submit({ data: {
         employee_id: form.employee_id, action_type: form.action_type, effective_date: form.effective_date,
         reason: form.reason || undefined, narrative: form.narrative || undefined, after_values: after,
       }});
+      for (const l of extraLines) {
+        await addLine({ data: { paf_id: created.id, action_type: l.action_type, effective_date: l.effective_date, after_values: l.after_values } });
+      }
+      return created;
     },
-    onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["pafs"] }); setOpen(false); toast.success(`Submitted ${r.paf_number}`); },
+    onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["pafs"] }); setOpen(false); setExtraLines([]); toast.success(`Submitted ${r.paf_number}`); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
@@ -155,6 +173,48 @@ function PafIndex() {
                 <Button disabled={send.isPending || !form.employee_id || !form.effective_date} onClick={() => send.mutate()}>
                   {send.isPending ? "Submitting…" : "Submit for approval"}
                 </Button>
+              </div>
+            </div>
+            <div className="border-t pt-3 mt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Additional action lines</p>
+                <span className="text-xs text-muted-foreground">{extraLines.length} added</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Combine multiple actions on one PAF. Each line will be reviewable individually by approvers.</p>
+              {extraLines.length > 0 && (
+                <ul className="space-y-1 text-sm">
+                  {extraLines.map((l, idx) => (
+                    <li key={idx} className="flex items-center justify-between border rounded px-2 py-1.5">
+                      <span>{l.action_type.replace(/_/g, " ")} · eff. {l.effective_date} · {Object.keys(l.after_values).length} field(s)</span>
+                      <Button size="sm" variant="ghost" onClick={() => setExtraLines(extraLines.filter((_, i) => i !== idx))}>Remove</Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Action type</Label>
+                  <Select value={extraDraft.action_type} onValueChange={(v) => setExtraDraft({ ...extraDraft, action_type: v as typeof ACTIONS[number] })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {ACTIONS.map((a) => <SelectItem key={a} value={a}>{a.replace(/_/g, " ")}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label className="text-xs">Effective</Label><Input type="date" value={extraDraft.effective_date} onChange={(e) => setExtraDraft({ ...extraDraft, effective_date: e.target.value })} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div><Label className="text-xs">New title</Label><Input value={extraDraft.new_job_title} onChange={(e) => setExtraDraft({ ...extraDraft, new_job_title: e.target.value })} /></div>
+                <div><Label className="text-xs">New department</Label><Input value={extraDraft.new_department} onChange={(e) => setExtraDraft({ ...extraDraft, new_department: e.target.value })} /></div>
+              </div>
+              {extraDraft.action_type === "pay_change" && (
+                <div><Label className="text-xs">New annual base ($)</Label><Input type="number" value={extraDraft.new_base_annual} onChange={(e) => setExtraDraft({ ...extraDraft, new_base_annual: e.target.value })} /></div>
+              )}
+              <div className="flex justify-end">
+                <Button size="sm" variant="outline" disabled={!extraDraft.effective_date} onClick={() => {
+                  setExtraLines([...extraLines, { action_type: extraDraft.action_type, effective_date: extraDraft.effective_date, after_values: draftAfterValues() }]);
+                  setExtraDraft({ action_type: "pay_change", effective_date: "", new_job_title: "", new_department: "", new_base_annual: "" });
+                }}><Plus className="h-3 w-3 mr-1" /> Add line</Button>
               </div>
             </div>
           </DialogContent>

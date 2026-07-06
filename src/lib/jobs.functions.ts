@@ -51,6 +51,7 @@ const RequisitionInput = z.object({
     supplemental: z.string().max(5000).optional().nullable(),
   }).partial().optional().nullable(),
   brochure_url: z.string().max(500).optional().nullable(),
+  icon: z.string().max(60).optional().nullable(),
 });
 
 export const createRequisition = createServerFn({ method: "POST" })

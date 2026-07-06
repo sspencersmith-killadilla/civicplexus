@@ -77,6 +77,7 @@ import { Route as AuthenticatedAdminOrgSettingsRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminOfficialsRouteImport } from './routes/_authenticated/admin-officials'
 import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authenticated/admin-modules'
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
+import { Route as AuthenticatedAdminLmsRouteImport } from './routes/_authenticated/admin-lms'
 import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authenticated/admin-identity'
 import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin-demo'
 import { Route as AuthenticatedAdminAiSettingsRouteImport } from './routes/_authenticated/admin-ai-settings'
@@ -540,6 +541,11 @@ const AuthenticatedAdminMigrationRoute =
     path: '/admin-migration',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminLmsRoute = AuthenticatedAdminLmsRouteImport.update({
+  id: '/admin-lms',
+  path: '/admin-lms',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminIdentityRoute =
   AuthenticatedAdminIdentityRouteImport.update({
     id: '/admin-identity',
@@ -1103,6 +1109,7 @@ export interface FileRoutesByFullPath {
   '/admin-ai-settings': typeof AuthenticatedAdminAiSettingsRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
+  '/admin-lms': typeof AuthenticatedAdminLmsRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/admin-officials': typeof AuthenticatedAdminOfficialsRouteWithChildren
@@ -1269,6 +1276,7 @@ export interface FileRoutesByTo {
   '/admin-ai-settings': typeof AuthenticatedAdminAiSettingsRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
+  '/admin-lms': typeof AuthenticatedAdminLmsRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/admin-org-settings': typeof AuthenticatedAdminOrgSettingsRoute
@@ -1432,6 +1440,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-ai-settings': typeof AuthenticatedAdminAiSettingsRoute
   '/_authenticated/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/_authenticated/admin-identity': typeof AuthenticatedAdminIdentityRoute
+  '/_authenticated/admin-lms': typeof AuthenticatedAdminLmsRoute
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
   '/_authenticated/admin-modules': typeof AuthenticatedAdminModulesRoute
   '/_authenticated/admin-officials': typeof AuthenticatedAdminOfficialsRouteWithChildren
@@ -1601,6 +1610,7 @@ export interface FileRouteTypes {
     | '/admin-ai-settings'
     | '/admin-demo'
     | '/admin-identity'
+    | '/admin-lms'
     | '/admin-migration'
     | '/admin-modules'
     | '/admin-officials'
@@ -1767,6 +1777,7 @@ export interface FileRouteTypes {
     | '/admin-ai-settings'
     | '/admin-demo'
     | '/admin-identity'
+    | '/admin-lms'
     | '/admin-migration'
     | '/admin-modules'
     | '/admin-org-settings'
@@ -1929,6 +1940,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-ai-settings'
     | '/_authenticated/admin-demo'
     | '/_authenticated/admin-identity'
+    | '/_authenticated/admin-lms'
     | '/_authenticated/admin-migration'
     | '/_authenticated/admin-modules'
     | '/_authenticated/admin-officials'
@@ -2612,6 +2624,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-migration'
       fullPath: '/admin-migration'
       preLoaderRoute: typeof AuthenticatedAdminMigrationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin-lms': {
+      id: '/_authenticated/admin-lms'
+      path: '/admin-lms'
+      fullPath: '/admin-lms'
+      preLoaderRoute: typeof AuthenticatedAdminLmsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin-identity': {
@@ -3438,6 +3457,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminAiSettingsRoute: typeof AuthenticatedAdminAiSettingsRoute
   AuthenticatedAdminDemoRoute: typeof AuthenticatedAdminDemoRoute
   AuthenticatedAdminIdentityRoute: typeof AuthenticatedAdminIdentityRoute
+  AuthenticatedAdminLmsRoute: typeof AuthenticatedAdminLmsRoute
   AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
   AuthenticatedAdminModulesRoute: typeof AuthenticatedAdminModulesRoute
   AuthenticatedAdminOfficialsRoute: typeof AuthenticatedAdminOfficialsRouteWithChildren
@@ -3539,6 +3559,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminAiSettingsRoute: AuthenticatedAdminAiSettingsRoute,
   AuthenticatedAdminDemoRoute: AuthenticatedAdminDemoRoute,
   AuthenticatedAdminIdentityRoute: AuthenticatedAdminIdentityRoute,
+  AuthenticatedAdminLmsRoute: AuthenticatedAdminLmsRoute,
   AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
   AuthenticatedAdminModulesRoute: AuthenticatedAdminModulesRoute,
   AuthenticatedAdminOfficialsRoute:
