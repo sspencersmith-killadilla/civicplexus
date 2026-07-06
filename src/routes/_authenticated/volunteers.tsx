@@ -229,6 +229,7 @@ function VolunteerDialog({
   const [phone, setPhone] = useState(editing?.phone ?? "");
   const [status, setStatus] = useState(editing?.status ?? "active");
   const [skills, setSkills] = useState((editing?.skills ?? []).join(", "));
+  const [interests, setInterests] = useState((editing?.interests ?? []).join(", "));
   const [bg, setBg] = useState(editing?.background_check_date ?? "");
   const [waiver, setWaiver] = useState(!!editing?.waiver_signed_at);
   const [notes, setNotes] = useState(editing?.notes ?? "");
@@ -260,6 +261,7 @@ function VolunteerDialog({
           <div><Label>Background check date</Label><Input type="date" value={bg ?? ""} onChange={(e) => setBg(e.target.value)} /></div>
         </div>
         <div><Label>Skills (comma-separated)</Label><Input value={skills} onChange={(e) => setSkills(e.target.value)} placeholder="first aid, spanish, tech" /></div>
+        <div><Label>Interests (comma-separated)</Label><Input value={interests} onChange={(e) => setInterests(e.target.value)} placeholder="parks, seniors, animals" /></div>
         <div className="flex items-center gap-2">
           <input id="waiver" type="checkbox" checked={waiver} onChange={(e) => setWaiver(e.target.checked)} />
           <Label htmlFor="waiver" className="text-sm">Waiver signed</Label>
@@ -276,6 +278,7 @@ function VolunteerDialog({
             phone: phone || null,
             status,
             skills: skills.split(",").map((s) => s.trim()).filter(Boolean),
+            interests: interests.split(",").map((s) => s.trim()).filter(Boolean),
             background_check_date: bg || null,
             waiver_signed_at: waiver ? (editing?.waiver_signed_at ?? new Date().toISOString()) : null,
             notes: notes || null,
