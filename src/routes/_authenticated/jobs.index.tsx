@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Check, ChevronRight, ChevronLeft, ExternalLink, Briefcase, FileCheck2, Megaphone, ListChecks } from "lucide-react";
+import { JobIcon, IconPicker } from "@/components/icon-picker";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { toast } from "sonner";
 import { createRequisition, submitRequisitionForApproval, postRequisition, listPositionsForRequisition, listJobRequisitions } from "@/lib/jobs.functions";
 import { checkPositionBudget } from "@/lib/budget.functions";
@@ -159,17 +162,31 @@ function JobsIndex() {
       <HiringGuide />
       <div className="grid gap-3">
         {(reqsQ.data ?? []).map((r) => (
-          <Link key={r.id} to="/jobs/$id" params={{ id: r.id }}>
-            <Card className="p-4 hover:border-primary/40 transition-colors">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">{r.title}</h3>
+          <Card key={r.id} className="p-4 hover:border-primary/40 transition-colors">
+            <div className="flex items-center justify-between gap-3">
+              <Link to="/jobs/$id" params={{ id: r.id }} className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                  <JobIcon name={r.icon} className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-medium truncate">{r.title}</h3>
                   <p className="text-xs text-muted-foreground mt-0.5">{r.department ?? "—"} · {r.internal_only ? "Internal only" : "Public"}</p>
                 </div>
+              </Link>
+              <div className="flex items-center gap-2 shrink-0">
+                <IconPicker
+                  value={r.icon}
+                  onChange={async (name) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const { error } = await (supabase as any).from("job_requisitions").update({ icon: name }).eq("id", r.id);
+                    if (error) toast.error(error.message);
+                    else { toast.success("Icon updated"); qc.invalidateQueries({ queryKey: ["job_requisitions"] }); }
+                  }}
+                />
                 <span className="text-xs px-2 py-1 rounded bg-muted">{r.status}</span>
               </div>
-            </Card>
-          </Link>
+            </div>
+          </Card>
         ))}
         {(reqsQ.data?.length ?? 0) === 0 && <p className="text-sm text-muted-foreground">No requisitions yet.</p>}
       </div>
