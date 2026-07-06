@@ -14,7 +14,7 @@ export const listPafLines = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: lines, error } = await supabaseAdmin
       .from("paf_action_lines")
-      .select("id, ordinal, action_type, effective_date, before_values, after_values, status, decided_at, decided_by, note")
+      .select("id, ordinal, action_type, effective_date, before_values, after_values, status, applied_at")
       .eq("paf_id", data.paf_id)
       .order("ordinal");
     if (error) throw new Error(error.message);
