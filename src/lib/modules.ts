@@ -9,6 +9,7 @@ import {
   Clock,
   Video,
   Landmark as LandmarkIcon,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRole } from "@/hooks/use-current-user";
