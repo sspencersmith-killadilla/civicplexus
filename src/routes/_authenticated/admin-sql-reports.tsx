@@ -411,3 +411,61 @@ function SchemaBrowser({
     </Card>
   );
 }
+type SchemaData = { tables: Array<{ table_name: string; columns: Array<{ name: string; type: string; nullable: boolean }> }>; foreign_keys: Array<{ table: string; column: string; references_table: string; references_column: string }> };
+
+function SchemaMap({ data, loading, onInsert }: { data?: SchemaData; loading: boolean; onInsert: (table: string) => void }) {
+  const [q, setQ] = useState("");
+  if (loading) return <Card className="p-10 text-center text-muted-foreground">Loading schema…</Card>;
+  if (!data) return <Card className="p-10 text-center text-muted-foreground">No schema.</Card>;
+  const needle = q.trim().toLowerCase();
+  const tables = needle ? data.tables.filter((t) => t.table_name.toLowerCase().includes(needle) || t.columns.some((c) => c.name.toLowerCase().includes(needle))) : data.tables;
+  const fksByTable = new Map<string, Array<{ column: string; references_table: string; references_column: string }>>();
+  for (const fk of data.foreign_keys) {
+    if (!fksByTable.has(fk.table)) fksByTable.set(fk.table, []);
+    fksByTable.get(fk.table)!.push(fk);
+  }
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-3">
+        <Input placeholder="Filter tables or columns…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm h-8" />
+        <span className="text-xs text-muted-foreground">{tables.length} of {data.tables.length} tables</span>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {tables.map((t) => {
+          const fks = fksByTable.get(t.table_name) ?? [];
+          const fkCols = new Set(fks.map((f) => f.column));
+          return (
+            <Card key={t.table_name} className="p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <button className="font-mono text-sm font-medium hover:underline text-left truncate" onClick={() => onInsert(t.table_name)} title="Insert select * from this table">
+                  {t.table_name}
+                </button>
+                <span className="text-[10px] text-muted-foreground shrink-0">{t.columns.length} cols</span>
+              </div>
+              <div className="max-h-40 overflow-y-auto text-[11px] font-mono space-y-0.5 border-t pt-1">
+                {t.columns.slice(0, 40).map((c) => (
+                  <div key={c.name} className="flex items-center gap-1">
+                    <span className={fkCols.has(c.name) ? "text-primary" : ""}>{c.name}</span>
+                    <span className="text-muted-foreground text-[10px] ml-auto">{c.type}</span>
+                  </div>
+                ))}
+                {t.columns.length > 40 && <div className="text-[10px] text-muted-foreground">+{t.columns.length - 40} more</div>}
+              </div>
+              {fks.length > 0 && (
+                <div className="border-t pt-1.5 space-y-0.5">
+                  {fks.map((f, i) => (
+                    <div key={i} className="text-[10px] flex items-center gap-1">
+                      <span className="text-primary">{f.column}</span>
+                      <span className="text-muted-foreground">→</span>
+                      <button className="hover:underline text-muted-foreground" onClick={() => onInsert(f.references_table)}>{f.references_table}.{f.references_column}</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
