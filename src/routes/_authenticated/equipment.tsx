@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Package, UserPlus, Undo2 } from "lucide-react";
+import { Plus, Package, UserPlus, Undo2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/equipment")({ component: EquipmentPage });
@@ -46,6 +46,37 @@ function EquipmentPage() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["issuance"] }),
+  });
+
+  const rejectRequest = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("equipment_issuance").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Request rejected");
+      qc.invalidateQueries({ queryKey: ["issuance"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const [approve, setApprove] = useState<{ id: string; size: string; expected_return_at: string; cost: string } | null>(null);
+  const approveRequest = useMutation({
+    mutationFn: async () => {
+      if (!approve) return;
+      const patch: { status: string; size?: string | null; expected_return_at?: string | null; cost?: number | null } = { status: "picked" };
+      if (approve.size) patch.size = approve.size;
+      if (approve.expected_return_at) patch.expected_return_at = approve.expected_return_at;
+      if (approve.cost) patch.cost = Number(approve.cost);
+      const { error } = await supabase.from("equipment_issuance").update(patch).eq("id", approve.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Approved — moved to picked");
+      setApprove(null);
+      qc.invalidateQueries({ queryKey: ["issuance"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const [assignOpen, setAssignOpen] = useState(false);
@@ -135,12 +166,23 @@ function EquipmentPage() {
                         <p className="font-medium text-sm">{(i.equipment_catalog as { name: string } | null)?.name}</p>
                         <p className="text-xs text-muted-foreground">{(i.employees as { first_name: string; last_name: string } | null)?.first_name} {(i.employees as { first_name: string; last_name: string } | null)?.last_name}</p>
                         {i.size && <p className="text-xs">Size: {i.size}</p>}
+                        {i.quantity && i.quantity > 1 && <p className="text-xs">Qty: {i.quantity}</p>}
+                        {s === "requested" && i.notes && <p className="text-xs italic mt-1 text-muted-foreground">"{i.notes}"</p>}
                         {rec.expected_return_at && (
                           <p className={"text-xs " + (overdue ? "text-destructive" : "text-muted-foreground")}>
                             {overdue ? "Overdue since " : "Due "} {new Date(rec.expected_return_at).toLocaleDateString()}
                           </p>
                         )}
-                        {idx < STAGES.length - 1 && (
+                        {s === "requested" ? (
+                          <div className="flex gap-2 mt-2">
+                            <Button size="sm" className="flex-1" onClick={() => setApprove({ id: i.id, size: i.size ?? "", expected_return_at: "", cost: "" })}>
+                              <Check className="h-3 w-3 mr-1" /> Approve
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => { if (confirm("Reject this request?")) rejectRequest.mutate(i.id); }}>
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : idx < STAGES.length - 1 && (
                           <Button size="sm" variant="outline" className="mt-2 w-full" onClick={() => moveStage.mutate({ id: i.id, status: STAGES[idx + 1] })}>
                             → {STAGES[idx + 1]}
                           </Button>
@@ -157,6 +199,27 @@ function EquipmentPage() {
               </div>
             ))}
           </div>
+          <Dialog open={!!approve} onOpenChange={(o) => !o && setApprove(null)}>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Approve request</DialogTitle></DialogHeader>
+              {approve && (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">Confirm details and move this request to <strong>picked</strong>. HR/ops can then advance it to issued.</p>
+                  <div><Label>Size</Label><Input value={approve.size} onChange={(e) => setApprove({ ...approve, size: e.target.value })} placeholder="M, 10.5, N/A" /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>Expected return</Label><Input type="date" value={approve.expected_return_at} onChange={(e) => setApprove({ ...approve, expected_return_at: e.target.value })} /></div>
+                    <div><Label>Cost</Label><Input type="number" step="0.01" value={approve.cost} onChange={(e) => setApprove({ ...approve, cost: e.target.value })} /></div>
+                  </div>
+                </div>
+              )}
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setApprove(null)}>Cancel</Button>
+                <Button onClick={() => approveRequest.mutate()} disabled={approveRequest.isPending}>
+                  {approveRequest.isPending ? "Approving…" : "Approve → picked"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
         <TabsContent value="catalog" className="mt-6">
           <div className="flex justify-end mb-4">
