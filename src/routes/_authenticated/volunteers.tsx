@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { Archive, ArchiveRestore } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/volunteers")({
   component: VolunteersPage,
@@ -30,10 +31,12 @@ type Volunteer = {
   phone: string | null;
   status: string;
   skills: string[] | null;
+  interests: string[] | null;
   background_check_date: string | null;
   waiver_signed_at: string | null;
   notes: string | null;
   created_at: string;
+  archived_at: string | null;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,6 +47,9 @@ function VolunteersPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Volunteer | null>(null);
   const [hoursFor, setHoursFor] = useState<Volunteer | null>(null);
+  const [skillFilter, setSkillFilter] = useState<Set<string>>(new Set());
+  const [interestFilter, setInterestFilter] = useState<Set<string>>(new Set());
+  const [showArchived, setShowArchived] = useState(false);
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["volunteers"],
@@ -70,6 +76,30 @@ function VolunteersPage() {
       setOpen(false); setEditing(null);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
+  });
+
+  const archive = useMutation({
+    mutationFn: async ({ id, archive }: { id: string; archive: boolean }) => {
+      const { error } = await sb.from("volunteers").update({ archived_at: archive ? new Date().toISOString() : null }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["volunteers"] }); toast.success("Updated"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const allSkills = Array.from(new Set((items ?? []).flatMap((v) => v.skills ?? []))).sort();
+  const allInterests = Array.from(new Set((items ?? []).flatMap((v) => v.interests ?? []))).sort();
+  const toggle = (set: Set<string>, s: (v: Set<string>) => void, tag: string) => {
+    const next = new Set(set);
+    if (next.has(tag)) next.delete(tag); else next.add(tag);
+    s(next);
+  };
+  const filtered = (items ?? []).filter((v) => {
+    if (!showArchived && v.archived_at) return false;
+    if (showArchived && !v.archived_at) return false;
+    if (skillFilter.size && !(v.skills ?? []).some((s) => skillFilter.has(s))) return false;
+    if (interestFilter.size && !(v.interests ?? []).some((s) => interestFilter.has(s))) return false;
+    return true;
   });
 
   const statusBadge = (s: string) => {
@@ -107,11 +137,44 @@ function VolunteersPage() {
         </Dialog>
       </div>
 
-      {isLoading ? <p className="text-muted-foreground">Loading…</p> : (items?.length ?? 0) === 0 ? (
+      <Card className="p-3 mb-4 space-y-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-medium text-muted-foreground w-16">Skills:</span>
+          {allSkills.length === 0 && <span className="text-xs text-muted-foreground">none yet</span>}
+          {allSkills.map((s) => (
+            <button key={s} onClick={() => toggle(skillFilter, setSkillFilter, s)}
+              className={`text-[11px] px-2 py-0.5 rounded-full border ${skillFilter.has(s) ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+              {s}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-medium text-muted-foreground w-16">Interests:</span>
+          {allInterests.length === 0 && <span className="text-xs text-muted-foreground">none yet</span>}
+          {allInterests.map((s) => (
+            <button key={s} onClick={() => toggle(interestFilter, setInterestFilter, s)}
+              className={`text-[11px] px-2 py-0.5 rounded-full border ${interestFilter.has(s) ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+              {s}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-3 text-xs">
+          <label className="flex items-center gap-1">
+            <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
+            Show archived
+          </label>
+          {(skillFilter.size || interestFilter.size) > 0 && (
+            <button className="text-primary hover:underline" onClick={() => { setSkillFilter(new Set()); setInterestFilter(new Set()); }}>Clear filters</button>
+          )}
+          <span className="text-muted-foreground ml-auto">{filtered.length} volunteer{filtered.length === 1 ? "" : "s"}</span>
+        </div>
+      </Card>
+
+      {isLoading ? <p className="text-muted-foreground">Loading…</p> : filtered.length === 0 ? (
         <Card className="p-8 text-center text-sm text-muted-foreground">No volunteers yet.</Card>
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {items!.map((v) => {
+          {filtered.map((v) => {
             const flg = flags(v);
             return (
               <Card key={v.id} className="p-4">
@@ -127,6 +190,11 @@ function VolunteersPage() {
                     {v.skills.map((s) => <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-muted">{s}</span>)}
                   </div>
                 )}
+                {v.interests && v.interests.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {v.interests.map((s) => <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary">{s}</span>)}
+                  </div>
+                )}
                 {flg.length > 0 && (
                   <div className="mt-3 flex items-center gap-1 text-xs text-amber-700">
                     <AlertTriangle className="h-3 w-3" /> {flg.join(" · ")}
@@ -135,6 +203,11 @@ function VolunteersPage() {
                 <div className="mt-4 flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => { setEditing(v); setOpen(true); }}>Edit</Button>
                   <Button size="sm" variant="ghost" onClick={() => setHoursFor(v)}>Log hours</Button>
+                  {v.archived_at ? (
+                    <Button size="sm" variant="ghost" onClick={() => archive.mutate({ id: v.id, archive: false })}><ArchiveRestore className="h-3 w-3 mr-1" /> Restore</Button>
+                  ) : (
+                    <Button size="sm" variant="ghost" onClick={() => archive.mutate({ id: v.id, archive: true })}><Archive className="h-3 w-3 mr-1" /> Archive</Button>
+                  )}
                 </div>
               </Card>
             );
