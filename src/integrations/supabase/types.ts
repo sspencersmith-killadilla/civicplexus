@@ -4818,13 +4818,6 @@ export type Database = {
             referencedRelation: "officials"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "official_attendance_official_id_fkey"
-            columns: ["official_id"]
-            isOneToOne: false
-            referencedRelation: "officials_contact"
-            referencedColumns: ["id"]
-          },
         ]
       }
       official_bodies: {
@@ -5367,13 +5360,6 @@ export type Database = {
             columns: ["official_id"]
             isOneToOne: false
             referencedRelation: "officials"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "official_terms_official_id_fkey"
-            columns: ["official_id"]
-            isOneToOne: false
-            referencedRelation: "officials_contact"
             referencedColumns: ["id"]
           },
           {
@@ -9708,24 +9694,6 @@ export type Database = {
           slug?: string | null
           summary?: string | null
           title?: string | null
-        }
-        Relationships: []
-      }
-      officials_contact: {
-        Row: {
-          email: string | null
-          id: string | null
-          phone: string | null
-        }
-        Insert: {
-          email?: string | null
-          id?: string | null
-          phone?: string | null
-        }
-        Update: {
-          email?: string | null
-          id?: string | null
-          phone?: string | null
         }
         Relationships: []
       }
