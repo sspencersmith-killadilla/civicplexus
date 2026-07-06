@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronDown, ChevronRight, Download, Play, Save, Star, Trash2, Loader2 } from "lucide-react";
+import { Sparkles, WandSparkles, HelpCircle, Bug, Network as NetworkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCsv } from "@/lib/download-csv";
 import {
@@ -20,6 +21,7 @@ import {
   deleteSavedReport, toggleFavoriteReport, listReportQueryLog,
   type ReportRunResult, type SavedReport,
 } from "@/lib/reports-sql.functions";
+import { sqlAssist } from "@/lib/sql-assist.functions";
 
 export const Route = createFileRoute("/_authenticated/admin-sql-reports")({
   component: SqlReportsPage,
@@ -52,6 +54,7 @@ function SqlReportsPage() {
   const delFn = useServerFn(deleteSavedReport);
   const favFn = useServerFn(toggleFavoriteReport);
   const logFn = useServerFn(listReportQueryLog);
+  const assistFn = useServerFn(sqlAssist);
 
   const [sql, setSql] = useState<string>(STARTER_SQL);
   const [limit, setLimit] = useState<number>(1000);
@@ -61,6 +64,9 @@ function SqlReportsPage() {
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveForm, setSaveForm] = useState({ name: "", description: "", is_shared: false });
   const [tab, setTab] = useState<string>("editor");
+  const [aiOpen, setAiOpen] = useState(true);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
 
   const schemaQuery = useQuery({ queryKey: ["sql-reports", "schema"], queryFn: () => schemaFn(), staleTime: 300_000 });
   const savedQuery = useQuery({ queryKey: ["sql-reports", "saved"], queryFn: () => listFn(), staleTime: 30_000 });
@@ -70,6 +76,21 @@ function SqlReportsPage() {
     mutationFn: () => runFn({ data: { sql, limit } }),
     onSuccess: (r) => { setResult(r); setRunError(null); qc.invalidateQueries({ queryKey: ["sql-reports", "log"] }); },
     onError: (e: Error) => { setResult(null); setRunError(e.message); },
+  });
+
+  const assistMut = useMutation({
+    mutationFn: (input: { mode: "draft" | "explain" | "fix" }) =>
+      assistFn({ data: {
+        mode: input.mode,
+        prompt: input.mode === "draft" ? aiPrompt : undefined,
+        sql: input.mode !== "draft" ? sql : undefined,
+        error: input.mode === "fix" ? (runError ?? undefined) : undefined,
+      } }),
+    onSuccess: (r, vars) => {
+      if (vars.mode === "explain") { setAiExplanation(r.explanation ?? ""); }
+      else if (r.sql) { setSql(r.sql); setAiExplanation(null); toast.success(vars.mode === "draft" ? "Drafted query" : "Suggested fix"); }
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const saveMut = useMutation({
@@ -122,6 +143,7 @@ function SqlReportsPage() {
       <Tabs value={tab} onValueChange={setTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="editor">Editor</TabsTrigger>
+          <TabsTrigger value="schema-map">Schema map</TabsTrigger>
           <TabsTrigger value="saved">Saved reports</TabsTrigger>
           <TabsTrigger value="log">Query log</TabsTrigger>
         </TabsList>
@@ -177,6 +199,38 @@ function SqlReportsPage() {
                 </div>
               </Card>
 
+              <Card className="p-4 space-y-2 border-primary/30 bg-primary/[0.02]">
+                <button onClick={() => setAiOpen((v) => !v)} className="w-full flex items-center gap-2 text-sm font-medium">
+                  <Sparkles className="h-4 w-4 text-primary" /> AI helper
+                  {aiOpen ? <ChevronDown className="h-3 w-3 ml-auto" /> : <ChevronRight className="h-3 w-3 ml-auto" />}
+                </button>
+                {aiOpen && (
+                  <div className="space-y-3 pt-1">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Describe the report you want</Label>
+                      <div className="flex gap-2">
+                        <Input value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} placeholder="Active employees per department" className="h-8" />
+                        <Button size="sm" onClick={() => assistMut.mutate({ mode: "draft" })} disabled={!aiPrompt.trim() || assistMut.isPending}>
+                          <WandSparkles className="h-3 w-3 mr-1" /> Draft SQL
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      <Button size="sm" variant="outline" onClick={() => assistMut.mutate({ mode: "explain" })} disabled={!sql.trim() || assistMut.isPending}>
+                        <HelpCircle className="h-3 w-3 mr-1" /> Explain current SQL
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => assistMut.mutate({ mode: "fix" })} disabled={!runError || assistMut.isPending}>
+                        <Bug className="h-3 w-3 mr-1" /> Fix last error
+                      </Button>
+                      {assistMut.isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                    </div>
+                    {aiExplanation && (
+                      <div className="text-xs bg-background rounded border p-3 whitespace-pre-wrap">{aiExplanation}</div>
+                    )}
+                  </div>
+                )}
+              </Card>
+
               {runError && (
                 <Card className="p-4 border-destructive/40 bg-destructive/5">
                   <p className="text-sm font-medium text-destructive">Query error</p>
@@ -215,6 +269,10 @@ function SqlReportsPage() {
               )}
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="schema-map">
+          <SchemaMap data={schemaQuery.data} loading={schemaQuery.isLoading} onInsert={(t) => { setSql((s) => `${s}\n\nselect * from ${t} limit 100;`); setTab("editor"); }} />
         </TabsContent>
 
         <TabsContent value="saved">

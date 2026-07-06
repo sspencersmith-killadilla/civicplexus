@@ -80,6 +80,7 @@ import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authenticated/admin-identity'
 import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin-demo'
 import { Route as AuthenticatedAdminAiSettingsRouteImport } from './routes/_authenticated/admin-ai-settings'
+import { Route as AuthenticatedHiringRouteRouteImport } from './routes/_authenticated/hiring/route'
 import { Route as ServeApplicantIndexRouteImport } from './routes/serve.applicant.index'
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as CandidateTokenIndexRouteImport } from './routes/candidate.$token.index'
@@ -96,6 +97,7 @@ import { Route as AuthenticatedOffersIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedLeaveIndexRouteImport } from './routes/_authenticated/leave.index'
 import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authenticated/jobs.index'
 import { Route as AuthenticatedInterviewsIndexRouteImport } from './routes/_authenticated/interviews.index'
+import { Route as AuthenticatedHiringIndexRouteImport } from './routes/_authenticated/hiring/index'
 import { Route as AuthenticatedGrievancesIndexRouteImport } from './routes/_authenticated/grievances.index'
 import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms.index'
 import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authenticated/employees.index'
@@ -130,6 +132,7 @@ import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedLeaveIdRouteImport } from './routes/_authenticated/leave.$id'
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
 import { Route as AuthenticatedInterviewsIdRouteImport } from './routes/_authenticated/interviews.$id'
+import { Route as AuthenticatedHiringInterviewKitsRouteImport } from './routes/_authenticated/hiring/interview-kits'
 import { Route as AuthenticatedGrievancesIdRouteImport } from './routes/_authenticated/grievances.$id'
 import { Route as AuthenticatedFormsNewRouteImport } from './routes/_authenticated/forms.new'
 import { Route as AuthenticatedFormsKeyRouteImport } from './routes/_authenticated/forms.$key'
@@ -554,6 +557,12 @@ const AuthenticatedAdminAiSettingsRoute =
     path: '/admin-ai-settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHiringRouteRoute =
+  AuthenticatedHiringRouteRouteImport.update({
+    id: '/hiring',
+    path: '/hiring',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ServeApplicantIndexRoute = ServeApplicantIndexRouteImport.update({
   id: '/serve/applicant/',
   path: '/serve/applicant/',
@@ -642,6 +651,12 @@ const AuthenticatedInterviewsIndexRoute =
     id: '/interviews/',
     path: '/interviews/',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHiringIndexRoute =
+  AuthenticatedHiringIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedHiringRouteRoute,
   } as any)
 const AuthenticatedGrievancesIndexRoute =
   AuthenticatedGrievancesIndexRouteImport.update({
@@ -829,6 +844,12 @@ const AuthenticatedInterviewsIdRoute =
     id: '/interviews/$id',
     path: '/interviews/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHiringInterviewKitsRoute =
+  AuthenticatedHiringInterviewKitsRouteImport.update({
+    id: '/interview-kits',
+    path: '/interview-kits',
+    getParentRoute: () => AuthenticatedHiringRouteRoute,
   } as any)
 const AuthenticatedGrievancesIdRoute =
   AuthenticatedGrievancesIdRouteImport.update({
@@ -1078,6 +1099,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/offline-shell': typeof OfflineShellRoute
+  '/hiring': typeof AuthenticatedHiringRouteRouteWithChildren
   '/admin-ai-settings': typeof AuthenticatedAdminAiSettingsRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
@@ -1160,6 +1182,7 @@ export interface FileRoutesByFullPath {
   '/forms/$key': typeof AuthenticatedFormsKeyRouteWithChildren
   '/forms/new': typeof AuthenticatedFormsNewRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
+  '/hiring/interview-kits': typeof AuthenticatedHiringInterviewKitsRoute
   '/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
@@ -1194,6 +1217,7 @@ export interface FileRoutesByFullPath {
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
   '/forms/': typeof AuthenticatedFormsIndexRoute
   '/grievances/': typeof AuthenticatedGrievancesIndexRoute
+  '/hiring/': typeof AuthenticatedHiringIndexRoute
   '/interviews/': typeof AuthenticatedInterviewsIndexRoute
   '/jobs/': typeof AuthenticatedJobsIndexRoute
   '/leave/': typeof AuthenticatedLeaveIndexRoute
@@ -1320,6 +1344,7 @@ export interface FileRoutesByTo {
   '/forms/$key': typeof AuthenticatedFormsKeyRouteWithChildren
   '/forms/new': typeof AuthenticatedFormsNewRoute
   '/grievances/$id': typeof AuthenticatedGrievancesIdRoute
+  '/hiring/interview-kits': typeof AuthenticatedHiringInterviewKitsRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
@@ -1352,6 +1377,7 @@ export interface FileRoutesByTo {
   '/employees': typeof AuthenticatedEmployeesIndexRoute
   '/forms': typeof AuthenticatedFormsIndexRoute
   '/grievances': typeof AuthenticatedGrievancesIndexRoute
+  '/hiring': typeof AuthenticatedHiringIndexRoute
   '/interviews': typeof AuthenticatedInterviewsIndexRoute
   '/jobs': typeof AuthenticatedJobsIndexRoute
   '/leave': typeof AuthenticatedLeaveIndexRoute
@@ -1402,6 +1428,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/offline-shell': typeof OfflineShellRoute
+  '/_authenticated/hiring': typeof AuthenticatedHiringRouteRouteWithChildren
   '/_authenticated/admin-ai-settings': typeof AuthenticatedAdminAiSettingsRoute
   '/_authenticated/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/_authenticated/admin-identity': typeof AuthenticatedAdminIdentityRoute
@@ -1484,6 +1511,7 @@ export interface FileRoutesById {
   '/_authenticated/forms/$key': typeof AuthenticatedFormsKeyRouteWithChildren
   '/_authenticated/forms/new': typeof AuthenticatedFormsNewRoute
   '/_authenticated/grievances/$id': typeof AuthenticatedGrievancesIdRoute
+  '/_authenticated/hiring/interview-kits': typeof AuthenticatedHiringInterviewKitsRoute
   '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/_authenticated/leave/$id': typeof AuthenticatedLeaveIdRoute
@@ -1518,6 +1546,7 @@ export interface FileRoutesById {
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
   '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
   '/_authenticated/grievances/': typeof AuthenticatedGrievancesIndexRoute
+  '/_authenticated/hiring/': typeof AuthenticatedHiringIndexRoute
   '/_authenticated/interviews/': typeof AuthenticatedInterviewsIndexRoute
   '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
   '/_authenticated/leave/': typeof AuthenticatedLeaveIndexRoute
@@ -1568,6 +1597,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/offline-shell'
+    | '/hiring'
     | '/admin-ai-settings'
     | '/admin-demo'
     | '/admin-identity'
@@ -1650,6 +1680,7 @@ export interface FileRouteTypes {
     | '/forms/$key'
     | '/forms/new'
     | '/grievances/$id'
+    | '/hiring/interview-kits'
     | '/interviews/$id'
     | '/jobs/$id'
     | '/leave/$id'
@@ -1684,6 +1715,7 @@ export interface FileRouteTypes {
     | '/employees/'
     | '/forms/'
     | '/grievances/'
+    | '/hiring/'
     | '/interviews/'
     | '/jobs/'
     | '/leave/'
@@ -1810,6 +1842,7 @@ export interface FileRouteTypes {
     | '/forms/$key'
     | '/forms/new'
     | '/grievances/$id'
+    | '/hiring/interview-kits'
     | '/jobs/$id'
     | '/leave/$id'
     | '/one-on-ones/$id'
@@ -1842,6 +1875,7 @@ export interface FileRouteTypes {
     | '/employees'
     | '/forms'
     | '/grievances'
+    | '/hiring'
     | '/interviews'
     | '/jobs'
     | '/leave'
@@ -1891,6 +1925,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/offline-shell'
+    | '/_authenticated/hiring'
     | '/_authenticated/admin-ai-settings'
     | '/_authenticated/admin-demo'
     | '/_authenticated/admin-identity'
@@ -1973,6 +2008,7 @@ export interface FileRouteTypes {
     | '/_authenticated/forms/$key'
     | '/_authenticated/forms/new'
     | '/_authenticated/grievances/$id'
+    | '/_authenticated/hiring/interview-kits'
     | '/_authenticated/interviews/$id'
     | '/_authenticated/jobs/$id'
     | '/_authenticated/leave/$id'
@@ -2007,6 +2043,7 @@ export interface FileRouteTypes {
     | '/_authenticated/employees/'
     | '/_authenticated/forms/'
     | '/_authenticated/grievances/'
+    | '/_authenticated/hiring/'
     | '/_authenticated/interviews/'
     | '/_authenticated/jobs/'
     | '/_authenticated/leave/'
@@ -2598,6 +2635,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAiSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hiring': {
+      id: '/_authenticated/hiring'
+      path: '/hiring'
+      fullPath: '/hiring'
+      preLoaderRoute: typeof AuthenticatedHiringRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/serve/applicant/': {
       id: '/serve/applicant/'
       path: '/serve/applicant'
@@ -2709,6 +2753,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/interviews/'
       preLoaderRoute: typeof AuthenticatedInterviewsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hiring/': {
+      id: '/_authenticated/hiring/'
+      path: '/'
+      fullPath: '/hiring/'
+      preLoaderRoute: typeof AuthenticatedHiringIndexRouteImport
+      parentRoute: typeof AuthenticatedHiringRouteRoute
     }
     '/_authenticated/grievances/': {
       id: '/_authenticated/grievances/'
@@ -2947,6 +2998,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/interviews/$id'
       preLoaderRoute: typeof AuthenticatedInterviewsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hiring/interview-kits': {
+      id: '/_authenticated/hiring/interview-kits'
+      path: '/interview-kits'
+      fullPath: '/hiring/interview-kits'
+      preLoaderRoute: typeof AuthenticatedHiringInterviewKitsRouteImport
+      parentRoute: typeof AuthenticatedHiringRouteRoute
     }
     '/_authenticated/grievances/$id': {
       id: '/_authenticated/grievances/$id'
@@ -3245,6 +3303,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedHiringRouteRouteChildren {
+  AuthenticatedHiringInterviewKitsRoute: typeof AuthenticatedHiringInterviewKitsRoute
+  AuthenticatedHiringIndexRoute: typeof AuthenticatedHiringIndexRoute
+}
+
+const AuthenticatedHiringRouteRouteChildren: AuthenticatedHiringRouteRouteChildren =
+  {
+    AuthenticatedHiringInterviewKitsRoute:
+      AuthenticatedHiringInterviewKitsRoute,
+    AuthenticatedHiringIndexRoute: AuthenticatedHiringIndexRoute,
+  }
+
+const AuthenticatedHiringRouteRouteWithChildren =
+  AuthenticatedHiringRouteRoute._addFileChildren(
+    AuthenticatedHiringRouteRouteChildren,
+  )
+
 interface AuthenticatedAdminOfficialsRouteChildren {
   AuthenticatedAdminOfficialsArchiveRoute: typeof AuthenticatedAdminOfficialsArchiveRoute
   AuthenticatedAdminOfficialsOnboardingReportRoute: typeof AuthenticatedAdminOfficialsOnboardingReportRoute
@@ -3359,6 +3434,7 @@ const AuthenticatedReviewCyclesIdRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedHiringRouteRoute: typeof AuthenticatedHiringRouteRouteWithChildren
   AuthenticatedAdminAiSettingsRoute: typeof AuthenticatedAdminAiSettingsRoute
   AuthenticatedAdminDemoRoute: typeof AuthenticatedAdminDemoRoute
   AuthenticatedAdminIdentityRoute: typeof AuthenticatedAdminIdentityRoute
@@ -3459,6 +3535,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedHiringRouteRoute: AuthenticatedHiringRouteRouteWithChildren,
   AuthenticatedAdminAiSettingsRoute: AuthenticatedAdminAiSettingsRoute,
   AuthenticatedAdminDemoRoute: AuthenticatedAdminDemoRoute,
   AuthenticatedAdminIdentityRoute: AuthenticatedAdminIdentityRoute,
