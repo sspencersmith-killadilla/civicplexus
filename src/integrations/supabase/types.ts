@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_settings: {
+        Row: {
+          byok: Json
+          created_at: string
+          default_model: string
+          feature_overrides: Json
+          id: string
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          byok?: Json
+          created_at?: string
+          default_model?: string
+          feature_overrides?: Json
+          id?: string
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          byok?: Json
+          created_at?: string
+          default_model?: string
+          feature_overrides?: Json
+          id?: string
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       ai_suggestions: {
         Row: {
           application_id: string | null
@@ -262,6 +295,51 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      approval_step_line_votes: {
+        Row: {
+          decided_at: string
+          decided_by: string | null
+          decision: string
+          id: string
+          line_id: string
+          note: string | null
+          step_id: string
+        }
+        Insert: {
+          decided_at?: string
+          decided_by?: string | null
+          decision: string
+          id?: string
+          line_id: string
+          note?: string | null
+          step_id: string
+        }
+        Update: {
+          decided_at?: string
+          decided_by?: string | null
+          decision?: string
+          id?: string
+          line_id?: string
+          note?: string | null
+          step_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_step_line_votes_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "paf_action_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_step_line_votes_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "approval_steps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       approval_steps: {
         Row: {
@@ -1544,9 +1622,11 @@ export type Database = {
         Row: {
           active: boolean
           body: string
+          category: string | null
           created_at: string
           description: string | null
           id: string
+          is_custom: boolean
           name: string
           subject: string
           template_key: string
@@ -1556,9 +1636,11 @@ export type Database = {
         Insert: {
           active?: boolean
           body: string
+          category?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          is_custom?: boolean
           name: string
           subject: string
           template_key: string
@@ -1568,9 +1650,11 @@ export type Database = {
         Update: {
           active?: boolean
           body?: string
+          category?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          is_custom?: boolean
           name?: string
           subject?: string
           template_key?: string
@@ -3761,6 +3845,7 @@ export type Database = {
           employment_type: string | null
           hire_request_id: string | null
           hiring_manager_id: string | null
+          icon: string | null
           id: string
           internal_only: boolean
           interview_ai_assist_enabled: boolean
@@ -3791,6 +3876,7 @@ export type Database = {
           employment_type?: string | null
           hire_request_id?: string | null
           hiring_manager_id?: string | null
+          icon?: string | null
           id?: string
           internal_only?: boolean
           interview_ai_assist_enabled?: boolean
@@ -3821,6 +3907,7 @@ export type Database = {
           employment_type?: string | null
           hire_request_id?: string | null
           hiring_manager_id?: string | null
+          icon?: string | null
           id?: string
           internal_only?: boolean
           interview_ai_assist_enabled?: boolean
@@ -5945,6 +6032,56 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paf_action_lines: {
+        Row: {
+          action_type: string
+          after_values: Json
+          applied_at: string | null
+          before_values: Json
+          created_at: string
+          effective_date: string
+          id: string
+          ordinal: number
+          paf_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          after_values?: Json
+          applied_at?: string | null
+          before_values?: Json
+          created_at?: string
+          effective_date: string
+          id?: string
+          ordinal?: number
+          paf_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          after_values?: Json
+          applied_at?: string | null
+          before_values?: Json
+          created_at?: string
+          effective_date?: string
+          id?: string
+          ordinal?: number
+          paf_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paf_action_lines_paf_id_fkey"
+            columns: ["paf_id"]
+            isOneToOne: false
+            referencedRelation: "personnel_actions"
             referencedColumns: ["id"]
           },
         ]
@@ -9069,6 +9206,7 @@ export type Database = {
       }
       vendors: {
         Row: {
+          archived_at: string | null
           coi_expires_at: string | null
           coi_path: string | null
           contact_email: string | null
@@ -9092,6 +9230,7 @@ export type Database = {
           w9_path: string | null
         }
         Insert: {
+          archived_at?: string | null
           coi_expires_at?: string | null
           coi_path?: string | null
           contact_email?: string | null
@@ -9115,6 +9254,7 @@ export type Database = {
           w9_path?: string | null
         }
         Update: {
+          archived_at?: string | null
           coi_expires_at?: string | null
           coi_path?: string | null
           contact_email?: string | null
@@ -9392,12 +9532,14 @@ export type Database = {
       }
       volunteers: {
         Row: {
+          archived_at: string | null
           background_check_date: string | null
           created_at: string
           department_id: string | null
           email: string | null
           first_name: string
           id: string
+          interests: string[]
           last_name: string
           notes: string | null
           phone: string | null
@@ -9408,12 +9550,14 @@ export type Database = {
           waiver_signed_at: string | null
         }
         Insert: {
+          archived_at?: string | null
           background_check_date?: string | null
           created_at?: string
           department_id?: string | null
           email?: string | null
           first_name: string
           id?: string
+          interests?: string[]
           last_name: string
           notes?: string | null
           phone?: string | null
@@ -9424,12 +9568,14 @@ export type Database = {
           waiver_signed_at?: string | null
         }
         Update: {
+          archived_at?: string | null
           background_check_date?: string | null
           created_at?: string
           department_id?: string | null
           email?: string | null
           first_name?: string
           id?: string
+          interests?: string[]
           last_name?: string
           notes?: string | null
           phone?: string | null
