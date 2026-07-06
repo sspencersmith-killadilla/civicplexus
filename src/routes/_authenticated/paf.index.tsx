@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { submitPaf, repairPafChains, listPafs, listPafEmployees } from "@/lib/paf.functions";
+import { addPafLine } from "@/lib/paf-lines.functions";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/paf/")({ component: PafIndex });
@@ -28,6 +29,7 @@ function PafIndex() {
   const repair = useServerFn(repairPafChains);
   const listPafsFn = useServerFn(listPafs);
   const listEmployeesFn = useServerFn(listPafEmployees);
+  const addLine = useServerFn(addPafLine);
   const [open, setOpen] = useState(false);
   const { data: me } = useCurrentUser();
   const isHR = hasRole(me?.roles, "hr_admin");
@@ -62,9 +64,21 @@ function PafIndex() {
     new_job_title: "", new_department: "", new_manager_id: "",
     new_base_annual: "", separation_reason: "voluntary", rehire_eligible: true,
   });
+  type ExtraLine = { action_type: typeof ACTIONS[number]; effective_date: string; after_values: Record<string, unknown> };
+  const [extraLines, setExtraLines] = useState<ExtraLine[]>([]);
+  const [extraDraft, setExtraDraft] = useState<{ action_type: typeof ACTIONS[number]; effective_date: string; new_job_title: string; new_department: string; new_base_annual: string }>({
+    action_type: "pay_change", effective_date: "", new_job_title: "", new_department: "", new_base_annual: "",
+  });
+  const draftAfterValues = () => {
+    const av: Record<string, unknown> = {};
+    if (extraDraft.new_job_title) av.job_title = extraDraft.new_job_title;
+    if (extraDraft.new_department) av.department = extraDraft.new_department;
+    if (extraDraft.action_type === "pay_change" && extraDraft.new_base_annual) av.base_annual = Number(extraDraft.new_base_annual);
+    return av;
+  };
 
   const send = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const after: Record<string, unknown> = {};
       if (form.new_job_title) after.job_title = form.new_job_title;
       if (form.new_department) after.department = form.new_department;
@@ -77,12 +91,16 @@ function PafIndex() {
       if (form.action_type === "pay_change" && form.new_base_annual) {
         after.base_annual = Number(form.new_base_annual);
       }
-      return submit({ data: {
+      const created = await submit({ data: {
         employee_id: form.employee_id, action_type: form.action_type, effective_date: form.effective_date,
         reason: form.reason || undefined, narrative: form.narrative || undefined, after_values: after,
       }});
+      for (const l of extraLines) {
+        await addLine({ data: { paf_id: created.id, action_type: l.action_type, effective_date: l.effective_date, after_values: l.after_values } });
+      }
+      return created;
     },
-    onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["pafs"] }); setOpen(false); toast.success(`Submitted ${r.paf_number}`); },
+    onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["pafs"] }); setOpen(false); setExtraLines([]); toast.success(`Submitted ${r.paf_number}`); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
