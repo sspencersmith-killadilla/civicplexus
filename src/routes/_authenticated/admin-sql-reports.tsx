@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronDown, ChevronRight, Download, Play, Save, Star, Trash2, Loader2 } from "lucide-react";
-import { Sparkles, WandSparkles, HelpCircle, Bug, Network as NetworkIcon } from "lucide-react";
+import { Sparkles, WandSparkles, HelpCircle, Bug } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCsv } from "@/lib/download-csv";
 import {
