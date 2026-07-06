@@ -49,12 +49,12 @@ function EquipmentPage() {
   });
 
   const [assignOpen, setAssignOpen] = useState(false);
-  const [assign, setAssign] = useState({ employee_id: "", catalog_id: "", size: "", quantity: "1", expected_return_at: "", notes: "" });
+  const [assign, setAssign] = useState({ employee_id: "", item_id: "", size: "", quantity: "1", expected_return_at: "", notes: "" });
   const createAssignment = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("equipment_issuance").insert({
         employee_id: assign.employee_id,
-        catalog_id: assign.catalog_id,
+        item_id: assign.item_id,
         size: assign.size || null,
         quantity: Number(assign.quantity) || 1,
         expected_return_at: assign.expected_return_at || null,
@@ -67,7 +67,7 @@ function EquipmentPage() {
     onSuccess: () => {
       toast.success("Assigned");
       setAssignOpen(false);
-      setAssign({ employee_id: "", catalog_id: "", size: "", quantity: "1", expected_return_at: "", notes: "" });
+      setAssign({ employee_id: "", item_id: "", size: "", quantity: "1", expected_return_at: "", notes: "" });
       qc.invalidateQueries({ queryKey: ["issuance"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -99,7 +99,7 @@ function EquipmentPage() {
                     </Select>
                   </div>
                   <div><Label>Item</Label>
-                    <Select value={assign.catalog_id} onValueChange={(v) => setAssign({ ...assign, catalog_id: v })}>
+                    <Select value={assign.item_id} onValueChange={(v) => setAssign({ ...assign, item_id: v })}>
                       <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
                       <SelectContent>
                         {(catalog ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.name} · {c.category}</SelectItem>)}
@@ -114,7 +114,7 @@ function EquipmentPage() {
                   <div><Label>Notes</Label><Input value={assign.notes} onChange={(e) => setAssign({ ...assign, notes: e.target.value })} /></div>
                 </div>
                 <DialogFooter>
-                  <Button disabled={!assign.employee_id || !assign.catalog_id || createAssignment.isPending} onClick={() => createAssignment.mutate()}>
+                  <Button disabled={!assign.employee_id || !assign.item_id || createAssignment.isPending} onClick={() => createAssignment.mutate()}>
                     {createAssignment.isPending ? "Assigning…" : "Assign"}
                   </Button>
                 </DialogFooter>
