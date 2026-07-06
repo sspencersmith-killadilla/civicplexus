@@ -9,6 +9,7 @@ import {
   Clock,
   Video,
   Landmark as LandmarkIcon,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRole } from "@/hooks/use-current-user";
@@ -56,8 +57,8 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/directory", "Directory", Users, ["hr_admin", "hiring_manager", "supervisor", "it_admin", "employee", "candidate"]),
     def("/employees", "Employees", Users, ["hr_admin", "hiring_manager"]),
     def("/positions", "Positions", ClipboardList, ["hr_admin", "hiring_manager", "supervisor"]),
+    def("/hiring", "Hiring", Briefcase, ["hr_admin", "hiring_manager"]),
     def("/hire-requests", "Hire Requests", UserPlus, ["hr_admin", "supervisor", "hiring_manager"]),
-    def("/interview-kits", "Interview Kits", Video, ["hr_admin", "hiring_manager"]),
     def("/offboarding", "Offboarding", DoorOpen, ["hr_admin"]),
     def("/benefits", "Benefits", HeartHandshake, ["hr_admin"]),
     def("/equipment", "Equipment & PPE", Package, ["hr_admin", "hiring_manager"]),
@@ -131,6 +132,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     def("/admin-identity", "Identity & SSO", ShieldCheck, ["hr_admin"]),
     def("/admin-demo", "Demo Account", UserCog, ["hr_admin"]),
     def("/admin-sql-reports", "SQL Reports", BarChart3, ["hr_admin"]),
+    def("/admin-ai-settings", "AI Settings", Sparkles, ["hr_admin", "it_admin"]),
   ]},
   { key: moduleKey("governance"), label: "Governance", items: [
     def("/admin-officials", "Elected & Boards", LandmarkIcon, ["hr_admin"]),

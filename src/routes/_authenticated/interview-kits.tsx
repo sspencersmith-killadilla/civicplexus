@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { listInterviewKits, upsertInterviewKit, deleteInterviewKit } from "@/lib/interview-kits.functions";
 
 export const Route = createFileRoute("/_authenticated/interview-kits")({ component: KitsPage });
+export { KitsPage };
 
 type Question = { id: string; prompt: string; think_seconds: number; max_answer_seconds: number; allow_retake: boolean };
 type Rubric = { id: string; label: string; description?: string };

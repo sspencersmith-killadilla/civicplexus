@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,17 @@ function download(name: string, content: string) {
 
 function HelpPage() {
   const [tab, setTab] = useState("enduser");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.location.hash) return;
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    // Delay to let markdown render
+    const t = setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [tab]);
   const activeContent =
     tab === "user" ? userGuide : tab === "host" ? selfHostGuide : endUserGuide;
   const activeFilename =
@@ -53,21 +65,21 @@ function HelpPage() {
         <TabsContent value="enduser">
           <Card className="p-6 md:p-10">
             <article className="prose prose-sm md:prose-base max-w-none dark:prose-invert prose-headings:font-serif prose-table:text-sm">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{endUserGuide}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]}>{endUserGuide}</ReactMarkdown>
             </article>
           </Card>
         </TabsContent>
         <TabsContent value="user">
           <Card className="p-6 md:p-10">
             <article className="prose prose-sm md:prose-base max-w-none dark:prose-invert prose-headings:font-serif prose-table:text-sm">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{userGuide}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]}>{userGuide}</ReactMarkdown>
             </article>
           </Card>
         </TabsContent>
         <TabsContent value="host">
           <Card className="p-6 md:p-10">
             <article className="prose prose-sm md:prose-base max-w-none dark:prose-invert prose-headings:font-serif prose-table:text-sm">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{selfHostGuide}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]}>{selfHostGuide}</ReactMarkdown>
             </article>
           </Card>
         </TabsContent>
