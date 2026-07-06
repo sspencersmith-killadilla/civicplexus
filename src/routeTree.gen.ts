@@ -32,6 +32,7 @@ import { Route as AuthenticatedVendorsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedVendorFormsRouteImport } from './routes/_authenticated/vendor-forms'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedTimekeepingRouteImport } from './routes/_authenticated/timekeeping'
+import { Route as AuthenticatedTeamEquipmentRouteImport } from './routes/_authenticated/team-equipment'
 import { Route as AuthenticatedShiftPatternsRouteImport } from './routes/_authenticated/shift-patterns'
 import { Route as AuthenticatedSetupRouteImport } from './routes/_authenticated/setup'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -294,6 +295,12 @@ const AuthenticatedTimekeepingRoute =
   AuthenticatedTimekeepingRouteImport.update({
     id: '/timekeeping',
     path: '/timekeeping',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedTeamEquipmentRoute =
+  AuthenticatedTeamEquipmentRouteImport.update({
+    id: '/team-equipment',
+    path: '/team-equipment',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedShiftPatternsRoute =
@@ -1163,6 +1170,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/setup': typeof AuthenticatedSetupRoute
   '/shift-patterns': typeof AuthenticatedShiftPatternsRoute
+  '/team-equipment': typeof AuthenticatedTeamEquipmentRoute
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/vendor-forms': typeof AuthenticatedVendorFormsRoute
@@ -1329,6 +1337,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/setup': typeof AuthenticatedSetupRoute
   '/shift-patterns': typeof AuthenticatedShiftPatternsRoute
+  '/team-equipment': typeof AuthenticatedTeamEquipmentRoute
   '/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/vendor-forms': typeof AuthenticatedVendorFormsRoute
@@ -1496,6 +1505,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/setup': typeof AuthenticatedSetupRoute
   '/_authenticated/shift-patterns': typeof AuthenticatedShiftPatternsRoute
+  '/_authenticated/team-equipment': typeof AuthenticatedTeamEquipmentRoute
   '/_authenticated/timekeeping': typeof AuthenticatedTimekeepingRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/vendor-forms': typeof AuthenticatedVendorFormsRoute
@@ -1667,6 +1677,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/setup'
     | '/shift-patterns'
+    | '/team-equipment'
     | '/timekeeping'
     | '/training'
     | '/vendor-forms'
@@ -1833,6 +1844,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/setup'
     | '/shift-patterns'
+    | '/team-equipment'
     | '/timekeeping'
     | '/training'
     | '/vendor-forms'
@@ -1999,6 +2011,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/setup'
     | '/_authenticated/shift-patterns'
+    | '/_authenticated/team-equipment'
     | '/_authenticated/timekeeping'
     | '/_authenticated/training'
     | '/_authenticated/vendor-forms'
@@ -2322,6 +2335,13 @@ declare module '@tanstack/react-router' {
       path: '/timekeeping'
       fullPath: '/timekeeping'
       preLoaderRoute: typeof AuthenticatedTimekeepingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/team-equipment': {
+      id: '/_authenticated/team-equipment'
+      path: '/team-equipment'
+      fullPath: '/team-equipment'
+      preLoaderRoute: typeof AuthenticatedTeamEquipmentRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/shift-patterns': {
@@ -3524,6 +3544,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSetupRoute: typeof AuthenticatedSetupRoute
   AuthenticatedShiftPatternsRoute: typeof AuthenticatedShiftPatternsRoute
+  AuthenticatedTeamEquipmentRoute: typeof AuthenticatedTeamEquipmentRoute
   AuthenticatedTimekeepingRoute: typeof AuthenticatedTimekeepingRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedVendorFormsRoute: typeof AuthenticatedVendorFormsRoute
@@ -3628,6 +3649,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSetupRoute: AuthenticatedSetupRoute,
   AuthenticatedShiftPatternsRoute: AuthenticatedShiftPatternsRoute,
+  AuthenticatedTeamEquipmentRoute: AuthenticatedTeamEquipmentRoute,
   AuthenticatedTimekeepingRoute: AuthenticatedTimekeepingRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedVendorFormsRoute: AuthenticatedVendorFormsRoute,
