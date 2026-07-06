@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { generateText, generateObject } from "ai";
+import { generateText } from "ai";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 const MODEL = "google/gemini-3-flash-preview";
@@ -89,30 +89,23 @@ export const extractOneOnOneActionItems = createServerFn({ method: "POST" })
     const prompt = `Scan the following 1-on-1 meeting notes and extract concrete action items / commitments.
 If there are no clear action items, return an empty array.
 
+Return ONLY a JSON array. Do not wrap it in markdown.
+Each array item must be shaped like:
+{"text":"specific action item","due_date":"YYYY-MM-DD or null","assignee":"manager|employee|other or null"}
+
 Notes:
 ${combined}`;
 
     let items: Array<{ text: string; due_date?: string | null; assignee?: string | null }> = [];
     try {
-      const { object } = await generateObject({
-        model: gateway()(MODEL),
-        schema: z.object({
-          items: z.array(z.object({
-            text: z.string(),
-            due_date: z.string().nullable().optional(),
-            assignee: z.enum(["manager", "employee", "other"]).nullable().optional(),
-          })),
-        }),
-        prompt,
-      });
-      items = object.items ?? [];
-    } catch {
-      // Fallback: try free-text + JSON extraction in case structured output is unsupported.
-      const { text } = await generateText({ model: gateway()(MODEL), prompt: `${prompt}\n\nReturn ONLY a JSON array like [{"text":"...","due_date":"YYYY-MM-DD or null","assignee":"manager|employee|other or null"}].` });
+      const { text } = await generateText({ model: gateway()(MODEL), prompt });
       const match = text.match(/\[[\s\S]*\]/);
       if (match) {
         try { items = JSON.parse(match[0]); } catch { items = []; }
       }
+    } catch (err) {
+      console.error("ai_extract_actions_failed", err);
+      throw new Error("AI action item extraction failed. Please try again.");
     }
     if (!Array.isArray(items) || items.length === 0) return { inserted: 0, items: [] };
 
