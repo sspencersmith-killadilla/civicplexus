@@ -79,6 +79,7 @@ import { Route as AuthenticatedAdminModulesRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminMigrationRouteImport } from './routes/_authenticated/admin-migration'
 import { Route as AuthenticatedAdminIdentityRouteImport } from './routes/_authenticated/admin-identity'
 import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin-demo'
+import { Route as AuthenticatedAdminAiSettingsRouteImport } from './routes/_authenticated/admin-ai-settings'
 import { Route as ServeApplicantIndexRouteImport } from './routes/serve.applicant.index'
 import { Route as CareersSlugIndexRouteImport } from './routes/careers.$slug.index'
 import { Route as CandidateTokenIndexRouteImport } from './routes/candidate.$token.index'
@@ -547,6 +548,12 @@ const AuthenticatedAdminDemoRoute = AuthenticatedAdminDemoRouteImport.update({
   path: '/admin-demo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminAiSettingsRoute =
+  AuthenticatedAdminAiSettingsRouteImport.update({
+    id: '/admin-ai-settings',
+    path: '/admin-ai-settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ServeApplicantIndexRoute = ServeApplicantIndexRouteImport.update({
   id: '/serve/applicant/',
   path: '/serve/applicant/',
@@ -1071,6 +1078,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/offline-shell': typeof OfflineShellRoute
+  '/admin-ai-settings': typeof AuthenticatedAdminAiSettingsRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
@@ -1234,6 +1242,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/offline-shell': typeof OfflineShellRoute
+  '/admin-ai-settings': typeof AuthenticatedAdminAiSettingsRoute
   '/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/admin-migration': typeof AuthenticatedAdminMigrationRoute
@@ -1393,6 +1402,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/offline-shell': typeof OfflineShellRoute
+  '/_authenticated/admin-ai-settings': typeof AuthenticatedAdminAiSettingsRoute
   '/_authenticated/admin-demo': typeof AuthenticatedAdminDemoRoute
   '/_authenticated/admin-identity': typeof AuthenticatedAdminIdentityRoute
   '/_authenticated/admin-migration': typeof AuthenticatedAdminMigrationRoute
@@ -1558,6 +1568,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/offline-shell'
+    | '/admin-ai-settings'
     | '/admin-demo'
     | '/admin-identity'
     | '/admin-migration'
@@ -1721,6 +1732,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/offline-shell'
+    | '/admin-ai-settings'
     | '/admin-demo'
     | '/admin-identity'
     | '/admin-migration'
@@ -1879,6 +1891,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/offline-shell'
+    | '/_authenticated/admin-ai-settings'
     | '/_authenticated/admin-demo'
     | '/_authenticated/admin-identity'
     | '/_authenticated/admin-migration'
@@ -2576,6 +2589,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-demo'
       fullPath: '/admin-demo'
       preLoaderRoute: typeof AuthenticatedAdminDemoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin-ai-settings': {
+      id: '/_authenticated/admin-ai-settings'
+      path: '/admin-ai-settings'
+      fullPath: '/admin-ai-settings'
+      preLoaderRoute: typeof AuthenticatedAdminAiSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/serve/applicant/': {
@@ -3339,6 +3359,7 @@ const AuthenticatedReviewCyclesIdRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminAiSettingsRoute: typeof AuthenticatedAdminAiSettingsRoute
   AuthenticatedAdminDemoRoute: typeof AuthenticatedAdminDemoRoute
   AuthenticatedAdminIdentityRoute: typeof AuthenticatedAdminIdentityRoute
   AuthenticatedAdminMigrationRoute: typeof AuthenticatedAdminMigrationRoute
@@ -3438,6 +3459,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminAiSettingsRoute: AuthenticatedAdminAiSettingsRoute,
   AuthenticatedAdminDemoRoute: AuthenticatedAdminDemoRoute,
   AuthenticatedAdminIdentityRoute: AuthenticatedAdminIdentityRoute,
   AuthenticatedAdminMigrationRoute: AuthenticatedAdminMigrationRoute,
