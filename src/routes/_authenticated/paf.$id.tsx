@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Check, X, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
 import { applyPaf, decidePafStep, getPafDetail } from "@/lib/paf.functions";
+import { listPafLines, castLineVote } from "@/lib/paf-lines.functions";
 
 export const Route = createFileRoute("/_authenticated/paf/$id")({ component: PafDetail });
 
@@ -18,11 +19,24 @@ function PafDetail() {
   const apply = useServerFn(applyPaf);
   const getDetail = useServerFn(getPafDetail);
   const decideStep = useServerFn(decidePafStep);
+  const listLinesFn = useServerFn(listPafLines);
+  const castVote = useServerFn(castLineVote);
   const [notes, setNotes] = useState("");
+  const [lineNotes, setLineNotes] = useState<Record<string, string>>({});
 
   const q = useQuery({
     queryKey: ["paf", id],
     queryFn: () => getDetail({ data: { id } }),
+  });
+  const linesQ = useQuery({
+    queryKey: ["paf-lines", id],
+    queryFn: () => listLinesFn({ data: { paf_id: id } }),
+  });
+  const voteM = useMutation({
+    mutationFn: (v: { step_id: string; line_id: string; decision: "approved" | "denied" }) =>
+      castVote({ data: { step_id: v.step_id, line_id: v.line_id, decision: v.decision, note: lineNotes[v.line_id] || null } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["paf-lines", id] }); toast.success("Vote recorded"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
   const decide = useMutation({
@@ -46,6 +60,10 @@ function PafDetail() {
   const steps = q.data.steps;
   const audit = q.data.audit;
   const nextStep = steps.find((s) => s.status === "pending" && s.can_decide);
+  const lines = linesQ.data?.lines ?? [];
+  const votes = linesQ.data?.votes ?? [];
+  const voteFor = (stepId: string, lineId: string) =>
+    votes.find((v) => v.step_id === stepId && v.line_id === lineId);
 
   return (
     <AppShell title={paf.paf_number ?? "PAF"}>
@@ -69,6 +87,41 @@ function PafDetail() {
             <div className="text-xs text-muted-foreground mb-1">After values</div>
             <pre className="text-xs bg-muted rounded p-2 overflow-x-auto">{JSON.stringify(paf.after_values, null, 2)}</pre>
           </div>
+          {lines.length > 0 && (
+            <div>
+              <div className="text-xs text-muted-foreground mb-2">Action lines ({lines.length})</div>
+              <div className="space-y-2">
+                {lines.map((l) => (
+                  <div key={l.id} className="border rounded p-3 text-sm">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="font-medium capitalize">#{l.ordinal} · {l.action_type.replace(/_/g, " ")}</span>
+                        <span className="text-xs text-muted-foreground ml-2">eff. {l.effective_date}</span>
+                      </div>
+                      <span className="text-xs px-2 py-0.5 rounded bg-muted">{l.status}</span>
+                    </div>
+                    {Object.keys(l.after_values ?? {}).length > 0 && (
+                      <pre className="text-xs bg-muted/50 rounded p-2 mt-2 overflow-x-auto">{JSON.stringify(l.after_values, null, 2)}</pre>
+                    )}
+                    {nextStep && (
+                      <div className="mt-3 space-y-2">
+                        <Textarea rows={1} placeholder="Line note (optional)" value={lineNotes[l.id] ?? ""} onChange={(e) => setLineNotes({ ...lineNotes, [l.id]: e.target.value })} />
+                        <div className="flex gap-2 justify-end">
+                          {(() => { const v = voteFor(nextStep.id, l.id); return v ? (
+                            <span className={"text-xs px-2 py-1 rounded " + (v.decision === "approved" ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive")}>
+                              Your vote: {v.decision}
+                            </span>
+                          ) : null; })()}
+                          <Button size="sm" variant="destructive" disabled={voteM.isPending} onClick={() => voteM.mutate({ step_id: nextStep.id, line_id: l.id, decision: "denied" })}><X className="h-3 w-3 mr-1" /> Deny line</Button>
+                          <Button size="sm" disabled={voteM.isPending} onClick={() => voteM.mutate({ step_id: nextStep.id, line_id: l.id, decision: "approved" })}><Check className="h-3 w-3 mr-1" /> Approve line</Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {paf.status === "approved" && q.data.viewer.is_hr_admin && (
             <Button onClick={() => applyM.mutate()} disabled={applyM.isPending}>
               <PlayCircle className="h-4 w-4 mr-1" /> {applyM.isPending ? "Applying…" : "Apply to employee record"}
