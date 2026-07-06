@@ -1,73 +1,76 @@
+# Improvements plan
 
-## What this adds
+Grouped by area. Each item lists what changes and where.
 
-When someone signs up for a volunteer shift (anonymous applicant), we email them a one-click verification link. Clicking it marks their email verified. If a matching volunteer account already exists, we auto-link the signup to it. Until an email is verified:
-- Coordinators cannot approve the signup.
-- The applicant cannot clock in at the kiosk.
-- Signed-in volunteers with an unverified email see a "verify your email" wall instead of the portal.
+## 1. Equipment assignment workflow
+Make issue → return explicit instead of ad-hoc rows.
+- Equipment page: dedicated "Assign" dialog (employee picker, item picker with stock check, size from `ppe_sizing`, expected return date, notes) and a "Return" action on any open issuance (records return date, condition, restocks catalog qty).
+- Status column ("Assigned / Returned / Overdue") derived from `equipment_issuance` dates.
+- Employee profile: "Issued equipment" panel with same assign/return controls scoped to that employee.
+- Offboarding checklist auto-seeds a "Collect equipment" task listing every open issuance for the separating employee.
 
-## Prerequisite (blocks everything else)
+## 2. SQL Reports: AI helper + schema map
+On `/admin-sql-reports`:
+- New right-side "AI helper" panel with three modes:
+  - **NL → SQL**: prompt box → drafts a SELECT into the editor (never auto-runs).
+  - **Explain**: summarizes current editor SQL in plain English.
+  - **Fix**: takes the last run error + SQL, proposes a corrected query.
+  All calls go through a new `sqlAssist` server fn using Lovable AI Gateway (`openai/gpt-5.5`), scoped to `hr_admin`, with the schema (from existing `getReportSchema`) injected as system context. Read-only guardrails unchanged.
+- New "Schema map" tab: interactive ER diagram rendered with `reactflow` from `getReportSchema` output (tables as nodes, columns listed, FKs as edges). Zoom/pan, click a table to insert `select * from <t> limit 100;` into the editor.
 
-No email sending domain is set up for this project yet. Nothing can send email until that's done.
+## 3. Interview Kits → under Hiring, with side nav
+- Move route `/_authenticated/interview-kits` → `/_authenticated/hiring/interview-kits` (redirect old path).
+- Introduce a Hiring layout `src/routes/_authenticated/hiring/route.tsx` with a shadcn `Sidebar` listing: Requisitions, Applications, Interviews, Interview Kits, Offers, Hire Requests, Screenings. Existing routes (`jobs.index`, `interviews.index`, `offers.index`, etc.) get thin re-exports under `/hiring/*` so the sidebar drives navigation.
+- Top-level "Hiring" nav entry replaces the current scattered links.
 
-<presentation-actions>
-<presentation-open-email-setup>Set up email domain</presentation-open-email-setup>
-</presentation-actions>
+## 4. Multi-action PAF with per-action vote
+Chosen model: **shared chain, per-action vote**.
+- `personnel_actions.after_values` becomes `actions[]` where each action has `{id, action_type, after_values, effective_date, status: pending|approved|denied, decided_by, decided_at, note}`.
+- Migration: new `paf_action_lines` table (paf_id, ordinal, action_type, payload jsonb, effective_date, status, decision fields) + GRANTs + RLS mirroring `personnel_actions`. Backfill: one line per existing PAF.
+- Approvals UI: each `approval_steps` row shows every action line with individual Approve/Deny + note; step advances only when the approver has decided every line.
+- Apply step (`computeApplyPatch`): iterate approved lines, merge patches in effective-date order; skip denied; audit each line separately in `paf_audit`.
+- PAF detail page: per-line status chips, "add another action" button in draft.
 
-Once the domain is in progress (DNS pending is fine), the rest of the plan runs.
+## 5. Volunteers: skill/interest filters + archive
+- Add `volunteers.archived_at timestamptz` (migration).
+- Volunteers list gains: multi-select filter for skills, multi-select for interests (from existing `skills`/`interests` arrays on `volunteers`), "Include archived" toggle, per-row Archive/Restore action.
+- Same treatment on vendors: add `vendors.archived_at`, filter chips for `service_categories`/tags already on the table, archive toggle + action.
+- Archived rows hidden by default from pickers (shift signup, vendor assignment).
 
-## Database changes
+## 6. New Email Templates (author from scratch)
+`/_authenticated/email-templates` today only edits seeded rows. Add:
+- "New template" dialog: name, key (slug, unique), category, subject, body (existing rich editor), sample variables. Writes to `email_templates` with `is_custom = true` (new column).
+- Duplicate action on any existing template → creates a custom copy.
+- Delete allowed only when `is_custom = true`.
+- Template picker across the app (applicant emails, offers, etc.) shows custom + built-in.
 
-**`volunteer_shift_signups`** — add:
-- `email_verified_at` timestamptz (null until verified)
-- `email_verification_token_hash` text (SHA-256 of token; raw token only in the email link)
-- `email_verification_sent_at` timestamptz
-- `email_verification_expires_at` timestamptz (24 h from send)
+## 7. Admin: LMS connections + AI settings (no restart)
+- **LMS**: promote existing `lms-imports` page into a full `/admin-lms` with connection CRUD (provider dropdown, base URL, API key stored via `add_secret` per connection, enabled toggle, "Test connection" button, last sync + DLQ). Backed by existing `lms_connections` table.
+- **AI settings**: new `/admin-ai-settings` page (hr_admin/it_admin only) with:
+  - Global default chat model (dropdown of allow-listed Lovable AI catalog).
+  - Per-feature overrides: applicant screening, coaching, SQL helper, interview kit generator, email drafting. Each row: model dropdown + "use default" checkbox.
+  - "Bring your own key": provider (OpenAI/Anthropic/OpenRouter) + secret name; when set, server calls route to that provider instead of the Gateway.
+- Storage: new `ai_settings` table (single row + `feature_overrides jsonb` + `byok` jsonb, secret refs only). All server AI callers read from this table (cached 30s) — flipping a value takes effect on next request, no rebuild.
 
-**`volunteers`** — add:
-- `email_verified_at` timestamptz (mirrors verification for account holders)
+## 8. Landing cards → in-app manual
+- Render `docs/END_USER_GUIDE.md` inside `/_authenticated/help` using `react-markdown` + `rehype-slug` (auto ids per H2/H3). Left-side TOC, sticky. Bundled at build time via `?raw` import.
+- Dashboard cards on `/` get a `helpAnchor` prop; clicking the card title (or a new "?" icon) opens `/help#<anchor>`.
+- Add missing sections to the guide for any card that lacks one (Volunteers, PAF, Equipment, SQL Reports, etc.).
 
-**RLS/policies**
-- Approval policy on `volunteer_shift_signups` updated so `status` can only move from `pending` → `approved` when `email_verified_at IS NOT NULL` (enforced in the coordinator approval RPC + a trigger for defense in depth).
-- Clock-in RPC/policy for `volunteer_clock_events` rejects a signup whose `email_verified_at IS NULL`.
+## 9. Job posting icon picker
+- Add `job_requisitions.icon text` (migration; nullable, defaults to a category-based fallback).
+- Requisition create/edit form: `IconPicker` component using a curated Lucide subset (~60 icons: Briefcase, Wrench, Shield, HeartPulse, GraduationCap, Truck, Leaf, …) with search.
+- Icon renders on: requisition list, careers listing card, careers detail hero, interview scheduler.
 
-**Auto-link on verification** — trigger/RPC: when a signup is verified, if `applicant_email` matches a `volunteers.email` that has a `user_id`, set `signups.volunteer_id` and mark `volunteers.email_verified_at`.
+---
 
-## Server routes / functions
+## Sequencing
+1. Migrations (PAF lines, archived_at, is_custom, ai_settings, job icon) in one batch with grants/RLS.
+2. Backend server fns (paf lines, ai settings resolver, email template CRUD, sql AI helper).
+3. UI (equipment dialogs, hiring layout + move, volunteer/vendor filters, email builder, help renderer, icon picker, schema map, AI/LMS admin pages).
+4. Redirects and nav updates last.
 
-- `POST /api/public/volunteer-signup` (existing) — after insert, generate a 32-byte token, store its SHA-256 hash, enqueue a verification email via Lovable Emails with link `https://<host>/serve/volunteer/verify?token=…`. Response tells the user to check their inbox.
-- `GET /api/public/volunteer-verify?token=…` — hash, look up signup, check expiry, set `email_verified_at`, run auto-link RPC, redirect to `/serve/volunteer/verified` (success) or `/serve/volunteer/verify-failed`.
-- `POST /api/public/volunteer-verify/resend` — rate-limited (max 1/min per signup), regenerates token + re-sends email.
-
-Coordinator "approve" server fn (`_authenticated`) rejects with a clear "email not verified" error when the flag is missing; the button in the coordinator UI is disabled with a tooltip in that state.
-
-Kiosk clock-in server fn checks the same flag before creating a `volunteer_clock_events` row and returns "Please verify your email first — check your inbox."
-
-## Email template
-
-Scaffold a single transactional template `volunteer-email-verification` (React Email) with brand styling matching the app: subject "Verify your email to volunteer with CivicPlexus", H1, plain-language body, big button → verify URL, plain-text fallback URL, 24 h expiry note, resend link.
-
-## UI changes
-
-- **`/serve/volunteer/jobs/:slug`** success screen — replace "A coordinator will review…" with "Check your email to verify the address you gave us — we can't confirm your shift until you click the link." Include a "Resend verification email" action.
-- **`/serve/volunteer/verified`** — public confirmation page: "Email verified. A coordinator will approve your shift and email you a PIN." If auto-linked to an account, adds "Open your volunteer portal" CTA.
-- **`/serve/volunteer/verify-failed`** — expired/invalid token; offers resend by email.
-- **`/serve/volunteer/clock`** kiosk — if PIN + last name match a signup with unverified email, show "Please verify your email first" instead of clocking in.
-- **`/volunteer` portal (authenticated)** — if `volunteers.email_verified_at IS NULL` for the current user, render a verification wall with "Send verification email" button; portal contents hidden until verified. Signup flow at `/auth?volunteer=1` already triggers Supabase email confirmation; on portal first-load we copy that confirmation into `volunteers.email_verified_at` from `auth.users.email_confirmed_at`.
-- **Coordinator shift signups list** — new "Email" column shows Verified / Pending badge; Approve button disabled with tooltip when pending; "Resend verification" action available.
-
-## Order of operations
-
-1. User completes email domain setup (dialog above).
-2. Migration for the new columns + trigger + updated policies + auto-link RPC.
-3. Scaffold Lovable auth email templates (project has none) + transactional email infrastructure.
-4. Add the `volunteer-email-verification` template + registry entry.
-5. Wire signup route to enqueue verification email; add verify + resend routes.
-6. Add verification gates to approval RPC + clock-in RPC + portal loader.
-7. UI updates on signup success, coordinator list, kiosk, portal, and the two new public pages.
-
-## Out of scope
-
-- Phone/SMS verification.
-- Changing existing account signup flow at `/auth?volunteer=1` beyond mirroring Supabase's `email_confirmed_at` into `volunteers.email_verified_at`.
-- Retroactively unverifying existing approved/clocked-in signups (they stay valid).
+## Out of scope (call out if you want them added)
+- Real-time collaborative PAF editing.
+- Editing built-in email templates' underlying HTML shell.
+- Full-text search across the rendered manual.
