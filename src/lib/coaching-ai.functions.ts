@@ -73,18 +73,47 @@ export const extractOneOnOneActionItems = createServerFn({ method: "POST" })
     agenda_index: z.number().int().optional(),
   }).parse(input))
   .handler(async ({ data, context }) => {
-    let q = context.supabase
+    let aq = context.supabase
       .from("one_on_one_agenda_notes")
       .select("agenda_index, agenda_prompt, content")
       .eq("session_id", data.session_id);
-    if (typeof data.agenda_index === "number") q = q.eq("agenda_index", data.agenda_index);
-    const { data: notes, error } = await q;
-    if (error) throw error;
-    const combined = ((notes ?? []) as Array<{ agenda_prompt: string | null; content: string }>)
+    if (typeof data.agenda_index === "number") aq = aq.eq("agenda_index", data.agenda_index);
+    const [{ data: agendaNotes, error: aErr }, { data: freeNotes, error: nErr }, { data: session, error: sErr }] = await Promise.all([
+      aq,
+      // Free-form supervisor / shared notes — skipped when scoped to a single agenda item
+      typeof data.agenda_index === "number"
+        ? Promise.resolve({ data: [] as Array<{ content: string; visibility: string | null }>, error: null })
+        : context.supabase
+            .from("one_on_one_notes")
+            .select("content, visibility")
+            .eq("session_id", data.session_id),
+      context.supabase
+        .from("one_on_ones")
+        .select("title, summary, ai_summary")
+        .eq("id", data.session_id)
+        .maybeSingle(),
+    ]);
+    if (aErr) throw aErr;
+    if (nErr) throw nErr;
+    if (sErr) throw sErr;
+
+    const agendaBlock = ((agendaNotes ?? []) as Array<{ agenda_prompt: string | null; content: string }>)
       .filter((n) => n.content?.trim())
       .map((n) => `Q: ${n.agenda_prompt ?? ""}\nNotes: ${n.content}`)
       .join("\n\n");
-    if (!combined.trim()) throw new Error("No agenda notes to scan");
+    const notesBlock = ((freeNotes ?? []) as Array<{ content: string; visibility: string | null }>)
+      .filter((n) => n.content?.trim())
+      .map((n) => `[${n.visibility ?? "note"}] ${n.content}`)
+      .join("\n\n");
+    const summaryBlock = [session?.summary, session?.ai_summary].filter(Boolean).join("\n\n");
+
+    const combined = [
+      agendaBlock && `AGENDA NOTES:\n${agendaBlock}`,
+      notesBlock && `SUPERVISOR / SHARED NOTES:\n${notesBlock}`,
+      summaryBlock && `SUMMARY:\n${summaryBlock}`,
+    ].filter(Boolean).join("\n\n");
+
+    if (!combined.trim()) throw new Error("No notes to scan yet — add agenda notes or supervisor notes first");
 
     const prompt = `Scan the following 1-on-1 meeting notes and extract concrete action items / commitments.
 If there are no clear action items, return an empty array.
