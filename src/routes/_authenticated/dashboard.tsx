@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Briefcase, ListChecks, Clock, FileSignature, FolderLock, Server, ClipboardCheck, AlertTriangle, MessagesSquare, Target } from "lucide-react";
+import { Users, Briefcase, ListChecks, Clock, FileSignature, FolderLock, Server, ClipboardCheck, AlertTriangle, MessagesSquare, Target, HelpCircle } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
@@ -134,11 +134,32 @@ function Dashboard() {
 
       {isHR && (
         <div className="mt-8 grid sm:grid-cols-3 gap-4">
-          <Link to="/forms"><Card className="p-5 hover:bg-secondary/40 transition-colors h-full"><FileSignature className="h-5 w-5 text-primary" /><h3 className="mt-3 font-medium">Forms Library</h3><p className="text-sm text-muted-foreground mt-1">I-9, W-4, direct deposit, emergency contact — versioned and signable.</p></Card></Link>
-          <Link to="/documents"><Card className="p-5 hover:bg-secondary/40 transition-colors h-full"><FolderLock className="h-5 w-5 text-primary" /><h3 className="mt-3 font-medium">Document Vault</h3><p className="text-sm text-muted-foreground mt-1">Encrypted private storage with signed-URL access for IDs and certs.</p></Card></Link>
-          <Link to="/provisioning"><Card className="p-5 hover:bg-secondary/40 transition-colors h-full"><Server className="h-5 w-5 text-primary" /><h3 className="mt-3 font-medium">IT Provisioning</h3><p className="text-sm text-muted-foreground mt-1">Kanban for accounts, badges, equipment — ready to wire to Entra/Okta.</p></Card></Link>
+          <FeatureCard to="/forms" helpAnchor="forms-library" icon={FileSignature} title="Forms Library" desc="I-9, W-4, direct deposit, emergency contact — versioned and signable." />
+          <FeatureCard to="/documents" helpAnchor="document-vault" icon={FolderLock} title="Document Vault" desc="Encrypted private storage with signed-URL access for IDs and certs." />
+          <FeatureCard to="/provisioning" helpAnchor="it-provisioning" icon={Server} title="IT Provisioning" desc="Kanban for accounts, badges, equipment — ready to wire to Entra/Okta." />
         </div>
       )}
     </AppShell>
+  );
+}
+
+function FeatureCard({ to, helpAnchor, icon: Icon, title, desc }: { to: string; helpAnchor: string; icon: React.ComponentType<{ className?: string }>; title: string; desc: string }) {
+  return (
+    <Card className="p-5 hover:bg-secondary/40 transition-colors h-full relative group">
+      <Link to={to} className="block">
+        <Icon className="h-5 w-5 text-primary" />
+        <h3 className="mt-3 font-medium">{title}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{desc}</p>
+      </Link>
+      <Link
+        to="/help"
+        hash={helpAnchor}
+        aria-label={`Help for ${title}`}
+        title="Read the manual section"
+        className="absolute top-3 right-3 p-1 rounded-md text-muted-foreground/60 opacity-0 group-hover:opacity-100 hover:text-primary hover:bg-primary/10 transition"
+      >
+        <HelpCircle className="h-4 w-4" />
+      </Link>
+    </Card>
   );
 }
