@@ -13,7 +13,6 @@ import { Plus, Check, ChevronRight, ChevronLeft, ExternalLink, Briefcase, FileCh
 import { JobIcon, IconPicker } from "@/components/icon-picker";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { toast } from "sonner";
 import { createRequisition, submitRequisitionForApproval, postRequisition, listPositionsForRequisition, listJobRequisitions } from "@/lib/jobs.functions";
 import { checkPositionBudget } from "@/lib/budget.functions";
 
