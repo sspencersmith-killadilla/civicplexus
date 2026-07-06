@@ -73,7 +73,7 @@ function EquipmentPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const isOverdue = (i: { status: string; expected_return_at: string | null }) =>
+  const isOverdue = (i: { status: string; expected_return_at?: string | null }) =>
     i.status !== "returned" && !!i.expected_return_at && new Date(i.expected_return_at) < new Date();
 
   return (
@@ -128,15 +128,16 @@ function EquipmentPage() {
                 <div className="space-y-2">
                   {issuance?.filter((i) => i.status === s).map((i) => {
                     const idx = STAGES.indexOf(s);
-                    const overdue = isOverdue(i as { status: string; expected_return_at: string | null });
+                    const rec = i as unknown as { status: string; expected_return_at: string | null };
+                    const overdue = isOverdue(rec);
                     return (
                       <Card key={i.id} className={"p-3 " + (overdue ? "border-destructive/50" : "")}>
                         <p className="font-medium text-sm">{(i.equipment_catalog as { name: string } | null)?.name}</p>
                         <p className="text-xs text-muted-foreground">{(i.employees as { first_name: string; last_name: string } | null)?.first_name} {(i.employees as { first_name: string; last_name: string } | null)?.last_name}</p>
                         {i.size && <p className="text-xs">Size: {i.size}</p>}
-                        {i.expected_return_at && (
+                        {rec.expected_return_at && (
                           <p className={"text-xs " + (overdue ? "text-destructive" : "text-muted-foreground")}>
-                            {overdue ? "Overdue since " : "Due "} {new Date(i.expected_return_at).toLocaleDateString()}
+                            {overdue ? "Overdue since " : "Due "} {new Date(rec.expected_return_at).toLocaleDateString()}
                           </p>
                         )}
                         {idx < STAGES.length - 1 && (
