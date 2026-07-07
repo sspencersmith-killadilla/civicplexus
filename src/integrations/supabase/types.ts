@@ -9887,6 +9887,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      is_active_body_reviewer: {
+        Args: { _body_id: string; _uid: string }
+        Returns: boolean
+      }
       is_clerk_or_hr: { Args: { _uid: string }; Returns: boolean }
       is_department_admin: {
         Args: { _dept: string; _uid: string }
