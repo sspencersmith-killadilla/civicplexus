@@ -40,6 +40,8 @@ type Employee = {
   last_name: string;
   department: string | null;
   worker_type_id: string | null;
+  external_id: string | null;
+  work_email: string | null;
 };
 
 type Enrollment = {
