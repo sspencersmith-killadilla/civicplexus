@@ -123,6 +123,24 @@ function LeaveEnrollmentsPage() {
   }, [employeesQ.data, search]);
 
   const [form, setForm] = useState({ plan_id: "", opening_balance_hours: 0, effective_from: new Date().toISOString().slice(0, 10), effective_to: "" });
+  const [seedForm, setSeedForm] = useState({ plan_id: "", delta_hours: 0, mode: "add" as "add" | "set" });
+
+  // Prefill from ?employee= and auto-open the requested dialog once, then strip
+  // the flags so re-navigation to the page doesn't keep re-opening it.
+  useEffect(() => {
+    if (!isHr) return;
+    if (!urlSearch.employee && !urlSearch.add && !urlSearch.seed) return;
+    if (urlSearch.employee && urlSearch.employee !== empId) setEmpId(urlSearch.employee);
+    if (urlSearch.add) setAddOpen(true);
+    if (urlSearch.seed) setSeedOpen(true);
+    if (urlSearch.add || urlSearch.seed) {
+      navigate({
+        search: { employee: urlSearch.employee ?? empId, add: undefined, seed: undefined },
+        replace: true,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlSearch.employee, urlSearch.add, urlSearch.seed, isHr]);
 
   const addEnrollment = useMutation({
     mutationFn: async () => {
@@ -174,6 +192,53 @@ function LeaveEnrollmentsPage() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Plan updated"); qc.invalidateQueries({ queryKey: ["leave-plans-hr"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const backSeed = useMutation({
+    mutationFn: async () => {
+      if (!empId || !seedForm.plan_id) throw new Error("Employee and plan are required");
+      const delta = Number(seedForm.delta_hours);
+      if (!Number.isFinite(delta)) throw new Error("Hours must be a number");
+
+      const { data: existing, error: readErr } = await supabase
+        .from("leave_balances")
+        .select("id, accrued_hours, used_hours, pending_hours")
+        .eq("employee_id", empId)
+        .eq("plan_id", seedForm.plan_id)
+        .maybeSingle();
+      if (readErr) throw readErr;
+
+      const used = Number(existing?.used_hours ?? 0);
+      const pending = Number(existing?.pending_hours ?? 0);
+      const currentAccrued = Number(existing?.accrued_hours ?? 0);
+      const nextAccrued = seedForm.mode === "set" ? delta + used + pending : currentAccrued + delta;
+      const nextBalance = nextAccrued - used - pending;
+
+      if (existing) {
+        const { error } = await supabase
+          .from("leave_balances")
+          .update({ accrued_hours: nextAccrued, balance_hours: nextBalance } as never)
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("leave_balances").insert({
+          employee_id: empId,
+          plan_id: seedForm.plan_id,
+          accrued_hours: nextAccrued,
+          used_hours: 0,
+          pending_hours: 0,
+          balance_hours: nextBalance,
+        } as never);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Balance updated");
+      setSeedOpen(false);
+      setSeedForm({ plan_id: "", delta_hours: 0, mode: "add" });
+      qc.invalidateQueries({ queryKey: ["enrollments-for-emp", empId] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
