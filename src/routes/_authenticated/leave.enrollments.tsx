@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ShieldAlert, History } from "lucide-react";
+import { Plus, ShieldAlert, History, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
+import { BulkImportDialog } from "@/components/leave/bulk-import-dialog";
 
 export const Route = createFileRoute("/_authenticated/leave/enrollments")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -40,6 +41,8 @@ type Employee = {
   last_name: string;
   department: string | null;
   worker_type_id: string | null;
+  external_id: string | null;
+  work_email: string | null;
 };
 
 type Enrollment = {
@@ -64,6 +67,7 @@ function LeaveEnrollmentsPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [planDefaultsOpen, setPlanDefaultsOpen] = useState(false);
   const [seedOpen, setSeedOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   const employeesQ = useQuery({
     queryKey: ["hr-employees-for-leave"],
@@ -71,7 +75,7 @@ function LeaveEnrollmentsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("employees")
-        .select("id, first_name, last_name, department, worker_type_id")
+        .select("id, first_name, last_name, department, worker_type_id, external_id, work_email")
         .order("last_name");
       if (error) throw error;
       return (data ?? []) as Employee[];
@@ -263,7 +267,12 @@ function LeaveEnrollmentsPage() {
         <Card className="p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-medium text-sm">Employees</h3>
-            <Button size="sm" variant="outline" onClick={() => setPlanDefaultsOpen(true)}>Plan defaults</Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setBulkOpen(true)}>
+                <Upload className="h-4 w-4 mr-1" /> Bulk import
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setPlanDefaultsOpen(true)}>Plan defaults</Button>
+            </div>
           </div>
           <Input placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} />
           <div className="mt-2 max-h-[70vh] overflow-y-auto divide-y">
@@ -480,6 +489,17 @@ function LeaveEnrollmentsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BulkImportDialog
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+        employees={employeesQ.data ?? []}
+        plans={(plansQ.data ?? []).map((p) => ({ id: p.id, code: p.code, name: p.name, default_opening_balance_hours: p.default_opening_balance_hours }))}
+        onDone={() => {
+          qc.invalidateQueries({ queryKey: ["enrollments-for-emp", empId] });
+          qc.invalidateQueries({ queryKey: ["leave-plans-hr"] });
+        }}
+      />
     </AppShell>
   );
 }
