@@ -223,6 +223,20 @@ function EmployeeProfile() {
           <div className="pt-2 flex gap-2">
             <Button asChild variant="outline" size="sm"><Link to="/transcript/$employeeId" params={{ employeeId: emp.id }}>Transcript</Link></Button>
             {isHr && <Button size="sm" variant="outline" onClick={openEdit}>Edit profile</Button>}
+            {isHr && (
+              <Button asChild size="sm" variant="outline">
+                <Link to="/leave/enrollments" search={{ employee: emp.id, add: 1 }}>
+                  Enroll in leave plan
+                </Link>
+              </Button>
+            )}
+            {isHr && (
+              <Button asChild size="sm" variant="outline">
+                <Link to="/leave/enrollments" search={{ employee: emp.id, seed: 1 }}>
+                  Back-seed leave
+                </Link>
+              </Button>
+            )}
           </div>
           {isHr && editOpen && (
             <div className="mt-4 border-t pt-4 space-y-3">
