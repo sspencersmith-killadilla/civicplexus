@@ -489,6 +489,17 @@ function LeaveEnrollmentsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BulkImportDialog
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+        employees={employeesQ.data ?? []}
+        plans={(plansQ.data ?? []).map((p) => ({ id: p.id, code: p.code, name: p.name, default_opening_balance_hours: p.default_opening_balance_hours }))}
+        onDone={() => {
+          qc.invalidateQueries({ queryKey: ["enrollments-for-emp", empId] });
+          qc.invalidateQueries({ queryKey: ["leave-plans-hr"] });
+        }}
+      />
     </AppShell>
   );
 }
