@@ -147,6 +147,7 @@ import { Route as AuthenticatedComplianceTcoleRouteImport } from './routes/_auth
 import { Route as AuthenticatedComplianceNewHireRouteImport } from './routes/_authenticated/compliance.new-hire'
 import { Route as AuthenticatedCompCyclesIdRouteImport } from './routes/_authenticated/comp-cycles.$id'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
+import { Route as AuthenticatedBenefitsAccrualRulesRouteImport } from './routes/_authenticated/benefits.accrual-rules'
 import { Route as AuthenticatedAdminApplicationTemplateRouteImport } from './routes/_authenticated/admin.application-template'
 import { Route as AuthenticatedAdminOfficialsPrintRouteImport } from './routes/_authenticated/admin-officials.print'
 import { Route as AuthenticatedAdminOfficialsOnboardingTemplatesRouteImport } from './routes/_authenticated/admin-officials.onboarding-templates'
@@ -158,6 +159,7 @@ import { Route as ServeVolunteerJobsSlugRouteImport } from './routes/serve.volun
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksOfflineReplayRouteImport } from './routes/api/public/hooks/offline-replay'
 import { Route as ApiPublicHooksLmsSyncRouteImport } from './routes/api/public/hooks/lms-sync'
+import { Route as ApiPublicHooksLeaveAccrualsRouteImport } from './routes/api/public/hooks/leave-accruals'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/badge.$serial'
@@ -935,6 +937,12 @@ const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
   path: '/cascades/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBenefitsAccrualRulesRoute =
+  AuthenticatedBenefitsAccrualRulesRouteImport.update({
+    id: '/accrual-rules',
+    path: '/accrual-rules',
+    getParentRoute: () => AuthenticatedBenefitsRoute,
+  } as any)
 const AuthenticatedAdminApplicationTemplateRoute =
   AuthenticatedAdminApplicationTemplateRouteImport.update({
     id: '/admin/application-template',
@@ -998,6 +1006,12 @@ const ApiPublicHooksLmsSyncRoute = ApiPublicHooksLmsSyncRouteImport.update({
   path: '/api/public/hooks/lms-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksLeaveAccrualsRoute =
+  ApiPublicHooksLeaveAccrualsRouteImport.update({
+    id: '/api/public/hooks/leave-accruals',
+    path: '/api/public/hooks/leave-accruals',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksBenefitsCallbackRoute =
   ApiPublicHooksBenefitsCallbackRouteImport.update({
     id: '/api/public/hooks/benefits-callback',
@@ -1139,7 +1153,7 @@ export interface FileRoutesByFullPath {
   '/admin-sql-reports': typeof AuthenticatedAdminSqlReportsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
-  '/benefits': typeof AuthenticatedBenefitsRoute
+  '/benefits': typeof AuthenticatedBenefitsRouteWithChildren
   '/cba': typeof AuthenticatedCbaRoute
   '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/comp-market': typeof AuthenticatedCompMarketRoute
@@ -1202,6 +1216,7 @@ export interface FileRoutesByFullPath {
   '/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/admin/application-template': typeof AuthenticatedAdminApplicationTemplateRoute
+  '/benefits/accrual-rules': typeof AuthenticatedBenefitsAccrualRulesRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1274,6 +1289,7 @@ export interface FileRoutesByFullPath {
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
+  '/api/public/hooks/leave-accruals': typeof ApiPublicHooksLeaveAccrualsRoute
   '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -1308,7 +1324,7 @@ export interface FileRoutesByTo {
   '/admin-sql-reports': typeof AuthenticatedAdminSqlReportsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
-  '/benefits': typeof AuthenticatedBenefitsRoute
+  '/benefits': typeof AuthenticatedBenefitsRouteWithChildren
   '/cba': typeof AuthenticatedCbaRoute
   '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/comp-market': typeof AuthenticatedCompMarketRoute
@@ -1368,6 +1384,7 @@ export interface FileRoutesByTo {
   '/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/admin/application-template': typeof AuthenticatedAdminApplicationTemplateRoute
+  '/benefits/accrual-rules': typeof AuthenticatedBenefitsAccrualRulesRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1438,6 +1455,7 @@ export interface FileRoutesByTo {
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
+  '/api/public/hooks/leave-accruals': typeof ApiPublicHooksLeaveAccrualsRoute
   '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -1476,7 +1494,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-sql-reports': typeof AuthenticatedAdminSqlReportsRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
-  '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
+  '/_authenticated/benefits': typeof AuthenticatedBenefitsRouteWithChildren
   '/_authenticated/cba': typeof AuthenticatedCbaRoute
   '/_authenticated/comp-grades': typeof AuthenticatedCompGradesRoute
   '/_authenticated/comp-market': typeof AuthenticatedCompMarketRoute
@@ -1539,6 +1557,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/_authenticated/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/_authenticated/admin/application-template': typeof AuthenticatedAdminApplicationTemplateRoute
+  '/_authenticated/benefits/accrual-rules': typeof AuthenticatedBenefitsAccrualRulesRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/_authenticated/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1611,6 +1630,7 @@ export interface FileRoutesById {
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
+  '/api/public/hooks/leave-accruals': typeof ApiPublicHooksLeaveAccrualsRoute
   '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -1712,6 +1732,7 @@ export interface FileRouteTypes {
     | '/admin-officials/onboarding-templates'
     | '/admin-officials/print'
     | '/admin/application-template'
+    | '/benefits/accrual-rules'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1784,6 +1805,7 @@ export interface FileRouteTypes {
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
+    | '/api/public/hooks/leave-accruals'
     | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
@@ -1878,6 +1900,7 @@ export interface FileRouteTypes {
     | '/admin-officials/onboarding-templates'
     | '/admin-officials/print'
     | '/admin/application-template'
+    | '/benefits/accrual-rules'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1948,6 +1971,7 @@ export interface FileRouteTypes {
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
+    | '/api/public/hooks/leave-accruals'
     | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
@@ -2048,6 +2072,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-officials/onboarding-templates'
     | '/_authenticated/admin-officials/print'
     | '/_authenticated/admin/application-template'
+    | '/_authenticated/benefits/accrual-rules'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
     | '/_authenticated/compliance/new-hire'
@@ -2120,6 +2145,7 @@ export interface FileRouteTypes {
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
+    | '/api/public/hooks/leave-accruals'
     | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
@@ -2170,6 +2196,7 @@ export interface RootRouteChildren {
   ApiPublicBadgeSerialRoute: typeof ApiPublicBadgeSerialRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
+  ApiPublicHooksLeaveAccrualsRoute: typeof ApiPublicHooksLeaveAccrualsRoute
   ApiPublicHooksLmsSyncRoute: typeof ApiPublicHooksLmsSyncRoute
   ApiPublicHooksOfflineReplayRoute: typeof ApiPublicHooksOfflineReplayRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
@@ -3155,6 +3182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCascadesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/benefits/accrual-rules': {
+      id: '/_authenticated/benefits/accrual-rules'
+      path: '/accrual-rules'
+      fullPath: '/benefits/accrual-rules'
+      preLoaderRoute: typeof AuthenticatedBenefitsAccrualRulesRouteImport
+      parentRoute: typeof AuthenticatedBenefitsRoute
+    }
     '/_authenticated/admin/application-template': {
       id: '/_authenticated/admin/application-template'
       path: '/admin/application-template'
@@ -3230,6 +3264,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/lms-sync'
       fullPath: '/api/public/hooks/lms-sync'
       preLoaderRoute: typeof ApiPublicHooksLmsSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/leave-accruals': {
+      id: '/api/public/hooks/leave-accruals'
+      path: '/api/public/hooks/leave-accruals'
+      fullPath: '/api/public/hooks/leave-accruals'
+      preLoaderRoute: typeof ApiPublicHooksLeaveAccrualsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/benefits-callback': {
@@ -3432,6 +3473,20 @@ const AuthenticatedAdminOfficialsRouteWithChildren =
     AuthenticatedAdminOfficialsRouteChildren,
   )
 
+interface AuthenticatedBenefitsRouteChildren {
+  AuthenticatedBenefitsAccrualRulesRoute: typeof AuthenticatedBenefitsAccrualRulesRoute
+}
+
+const AuthenticatedBenefitsRouteChildren: AuthenticatedBenefitsRouteChildren = {
+  AuthenticatedBenefitsAccrualRulesRoute:
+    AuthenticatedBenefitsAccrualRulesRoute,
+}
+
+const AuthenticatedBenefitsRouteWithChildren =
+  AuthenticatedBenefitsRoute._addFileChildren(
+    AuthenticatedBenefitsRouteChildren,
+  )
+
 interface AuthenticatedPoliciesRouteChildren {
   AuthenticatedPoliciesIdRoute: typeof AuthenticatedPoliciesIdRoute
   AuthenticatedPoliciesIndexRoute: typeof AuthenticatedPoliciesIndexRoute
@@ -3526,7 +3581,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminSqlReportsRoute: typeof AuthenticatedAdminSqlReportsRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
-  AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
+  AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRouteWithChildren
   AuthenticatedCbaRoute: typeof AuthenticatedCbaRoute
   AuthenticatedCompGradesRoute: typeof AuthenticatedCompGradesRoute
   AuthenticatedCompMarketRoute: typeof AuthenticatedCompMarketRoute
@@ -3632,7 +3687,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminSqlReportsRoute: AuthenticatedAdminSqlReportsRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
-  AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
+  AuthenticatedBenefitsRoute: AuthenticatedBenefitsRouteWithChildren,
   AuthenticatedCbaRoute: AuthenticatedCbaRoute,
   AuthenticatedCompGradesRoute: AuthenticatedCompGradesRoute,
   AuthenticatedCompMarketRoute: AuthenticatedCompMarketRoute,
@@ -3798,6 +3853,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBadgeSerialRoute: ApiPublicBadgeSerialRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
+  ApiPublicHooksLeaveAccrualsRoute: ApiPublicHooksLeaveAccrualsRoute,
   ApiPublicHooksLmsSyncRoute: ApiPublicHooksLmsSyncRoute,
   ApiPublicHooksOfflineReplayRoute: ApiPublicHooksOfflineReplayRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,

@@ -4011,6 +4011,69 @@ export type Database = {
           },
         ]
       }
+      leave_accrual_rules: {
+        Row: {
+          accrual_hours: number
+          created_at: string
+          frequency: string
+          id: string
+          is_active: boolean
+          max_balance_hours: number | null
+          max_months_service: number | null
+          min_months_service: number
+          notes: string | null
+          plan_id: string
+          sort_order: number
+          updated_at: string
+          worker_type_id: string | null
+        }
+        Insert: {
+          accrual_hours?: number
+          created_at?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          max_balance_hours?: number | null
+          max_months_service?: number | null
+          min_months_service?: number
+          notes?: string | null
+          plan_id: string
+          sort_order?: number
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Update: {
+          accrual_hours?: number
+          created_at?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          max_balance_hours?: number | null
+          max_months_service?: number | null
+          min_months_service?: number
+          notes?: string | null
+          plan_id?: string
+          sort_order?: number
+          updated_at?: string
+          worker_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_accrual_rules_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "leave_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_accrual_rules_worker_type_id_fkey"
+            columns: ["worker_type_id"]
+            isOneToOne: false
+            referencedRelation: "worker_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leave_balances: {
         Row: {
           accrued_hours: number
