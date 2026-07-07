@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
@@ -10,11 +10,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ShieldAlert } from "lucide-react";
+import { Plus, ShieldAlert, History } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/leave/enrollments")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    employee: typeof s.employee === "string" ? s.employee : undefined,
+    add: s.add === 1 || s.add === "1" ? 1 : undefined,
+    seed: s.seed === 1 || s.seed === "1" ? 1 : undefined,
+  }),
   component: LeaveEnrollmentsPage,
 });
 
@@ -51,11 +56,14 @@ function LeaveEnrollmentsPage() {
   const { data: me } = useCurrentUser();
   const isHr = hasRole(me?.roles, "hr_admin");
   const qc = useQueryClient();
+  const urlSearch = Route.useSearch();
+  const navigate = Route.useNavigate();
 
-  const [empId, setEmpId] = useState<string>("");
+  const [empId, setEmpId] = useState<string>(urlSearch.employee ?? "");
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [planDefaultsOpen, setPlanDefaultsOpen] = useState(false);
+  const [seedOpen, setSeedOpen] = useState(false);
 
   const employeesQ = useQuery({
     queryKey: ["hr-employees-for-leave"],
@@ -115,6 +123,24 @@ function LeaveEnrollmentsPage() {
   }, [employeesQ.data, search]);
 
   const [form, setForm] = useState({ plan_id: "", opening_balance_hours: 0, effective_from: new Date().toISOString().slice(0, 10), effective_to: "" });
+  const [seedForm, setSeedForm] = useState({ plan_id: "", delta_hours: 0, mode: "add" as "add" | "set" });
+
+  // Prefill from ?employee= and auto-open the requested dialog once, then strip
+  // the flags so re-navigation to the page doesn't keep re-opening it.
+  useEffect(() => {
+    if (!isHr) return;
+    if (!urlSearch.employee && !urlSearch.add && !urlSearch.seed) return;
+    if (urlSearch.employee && urlSearch.employee !== empId) setEmpId(urlSearch.employee);
+    if (urlSearch.add) setAddOpen(true);
+    if (urlSearch.seed) setSeedOpen(true);
+    if (urlSearch.add || urlSearch.seed) {
+      navigate({
+        search: { employee: urlSearch.employee ?? empId, add: undefined, seed: undefined },
+        replace: true,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlSearch.employee, urlSearch.add, urlSearch.seed, isHr]);
 
   const addEnrollment = useMutation({
     mutationFn: async () => {
@@ -166,6 +192,53 @@ function LeaveEnrollmentsPage() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Plan updated"); qc.invalidateQueries({ queryKey: ["leave-plans-hr"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const backSeed = useMutation({
+    mutationFn: async () => {
+      if (!empId || !seedForm.plan_id) throw new Error("Employee and plan are required");
+      const delta = Number(seedForm.delta_hours);
+      if (!Number.isFinite(delta)) throw new Error("Hours must be a number");
+
+      const { data: existing, error: readErr } = await supabase
+        .from("leave_balances")
+        .select("id, accrued_hours, used_hours, pending_hours")
+        .eq("employee_id", empId)
+        .eq("plan_id", seedForm.plan_id)
+        .maybeSingle();
+      if (readErr) throw readErr;
+
+      const used = Number(existing?.used_hours ?? 0);
+      const pending = Number(existing?.pending_hours ?? 0);
+      const currentAccrued = Number(existing?.accrued_hours ?? 0);
+      const nextAccrued = seedForm.mode === "set" ? delta + used + pending : currentAccrued + delta;
+      const nextBalance = nextAccrued - used - pending;
+
+      if (existing) {
+        const { error } = await supabase
+          .from("leave_balances")
+          .update({ accrued_hours: nextAccrued, balance_hours: nextBalance } as never)
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("leave_balances").insert({
+          employee_id: empId,
+          plan_id: seedForm.plan_id,
+          accrued_hours: nextAccrued,
+          used_hours: 0,
+          pending_hours: 0,
+          balance_hours: nextBalance,
+        } as never);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Balance updated");
+      setSeedOpen(false);
+      setSeedForm({ plan_id: "", delta_hours: 0, mode: "add" });
+      qc.invalidateQueries({ queryKey: ["enrollments-for-emp", empId] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -221,6 +294,55 @@ function LeaveEnrollmentsPage() {
                     {selectedEmp.department ?? "—"} · Worker type: {workerTypesQ.data?.find((w) => w.id === selectedEmp.worker_type_id)?.name ?? "unset"}
                   </p>
                 </div>
+                <div className="flex gap-2">
+                <Dialog open={seedOpen} onOpenChange={setSeedOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline"><History className="h-4 w-4 mr-1" /> Back-seed balance</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>Back-seed leave balance</DialogTitle></DialogHeader>
+                    <div className="space-y-3">
+                      <p className="text-xs text-muted-foreground">
+                        Adjusts the running balance for a plan the employee is already enrolled in — for migrations, corrections, or manual grants.
+                      </p>
+                      <div>
+                        <Label>Plan</Label>
+                        <Select value={seedForm.plan_id} onValueChange={(v) => setSeedForm({ ...seedForm, plan_id: v })}>
+                          <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                          <SelectContent>
+                            {(enrollmentsQ.data ?? []).map((r) => (
+                              <SelectItem key={r.plan_id} value={r.plan_id}>{r.leave_plans?.name ?? r.plan_id}</SelectItem>
+                            ))}
+                            {(enrollmentsQ.data?.length ?? 0) === 0 && availablePlans.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Mode</Label>
+                        <Select value={seedForm.mode} onValueChange={(v) => setSeedForm({ ...seedForm, mode: v as "add" | "set" })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="add">Add / subtract hours</SelectItem>
+                            <SelectItem value="set">Set current balance to…</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>{seedForm.mode === "set" ? "New balance (hours)" : "Adjustment (hours, negative to deduct)"}</Label>
+                        <Input type="number" step="0.25" value={seedForm.delta_hours}
+                          onChange={(e) => setSeedForm({ ...seedForm, delta_hours: Number(e.target.value) })} />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={() => backSeed.mutate()}
+                        disabled={!seedForm.plan_id || backSeed.isPending}>
+                        {backSeed.isPending ? "Saving…" : "Apply"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 <Dialog open={addOpen} onOpenChange={setAddOpen}>
                   <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" /> Add enrollment</Button></DialogTrigger>
                   <DialogContent>
@@ -266,6 +388,7 @@ function LeaveEnrollmentsPage() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+                </div>
               </div>
 
               <Card className="divide-y">
