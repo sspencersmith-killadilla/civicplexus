@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, HeartHandshake, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/benefits")({ component: BenefitsPage });
+export const Route = createFileRoute("/_authenticated/benefits/")({ component: BenefitsPage });
 
 function BenefitsPage() {
   const qc = useQueryClient();
