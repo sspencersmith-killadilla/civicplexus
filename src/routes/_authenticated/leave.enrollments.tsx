@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ShieldAlert, History } from "lucide-react";
+import { Plus, ShieldAlert, History, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 
@@ -64,6 +64,7 @@ function LeaveEnrollmentsPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [planDefaultsOpen, setPlanDefaultsOpen] = useState(false);
   const [seedOpen, setSeedOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   const employeesQ = useQuery({
     queryKey: ["hr-employees-for-leave"],
@@ -71,7 +72,7 @@ function LeaveEnrollmentsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("employees")
-        .select("id, first_name, last_name, department, worker_type_id")
+        .select("id, first_name, last_name, department, worker_type_id, external_id, work_email")
         .order("last_name");
       if (error) throw error;
       return (data ?? []) as Employee[];
