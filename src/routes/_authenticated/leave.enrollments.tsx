@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, ShieldAlert, History, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
+import { BulkImportDialog } from "@/components/leave/bulk-import-dialog";
 
 export const Route = createFileRoute("/_authenticated/leave/enrollments")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -266,7 +267,12 @@ function LeaveEnrollmentsPage() {
         <Card className="p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-medium text-sm">Employees</h3>
-            <Button size="sm" variant="outline" onClick={() => setPlanDefaultsOpen(true)}>Plan defaults</Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setBulkOpen(true)}>
+                <Upload className="h-4 w-4 mr-1" /> Bulk import
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setPlanDefaultsOpen(true)}>Plan defaults</Button>
+            </div>
           </div>
           <Input placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} />
           <div className="mt-2 max-h-[70vh] overflow-y-auto divide-y">
