@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
@@ -10,11 +10,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ShieldAlert } from "lucide-react";
+import { Plus, ShieldAlert, History } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/leave/enrollments")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    employee: typeof s.employee === "string" ? s.employee : undefined,
+    add: s.add === 1 || s.add === "1" ? 1 : undefined,
+    seed: s.seed === 1 || s.seed === "1" ? 1 : undefined,
+  }),
   component: LeaveEnrollmentsPage,
 });
 
@@ -51,11 +56,14 @@ function LeaveEnrollmentsPage() {
   const { data: me } = useCurrentUser();
   const isHr = hasRole(me?.roles, "hr_admin");
   const qc = useQueryClient();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
 
-  const [empId, setEmpId] = useState<string>("");
+  const [empId, setEmpId] = useState<string>(search.employee ?? "");
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [planDefaultsOpen, setPlanDefaultsOpen] = useState(false);
+  const [seedOpen, setSeedOpen] = useState(false);
 
   const employeesQ = useQuery({
     queryKey: ["hr-employees-for-leave"],
