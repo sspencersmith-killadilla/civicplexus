@@ -4069,8 +4069,10 @@ export type Database = {
         Row: {
           accrual_frequency: string
           accrual_rate_hours: number
+          auto_enroll: boolean
           code: string
           created_at: string
+          default_opening_balance_hours: number
           description: string | null
           id: string
           is_active: boolean
@@ -4088,8 +4090,10 @@ export type Database = {
         Insert: {
           accrual_frequency?: string
           accrual_rate_hours?: number
+          auto_enroll?: boolean
           code: string
           created_at?: string
+          default_opening_balance_hours?: number
           description?: string | null
           id?: string
           is_active?: boolean
@@ -4107,8 +4111,10 @@ export type Database = {
         Update: {
           accrual_frequency?: string
           accrual_rate_hours?: number
+          auto_enroll?: boolean
           code?: string
           created_at?: string
+          default_opening_balance_hours?: number
           description?: string | null
           id?: string
           is_active?: boolean
