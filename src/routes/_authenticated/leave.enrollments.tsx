@@ -294,6 +294,55 @@ function LeaveEnrollmentsPage() {
                     {selectedEmp.department ?? "—"} · Worker type: {workerTypesQ.data?.find((w) => w.id === selectedEmp.worker_type_id)?.name ?? "unset"}
                   </p>
                 </div>
+                <div className="flex gap-2">
+                <Dialog open={seedOpen} onOpenChange={setSeedOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline"><History className="h-4 w-4 mr-1" /> Back-seed balance</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>Back-seed leave balance</DialogTitle></DialogHeader>
+                    <div className="space-y-3">
+                      <p className="text-xs text-muted-foreground">
+                        Adjusts the running balance for a plan the employee is already enrolled in — for migrations, corrections, or manual grants.
+                      </p>
+                      <div>
+                        <Label>Plan</Label>
+                        <Select value={seedForm.plan_id} onValueChange={(v) => setSeedForm({ ...seedForm, plan_id: v })}>
+                          <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                          <SelectContent>
+                            {(enrollmentsQ.data ?? []).map((r) => (
+                              <SelectItem key={r.plan_id} value={r.plan_id}>{r.leave_plans?.name ?? r.plan_id}</SelectItem>
+                            ))}
+                            {(enrollmentsQ.data?.length ?? 0) === 0 && availablePlans.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Mode</Label>
+                        <Select value={seedForm.mode} onValueChange={(v) => setSeedForm({ ...seedForm, mode: v as "add" | "set" })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="add">Add / subtract hours</SelectItem>
+                            <SelectItem value="set">Set current balance to…</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>{seedForm.mode === "set" ? "New balance (hours)" : "Adjustment (hours, negative to deduct)"}</Label>
+                        <Input type="number" step="0.25" value={seedForm.delta_hours}
+                          onChange={(e) => setSeedForm({ ...seedForm, delta_hours: Number(e.target.value) })} />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={() => backSeed.mutate()}
+                        disabled={!seedForm.plan_id || backSeed.isPending}>
+                        {backSeed.isPending ? "Saving…" : "Apply"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 <Dialog open={addOpen} onOpenChange={setAddOpen}>
                   <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" /> Add enrollment</Button></DialogTrigger>
                   <DialogContent>
@@ -339,6 +388,7 @@ function LeaveEnrollmentsPage() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+                </div>
               </div>
 
               <Card className="divide-y">
