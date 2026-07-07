@@ -77,7 +77,26 @@ export type AccrualRunResult = {
   errors: number;
 };
 
-export async function runLeaveAccruals(admin: SupabaseClient, now: Date = new Date()): Promise<AccrualRunResult> {
+export type AccrualPreviewItem = {
+  employee_id: string;
+  plan_id: string;
+  current_accrued: number;
+  delta: number;
+  next_accrued: number;
+  capped: boolean;
+  frequency: RuleRow["frequency"];
+  months_service: number;
+};
+
+export type AccrualRunOptions = { now?: Date; dryRun?: boolean };
+
+export async function runLeaveAccruals(
+  admin: SupabaseClient,
+  optsOrNow: Date | AccrualRunOptions = {},
+): Promise<AccrualRunResult & { preview?: AccrualPreviewItem[] }> {
+  const opts: AccrualRunOptions = optsOrNow instanceof Date ? { now: optsOrNow } : optsOrNow;
+  const now = opts.now ?? new Date();
+  const dryRun = opts.dryRun ?? false;
   const today = now.toISOString().slice(0, 10);
 
   const { data: rulesRaw, error: rulesErr } = await admin
@@ -101,7 +120,8 @@ export async function runLeaveAccruals(admin: SupabaseClient, now: Date = new Da
   if (enrollsErr) throw new Error(`enrollments: ${enrollsErr.message}`);
   const enrollments = (enrollsRaw ?? []) as unknown as EnrollRow[];
 
-  const result: AccrualRunResult = { scanned: enrollments.length, updated: 0, skipped_no_rule: 0, skipped_not_due: 0, errors: 0 };
+  const result: AccrualRunResult & { preview?: AccrualPreviewItem[] } = { scanned: enrollments.length, updated: 0, skipped_no_rule: 0, skipped_not_due: 0, errors: 0 };
+  const preview: AccrualPreviewItem[] = [];
 
   for (const e of enrollments) {
     if (!e.leave_plans?.is_active) continue;
@@ -126,8 +146,24 @@ export async function runLeaveAccruals(admin: SupabaseClient, now: Date = new Da
 
     const cap = rule.max_balance_hours ?? e.leave_plans.max_balance_hours ?? null;
     const currentAccrued = Number(bal?.accrued_hours ?? e.opening_balance_hours ?? 0);
-    let next = currentAccrued + Number(rule.accrual_hours);
-    if (cap !== null) next = Math.min(next, Number(cap));
+    const uncapped = currentAccrued + Number(rule.accrual_hours);
+    const next = cap !== null ? Math.min(uncapped, Number(cap)) : uncapped;
+    const capped = cap !== null && uncapped > Number(cap);
+
+    if (dryRun) {
+      preview.push({
+        employee_id: e.employee_id,
+        plan_id: e.plan_id,
+        current_accrued: currentAccrued,
+        delta: next - currentAccrued,
+        next_accrued: next,
+        capped,
+        frequency: rule.frequency,
+        months_service: months,
+      });
+      result.updated++;
+      continue;
+    }
 
     try {
       if (bal) {
@@ -152,5 +188,6 @@ export async function runLeaveAccruals(admin: SupabaseClient, now: Date = new Da
     }
   }
 
+  if (dryRun) result.preview = preview;
   return result;
 }
