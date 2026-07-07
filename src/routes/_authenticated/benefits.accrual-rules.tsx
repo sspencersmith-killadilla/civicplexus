@@ -11,10 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Play, ShieldAlert, ArrowLeft } from "lucide-react";
+import { Plus, Play, ShieldAlert, ArrowLeft, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
-import { runMonthlyAccruals } from "@/lib/leave.functions";
+import { runMonthlyAccruals, simulateAccruals } from "@/lib/leave.functions";
 
 export const Route = createFileRoute("/_authenticated/benefits/accrual-rules")({
   component: AccrualRulesPage,
@@ -35,6 +35,17 @@ type Rule = {
   notes: string | null;
 };
 
+type PreviewItem = {
+  employee_id: string;
+  plan_id: string;
+  current_accrued: number;
+  delta: number;
+  next_accrued: number;
+  capped: boolean;
+  frequency: Rule["frequency"];
+  months_service: number;
+};
+
 const FREQS = [
   { v: "monthly", label: "Monthly" },
   { v: "per_pay_period", label: "Per pay period (~biweekly)" },
@@ -46,10 +57,17 @@ function AccrualRulesPage() {
   const isHr = hasRole(me?.roles, "hr_admin");
   const qc = useQueryClient();
   const runNow = useServerFn(runMonthlyAccruals);
+  const simulate = useServerFn(simulateAccruals);
 
   const [planFilter, setPlanFilter] = useState<string>("all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Rule | null>(null);
+  const [simOpen, setSimOpen] = useState(false);
+  const nowMonth = new Date().toISOString().slice(0, 7);
+  const [simMonth, setSimMonth] = useState<string>(nowMonth);
+  const [simResult, setSimResult] = useState<
+    { scanned: number; updated: number; skipped_no_rule: number; skipped_not_due: number; errors: number; preview?: PreviewItem[] } | null
+  >(null);
 
   const plansQ = useQuery({
     queryKey: ["accrual-plans"],
@@ -132,6 +150,24 @@ function AccrualRulesPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
+  const simulateM = useMutation({
+    mutationFn: (month: string) => simulate({ data: { month } }),
+    onSuccess: (r) => setSimResult(r as typeof simResult),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const employeeNamesQ = useQuery({
+    queryKey: ["accrual-preview-employees", simResult?.preview?.map((p) => p.employee_id).join(",")],
+    enabled: isHr && !!simResult?.preview?.length,
+    queryFn: async () => {
+      const ids = Array.from(new Set(simResult!.preview!.map((p) => p.employee_id)));
+      const { data, error } = await supabase.from("employees")
+        .select("id, first_name, last_name").in("id", ids);
+      if (error) throw error;
+      return new Map((data ?? []).map((e) => [e.id, `${e.first_name} ${e.last_name}`]));
+    },
+  });
+
   const planName = useMemo(() => {
     const m = new Map((plansQ.data ?? []).map((p) => [p.id, p.name]));
     return (id: string) => m.get(id) ?? id;
@@ -169,6 +205,9 @@ function AccrualRulesPage() {
           <Button variant="outline" size="sm" onClick={() => runNowM.mutate()} disabled={runNowM.isPending}>
             <Play className="h-4 w-4 mr-1" /> {runNowM.isPending ? "Running…" : "Run accruals now"}
           </Button>
+          <Button variant="outline" size="sm" onClick={() => { setSimResult(null); setSimOpen(true); }}>
+            <FlaskConical className="h-4 w-4 mr-1" /> Simulate accruals
+          </Button>
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
             <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" /> Add rule</Button></DialogTrigger>
             <DialogContent>
@@ -184,6 +223,66 @@ function AccrualRulesPage() {
           </Dialog>
         </div>
       </div>
+
+      <Dialog open={simOpen} onOpenChange={setSimOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Simulate accruals</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Label>Month</Label>
+              <Input type="month" value={simMonth} onChange={(e) => setSimMonth(e.target.value)} />
+            </div>
+            <Button onClick={() => simulateM.mutate(simMonth)} disabled={simulateM.isPending || !simMonth}>
+              {simulateM.isPending ? "Simulating…" : "Preview"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Read-only preview. Uses the 1st of the selected month as the "run date". No balances are written.
+          </p>
+          {simResult && (
+            <div className="space-y-2 mt-2">
+              <div className="flex flex-wrap gap-2 text-xs">
+                <Badge variant="secondary">Scanned {simResult.scanned}</Badge>
+                <Badge variant="secondary">Would accrue {simResult.updated}</Badge>
+                <Badge variant="outline">No matching rule {simResult.skipped_no_rule}</Badge>
+                <Badge variant="outline">Not due yet {simResult.skipped_not_due}</Badge>
+              </div>
+              <div className="max-h-80 overflow-auto border rounded-md divide-y">
+                {(simResult.preview ?? []).length === 0 && (
+                  <p className="p-4 text-sm text-muted-foreground text-center">
+                    No enrollments would accrue this month.
+                  </p>
+                )}
+                {(simResult.preview ?? []).map((p, i) => (
+                  <div key={`${p.employee_id}-${p.plan_id}-${i}`} className="p-2 flex items-center justify-between text-sm">
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">
+                        {employeeNamesQ.data?.get(p.employee_id) ?? p.employee_id.slice(0, 8)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {planName(p.plan_id)} · {p.months_service} mo · {p.frequency.replace("_", " ")}
+                      </div>
+                    </div>
+                    <div className="text-right text-xs shrink-0">
+                      <div>
+                        {p.current_accrued.toFixed(2)}h → <span className="font-medium">{p.next_accrued.toFixed(2)}h</span>
+                      </div>
+                      <div className="text-muted-foreground">
+                        +{p.delta.toFixed(2)}h {p.capped && <Badge variant="outline" className="ml-1 text-[10px]">capped</Badge>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setSimOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <p className="text-xs text-muted-foreground mb-3">
         The monthly cron matches each active enrollment to the best rule for its plan by worker type and length of service (longer tenure wins over "all worker types"; higher service-months tier wins over lower). Balances are updated once per period based on the rule's frequency.
