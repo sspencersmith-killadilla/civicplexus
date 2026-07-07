@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { submitLeaveRequest } from "@/lib/leave.functions";
@@ -78,6 +78,11 @@ function LeavePage() {
   return (
     <AppShell title="Leave">
       <div className="flex justify-end mb-4">
+        {hasRole(me?.roles, "hr_admin") && (
+          <Link to="/leave/enrollments" className="mr-2">
+            <Button variant="outline"><Settings className="h-4 w-4 mr-1" /> Enrollments</Button>
+          </Link>
+        )}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button disabled={!empQ.data}><Plus className="h-4 w-4 mr-1" /> Request leave</Button></DialogTrigger>
           <DialogContent>

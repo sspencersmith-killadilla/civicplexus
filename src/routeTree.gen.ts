@@ -132,6 +132,7 @@ import { Route as AuthenticatedPayrollProfilesRouteImport } from './routes/_auth
 import { Route as AuthenticatedPayrollIdRouteImport } from './routes/_authenticated/payroll.$id'
 import { Route as AuthenticatedPafIdRouteImport } from './routes/_authenticated/paf.$id'
 import { Route as AuthenticatedOneOnOnesIdRouteImport } from './routes/_authenticated/one-on-ones.$id'
+import { Route as AuthenticatedLeaveEnrollmentsRouteImport } from './routes/_authenticated/leave.enrollments'
 import { Route as AuthenticatedLeaveIdRouteImport } from './routes/_authenticated/leave.$id'
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
 import { Route as AuthenticatedInterviewsIdRouteImport } from './routes/_authenticated/interviews.$id'
@@ -849,6 +850,12 @@ const AuthenticatedOneOnOnesIdRoute =
     path: '/one-on-ones/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLeaveEnrollmentsRoute =
+  AuthenticatedLeaveEnrollmentsRouteImport.update({
+    id: '/leave/enrollments',
+    path: '/leave/enrollments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLeaveIdRoute = AuthenticatedLeaveIdRouteImport.update({
   id: '/leave/$id',
   path: '/leave/$id',
@@ -1209,6 +1216,7 @@ export interface FileRoutesByFullPath {
   '/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
+  '/leave/enrollments': typeof AuthenticatedLeaveEnrollmentsRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/payroll/$id': typeof AuthenticatedPayrollIdRoute
@@ -1373,6 +1381,7 @@ export interface FileRoutesByTo {
   '/hiring/interview-kits': typeof AuthenticatedHiringInterviewKitsRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/leave/$id': typeof AuthenticatedLeaveIdRoute
+  '/leave/enrollments': typeof AuthenticatedLeaveEnrollmentsRoute
   '/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/paf/$id': typeof AuthenticatedPafIdRoute
   '/payroll/$id': typeof AuthenticatedPayrollIdRoute
@@ -1544,6 +1553,7 @@ export interface FileRoutesById {
   '/_authenticated/interviews/$id': typeof AuthenticatedInterviewsIdRouteWithChildren
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/_authenticated/leave/$id': typeof AuthenticatedLeaveIdRoute
+  '/_authenticated/leave/enrollments': typeof AuthenticatedLeaveEnrollmentsRoute
   '/_authenticated/one-on-ones/$id': typeof AuthenticatedOneOnOnesIdRoute
   '/_authenticated/paf/$id': typeof AuthenticatedPafIdRoute
   '/_authenticated/payroll/$id': typeof AuthenticatedPayrollIdRoute
@@ -1716,6 +1726,7 @@ export interface FileRouteTypes {
     | '/interviews/$id'
     | '/jobs/$id'
     | '/leave/$id'
+    | '/leave/enrollments'
     | '/one-on-ones/$id'
     | '/paf/$id'
     | '/payroll/$id'
@@ -1880,6 +1891,7 @@ export interface FileRouteTypes {
     | '/hiring/interview-kits'
     | '/jobs/$id'
     | '/leave/$id'
+    | '/leave/enrollments'
     | '/one-on-ones/$id'
     | '/paf/$id'
     | '/payroll/$id'
@@ -2050,6 +2062,7 @@ export interface FileRouteTypes {
     | '/_authenticated/interviews/$id'
     | '/_authenticated/jobs/$id'
     | '/_authenticated/leave/$id'
+    | '/_authenticated/leave/enrollments'
     | '/_authenticated/one-on-ones/$id'
     | '/_authenticated/paf/$id'
     | '/_authenticated/payroll/$id'
@@ -3037,6 +3050,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOneOnOnesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/leave/enrollments': {
+      id: '/_authenticated/leave/enrollments'
+      path: '/leave/enrollments'
+      fullPath: '/leave/enrollments'
+      preLoaderRoute: typeof AuthenticatedLeaveEnrollmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/leave/$id': {
       id: '/_authenticated/leave/$id'
       path: '/leave/$id'
@@ -3567,6 +3587,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInterviewsIdRoute: typeof AuthenticatedInterviewsIdRouteWithChildren
   AuthenticatedJobsIdRoute: typeof AuthenticatedJobsIdRoute
   AuthenticatedLeaveIdRoute: typeof AuthenticatedLeaveIdRoute
+  AuthenticatedLeaveEnrollmentsRoute: typeof AuthenticatedLeaveEnrollmentsRoute
   AuthenticatedOneOnOnesIdRoute: typeof AuthenticatedOneOnOnesIdRoute
   AuthenticatedPafIdRoute: typeof AuthenticatedPafIdRoute
   AuthenticatedPayrollIdRoute: typeof AuthenticatedPayrollIdRoute
@@ -3673,6 +3694,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInterviewsIdRoute: AuthenticatedInterviewsIdRouteWithChildren,
   AuthenticatedJobsIdRoute: AuthenticatedJobsIdRoute,
   AuthenticatedLeaveIdRoute: AuthenticatedLeaveIdRoute,
+  AuthenticatedLeaveEnrollmentsRoute: AuthenticatedLeaveEnrollmentsRoute,
   AuthenticatedOneOnOnesIdRoute: AuthenticatedOneOnOnesIdRoute,
   AuthenticatedPafIdRoute: AuthenticatedPafIdRoute,
   AuthenticatedPayrollIdRoute: AuthenticatedPayrollIdRoute,
