@@ -111,41 +111,13 @@ export const decideLeaveRequest = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// Manual accrual run — HR-triggered. Simple monthly rule: add accrual_rate_hours to every
-// active enrollment whose plan accrues monthly and hasn't accrued this month yet.
+// Manual accrual run — HR-triggered. Uses the same shared logic as the pg_cron endpoint.
 export const runMonthlyAccruals = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: roles } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId);
     if (!(roles ?? []).some((r) => r.role === "hr_admin")) throw new Error("HR admin only");
-
-    const { data: enrolls } = await supabaseAdmin
-      .from("employee_leave_enrollments")
-      .select("employee_id, plan_id, opening_balance_hours, leave_plans!inner(accrual_rate_hours, accrual_frequency, max_balance_hours)")
-      .is("effective_to", null);
-
-    let updated = 0;
-    const now = new Date();
-    for (const e of (enrolls ?? []) as Array<{ employee_id: string; plan_id: string; opening_balance_hours: number; leave_plans: { accrual_rate_hours: number; accrual_frequency: string; max_balance_hours: number | null } }>) {
-      if (e.leave_plans.accrual_frequency !== "monthly" || !Number(e.leave_plans.accrual_rate_hours)) continue;
-      const { data: bal } = await supabaseAdmin
-        .from("leave_balances").select("id, accrued_hours, last_accrual_at")
-        .eq("employee_id", e.employee_id).eq("plan_id", e.plan_id).maybeSingle();
-      const add = Number(e.leave_plans.accrual_rate_hours);
-      if (bal) {
-        if (bal.last_accrual_at && new Date(bal.last_accrual_at).getMonth() === now.getMonth() && new Date(bal.last_accrual_at).getFullYear() === now.getFullYear()) continue;
-        let next = Number(bal.accrued_hours) + add;
-        if (e.leave_plans.max_balance_hours) next = Math.min(next, Number(e.leave_plans.max_balance_hours));
-        await supabaseAdmin.from("leave_balances").update({ accrued_hours: next, last_accrual_at: now.toISOString() } as never).eq("id", bal.id);
-      } else {
-        await supabaseAdmin.from("leave_balances").insert({
-          employee_id: e.employee_id, plan_id: e.plan_id,
-          accrued_hours: Number(e.opening_balance_hours) + add,
-          last_accrual_at: now.toISOString(),
-        } as never);
-      }
-      updated++;
-    }
-    return { updated };
+    const { runLeaveAccruals } = await import("@/lib/leave-accruals.server");
+    return await runLeaveAccruals(supabaseAdmin);
   });

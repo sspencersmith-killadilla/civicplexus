@@ -158,6 +158,7 @@ import { Route as ServeVolunteerJobsSlugRouteImport } from './routes/serve.volun
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksOfflineReplayRouteImport } from './routes/api/public/hooks/offline-replay'
 import { Route as ApiPublicHooksLmsSyncRouteImport } from './routes/api/public/hooks/lms-sync'
+import { Route as ApiPublicHooksLeaveAccrualsRouteImport } from './routes/api/public/hooks/leave-accruals'
 import { Route as ApiPublicHooksBenefitsCallbackRouteImport } from './routes/api/public/hooks/benefits-callback'
 import { Route as ApiPublicDocsFileRouteImport } from './routes/api/public/docs/$file'
 import { Route as ApiPublicBadgeSerialRouteImport } from './routes/api/public/badge.$serial'
@@ -998,6 +999,12 @@ const ApiPublicHooksLmsSyncRoute = ApiPublicHooksLmsSyncRouteImport.update({
   path: '/api/public/hooks/lms-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksLeaveAccrualsRoute =
+  ApiPublicHooksLeaveAccrualsRouteImport.update({
+    id: '/api/public/hooks/leave-accruals',
+    path: '/api/public/hooks/leave-accruals',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksBenefitsCallbackRoute =
   ApiPublicHooksBenefitsCallbackRouteImport.update({
     id: '/api/public/hooks/benefits-callback',
@@ -1274,6 +1281,7 @@ export interface FileRoutesByFullPath {
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
+  '/api/public/hooks/leave-accruals': typeof ApiPublicHooksLeaveAccrualsRoute
   '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -1438,6 +1446,7 @@ export interface FileRoutesByTo {
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
+  '/api/public/hooks/leave-accruals': typeof ApiPublicHooksLeaveAccrualsRoute
   '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -1611,6 +1620,7 @@ export interface FileRoutesById {
   '/api/public/badge/$serial': typeof ApiPublicBadgeSerialRoute
   '/api/public/docs/$file': typeof ApiPublicDocsFileRoute
   '/api/public/hooks/benefits-callback': typeof ApiPublicHooksBenefitsCallbackRoute
+  '/api/public/hooks/leave-accruals': typeof ApiPublicHooksLeaveAccrualsRoute
   '/api/public/hooks/lms-sync': typeof ApiPublicHooksLmsSyncRoute
   '/api/public/hooks/offline-replay': typeof ApiPublicHooksOfflineReplayRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -1784,6 +1794,7 @@ export interface FileRouteTypes {
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
+    | '/api/public/hooks/leave-accruals'
     | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
@@ -1948,6 +1959,7 @@ export interface FileRouteTypes {
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
+    | '/api/public/hooks/leave-accruals'
     | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
@@ -2120,6 +2132,7 @@ export interface FileRouteTypes {
     | '/api/public/badge/$serial'
     | '/api/public/docs/$file'
     | '/api/public/hooks/benefits-callback'
+    | '/api/public/hooks/leave-accruals'
     | '/api/public/hooks/lms-sync'
     | '/api/public/hooks/offline-replay'
     | '/api/public/hooks/reminders'
@@ -2170,6 +2183,7 @@ export interface RootRouteChildren {
   ApiPublicBadgeSerialRoute: typeof ApiPublicBadgeSerialRoute
   ApiPublicDocsFileRoute: typeof ApiPublicDocsFileRoute
   ApiPublicHooksBenefitsCallbackRoute: typeof ApiPublicHooksBenefitsCallbackRoute
+  ApiPublicHooksLeaveAccrualsRoute: typeof ApiPublicHooksLeaveAccrualsRoute
   ApiPublicHooksLmsSyncRoute: typeof ApiPublicHooksLmsSyncRoute
   ApiPublicHooksOfflineReplayRoute: typeof ApiPublicHooksOfflineReplayRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
@@ -3232,6 +3246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksLmsSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/leave-accruals': {
+      id: '/api/public/hooks/leave-accruals'
+      path: '/api/public/hooks/leave-accruals'
+      fullPath: '/api/public/hooks/leave-accruals'
+      preLoaderRoute: typeof ApiPublicHooksLeaveAccrualsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/benefits-callback': {
       id: '/api/public/hooks/benefits-callback'
       path: '/api/public/hooks/benefits-callback'
@@ -3798,6 +3819,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBadgeSerialRoute: ApiPublicBadgeSerialRoute,
   ApiPublicDocsFileRoute: ApiPublicDocsFileRoute,
   ApiPublicHooksBenefitsCallbackRoute: ApiPublicHooksBenefitsCallbackRoute,
+  ApiPublicHooksLeaveAccrualsRoute: ApiPublicHooksLeaveAccrualsRoute,
   ApiPublicHooksLmsSyncRoute: ApiPublicHooksLmsSyncRoute,
   ApiPublicHooksOfflineReplayRoute: ApiPublicHooksOfflineReplayRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
