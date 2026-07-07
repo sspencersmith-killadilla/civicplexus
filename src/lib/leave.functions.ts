@@ -121,3 +121,20 @@ export const runMonthlyAccruals = createServerFn({ method: "POST" })
     const { runLeaveAccruals } = await import("@/lib/leave-accruals.server");
     return await runLeaveAccruals(supabaseAdmin);
   });
+
+// Preview an accrual run for a given month (YYYY-MM) without writing changes.
+const simInput = z.object({ month: z.string().regex(/^\d{4}-\d{2}$/) });
+
+export const simulateAccruals = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => simInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roles } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId);
+    if (!(roles ?? []).some((r) => r.role === "hr_admin")) throw new Error("HR admin only");
+    const { runLeaveAccruals } = await import("@/lib/leave-accruals.server");
+    // Use the 1st of the selected month at 02:00 UTC — matches the cron schedule.
+    const [y, m] = data.month.split("-").map(Number);
+    const now = new Date(Date.UTC(y, m - 1, 1, 2, 0, 0));
+    return await runLeaveAccruals(supabaseAdmin, { now, dryRun: true });
+  });
