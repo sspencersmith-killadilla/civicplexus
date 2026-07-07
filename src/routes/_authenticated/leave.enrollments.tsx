@@ -56,10 +56,10 @@ function LeaveEnrollmentsPage() {
   const { data: me } = useCurrentUser();
   const isHr = hasRole(me?.roles, "hr_admin");
   const qc = useQueryClient();
-  const search = Route.useSearch();
+  const urlSearch = Route.useSearch();
   const navigate = Route.useNavigate();
 
-  const [empId, setEmpId] = useState<string>(search.employee ?? "");
+  const [empId, setEmpId] = useState<string>(urlSearch.employee ?? "");
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [planDefaultsOpen, setPlanDefaultsOpen] = useState(false);
