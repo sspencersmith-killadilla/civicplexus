@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, HeartHandshake } from "lucide-react";
+import { Plus, HeartHandshake, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/benefits")({ component: BenefitsPage });
@@ -40,7 +40,10 @@ function BenefitsPage() {
 
   return (
     <AppShell title="Benefits Hand-off">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-4 gap-2">
+        <Link to="/benefits/accrual-rules">
+          <Button variant="outline"><CalendarClock className="h-4 w-4 mr-2" /> Leave accrual rules</Button>
+        </Link>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> New Hand-off</Button></DialogTrigger>
           <DialogContent>

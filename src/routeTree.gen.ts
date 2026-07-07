@@ -147,6 +147,7 @@ import { Route as AuthenticatedComplianceTcoleRouteImport } from './routes/_auth
 import { Route as AuthenticatedComplianceNewHireRouteImport } from './routes/_authenticated/compliance.new-hire'
 import { Route as AuthenticatedCompCyclesIdRouteImport } from './routes/_authenticated/comp-cycles.$id'
 import { Route as AuthenticatedCascadesIdRouteImport } from './routes/_authenticated/cascades.$id'
+import { Route as AuthenticatedBenefitsAccrualRulesRouteImport } from './routes/_authenticated/benefits.accrual-rules'
 import { Route as AuthenticatedAdminApplicationTemplateRouteImport } from './routes/_authenticated/admin.application-template'
 import { Route as AuthenticatedAdminOfficialsPrintRouteImport } from './routes/_authenticated/admin-officials.print'
 import { Route as AuthenticatedAdminOfficialsOnboardingTemplatesRouteImport } from './routes/_authenticated/admin-officials.onboarding-templates'
@@ -936,6 +937,12 @@ const AuthenticatedCascadesIdRoute = AuthenticatedCascadesIdRouteImport.update({
   path: '/cascades/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBenefitsAccrualRulesRoute =
+  AuthenticatedBenefitsAccrualRulesRouteImport.update({
+    id: '/accrual-rules',
+    path: '/accrual-rules',
+    getParentRoute: () => AuthenticatedBenefitsRoute,
+  } as any)
 const AuthenticatedAdminApplicationTemplateRoute =
   AuthenticatedAdminApplicationTemplateRouteImport.update({
     id: '/admin/application-template',
@@ -1146,7 +1153,7 @@ export interface FileRoutesByFullPath {
   '/admin-sql-reports': typeof AuthenticatedAdminSqlReportsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
-  '/benefits': typeof AuthenticatedBenefitsRoute
+  '/benefits': typeof AuthenticatedBenefitsRouteWithChildren
   '/cba': typeof AuthenticatedCbaRoute
   '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/comp-market': typeof AuthenticatedCompMarketRoute
@@ -1209,6 +1216,7 @@ export interface FileRoutesByFullPath {
   '/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/admin/application-template': typeof AuthenticatedAdminApplicationTemplateRoute
+  '/benefits/accrual-rules': typeof AuthenticatedBenefitsAccrualRulesRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1316,7 +1324,7 @@ export interface FileRoutesByTo {
   '/admin-sql-reports': typeof AuthenticatedAdminSqlReportsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/audit': typeof AuthenticatedAuditRoute
-  '/benefits': typeof AuthenticatedBenefitsRoute
+  '/benefits': typeof AuthenticatedBenefitsRouteWithChildren
   '/cba': typeof AuthenticatedCbaRoute
   '/comp-grades': typeof AuthenticatedCompGradesRoute
   '/comp-market': typeof AuthenticatedCompMarketRoute
@@ -1376,6 +1384,7 @@ export interface FileRoutesByTo {
   '/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/admin/application-template': typeof AuthenticatedAdminApplicationTemplateRoute
+  '/benefits/accrual-rules': typeof AuthenticatedBenefitsAccrualRulesRoute
   '/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1485,7 +1494,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-sql-reports': typeof AuthenticatedAdminSqlReportsRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
-  '/_authenticated/benefits': typeof AuthenticatedBenefitsRoute
+  '/_authenticated/benefits': typeof AuthenticatedBenefitsRouteWithChildren
   '/_authenticated/cba': typeof AuthenticatedCbaRoute
   '/_authenticated/comp-grades': typeof AuthenticatedCompGradesRoute
   '/_authenticated/comp-market': typeof AuthenticatedCompMarketRoute
@@ -1548,6 +1557,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-officials/onboarding-templates': typeof AuthenticatedAdminOfficialsOnboardingTemplatesRoute
   '/_authenticated/admin-officials/print': typeof AuthenticatedAdminOfficialsPrintRoute
   '/_authenticated/admin/application-template': typeof AuthenticatedAdminApplicationTemplateRoute
+  '/_authenticated/benefits/accrual-rules': typeof AuthenticatedBenefitsAccrualRulesRoute
   '/_authenticated/cascades/$id': typeof AuthenticatedCascadesIdRoute
   '/_authenticated/comp-cycles/$id': typeof AuthenticatedCompCyclesIdRoute
   '/_authenticated/compliance/new-hire': typeof AuthenticatedComplianceNewHireRoute
@@ -1722,6 +1732,7 @@ export interface FileRouteTypes {
     | '/admin-officials/onboarding-templates'
     | '/admin-officials/print'
     | '/admin/application-template'
+    | '/benefits/accrual-rules'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -1889,6 +1900,7 @@ export interface FileRouteTypes {
     | '/admin-officials/onboarding-templates'
     | '/admin-officials/print'
     | '/admin/application-template'
+    | '/benefits/accrual-rules'
     | '/cascades/$id'
     | '/comp-cycles/$id'
     | '/compliance/new-hire'
@@ -2060,6 +2072,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-officials/onboarding-templates'
     | '/_authenticated/admin-officials/print'
     | '/_authenticated/admin/application-template'
+    | '/_authenticated/benefits/accrual-rules'
     | '/_authenticated/cascades/$id'
     | '/_authenticated/comp-cycles/$id'
     | '/_authenticated/compliance/new-hire'
@@ -3169,6 +3182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCascadesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/benefits/accrual-rules': {
+      id: '/_authenticated/benefits/accrual-rules'
+      path: '/accrual-rules'
+      fullPath: '/benefits/accrual-rules'
+      preLoaderRoute: typeof AuthenticatedBenefitsAccrualRulesRouteImport
+      parentRoute: typeof AuthenticatedBenefitsRoute
+    }
     '/_authenticated/admin/application-template': {
       id: '/_authenticated/admin/application-template'
       path: '/admin/application-template'
@@ -3453,6 +3473,20 @@ const AuthenticatedAdminOfficialsRouteWithChildren =
     AuthenticatedAdminOfficialsRouteChildren,
   )
 
+interface AuthenticatedBenefitsRouteChildren {
+  AuthenticatedBenefitsAccrualRulesRoute: typeof AuthenticatedBenefitsAccrualRulesRoute
+}
+
+const AuthenticatedBenefitsRouteChildren: AuthenticatedBenefitsRouteChildren = {
+  AuthenticatedBenefitsAccrualRulesRoute:
+    AuthenticatedBenefitsAccrualRulesRoute,
+}
+
+const AuthenticatedBenefitsRouteWithChildren =
+  AuthenticatedBenefitsRoute._addFileChildren(
+    AuthenticatedBenefitsRouteChildren,
+  )
+
 interface AuthenticatedPoliciesRouteChildren {
   AuthenticatedPoliciesIdRoute: typeof AuthenticatedPoliciesIdRoute
   AuthenticatedPoliciesIndexRoute: typeof AuthenticatedPoliciesIndexRoute
@@ -3547,7 +3581,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminSqlReportsRoute: typeof AuthenticatedAdminSqlReportsRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
-  AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRoute
+  AuthenticatedBenefitsRoute: typeof AuthenticatedBenefitsRouteWithChildren
   AuthenticatedCbaRoute: typeof AuthenticatedCbaRoute
   AuthenticatedCompGradesRoute: typeof AuthenticatedCompGradesRoute
   AuthenticatedCompMarketRoute: typeof AuthenticatedCompMarketRoute
@@ -3653,7 +3687,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminSqlReportsRoute: AuthenticatedAdminSqlReportsRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
-  AuthenticatedBenefitsRoute: AuthenticatedBenefitsRoute,
+  AuthenticatedBenefitsRoute: AuthenticatedBenefitsRouteWithChildren,
   AuthenticatedCbaRoute: AuthenticatedCbaRoute,
   AuthenticatedCompGradesRoute: AuthenticatedCompGradesRoute,
   AuthenticatedCompMarketRoute: AuthenticatedCompMarketRoute,
