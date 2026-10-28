@@ -78,7 +78,6 @@ export function maskBoardApplication<T extends BoardMaskable>(app: T): T & { mas
     qualifications: redactText(app.qualifications, names),
     statement: redactText(app.statement, names),
     conflicts_disclosure: redactText(app.conflicts_disclosure, names),
-    cover_letter_path: app.cover_letter_path ? "hidden" : null,
     form_data: {},
     masked: true,
   };
