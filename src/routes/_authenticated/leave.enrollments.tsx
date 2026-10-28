@@ -16,7 +16,7 @@ import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import { BulkImportDialog } from "@/components/leave/bulk-import-dialog";
 
 export const Route = createFileRoute("/_authenticated/leave/enrollments")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { employee?: string; add?: 1; seed?: 1 } => ({
     employee: typeof s.employee === "string" ? s.employee : undefined,
     add: s.add === 1 || s.add === "1" ? 1 : undefined,
     seed: s.seed === 1 || s.seed === "1" ? 1 : undefined,

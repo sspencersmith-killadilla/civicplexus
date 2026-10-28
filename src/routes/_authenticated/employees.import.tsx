@@ -14,7 +14,7 @@ import { importEmployees, importDependents, importCertifications, importTraining
 
 export const Route = createFileRoute("/_authenticated/employees/import")({
   component: ImportPage,
-  validateSearch: (s: Record<string, unknown>) => ({ tab: typeof s.tab === "string" ? s.tab : undefined }),
+  validateSearch: (s: Record<string, unknown>): { tab?: string } => ({ tab: typeof s.tab === "string" ? s.tab : undefined }),
 });
 
 type Spec = {
