@@ -11,7 +11,7 @@ import markAsset from "@/assets/civicplexus-mark.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — CivicPlexus" }, { name: "description", content: "Sign in or create your CivicPlexus account." }] }),
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { volunteer?: 1 } => ({
     volunteer: search.volunteer === 1 || search.volunteer === "1" || search.volunteer === true ? 1 : undefined,
   }),
   component: AuthPage,

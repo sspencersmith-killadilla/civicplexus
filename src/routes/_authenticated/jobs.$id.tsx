@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { aliasSwatch } from "@/lib/applicant-alias";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
@@ -239,7 +240,7 @@ function JobDetail() {
   );
 }
 
-function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: string; applicant_name: string; email: string; status: string; is_internal: boolean; rating: number | null }; requisitionId: string; selected: boolean; onToggle: () => void }) {
+function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: string; applicant_name: string; email: string; status: string; is_internal: boolean; rating: number | null; masked?: boolean; alias_color?: string | null; alias_animal?: string | null }; requisitionId: string; selected: boolean; onToggle: () => void }) {
   const qc = useQueryClient();
   const change = useServerFn(transitionApplicationStatus);
   const sched = useServerFn(scheduleInterview);
@@ -357,8 +358,13 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-start gap-3">
           <Checkbox checked={selected} onCheckedChange={onToggle} className="mt-1" aria-label={`Select ${app.applicant_name}`} />
+          {app.masked && (
+            <span aria-hidden className="mt-0.5 h-8 w-8 shrink-0 rounded-full grid place-items-center text-xs font-semibold text-primary-foreground" style={{ backgroundColor: aliasSwatch(app.alias_color ?? null) }}>
+              {(app.alias_animal ?? "?").slice(0, 1)}
+            </span>
+          )}
           <div>
-            <h4 className="font-medium">{app.applicant_name} {app.is_internal && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">Internal</span>}</h4>
+            <h4 className="font-medium">{app.applicant_name} {app.is_internal && !app.masked && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">Internal</span>}{app.masked && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">Blind review</span>}</h4>
             <p className="text-xs text-muted-foreground">{app.email}</p>
           </div>
         </div>

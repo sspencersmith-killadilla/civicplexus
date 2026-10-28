@@ -32,7 +32,8 @@ export const listApplicationsForRequisition = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => z.object({ requisition_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { canReadAll } = await authorize(context);
+    const { maskApplicant } = await import("@/lib/applicant-alias");
+    const { canReadAll, isHr } = await authorize(context);
 
     if (!canReadAll) {
       // Must be hiring manager / requester on this requisition
@@ -46,11 +47,16 @@ export const listApplicationsForRequisition = createServerFn({ method: "POST" })
       }
     }
 
+    const { data: reqRow } = await supabaseAdmin
+      .from("job_requisitions").select("blind_review").eq("id", data.requisition_id).maybeSingle();
+    const blindReview = (reqRow as { blind_review: boolean } | null)?.blind_review ?? true;
+
     const { data: apps, error } = await supabaseAdmin
       .from("job_applications")
-      .select("id, requisition_id, applicant_name, email, status, is_internal, rating, created_at")
+      .select("id, requisition_id, applicant_name, email, status, is_internal, rating, created_at, alias_color, alias_animal")
       .eq("requisition_id", data.requisition_id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return (apps ?? []) as App[];
+    return ((apps ?? []) as Array<App & { alias_color: string | null; alias_animal: string | null }>)
+      .map((a) => maskApplicant(a, { isHr, blindReview }));
   });

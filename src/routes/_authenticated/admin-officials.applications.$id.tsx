@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/admin-officials/applicatio
     <AppShell>
       <div className="p-6 max-w-3xl mx-auto space-y-4">
         <h1 className="text-xl font-serif">Application unavailable</h1>
-        <p className="text-sm text-muted-foreground">{error.message}</p>
+        <p className="text-sm text-muted-foreground">{(error as Error).message}</p>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => reset()}>Retry</Button>
           <Link to="/admin-officials"><Button size="sm">Back to officials</Button></Link>

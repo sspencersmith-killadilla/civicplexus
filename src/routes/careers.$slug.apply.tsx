@@ -19,7 +19,7 @@ const jobQuery = (slug: string) => queryOptions({
 
 export const Route = createFileRoute("/careers/$slug/apply")({
   loader: ({ context, params }) => context.queryClient.ensureQueryData(jobQuery(params.slug)),
-  errorComponent: ({ error }) => <p className="p-8 text-sm">{error.message}</p>,
+  errorComponent: ({ error }) => <p className="p-8 text-sm">{(error as Error).message}</p>,
   notFoundComponent: () => <p className="p-8 text-sm">Position not found.</p>,
   pendingComponent: () => (
     <div className="min-h-screen bg-background">

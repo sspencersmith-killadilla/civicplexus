@@ -18,7 +18,7 @@ export const Route = createFileRoute("/careers/$slug/")({
       { name: "description", content: loaderData.summary ?? loaderData.title },
     ] : [],
   }),
-  errorComponent: ({ error }) => <p className="p-8 text-sm">{error.message}</p>,
+  errorComponent: ({ error }) => <p className="p-8 text-sm">{(error as Error).message}</p>,
   notFoundComponent: () => <p className="p-8 text-sm">Position not found.</p>,
   component: JobDetail,
 });

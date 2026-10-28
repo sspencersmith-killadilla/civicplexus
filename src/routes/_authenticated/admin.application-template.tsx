@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/admin/application-template
     <AppShell>
       <div className="p-6 space-y-3">
         <h1 className="text-xl font-serif">Template unavailable</h1>
-        <p className="text-sm text-muted-foreground">{error.message}</p>
+        <p className="text-sm text-muted-foreground">{(error as Error).message}</p>
         <Button size="sm" onClick={() => reset()}>Retry</Button>
       </div>
     </AppShell>
