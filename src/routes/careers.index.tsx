@@ -25,7 +25,7 @@ export const Route = createFileRoute("/careers/")({
       { name: "description", content: "Browse current open positions and apply online." },
     ],
   }),
-  errorComponent: ({ error }) => <p className="p-8 text-sm">Could not load jobs: {error.message}</p>,
+  errorComponent: ({ error }) => <p className="p-8 text-sm">Could not load jobs: {(error as Error).message}</p>,
   notFoundComponent: () => <p className="p-8 text-sm">Page not found.</p>,
   component: CareersIndex,
 });
