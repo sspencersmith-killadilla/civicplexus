@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { maskApplicant } from "./applicant-alias";
+import { maskApplicant } from "../src/lib/applicant-alias";
 
 const base = { applicant_name: "Jane Doe", email: "jane@x.com", alias_color: "Cyan", alias_animal: "Cormorant" };
 
