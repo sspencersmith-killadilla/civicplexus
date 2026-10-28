@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { maskBoardApplication, isBoardIdentityRevealed } from "@/lib/applicant-alias";
 
 async function assertClerkOrHr(supabase: any, userId: string) {
   const { data } = await supabase
@@ -42,7 +43,7 @@ export const listBoardApplications = createServerFn({ method: "GET" })
       .select("*, board_application_interests(id, body_id, is_primary, official_bodies(id,name,slug))")
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []).map((a: any) => maskBoardApplication(a));
   });
 
 /** Staff — signed URL for cover letter. */
@@ -52,6 +53,14 @@ export const getCoverLetterUrl = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertClerkOrHr(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: owner } = await supabaseAdmin
+      .from("board_application_submissions").select("id, status").eq("cover_letter_path", data.path).maybeSingle();
+    if (!owner) throw new Error("Not found");
+    if (!isBoardIdentityRevealed((owner as any).status)) {
+      const { data: logged } = await supabaseAdmin.from("identity_reveal_log").select("id")
+        .eq("subject_kind", "board_application").eq("subject_id", (owner as any).id).eq("actor_id", context.userId).limit(1);
+      if (!logged?.length) throw new Error("Cover letter is hidden during blind review. Use Show identity first.");
+    }
     const { data: signed, error } = await supabaseAdmin.storage
       .from("board-applications")
       .createSignedUrl(data.path, 300);
@@ -175,7 +184,7 @@ export const getBoardApplicationDetail = createServerFn({ method: "POST" })
       .select("id, actor_id, action, details, created_at")
       .eq("submission_id", data.id)
       .order("created_at", { ascending: false });
-    return { application: app, scores: scores ?? [], audit: audit ?? [] };
+    return { application: maskBoardApplication(app as any), scores: scores ?? [], audit: audit ?? [] };
   });
 
 /** Any signed-in user — upsert their own score for an applicant/body. */
@@ -227,7 +236,10 @@ export const compareApplicationsForBody = createServerFn({ method: "POST" })
           .eq("body_id", data.body_id)
           .in("submission_id", submissionIds)
       : { data: [] as any[] };
-    return { interests: interests ?? [], scores: scores ?? [] };
+    return {
+      interests: (interests ?? []).map((r: any) => ({ ...r, board_application_submissions: r.board_application_submissions ? maskBoardApplication(r.board_application_submissions) : null })),
+      scores: scores ?? [],
+    };
   });
 
 /** Staff — vacant seats for a body (no active/pending term). */
@@ -346,4 +358,19 @@ export const appointApplicantToSeat = createServerFn({ method: "POST" })
     } as never);
 
     return { ok: true, term_id: (termRow as { id: string }).id, official_id: officialId };
+  });
+/** HR / City Clerk — reveal a board applicant's identity during blind review. Logged. */
+export const revealBoardApplicantIdentity = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), reason: z.string().max(500).optional() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertClerkOrHr(context.supabase, context.userId);
+    const { error: logErr } = await context.supabase.from("identity_reveal_log").insert({
+      subject_kind: "board_application", subject_id: data.id, actor_id: context.userId, reason: data.reason ?? null,
+    } as never);
+    if (logErr) throw new Error(logErr.message);
+    const { data: app, error } = await context.supabase
+      .from("board_application_submissions").select("*").eq("id", data.id).maybeSingle();
+    if (error || !app) throw new Error(error?.message ?? "Not found");
+    return app as any;
   });
