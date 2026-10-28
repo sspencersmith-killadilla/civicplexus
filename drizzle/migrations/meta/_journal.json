@@ -8,6 +8,13 @@
       "when": 1793213268288,
       "tag": "0000_blind_applicant_aliases",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793213308316,
+      "tag": "0001_fix_identity_reveal_event",
+      "breakpoints": true
     }
   ]
 }
