@@ -3747,6 +3747,8 @@ export type Database = {
       }
       job_applications: {
         Row: {
+          alias_animal: string | null
+          alias_color: string | null
           answers: Json
           applicant_name: string
           confidential_until_finalist: boolean
@@ -3754,6 +3756,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          identity_revealed_at: string | null
           internal_employee_id: string | null
           internal_resume_snapshot: Json | null
           is_internal: boolean
@@ -3770,6 +3773,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          alias_animal?: string | null
+          alias_color?: string | null
           answers?: Json
           applicant_name: string
           confidential_until_finalist?: boolean
@@ -3777,6 +3782,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          identity_revealed_at?: string | null
           internal_employee_id?: string | null
           internal_resume_snapshot?: Json | null
           is_internal?: boolean
@@ -3793,6 +3799,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          alias_animal?: string | null
+          alias_color?: string | null
           answers?: Json
           applicant_name?: string
           confidential_until_finalist?: boolean
@@ -3800,6 +3808,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          identity_revealed_at?: string | null
           internal_employee_id?: string | null
           internal_resume_snapshot?: Json | null
           is_internal?: boolean
@@ -3843,6 +3852,7 @@ export type Database = {
         Row: {
           ai_rubric: Json
           benefits: string | null
+          blind_review: boolean
           brochure_url: string | null
           closes_at: string | null
           created_at: string
@@ -3874,6 +3884,7 @@ export type Database = {
         Insert: {
           ai_rubric?: Json
           benefits?: string | null
+          blind_review?: boolean
           brochure_url?: string | null
           closes_at?: string | null
           created_at?: string
@@ -3905,6 +3916,7 @@ export type Database = {
         Update: {
           ai_rubric?: Json
           benefits?: string | null
+          blind_review?: boolean
           brochure_url?: string | null
           closes_at?: string | null
           created_at?: string
