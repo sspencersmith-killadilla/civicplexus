@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { aliasSwatch } from "@/lib/applicant-alias";
+import { revealApplicantIdentity, getParsedResumeForReview } from "@/lib/applications.functions";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
@@ -240,8 +241,17 @@ function JobDetail() {
   );
 }
 
-function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: string; applicant_name: string; email: string; status: string; is_internal: boolean; rating: number | null; masked?: boolean; alias_color?: string | null; alias_animal?: string | null }; requisitionId: string; selected: boolean; onToggle: () => void }) {
+function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: string; applicant_name: string; email: string; status: string; is_internal: boolean; rating: number | null; masked?: boolean; can_reveal?: boolean; alias_color?: string | null; alias_animal?: string | null }; requisitionId: string; selected: boolean; onToggle: () => void }) {
   const qc = useQueryClient();
+  const revealFn = useServerFn(revealApplicantIdentity);
+  const [revealed, setRevealed] = useState<{ applicant_name: string; email: string } | null>(null);
+  const reveal = useMutation({
+    mutationFn: () => revealFn({ data: { application_id: app.id } }),
+    onSuccess: (r) => { setRevealed(r); toast.success("Identity shown — this view was logged"); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not reveal"),
+  });
+  const shownName = revealed?.applicant_name ?? app.applicant_name;
+  const shownEmail = revealed?.email ?? app.email;
   const change = useServerFn(transitionApplicationStatus);
   const sched = useServerFn(scheduleInterview);
   const convert = useServerFn(convertApplicationToHire);
@@ -364,8 +374,11 @@ function ApplicantRow({ app, requisitionId, selected, onToggle }: { app: { id: s
             </span>
           )}
           <div>
-            <h4 className="font-medium">{app.applicant_name} {app.is_internal && !app.masked && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">Internal</span>}{app.masked && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">Blind review</span>}</h4>
-            <p className="text-xs text-muted-foreground">{app.email}</p>
+            <h4 className="font-medium">{shownName}{revealed && <span className="ml-1 text-xs text-muted-foreground">({app.applicant_name})</span>} {app.is_internal && !app.masked && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">Internal</span>}{app.masked && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">Blind review</span>}</h4>
+            <p className="text-xs text-muted-foreground">{shownEmail}</p>
+            {app.masked && app.can_reveal && !revealed && (
+              <Button size="sm" variant="link" className="h-auto p-0 text-xs" disabled={reveal.isPending} onClick={() => { if (confirm("Show this applicant's identity? Your name and the time will be logged.")) reveal.mutate(); }}>Show identity</Button>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -518,6 +531,7 @@ type ScreenSuggestion = {
 };
 
 function AiScreeningPanel({ applicationId, requisitionId }: { applicationId: string; requisitionId: string }) {
+  const parsedResumeFn = useServerFn(getParsedResumeForReview);
   const qc = useQueryClient();
   const screen = useServerFn(screenApplication);
   const decide = useServerFn(recordScreenDecision);
@@ -543,14 +557,7 @@ function AiScreeningPanel({ applicationId, requisitionId }: { applicationId: str
 
   const parseQ = useQuery({
     queryKey: ["ai_parse", applicationId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("application_ai_parse" as never)
-        .select("parsed, model, created_at")
-        .eq("application_id", applicationId)
-        .maybeSingle();
-      return data as { parsed: { resume_text?: string; pages?: number; truncated?: boolean }; model: string | null; created_at: string } | null;
-    },
+    queryFn: () => parsedResumeFn({ data: { application_id: applicationId } }),
     enabled: resumeOpen,
   });
 
@@ -596,6 +603,7 @@ function AiScreeningPanel({ applicationId, requisitionId }: { applicationId: str
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader><DialogTitle>Parsed resume text</DialogTitle></DialogHeader>
+              {parseQ.data?.redacted && <p className="text-xs text-muted-foreground">Personal details are blacked out until this applicant reaches the interview stage.</p>}
               {parseQ.data?.parsed?.resume_text ? (
                 <>
                   <p className="text-xs text-muted-foreground mb-2">
