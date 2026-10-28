@@ -15,6 +15,13 @@
       "when": 1793213308316,
       "tag": "0001_fix_identity_reveal_event",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793213678178,
+      "tag": "0002_board_aliases_and_reveal_log",
+      "breakpoints": true
     }
   ]
 }
