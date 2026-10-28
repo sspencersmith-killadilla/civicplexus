@@ -17,7 +17,8 @@ import { toast } from "sonner";
 import { ArrowLeft, FileText, Star, UserPlus } from "lucide-react";
 import {
   getBoardApplicationDetail, scoreBoardApplication, decideBoardApplication,
-  getCoverLetterUrl, listVacantSeats, appointApplicantToSeat,
+  getCoverLetterUrl,
+  revealBoardApplicantIdentity, listVacantSeats, appointApplicantToSeat,
 } from "@/lib/board-applications.functions";
 
 export const Route = createFileRoute("/_authenticated/admin-officials/applications/$id")({
@@ -52,13 +53,20 @@ function ApplicationDetailPage() {
   const scoreFn = useServerFn(scoreBoardApplication);
   const decideFn = useServerFn(decideBoardApplication);
   const coverFn = useServerFn(getCoverLetterUrl);
+  const revealFn = useServerFn(revealBoardApplicantIdentity);
+  const [revealedApp, setRevealedApp] = useState<any>(null);
+  const reveal = useMutation({
+    mutationFn: () => revealFn({ data: { id } }),
+    onSuccess: (r) => { setRevealedApp(r); toast.success("Identity shown — this view was logged"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const q = useQuery({
     queryKey: ["board-app", id],
     queryFn: () => getFn({ data: { id } }),
   });
 
-  const app = q.data?.application as any;
+  const app = (revealedApp ? { ...(q.data?.application as any), ...revealedApp, masked: false } : q.data?.application) as any;
   const scores = (q.data?.scores ?? []) as any[];
   const audit = (q.data?.audit ?? []) as any[];
 
@@ -110,6 +118,12 @@ function ApplicationDetailPage() {
           <div>
             <h1 className="text-2xl font-serif tracking-tight">{app.first_name} {app.last_name}</h1>
             <p className="text-sm text-muted-foreground">{app.email} {app.phone && `· ${app.phone}`}</p>
+            {app.masked && (
+              <div className="mt-1 flex items-center gap-2 text-xs">
+                <span className="px-2 py-0.5 rounded bg-muted text-muted-foreground">Blind review — revealed when shortlisted</span>
+                <Button size="sm" variant="link" className="h-auto p-0 text-xs" disabled={reveal.isPending} onClick={() => { if (confirm("Show this applicant's identity? Your name and the time will be logged.")) reveal.mutate(); }}>Show identity</Button>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground mt-1">Submitted {new Date(app.created_at).toLocaleString()}</p>
           </div>
           <div className="flex items-center gap-2">

@@ -639,6 +639,8 @@ export type Database = {
       board_application_submissions: {
         Row: {
           address: string | null
+          alias_animal: string | null
+          alias_color: string | null
           city: string | null
           conflicts_disclosure: string | null
           cover_letter_path: string | null
@@ -665,6 +667,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          alias_animal?: string | null
+          alias_color?: string | null
           city?: string | null
           conflicts_disclosure?: string | null
           cover_letter_path?: string | null
@@ -691,6 +695,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          alias_animal?: string | null
+          alias_color?: string | null
           city?: string | null
           conflicts_disclosure?: string | null
           cover_letter_path?: string | null
@@ -3165,6 +3171,33 @@ export type Database = {
           name?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      identity_reveal_log: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          subject_id: string
+          subject_kind: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          subject_id: string
+          subject_kind: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          subject_id?: string
+          subject_kind?: string
         }
         Relationships: []
       }
