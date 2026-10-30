@@ -7,13 +7,13 @@ import { Briefcase, Users, Video, FileSignature, UserPlus, ClipboardCheck, Messa
 export const Route = createFileRoute("/_authenticated/hiring")({ component: HiringLayout });
 
 const NAV = [
-  { to: "/hiring/requisitions", label: "Requisitions", icon: Briefcase },
-  { to: "/hiring/applications", label: "Applications", icon: Users },
-  { to: "/hiring/interviews", label: "Interviews", icon: MessagesSquare },
+  { to: "/jobs", label: "Requisitions", icon: Briefcase },
+  { to: "/jobs", label: "Applications", icon: Users },
+  { to: "/interviews", label: "Interviews", icon: MessagesSquare },
   { to: "/hiring/interview-kits", label: "Interview Kits", icon: Video },
-  { to: "/hiring/offers", label: "Offers", icon: FileSignature },
-  { to: "/hiring/hire-requests", label: "Hire Requests", icon: UserPlus },
-  { to: "/hiring/screenings", label: "Screenings", icon: ClipboardCheck },
+  { to: "/offers", label: "Offers", icon: FileSignature },
+  { to: "/hire-requests", label: "Hire Requests", icon: UserPlus },
+  { to: "/screenings", label: "Screenings", icon: ClipboardCheck },
 ];
 
 function HiringLayout() {
@@ -23,12 +23,12 @@ function HiringLayout() {
       <div className="grid md:grid-cols-[220px_1fr] gap-6">
         <Card className="p-2 h-fit sticky top-4 self-start">
           <nav className="space-y-0.5">
-            {NAV.map((n) => {
-              const active = pathname === n.to || pathname.startsWith(n.to + "/");
+            {NAV.map((n, i) => {
+              const active = n.label !== "Applications" && (pathname === n.to || pathname.startsWith(n.to + "/"));
               const Icon = n.icon;
               return (
                 <Link
-                  key={n.to}
+                  key={n.label}
                   to={n.to}
                   className={cn(
                     "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
