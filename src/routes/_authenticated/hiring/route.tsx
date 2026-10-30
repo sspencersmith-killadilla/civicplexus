@@ -23,7 +23,7 @@ function HiringLayout() {
       <div className="grid md:grid-cols-[220px_1fr] gap-6">
         <Card className="p-2 h-fit sticky top-4 self-start">
           <nav className="space-y-0.5">
-            {NAV.map((n, i) => {
+            {NAV.map((n) => {
               const active = n.label !== "Applications" && (pathname === n.to || pathname.startsWith(n.to + "/"));
               const Icon = n.icon;
               return (
