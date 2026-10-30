@@ -11,7 +11,7 @@ const CARDS = [
   { to: "/offers", label: "Offers", icon: FileSignature, desc: "Extend offers and track acceptance." },
   { to: "/hire-requests", label: "Hire Requests", icon: UserPlus, desc: "Requests to open a new position." },
   { to: "/screenings", label: "Screenings", icon: ClipboardCheck, desc: "Background checks and pre-hire screens." },
-  { to: "/directory", label: "Applicants", icon: Users, desc: "Candidate directory." },
+  { to: "/jobs", label: "Applicants", icon: Users, desc: "Open a job to review its applicants." },
 ];
 
 function HiringHome() {
@@ -20,7 +20,7 @@ function HiringHome() {
       {CARDS.map((c) => {
         const Icon = c.icon;
         return (
-          <Link key={c.to} to={c.to}>
+          <Link key={c.label} to={c.to}>
             <Card className="p-5 hover:shadow-md transition-shadow">
               <Icon className="h-5 w-5 mb-2 text-primary" />
               <h3 className="font-medium">{c.label}</h3>
