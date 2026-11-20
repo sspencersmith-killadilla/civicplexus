@@ -39,6 +39,6 @@ bun run test
 
 ## License
 
-This project is licensed under the [Apache License 2.0](LICENSE).
+License: MIT, see [LICENSE](LICENSE).
 
-Copyright 2025 City of McKinney
+Copyright (c) 2026 Spencer Smith
