@@ -29,6 +29,13 @@
       "when": 1795186926911,
       "tag": "0003_restrict_reference_reads_to_staff",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795187355703,
+      "tag": "0004_tighten_reference_reads_and_report_sql",
+      "breakpoints": true
     }
   ]
 }

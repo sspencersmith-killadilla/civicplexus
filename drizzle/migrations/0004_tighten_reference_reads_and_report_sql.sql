@@ -1,0 +1,12 @@
+ALTER POLICY "Worker types: all auth read" ON public.worker_types USING (public.is_staff(auth.uid()));
+ALTER POLICY "Tpl tasks: auth read" ON public.template_tasks USING (public.is_staff(auth.uid()));
+ALTER POLICY "tpl read" ON public.one_on_one_templates USING (public.is_staff(auth.uid()));
+ALTER POLICY "Authenticated can read review cycles" ON public.review_cycles USING (public.is_staff(auth.uid()));
+ALTER POLICY "shift_types read" ON public.shift_types USING (public.is_staff(auth.uid()));
+ALTER POLICY "shift_segments read" ON public.shift_segments USING (public.is_staff(auth.uid()));
+ALTER POLICY "patterns read" ON public.schedule_patterns USING (public.is_staff(auth.uid()));
+ALTER POLICY "pattern_days read" ON public.pattern_days USING (public.is_staff(auth.uid()));
+ALTER POLICY "Authenticated can view all volunteer jobs" ON public.volunteer_jobs USING (public.is_known_user(auth.uid()));
+ALTER POLICY "Auth read all vendor templates" ON public.vendor_form_templates USING (public.is_known_user(auth.uid()));
+REVOKE EXECUTE ON FUNCTION public.run_report_sql(text, int) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.run_report_sql(text, int) TO authenticated;
